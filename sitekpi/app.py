@@ -25,6 +25,7 @@ from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 from sitekpi.routes.benchmarks import router as benchmarks_router  # noqa: E402
 from sitekpi.routes.connect import router as connect_router  # noqa: E402
 from sitekpi.routes.flow import router as flow_router  # noqa: E402
+from sitekpi.routes.setup import router as setup_router  # noqa: E402
 from sitekpi.routes.pages import router as pages_router  # noqa: E402
 from sitekpi.static_files import CachedStaticFiles  # noqa: E402
 from sitekpi.session import (  # noqa: E402
@@ -53,5 +54,6 @@ app.mount("/static", CachedStaticFiles(directory=str(ROOT / "static")), name="st
 app.include_router(connect_router)
 app.include_router(benchmarks_router)
 app.include_router(flow_router)
+app.include_router(setup_router)
 # pages last: it owns the catch-all /{slug}
 app.include_router(pages_router)

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}SiteKPI · {{ t("setup.title", loc) }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/connect.css') }}" />{% endblock %}
+{% macro mini_flow(steps) -%}
+<span class="mini-flow" aria-label="{{ t('flow.title', loc) }}">
+  <span class="mf-step is-entry">{{ t("flow.entry", loc) }}</span>
+  {% for s in steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step{{ ' is-found' if s.found else (' is-missing' if s.found is false else '') }}" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
+</span>
+{%- endmacro %}
+{% block main %}
+  {% set order = ["flow", "industry", "adjust"] %}
+  {% set idx = order.index(step) %}
+  <main class="setup">
+    <ol class="wizard" aria-label="{{ t('setup.title', loc) }}">
+      {% for s in order %}
+      <li class="{{ 'is-done' if loop.index0 < idx else ('is-current' if loop.index0 == idx else '') }}"{% if loop.index0 == idx %} aria-current="step"{% endif %}>
+        {% if loop.index0 < idx %}<a href="/setup/{{ s }}">{% endif %}<span class="num">{{ loop.index }}</span><span class="txt">{{ t("setup.s" ~ loop.index, loc) }}</span>{% if loop.index0 < idx %}</a>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+    {% if error %}<div class="banner err">{{ error }}</div>{% endif %}
+
+    {% if step == "flow" %}
+    <h1>{{ t("setup.flow.q", loc) }}</h1>
+    <p class="lead">{{ t("setup.flow.lead", loc) }}{% if knows_events %} <span class="legend"><i></i>{{ t("connect.pack.flow_found", loc) }}</span>{% endif %}</p>
+    <form method="post" action="/setup/flow" class="choice-list">
+      {% for b in options %}
+      <button type="submit" name="behavior" value="{{ b.cat }}" class="choice{{ ' is-rec' if b.recommended else '' }}{{ ' is-selected' if b.selected else '' }}">
+        <span class="choice-top">
+          <strong>{{ b.label }}</strong>
+          {% if b.recommended %}<em class="pack-rec">{{ t("setup.flow.closest", loc) }}</em>{% endif %}
+          {% if b.selected %}<em class="pack-now">{{ t("setup.now", loc) }}</em>{% endif %}
+        </span>
+        <span class="choice-hint">{{ b.hint }}</span>
+        {{ mini_flow(b.steps) }}
+        <span class="choice-go" aria-hidden="true">›</span>
+      </button>
+      {% endfor %}
+    </form>
+
+    {% elif step == "industry" %}
+    <h1>{{ t("setup.industry.q", loc) }}</h1>
+    <p class="lead">{{ t("setup.industry.lead", loc, flow=behavior_label) }}</p>
+    <form method="post" action="/setup/industry">
+      <div class="choice-grid">
+        {% for i in industries.main %}
+        <button type="submit" name="industry" value="{{ i.slug }}" class="choice small{{ ' is-selected' if i.selected else '' }}">
+          <span class="choice-top"><strong>{{ i.label }}</strong>{% if i.selected %}<em class="pack-now">{{ t("setup.now", loc) }}</em>{% endif %}</span>
+          <span class="choice-hint">{{ i.hint }}</span>
+          <span class="choice-meta">{{ t("setup.industry.cited", loc, n=i.cited) if i.cited else t("setup.industry.default", loc) }}</span>
+          <span class="choice-go" aria-hidden="true">›</span>
+        </button>
+        {% endfor %}
+      </div>
+      <details class="more-inds"{% if industries.other_selected %} open{% endif %}>
+        <summary>{{ t("setup.industry.more", loc) }}</summary>
+        <p class="note">{{ t("setup.industry.more_note", loc) }}</p>
+        {% for g in industries.others %}
+        <p class="more-group">{{ g.label }}</p>
+        <div class="chip-row">
+          {% for i in g.packs %}
+          <button type="submit" name="industry" value="{{ i.slug }}" class="chip{{ ' is-selected' if i.selected else '' }}">{{ i.label }}</button>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </details>
+    </form>
+    <p class="back"><a href="/setup/flow">‹ {{ t("setup.back", loc) }}</a></p>
+
+    {% else %}
+    <h1>{{ t("setup.adjust.q", loc) }}</h1>
+    <p class="lead">{{ t("setup.adjust.lead", loc) }}</p>
+    {% if knows_events %}
+    <div class="banner warn" data-banner-missing{% if not missing %} hidden{% endif %}>{{ t("setup.adjust.missing", loc, n=missing) }}</div>
+    <div class="banner ok" data-banner-ok{% if missing %} hidden{% endif %}>{{ t("setup.adjust.all_ok", loc) }}</div>
+    {% endif %}
+    <form method="post" action="/setup/adjust" class="adjust" data-adjust data-max="{{ max_steps }}">
+      <ol class="adj-steps" data-steps>
+        <li class="adj-entry"><span class="adj-num">0</span><strong>{{ t("flow.entry", loc) }}</strong></li>
+        {% for r in rows %}
+        <li class="adj-step{{ ' is-missing' if knows_events and not r.count else '' }}" data-step>
+          <span class="adj-num"></span>
+          <input type="hidden" name="key" value="{{ r.key }}" />
+          <div class="adj-main">
+            <input class="adj-label" name="label" value="{{ r.label }}" maxlength="24" aria-label="{{ t('connect.edit.label', loc) }}" />
+            <div class="adj-event">
+              <select name="event" aria-label="{{ t('flow.map_event', loc) }}" data-event>
+                {% if r.event not in counts %}<option value="{{ r.event }}" selected>{{ r.event }}（{{ t("setup.adjust.none", loc) }}）</option>{% endif %}
+                {% for name, c in events %}<option value="{{ name }}"{% if name == r.event %} selected{% endif %}>{{ name }} · {{ c | num }}</option>{% endfor %}
+              </select>
+              <span class="adj-status" data-status>{% if knows_events %}{% if r.count %}✓ {{ t("setup.adjust.found", loc, n=r.count | num) }}{% else %}⚠ {{ t("setup.adjust.not_found", loc) }}{% endif %}{% endif %}</span>
+            </div>
+          </div>
+          <span class="adj-tools">
+            <button type="button" class="fe-btn" data-up aria-label="{{ t('connect.edit.up', loc) }}">↑</button>
+            <button type="button" class="fe-btn" data-down aria-label="{{ t('connect.edit.down', loc) }}">↓</button>
+            <button type="button" class="fe-btn danger" data-del aria-label="{{ t('connect.edit.del', loc) }}">×</button>
+          </span>
+        </li>
+        {% endfor %}
+      </ol>
+      <div class="adj-actions">
+        <button type="button" class="ghost small" data-add>＋ {{ t("connect.edit.add", loc) }}</button>
+        <button type="button" class="link" data-reset>{{ t("connect.edit.reset", loc) }}</button>
+      </div>
+      <p class="note">{{ t("connect.edit.last", loc) }}</p>
+      <div class="wizard-foot">
+        <a href="/setup/industry" class="btn ghost">‹ {{ t("setup.back", loc) }}</a>
+        <button type="submit" class="primary">{{ t("setup.adjust.done", loc) }}</button>
+      </div>
+    </form>
+    <template id="adj-step-tpl">
+      <li class="adj-step" data-step>
+        <span class="adj-num"></span>
+        <input type="hidden" name="key" value="" />
+        <div class="adj-main">
+          <input class="adj-label" name="label" value="" maxlength="24" placeholder="{{ t('flow.add_label_ph', loc) }}" aria-label="{{ t('connect.edit.label', loc) }}" />
+          <div class="adj-event">
+            <select name="event" aria-label="{{ t('flow.map_event', loc) }}" data-event required>
+              <option value="">{{ t("setup.adjust.pick", loc) }}</option>
+              {% for name, c in events %}<option value="{{ name }}">{{ name }} · {{ c | num }}</option>{% endfor %}
+            </select>
+            <span class="adj-status" data-status></span>
+          </div>
+        </div>
+        <span class="adj-tools">
+          <button type="button" class="fe-btn" data-up aria-label="{{ t('connect.edit.up', loc) }}">↑</button>
+          <button type="button" class="fe-btn" data-down aria-label="{{ t('connect.edit.down', loc) }}">↓</button>
+          <button type="button" class="fe-btn danger" data-del aria-label="{{ t('connect.edit.del', loc) }}">×</button>
+        </span>
+      </li>
+    </template>
+    <script>
+      window.SITEKPI_ADJUST = {
+        counts: {{ counts | tojson }},
+        std: {{ std | tojson }},
+        found: {{ t("setup.adjust.found", loc, n="{n}") | tojson }},
+        notFound: {{ t("setup.adjust.not_found", loc) | tojson }},
+        none: {{ t("setup.adjust.none", loc) | tojson }},
+        missing: {{ t("setup.adjust.missing", loc, n="{n}") | tojson }},
+      };
+    </script>
+    <script src="{{ static_url('js/setup.js') }}" defer></script>
+    {% endif %}
+  </main>
+{% endblock %}

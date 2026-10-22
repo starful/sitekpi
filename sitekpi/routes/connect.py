@@ -47,7 +47,6 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
     err = error
     loc = get_locale(session)
     sel = selection(session)
-    sel_label = selection_label(sel, loc)
 
     if demo and connected and not selected:
         properties = DEMO_PROPERTIES
@@ -59,28 +58,11 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
             except Exception as exc:  # noqa: BLE001
                 err = t("connect.err.list_props", loc, exc=exc)
 
-    site_event_names: set[str] | None = None
-    event_options: list[dict[str, Any]] = []
-    flows: dict[str, list[dict[str, str]]] = {}
-    if connected and selected and not demo:
-        from sitekpi.flow import get_mapping_store, property_scope
-        from sitekpi.packs.behaviors import BEHAVIORS, slug_of
-        from sitekpi.routes.flow import site_events
+    setup = None
+    if connected and selected:
+        from sitekpi.routes.setup import summary
 
-        event_options = site_events(request)
-        site_event_names = {e["name"] for e in event_options} if event_options else None
-        scope = property_scope(session)
-        if scope:
-            store = get_mapping_store()
-            for cat in BEHAVIORS:
-                custom = store.custom_flow(scope, slug_of(cat))
-                if custom:
-                    flows[cat] = custom
-                else:  # standard steps with any event chosen on the board
-                    mapping = store.get(scope, slug_of(cat))
-                    if mapping:
-                        flows[cat] = [{"key": k, "event": mapping.get(k) or k, "label": ""}
-                                      for k in FLOW_STEPS[slug_of(cat)]]
+        setup = summary(request, loc)
 
     html = render_connect_page(
         configured=configured,
@@ -91,15 +73,9 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
         selected=selected if isinstance(selected, dict) else None,
         error=err,
         libs_ok=HAS_GOOGLE_AUTH and HAS_ADMIN and HAS_DATA,
-        sel=sel,
-        sel_label=sel_label,
-        flows=flows,
-        event_options=event_options,
-        can_edit_flow=bool(connected and selected and not demo),
-        site_events=site_event_names,
+        setup=setup,
         locale=loc,
         rail=nav_rail_context(request, "connect"),
-        max_steps=MAX_FLOW_STEPS,
     )
     return HTMLResponse(html)
 
@@ -208,7 +184,8 @@ def select_property(request: Request, property_id: str = Form(...)):
     if not chosen:
         return _page_from_request(request, error="選択した Property が見つかりません。")
     session["ga4_property"] = chosen
-    return RedirectResponse("/connect", status_code=302)
+    # next: サイトの設定 (flow → industry → adjust), unless it is already done
+    return RedirectResponse("/live" if is_ready(selection(session)) else "/setup", status_code=302)
 
 
 @router.post("/connect/property/change")
