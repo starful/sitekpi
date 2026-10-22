@@ -18,7 +18,8 @@ sitekpi/
   ga4/oauth.py             # OAuth config, session creds, property list, preview
   ga4/data.py              # GA4 Data API → board overlay / builder widgets
   board/data.py            # build_dense_board: pack + data → board rows
-  views/board.py           # dense board HTML/CSS/JS + rail nav
+  views/board.py           # dense board HTML/CSS/JS
+  views/layout.py          # shared rail nav + mobile drawer (all pages)
   views/{home,builder,settings,connect,branding}.py
   packs/  i18n/  metrics/  # industry packs, l10n, shared 説明
 static/  brand/  scripts/
@@ -34,7 +35,7 @@ static/  brand/  scripts/
 | Shared KPI 説明 | `sitekpi/metrics/help.py` | Duplicate long help per pack |
 | Sample nav category | `sitekpi/packs/catalog.py` + `cat.*` in `sitekpi/i18n/strings.py` | Ad-hoc category strings in rail HTML |
 | Board layout / board CSS | `sitekpi/views/board.py` / `sitekpi/board/data.py` | Per-industry alternate board UIs |
-| Rail nav markup | `_rail_nav_html` in `sitekpi/views/board.py` | Fork a second sample nav |
+| Rail nav markup | `_rail_nav_html` in `sitekpi/views/layout.py` | Fork a second sample nav / top nav |
 | New page / route | handler in `sitekpi/routes/*`, HTML in `sitekpi/views/*` | HTML inside route modules |
 | GA4 API calls | `sitekpi/ga4/*` | Google client calls from views |
 
@@ -52,9 +53,12 @@ static/  brand/  scripts/
 3. `PACK_L10N[slug]` with at least `label` / `hint` for `ja` / `en` / `ko`
 4. Run `python scripts/smoke_packs.py`
 
-## Rail CSS
+## Rail / app chrome
 
-`.rail .pack-cat*` styles are duplicated in `sitekpi/views/board.py` and `sitekpi/views/settings.py`. When changing rail look, update **both**, or extract a shared CSS helper — do not leave them drifting.
+Rail markup, CSS, the mobile drawer and its JS live only in `sitekpi/views/layout.py`
+(`rail_css()`, `rail_html()`, `mobile_bar_html()`, `rail_js()`; nav context from
+`sitekpi/routes/nav.py`). Every page uses them — never re-declare `.rail` styles in a page.
+`scripts/smoke_packs.py` fails if rail CSS is duplicated.
 
 ## Product frame (do not reopen lightly)
 

@@ -220,6 +220,7 @@ def fetch_pack_overlay(
 
         # Events
         event_counts: dict[str, int] = {e: 0 for e in event_names}
+        event_counts_prev: dict[str, int] = {}
         if event_names:
             filt = FilterExpression(
                 or_group=FilterExpressionList(
@@ -250,6 +251,19 @@ def fetch_pack_overlay(
             for row in ev.rows or []:
                 name = row.dimension_values[0].value
                 event_counts[name] = _i(_vals(row)[0])
+            # Same events, previous period → real 前期比 per event
+            ev_prev = _run(
+                client,
+                property_id,
+                prev_start,
+                prev_end,
+                ["eventCount"],
+                dimensions=["eventName"],
+                dimension_filter=filt,
+                limit=max(len(event_names), 10),
+            )
+            for row in ev_prev.rows or []:
+                event_counts_prev[row.dimension_values[0].value] = _i(_vals(row)[0])
 
         # Channels (top by sessions)
         ch = _run(
@@ -310,6 +324,7 @@ def fetch_pack_overlay(
             "pay_success": pay_success,
             "pay_cvr": pay_cvr,
             "event_counts": event_counts,
+            "event_counts_prev": event_counts_prev,
             "channels": channels,
             "_ga4_label": label,
             "_ga4_property": info["property_name"],

@@ -17,9 +17,10 @@ from sitekpi.ga4.data import (
     saved_events,
 )
 from sitekpi.i18n import get_locale, set_locale, t
+from sitekpi.routes.nav import nav_context, nav_rail
 from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.metrics.help import PERIODS
-from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES, pack_links, packs_by_category
+from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES
 from sitekpi.views.board import render_sample_dense
 from sitekpi.views.builder import render_builder
 from sitekpi.views.home import render_home
@@ -107,34 +108,9 @@ def page_builder(request: Request):
             live_error=live_error,
             widgets=widgets or None,
             locale=get_locale(request.session),
+            nav_html=nav_rail(request, "builder"),
         )
     )
-
-
-def _nav_extras(request: Request) -> dict[str, Any]:
-    session = request.session
-    info = connection_info(session)
-    prop = session.get("ga4_property")
-    is_demo = bool(session.get("ga4_demo"))
-    connected: dict[str, str] | None = None
-    if isinstance(prop, dict) and prop.get("id") and (info or is_demo):
-        name = str(prop.get("name") or f"Property {prop.get('id')}")
-        if is_demo:
-            name = t("nav.demo_name", get_locale(session), name=name)
-        connected = {
-            "id": str(prop.get("id") or ""),
-            "name": name,
-            "email": str((info or {}).get("email") or session.get("ga4_email") or ""),
-            "demo": "1" if is_demo else "",
-        }
-    pack = request.session.get("benchmark_pack")
-    benchmark_pack = str(pack) if isinstance(pack, str) and pack in INDUSTRIES else ""
-    return {
-        "connected": connected,
-        "pack_links": pack_links(),
-        "pack_groups": packs_by_category(),
-        "benchmark_pack": benchmark_pack,
-    }
 
 
 @router.get("/sample", response_class=HTMLResponse)
@@ -145,7 +121,7 @@ def page_sample_dense():
 
 @router.get("/settings", response_class=HTMLResponse)
 def page_settings_get(request: Request, saved: int = Query(default=0)):
-    extras = _nav_extras(request)
+    extras = nav_context(request)
     loc = get_locale(request.session)
     return HTMLResponse(
         render_settings_page(
@@ -171,7 +147,7 @@ def page_live(request: Request, period: str = Query(default="28d")):
     """Connected GA4 board (separate menu category from sample packs)."""
     if period not in PERIODS:
         period = "28d"
-    extras = _nav_extras(request)
+    extras = nav_context(request)
     if not extras["connected"]:
         return RedirectResponse("/connect", status_code=302)
     # Industry pack = 業界目安 source only (not DEMO revenue as live)
@@ -231,7 +207,7 @@ def page_industry(request: Request, slug: str, period: str = Query(default="28d"
         return HTMLResponse("<h1>Not Found</h1>", status_code=404)
     if period not in PERIODS:
         period = "28d"
-    extras = _nav_extras(request)
+    extras = nav_context(request)
     data = dict(DEMO[slug][period])
     return HTMLResponse(
         render_sample_dense(

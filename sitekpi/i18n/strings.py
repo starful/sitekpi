@@ -56,6 +56,7 @@ UI: dict[str, dict[str, str]] = {
         "en": "{name} (demo)",
         "ko": "{name} (데모)",
     },
+    "nav.menu": {"ja": "メニュー", "en": "Menu", "ko": "메뉴"},
     "nav.property": {
         "ja": "接続プロパティ",
         "en": "Connected property",
@@ -138,6 +139,17 @@ UI: dict[str, dict[str, str]] = {
     "panel.engage": {"ja": "エンゲージ", "en": "Engagement", "ko": "참여"},
     "panel.funnel": {"ja": "転換ファネル", "en": "Conversion funnel", "ko": "전환 퍼널"},
     "panel.events": {"ja": "イベント", "en": "Events", "ko": "이벤트"},
+    "events.missing": {"ja": "未計測（0件）:", "en": "Not tracked (0):", "ko": "미측정(0건):"},
+    "events.missing_hint": {
+        "ja": "業界パックの想定イベントのうち、この期間に1件も記録されていないもの。サイトに機能がないか、GA4 にイベントが未設定です。",
+        "en": "Pack events with no hits in this period — the site lacks the feature, or the GA4 event isn't set up.",
+        "ko": "업종 팩이 상정한 이벤트 중 이 기간에 한 건도 기록되지 않은 것. 사이트에 기능이 없거나 GA4 이벤트가 설정되지 않았습니다.",
+    },
+    "events.empty": {
+        "ja": "この期間に記録されたイベントはありません。",
+        "en": "No events were recorded in this period.",
+        "ko": "이 기간에 기록된 이벤트가 없습니다.",
+    },
     "panel.biz": {"ja": "業務KPI", "en": "Business KPIs", "ko": "업무 KPI"},
     "panel.channels_sub": {
         "ja": "セッション構成",
@@ -250,9 +262,6 @@ UI: dict[str, dict[str, str]] = {
         "en": "Sign in with Google and pick one Property to analyze.",
         "ko": "Google로 로그인한 뒤 분석할 Property를 하나 고르면 됩니다.",
     },
-    "connect.nav.builder": {"ja": "ビルダー", "en": "Builder", "ko": "빌더"},
-    "connect.nav.samples": {"ja": "サンプル", "en": "Samples", "ko": "샘플"},
-    "connect.nav.settings": {"ja": "設定", "en": "Settings", "ko": "설정"},
     "connect.hero.title": {"ja": "GA4 を接続", "en": "Connect GA4", "ko": "GA4 연결"},
     "connect.hero.meta": {
         "ja": "Google アカウントでログインし、分析したい Property を1つ選びます。パスワードはこちらに保存しません（Google の画面で許可するだけです）。",

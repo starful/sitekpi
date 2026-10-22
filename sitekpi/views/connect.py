@@ -8,7 +8,8 @@ from typing import Any
 from sitekpi.ga4.oauth import base_url, redirect_uri
 from sitekpi.i18n import html_lang, normalize_locale, t
 from sitekpi.i18n.pack_l10n import pack_text
-from sitekpi.views.branding import brand_head_links, brand_logo_css, brand_logo_html
+from sitekpi.views.branding import brand_head_links, brand_logo_css
+from sitekpi.views.layout import mobile_bar_html, rail_css, rail_js
 
 
 def render_connect_page(
@@ -26,6 +27,7 @@ def render_connect_page(
     benchmark_pack: str = "",
     benchmark_pack_label: str = "",
     locale: str = "ja",
+    nav_html: str = "",
 ) -> str:
     loc = normalize_locale(locale)
     err_html = (
@@ -217,18 +219,16 @@ APP_BASE_URL={escape(base_url())}</pre>
     :root {{
       --ink: #1c2430; --muted: #6b7788; --line: #e6eaf0; --accent: #2f6fed;
       --bg: #f6f8fc; --card: #fff;
+      --font-ui: "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
+      --font-num: "DM Sans", "IBM Plex Sans JP", sans-serif;
+      --rail-w: 268px;
     }}
+    {rail_css()}
     * {{ box-sizing: border-box; }}
     body {{
       margin: 0; min-height: 100vh; color: var(--ink);
       font-family: "Noto Sans JP", "DM Sans", sans-serif; background: var(--bg);
     }}
-    .top {{
-      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
-      padding: 14px 20px; background: #fff; border-bottom: 1px solid var(--line);
-    }}
-    .brand {{ font-weight: 800; text-decoration: none; color: #152033; }}
-    .top a.nav {{ color: var(--muted); text-decoration: none; font-weight: 700; font-size: 0.88rem; margin-left: 10px; }}
     .top a.nav:hover {{ color: var(--accent); }}
     main {{ max-width: 720px; margin: 0 auto; padding: 28px 20px 48px; }}
     h1 {{
@@ -311,14 +311,10 @@ APP_BASE_URL={escape(base_url())}</pre>
   </style>
 </head>
 <body>
-  <header class="top">
-    <div>
-      {brand_logo_html(css_class="logo brand")}
-      <a class="nav" href="/builder">{escape(t("connect.nav.builder", loc))}</a>
-      <a class="nav" href="/hr">{escape(t("connect.nav.samples", loc))}</a>
-      <a class="nav" href="/settings">{escape(t("connect.nav.settings", loc))}</a>
-    </div>
-  </header>
+  {mobile_bar_html(loc)}
+  <div class="shell">
+  {nav_html}
+  <div class="main">
   <main>
     <h1>{escape(t("connect.title", loc))}</h1>
     <p class="lead">{escape(t("connect.lead", loc))}</p>
@@ -329,5 +325,8 @@ APP_BASE_URL={escape(base_url())}</pre>
     {preview_html}
     {setup}
   </main>
+  </div>
+  </div>
+  {rail_js()}
 </body>
 </html>"""

@@ -6,7 +6,8 @@ import json
 from html import escape
 from typing import Any
 
-from sitekpi.views.branding import brand_head_links, brand_logo_css, brand_logo_html
+from sitekpi.views.branding import brand_head_links, brand_logo_css
+from sitekpi.views.layout import mobile_bar_html, rail_css, rail_js
 from sitekpi.i18n import html_lang, normalize_locale, t
 
 # Sample values are demo-only; real wiring comes later.
@@ -149,6 +150,7 @@ def render_builder(
     live_error: str | None = None,
     widgets: list[dict[str, Any]] | None = None,
     locale: str = "ja",
+    nav_html: str = "",
 ) -> str:
     loc = normalize_locale(locale)
     source = widgets if widgets is not None else WIDGETS
@@ -209,7 +211,13 @@ def render_builder(
       --accent: #2f6fed;
       --card: #ffffff;
       --shadow: 0 8px 24px rgba(21,32,51,0.06);
+      --font-ui: "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
+      --font-num: "DM Sans", "IBM Plex Sans JP", sans-serif;
+      --rail-w: 268px;
     }}
+    {rail_css()}
+    .main {{ min-width: 0; }}
+    .page-title {{ margin: 0; font-size: 1.05rem; font-weight: 800; color: #152033; }}
     * {{ box-sizing: border-box; }}
     body {{
       margin: 0; min-height: 100vh; color: var(--ink);
@@ -222,13 +230,7 @@ def render_builder(
       padding: 14px 20px; background: #fff; border-bottom: 1px solid var(--line);
       position: sticky; top: 0; z-index: 20;
     }}
-    .brand {{
-      font-family: "DM Sans", "Noto Sans JP", sans-serif;
-      font-weight: 800; font-size: 1.05rem; color: #152033; text-decoration: none;
-    }}
     .top-actions {{ display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }}
-    .top a.nav {{ color: var(--muted); text-decoration: none; font-weight: 700; font-size: 0.88rem; margin-right: 6px; }}
-    .top a.nav:hover {{ color: var(--accent); }}
     button {{
       font: inherit; font-weight: 700; padding: 8px 12px; border-radius: 10px;
       border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer;
@@ -242,7 +244,11 @@ def render_builder(
       grid-template-columns: minmax(260px, 320px) 1fr;
       gap: 0; min-height: calc(100vh - 58px);
     }}
-    @media (max-width: 900px) {{ .layout {{ grid-template-columns: 1fr; }} }}
+    @media (max-width: 900px) {{
+      .layout {{ grid-template-columns: 1fr; }}
+      .main > .top {{ position: static; }}
+      .palette, .canvas-wrap {{ max-height: none; }}
+    }}
     .palette {{
       background: #fff; border-right: 1px solid var(--line);
       padding: 16px; overflow: auto; max-height: calc(100vh - 58px);
@@ -483,13 +489,13 @@ def render_builder(
   </style>
 </head>
 <body>
+  {mobile_bar_html(loc)}
+  <div class="shell">
+  {nav_html}
+  <div class="main">
   <header class="top">
     <div>
-      {brand_logo_html(css_class="logo brand")}
-      <a class="nav" href="/b2c">B2C</a>
-      <a class="nav" href="/content">Content</a>
-      <a class="nav" href="/connect">{escape(t("builder.nav.connect", loc))}</a>
-      <a class="nav" href="/settings">{escape(t("connect.nav.settings", loc))}</a>
+      <h1 class="page-title">{escape(t("builder.title", loc))}</h1>
     </div>
     <div class="top-actions">
       <span class="status" id="status">{escape(t("builder.status.unsaved", loc))}</span>
@@ -924,6 +930,9 @@ def render_builder(
 
     load();
   </script>
+  </div>
+  </div>
+  {rail_js()}
 </body>
 </html>
 """

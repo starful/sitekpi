@@ -80,6 +80,19 @@ def _benches_for_sample(raw: dict[str, dict[str, Any]]) -> dict[str, dict[str, A
     return out
 
 
+# GA4 automatically collected / enhanced-measurement events (listed after the
+# pack's and the site's own events).
+GA4_AUTO_EVENTS = frozenset(
+    {
+        "page_view", "session_start", "first_visit", "user_engagement", "scroll",
+        "click", "view_search_results", "file_download", "form_start", "form_submit",
+        "video_start", "video_progress", "video_complete", "first_open", "screen_view",
+        "app_remove", "app_update", "os_update", "notification_receive",
+        "notification_open", "notification_dismiss",
+    }
+)
+
+
 def build_dense_board(
     *,
     industry: str,
@@ -432,9 +445,41 @@ def build_dense_board(
         },
     ]
 
-    event_deltas = ["+8%", "+5%", "+3%", "+2%", "+11%", "+4%", "+6%", "+1%", "+9%", "+7%"]
+    # イベント: show what the site actually records. Pack events keep their
+    # funnel order; then the site's own events, then GA4 auto-collected ones.
+    # Pack events with 0 hits are listed separately as "not tracked".
+    pack_events = list(events_order)
+    is_live = "_live_events" in data
+    prev_counts: dict[str, int] = {
+        str(k): int(v) for k, v in (data.get("event_counts_prev") or {}).items()
+    }
+    sample_deltas = ["+8%", "+5%", "+3%", "+2%", "+11%", "+4%", "+6%", "+1%", "+9%", "+7%"]
+
+    def _bucket(name: str) -> int:
+        if name in pack_events:
+            return 0
+        return 2 if name in GA4_AUTO_EVENTS else 1
+
+    candidates = pack_events + [n for n in counts if n not in pack_events]
+    shown = [n for n in candidates if counts.get(n, 0) > 0]
+    shown.sort(
+        key=lambda n: (
+            _bucket(n),
+            pack_events.index(n) if n in pack_events else -counts.get(n, 0),
+        )
+    )
+    events_missing = [n for n in pack_events if counts.get(n, 0) <= 0]
+
+    def _event_delta(name: str, i: int) -> str:
+        if not is_live:
+            return sample_deltas[i % len(sample_deltas)]  # sample board only
+        prev = prev_counts.get(name, 0)
+        if prev <= 0:
+            return "—"
+        return f"{100 * (counts.get(name, 0) - prev) / prev:+.0f}%"
+
     events: list[dict[str, Any]] = []
-    for i, name in enumerate(events_order):
+    for i, name in enumerate(shown):
         is_primary = name == primary
         meaning_key = "meaning_primary" if is_primary else "meaning"
         events.append(
@@ -443,7 +488,7 @@ def build_dense_board(
                 "name": name,
                 "cat": cat_of.get(name, ""),
                 "count": int(counts.get(name, 0)),
-                "delta": event_deltas[i % len(event_deltas)],
+                "delta": _event_delta(name, pack_events.index(name) if name in pack_events else i),
                 "focus": is_primary,
                 "help": _help(
                     name,
@@ -536,6 +581,7 @@ def build_dense_board(
         "engage": engage,
         "audience": audience,
         "events": events,
+        "events_missing": events_missing,
         "channels": channels,
         "business": business,
         "next_watch": next_watch,

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from html import escape
 
-from sitekpi.views.branding import brand_head_links, brand_logo_css, brand_logo_html
+from sitekpi.views.branding import brand_head_links, brand_logo_css
 from sitekpi.i18n import html_lang, locale_options, normalize_locale, t
-from sitekpi.views.board import _rail_nav_html
+from sitekpi.views.layout import _rail_nav_html, mobile_bar_html, rail_css, rail_html, rail_js
 
 
 def render_settings_page(
@@ -61,82 +61,8 @@ def render_settings_page(
       margin: 0; min-height: 100vh; color: var(--ink);
       font-family: var(--font-ui); background: var(--bg);
     }}
-    .shell {{ display: flex; min-height: 100vh; }}
-    .rail {{
-      width: var(--rail-w); flex-shrink: 0; background: #fff; border-right: 1px solid var(--line);
-      padding: 16px 12px; display: flex; flex-direction: column; gap: 8px;
-      position: sticky; top: 0; height: 100vh; overflow-y: auto;
-      font-family: var(--font-ui);
-    }}
-    .rail .logo {{
-      margin: 0 0 8px; padding: 4px 8px 12px;
-    }}
-    .rail nav {{ display: flex; flex-direction: column; gap: 1px; font-size: 0.9rem; }}
-    .rail .nav-group {{
-      margin: 16px 8px 6px; font-size: 0.66rem; font-weight: 700;
-      letter-spacing: 0.04em; color: #8b97a8; text-transform: none;
-    }}
-    .rail .pack-search-wrap {{ padding: 0 8px 8px; }}
-    .rail .pack-search {{
-      width: 100%; box-sizing: border-box;
-      border: 1px solid var(--line); border-radius: 8px;
-      padding: 7px 10px; font: inherit; font-size: 0.78rem;
-      background: #fff; color: var(--ink);
-    }}
-    .rail .pack-search-empty {{
-      margin: 6px 0 0; font-size: 0.72rem; color: #94a3b8; font-weight: 600;
-    }}
-    .visually-hidden {{
-      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-    }}
-    .rail a {{
-      display: block; padding: 7px 10px; border-radius: 6px;
-      color: #3d4a5c; text-decoration: none; font-weight: 600;
-    }}
-    .rail a:hover {{ background: #f3f6fa; color: var(--ink); }}
-    .rail a.is-on {{ background: #eef4ff; color: var(--accent); }}
-    .rail a.nav-muted {{ color: #8b97a8; font-weight: 500; }}
-    .rail a.nav-add {{ font-size: 0.75rem; color: var(--accent); font-weight: 600; }}
-    .rail .nav-sub {{ display: flex; flex-direction: column; gap: 2px; }}
-    .rail .pack-cat {{ margin: 0 0 8px; border: none; background: transparent; }}
-    .rail .pack-cat summary {{
-      list-style: none; cursor: pointer; user-select: none;
-      display: flex; align-items: center; gap: 4px;
-      padding: 8px 10px; border-radius: 4px;
-      font-family: "Noto Sans JP", sans-serif;
-      font-weight: 700; font-size: 0.9rem; letter-spacing: 0.02em;
-      color: #8b97a8; background: transparent;
-    }}
-    .rail .pack-cat[open] summary {{ color: #6b7788; }}
-    .rail .pack-cat summary:hover {{ color: #5a6575; background: transparent; }}
-    .rail .pack-cat summary::-webkit-details-marker {{ display: none; }}
-    .rail .pack-cat summary::before {{
-      content: "▸"; flex: 0 0 auto; width: 0.75em;
-      color: #a8b2c1; font-size: 0.8rem; line-height: 1;
-    }}
-    .rail .pack-cat[open] summary::before {{ content: "▾"; }}
-    .rail .pack-cat-label {{ flex: 1 1 auto; min-width: 0; }}
-    .rail .pack-cat-body {{
-      display: flex; flex-direction: column; gap: 2px;
-      padding: 2px 0 8px; margin: 0; border: none;
-    }}
-    .rail .pack-cat-body a {{
-      margin: 0; padding: 9px 10px 9px 26px; border-radius: 6px;
-      background: transparent;
-    }}
-    .rail .pack-cat-body a:hover {{ background: transparent; color: inherit; }}
-    .rail .pack-cat-body a.is-on {{ background: #eef4ff; color: var(--accent); }}
-    .rail .pack-cat-body a.is-on:hover {{ background: #eef4ff; color: var(--accent); }}
-    .rail .pack-name {{
-      display: block; font-family: var(--font-ui);
-      font-size: 0.9rem; font-weight: 600;
-    }}
-    .rail .pack-hint {{
-      display: none; font-size: 0.66rem; color: #8b97a8; font-weight: 500;
-    }}
-    .rail a.is-on .pack-hint {{ display: block; margin-top: 2px; }}
-    .main {{ flex: 1; min-width: 0; }}
+    {rail_css()}
+    .main {{ min-width: 0; }}
     .top {{
       padding: 18px 24px 8px; background: #fff; border-bottom: 1px solid var(--line);
     }}
@@ -166,11 +92,9 @@ def render_settings_page(
   </style>
 </head>
 <body>
+  {mobile_bar_html(loc)}
   <div class="shell">
-    <aside class="rail">
-      {brand_logo_html()}
-      <nav>{rail}</nav>
-    </aside>
+    {rail_html(rail, loc)}
     <div class="main">
       <header class="top"><h1>{escape(t("settings.title", loc))}</h1></header>
       <div class="content">
@@ -190,5 +114,6 @@ def render_settings_page(
       </div>
     </div>
   </div>
+  {rail_js()}
 </body>
 </html>"""

@@ -93,16 +93,12 @@ def main() -> int:
             if "pack-cat" not in html:
                 errors.append(f"render {slug}/{locale}: missing pack-cat nav")
 
-    # Soft reminder: rail CSS still duplicated (do not fail until extracted)
-    sample_css = (ROOT / "sitekpi/views/board.py").read_text(encoding="utf-8")
-    settings_css = (ROOT / "sitekpi/views/settings.py").read_text(encoding="utf-8")
+    # Rail CSS must live only in sitekpi/views/layout.py
     marker = ".rail .pack-cat summary"
-    if marker in sample_css and marker in settings_css:
-        print(
-            "note: rail pack-cat CSS is still duplicated in "
-            "sitekpi/views/board.py and sitekpi/views/settings.py — keep them in sync "
-            "or extract a shared helper."
-        )
+    for rel in ("sitekpi/views/board.py", "sitekpi/views/settings.py",
+                "sitekpi/views/builder.py", "sitekpi/views/connect.py"):
+        if marker in (ROOT / rel).read_text(encoding="utf-8"):
+            errors.append(f"{rel}: rail CSS duplicated — use views/layout.rail_css()")
 
     if errors:
         print(f"FAIL ({len(errors)}):")

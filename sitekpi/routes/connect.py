@@ -27,6 +27,7 @@ from sitekpi.ga4.oauth import (
 )
 from sitekpi.i18n import get_locale, t
 from sitekpi.i18n.pack_l10n import pack_text
+from sitekpi.routes.nav import nav_rail
 from sitekpi.session import regenerate_session
 from sitekpi.views.connect import render_connect_page
 
@@ -89,6 +90,7 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
         benchmark_pack=pack_slug,
         benchmark_pack_label=pack_label,
         locale=loc,
+        nav_html=nav_rail(request, "connect"),
     )
     return HTMLResponse(html)
 
