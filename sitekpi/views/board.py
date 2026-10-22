@@ -164,6 +164,9 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
         arrow, tone = ("▲", "up") if hib else ("▼", "down")
     else:
         arrow, tone = ("▼", "down") if hib else ("▲", "up")
+    # SiteKPI 初期値 (no source, not the user's own target): shown for reference, never judged
+    if not custom and kind not in ("cited", "blend"):
+        tone, arrow = "na", ""
     return {
         **base,
         "gap": _fmt_gap(gap, gap_unit),

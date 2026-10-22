@@ -34,9 +34,10 @@ def test_watch_ranks_metrics_outside_benchmark(client):
     s = _soup(client, "/hr")
     items = s.select(".watch-list .watch-item")
     assert items and "tone-down" in items[0]["class"]
-    assert "開始→完了率が目安より低い" in items[0].get_text()
+    # 開始→完了率 has only a SiteKPI 初期値 → never judged; the sourced CVR is
+    assert "応募CVRが目安より低い" in items[0].get_text()
     assert items[0].select_one(".judge.judge-down")
-    assert "差 -18.3pt" in items[0].get_text()
+    assert not any("開始→完了率" in i.get_text() for i in items)
     assert s.select_one(".watch-sample")  # sample boards say so
 
 
@@ -52,7 +53,9 @@ def test_band_only_in_tooltip_and_judge_chips_in_tables(client):
     cell = s.select_one("#panel-funnel td.bench-cell[title]")
     assert "40–65%" in s.select_one("#panel-funnel").decode() and cell
     chips = [c.get_text() for c in s.select("#panel-funnel td.bench-gap .judge")]
-    assert "要注意" in chips and "目安内" in chips
+    assert chips == ["要注意"]  # only the sourced 応募CVR is judged; 初期値 rows get no chip
+    row = [tr for tr in s.select("#panel-funnel tr") if "開始→完了率" in tr.get_text()][0]
+    assert "tone-na" in row.select_one("td.bench-gap")["class"] and not row.select(".judge")
 
 
 def test_channels_top5_plus_others_with_help(client):
