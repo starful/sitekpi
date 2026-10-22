@@ -146,6 +146,43 @@ def _run(
     return client.run_report(req)
 
 
+def _totals(cv: list[str]) -> dict[str, Any]:
+    """Site totals from the 8 totals metrics (same order as the request)."""
+    uu = _i(cv[0])
+    new_users = _i(cv[4])
+    eng_total = _f(cv[7])
+    return {
+        "uu": uu,
+        "sessions": _i(cv[1]),
+        "pageviews": _i(cv[2]),
+        "engaged_rate": round(_f(cv[3]) * 100, 1),
+        "new_users": new_users,
+        "returning_users": max(uu - new_users, 0),
+        "pages_session": round(_f(cv[5]), 1),
+        # userEngagementDuration is total seconds; per-user average if possible
+        "avg_time": _fmt_avg_time(eng_total / uu if uu else _f(cv[6])),
+    }
+
+
+def _conversions(event_counts: dict[str, int], primary: str, uu: int) -> dict[str, Any]:
+    """Map pack / user events to signup / pay fields."""
+    signups = event_counts.get(primary, 0) if primary else 0
+    if not signups:
+        for key in ("sign_up", "newsletter_signup", "purchase", "generate_lead"):
+            if event_counts.get(key):
+                signups = event_counts[key]
+                break
+    pay_start = event_counts.get("pay_start", 0) or event_counts.get("begin_checkout", 0)
+    pay_success = event_counts.get("pay_success", 0) or event_counts.get("purchase", 0)
+    return {
+        "signups": signups,
+        "signup_rate": round(100 * signups / uu, 1) if uu else 0.0,
+        "pay_start": pay_start,
+        "pay_success": pay_success,
+        "pay_cvr": round(100 * pay_success / pay_start, 1) if pay_start else 0.0,
+    }
+
+
 def fetch_pack_overlay(
     session: dict[str, Any],
     *,
@@ -171,48 +208,22 @@ def fetch_pack_overlay(
             return None, "GA4 認証が無効です。再接続してください。"
         client = BetaAnalyticsDataClient(credentials=creds)
 
-        # Current totals
-        cur = _run(
-            client,
-            property_id,
-            cur_start,
-            cur_end,
-            [
-                "activeUsers",
-                "sessions",
-                "screenPageViews",
-                "engagementRate",
-                "newUsers",
-                "screenPageViewsPerSession",
-                "averageSessionDuration",
-                "userEngagementDuration",
-            ],
-        )
-        prev = _run(
-            client,
-            property_id,
-            prev_start,
-            prev_end,
-            ["activeUsers", "sessions"],
-        )
-
-        cv = _vals(cur.rows[0]) if cur.rows else ["0"] * 8
-        pv = _vals(prev.rows[0]) if prev.rows else ["0", "0"]
-
-        uu = _i(cv[0])
-        sessions = _i(cv[1])
-        pageviews = _i(cv[2])
-        engaged_rate = round(_f(cv[3]) * 100, 1)
-        new_users = _i(cv[4])
-        pages_session = round(_f(cv[5]), 1)
-        avg_session_sec = _f(cv[6])
-        # userEngagementDuration is total seconds; per-user average if possible
-        eng_total = _f(cv[7])
-        avg_eng = eng_total / uu if uu else avg_session_sec
-        returning_users = max(uu - new_users, 0)
-
-        uu_prev = _i(pv[0])
-        sess_prev = _i(pv[1])
+        totals_metrics = [
+            "activeUsers",
+            "sessions",
+            "screenPageViews",
+            "engagementRate",
+            "newUsers",
+            "screenPageViewsPerSession",
+            "averageSessionDuration",
+            "userEngagementDuration",
+        ]
+        cur = _run(client, property_id, cur_start, cur_end, totals_metrics)
+        prev = _run(client, property_id, prev_start, prev_end, totals_metrics)
+        cur_t = _totals(_vals(cur.rows[0]) if cur.rows else ["0"] * 8)
+        prev_t = _totals(_vals(prev.rows[0]) if prev.rows else ["0"] * 8)
+        uu, sessions = cur_t["uu"], cur_t["sessions"]
+        uu_prev, sess_prev = prev_t["uu"], prev_t["sessions"]
         uu_delta = round(100 * (uu - uu_prev) / uu_prev, 1) if uu_prev else 0.0
         sessions_delta = (
             round(100 * (sessions - sess_prev) / sess_prev, 1) if sess_prev else 0.0
@@ -294,35 +305,12 @@ def fetch_pack_overlay(
         else:
             channels = [("Other", 100)]
 
-        # Map pack / user events to signup / pay fields
         primary = (primary_event or "").strip() or (event_names[0] if event_names else "")
-        signups = event_counts.get(primary, 0) if primary else 0
-        if not signups:
-            for key in ("sign_up", "newsletter_signup", "purchase", "generate_lead"):
-                if event_counts.get(key):
-                    signups = event_counts[key]
-                    break
-        pay_start = event_counts.get("pay_start", 0) or event_counts.get("begin_checkout", 0)
-        pay_success = event_counts.get("pay_success", 0) or event_counts.get("purchase", 0)
-        signup_rate = round(100 * signups / uu, 1) if uu else 0.0
-        pay_cvr = round(100 * pay_success / pay_start, 1) if pay_start else 0.0
-
         overlay: dict[str, Any] = {
-            "uu": uu,
+            **cur_t,
+            **_conversions(event_counts, primary, uu),
             "uu_delta": uu_delta,
-            "sessions": sessions,
             "sessions_delta": sessions_delta,
-            "new_users": new_users,
-            "returning_users": returning_users,
-            "engaged_rate": engaged_rate,
-            "avg_time": _fmt_avg_time(avg_eng),
-            "pages_session": pages_session,
-            "pageviews": pageviews,
-            "signups": signups,
-            "signup_rate": signup_rate,
-            "pay_start": pay_start,
-            "pay_success": pay_success,
-            "pay_cvr": pay_cvr,
             "event_counts": event_counts,
             "event_counts_prev": event_counts_prev,
             "channels": channels,
@@ -330,6 +318,15 @@ def fetch_pack_overlay(
             "_ga4_property": info["property_name"],
             "_ga4_property_id": property_id,
         }
+        prev_counts = {e: event_counts_prev.get(e, 0) for e in event_counts}
+        overlay["_prev"] = {
+            **prev_t,
+            **_conversions(prev_counts, primary, uu_prev),
+            "uu_delta": 0.0,
+            "sessions_delta": 0.0,
+            "event_counts": prev_counts,
+            "channels": channels,
+        } if uu_prev else None
         # Persist refreshed token if any
         if session.get("ga4_credentials"):
             # creds_from_session may have refreshed

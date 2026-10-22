@@ -350,6 +350,8 @@ def _metric_row(r: dict[str, Any], locale: str) -> dict[str, Any]:
         "focus": bool(r.get("focus")),
         "cells": _bench_cells(info),
         "block": _bench_block(info, locale),
+        "delta": str(r.get("delta") or "—"),
+        "delta_tone": str(r.get("tone") or "na"),
     }
 
 
@@ -447,7 +449,7 @@ def _viz_rows(rows: list[dict[str, Any]], *, locale: str, mode: str) -> list[dic
         cur = _row_value_num(r)
         bench_val = r.get("value_num") if r.get("value_num") is not None else cur
         info = _bench_info(bench_val if r.get("bench") else None, r.get("bench"))
-        prior = _prior_from_delta(cur, r.get("delta"))
+        prior = r.get("prev_num") if r.get("prev_num") is not None else _prior_from_delta(cur, r.get("delta"))
         mid = float(info["mid"]) if info and info.get("mid") is not None else None
         unit = str((info or {}).get("unit") or "")
         seed = str(r.get("id") or label)
@@ -538,6 +540,15 @@ def _group_channels(channels: list[dict[str, Any]], locale: str) -> list[dict[st
 WATCH_MAX = 3
 
 
+def _trend(r: dict[str, Any], locale: str) -> dict[str, str] | None:
+    """自社の前期比 next to the 業界目安 judgement: 改善 / 悪化 / 横ばい."""
+    delta, tone = str(r.get("delta") or "—"), str(r.get("tone") or "na")
+    if delta == "—" or tone == "na":
+        return None
+    word = {"up": "trend.better", "down": "trend.worse"}.get(tone, "trend.flat")
+    return {"text": delta, "tone": tone, "word": t(word, locale)}
+
+
 def _watch_items(board: dict[str, Any], locale: str) -> list[dict[str, Any]]:
     """Metrics furthest outside their 業界目安: worse ones first, then better ones."""
     seen: set[str] = set()
@@ -572,6 +583,7 @@ def _watch_items(board: dict[str, Any], locale: str) -> list[dict[str, Any]]:
                     "title": title,
                     "numbers": t("watch.numbers", locale, value=r["value"], avg=info["avg"],
                                  band=info["band"], gap=info["gap"]),
+                    "trend": _trend(r, locale),
                     "tip": tip,
                 },
             )
@@ -624,6 +636,7 @@ def _render_sample_dense(
     board_kind: str = "sample",
     bench: dict[str, Any] | None = None,
     flow: dict[str, Any] | None = None,
+    prev: dict[str, Any] | None = None,
 ) -> str:
     loc = normalize_locale(locale)
     if data is None or ind is None or benches_raw is None:
@@ -640,6 +653,7 @@ def _render_sample_dense(
 
     board = build_dense_board(
         industry=industry, period=period, ind=ind, data=data, benches_raw=benches_raw, locale=loc,
+        prev=prev,
     )
     _ACTIVE_BENCH.set(board["benches"])
     is_sample = board_kind != "live"

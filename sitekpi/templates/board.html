@@ -48,6 +48,7 @@
             <li class="watch-item tone-{{ w.tone }}">
               <div class="watch-title">{{ m.help_btn(w.id, w.label) }}<strong>{{ w.title }}</strong>{{ m.judge_chip(w.tone) }}</div>
               <p class="watch-numbers">{{ w.numbers }}</p>
+              {% if w.trend %}<p class="watch-trend"><span>{{ t("trend.k", loc) }}</span><b class="tone-{{ w.trend.tone }}">{{ w.trend.text }}</b> {{ w.trend.word }}</p>{% endif %}
               <p class="watch-tip"><span>{{ t("watch.tip", loc) }}</span>{{ w.tip }}</p>
             </li>
             {% endfor %}

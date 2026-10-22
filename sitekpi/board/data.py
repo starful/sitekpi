@@ -97,6 +97,50 @@ GA4_AUTO_EVENTS = frozenset(
 )
 
 
+# Rows shown as a percentage: 前期比 is a difference in points.
+RATE_ROWS = frozenset({
+    "signup_cvr", "engaged", "funnel_cvr", "funnel_rate_a", "funnel_rate_b",
+    "engage_rate_row", "bounce_like", "new_return",
+})
+LOWER_IS_BETTER = frozenset({"bounce_like"})
+NEUTRAL_ROWS = frozenset({"new_return"})  # more new users is neither good nor bad
+
+
+def _apply_prev(rows: list[dict[str, Any]], benches: dict[str, dict[str, Any]],
+                prev_board: dict[str, Any] | None) -> None:
+    """Set delta / tone / prev_num on every row from the previous-period board."""
+    prev_vals: dict[str, float] = {}
+    if prev_board:
+        for r in prev_board["summary"] + prev_board["funnel"] + prev_board["engage"] + prev_board["audience"]:
+            if isinstance(r.get("value_num"), (int, float)):
+                prev_vals[r["id"]] = float(r["value_num"])
+    for r in rows:
+        cur, before = r.get("value_num"), prev_vals.get(r["id"])
+        if not isinstance(cur, (int, float)) or before is None:
+            r["delta"], r["tone"], r["prev_num"] = "—", "na", None
+            continue
+        r["prev_num"] = before
+        if r["id"] in RATE_ROWS:
+            diff = float(cur) - before
+            text = f"{diff:+.1f}pt"
+            flat = abs(diff) < 0.05
+        else:
+            if before == 0:
+                r["delta"], r["tone"] = "—", "na"
+                continue
+            diff = 100 * (float(cur) - before) / before
+            text = f"{diff:+.1f}%"
+            flat = abs(diff) < 0.05
+        text = text.replace("-", "−")
+        spec = benches.get(str(r.get("bench") or ""))
+        hib = bool(spec["hib"]) if spec else r["id"] not in LOWER_IS_BETTER
+        if flat or r["id"] in NEUTRAL_ROWS:
+            tone = "mid"
+        else:
+            tone = "up" if (diff > 0) == hib else "down"
+        r["delta"], r["tone"] = text, tone
+
+
 def build_dense_board(
     *,
     industry: str,
@@ -105,8 +149,13 @@ def build_dense_board(
     data: dict[str, Any],
     benches_raw: dict[str, dict[str, Any]],
     locale: str = "ja",
+    prev: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Return all lists + meta for render_sample_dense."""
+    """Return all lists + meta for render_sample_dense.
+
+    ``prev`` is the previous period in the same shape as ``data``; every metric
+    then gets a real 前期比 (rates in pt, counts in %), judged by direction.
+    """
     loc = normalize_locale(locale)
     copy = PACK_COPY.get(industry) or PACK_COPY["b2c"]
     benches = _benches_for_sample(benches_raw)
@@ -204,7 +253,7 @@ def build_dense_board(
             "value": _fmt_pct(signup_rate),
             "value_num": signup_rate,
             "bench": "signup_rate",
-            "delta": "+0.1pt",
+            "delta": "—",
             "tone": "up",
             "help": _help(
                 cvr_label,
@@ -218,7 +267,8 @@ def build_dense_board(
             "id": "primary",
             "label": signup_label,
             "value": _fmt_int(primary_count),
-            "delta": "+8.0%",
+            "value_num": float(primary_count),
+            "delta": "—",
             "tone": "up",
             "help": _help(
                 signup_label,
@@ -232,7 +282,8 @@ def build_dense_board(
             "id": "pay_start",
             "label": mid_label,
             "value": _fmt_int(mid_count),
-            "delta": "+3.2%",
+            "value_num": float(mid_count),
+            "delta": "—",
             "tone": "up",
             "help": _help(
                 mid_label,
@@ -246,6 +297,7 @@ def build_dense_board(
             "id": "uu",
             "label": shared_label("uu", loc),
             "value": _fmt_int(uu),
+            "value_num": float(uu),
             "delta": uu_delta,
             "tone": uu_tone,
             "help": shared_help("uu", loc, cvr_label=cvr_label),
@@ -254,6 +306,7 @@ def build_dense_board(
             "id": "sessions",
             "label": shared_label("sessions", loc),
             "value": _fmt_int(sessions),
+            "value_num": float(sessions),
             "delta": ses_delta,
             "tone": ses_tone,
             "help": shared_help("sessions", loc),
@@ -264,7 +317,7 @@ def build_dense_board(
             "value": _fmt_pct(engaged),
             "value_num": engaged,
             "bench": "engaged_rate",
-            "delta": "−0.6pt",
+            "delta": "—",
             "tone": "down",
             "help": shared_help(
                 "engaged", loc, title=shared_label("engaged_title", loc)
@@ -409,7 +462,7 @@ def build_dense_board(
             "label": shared_label("avg_time", loc),
             "value": str(data.get("avg_time") or "—"),
             "value_num": _mmss_to_seconds(data.get("avg_time")),
-            "delta": "+4.2%",
+            "delta": "—",
             "help": shared_help("avg_time", loc),
         },
     ]
@@ -453,9 +506,10 @@ def build_dense_board(
     # funnel order; then the site's own events, then GA4 auto-collected ones.
     # Pack events with 0 hits are listed separately as "not tracked".
     pack_events = list(events_order)
-    is_live = "_live_events" in data
+    is_live = "_live_events" in data or prev is not None
     prev_counts: dict[str, int] = {
-        str(k): int(v) for k, v in (data.get("event_counts_prev") or {}).items()
+        str(k): int(v)
+        for k, v in (data.get("event_counts_prev") or (prev or {}).get("event_counts") or {}).items()
     }
     sample_deltas = ["+8%", "+5%", "+3%", "+2%", "+11%", "+4%", "+6%", "+1%", "+9%", "+7%"]
 
@@ -562,6 +616,11 @@ def build_dense_board(
             row["value_num"] = None
             row["bench"] = bid
         business.append(row)
+
+    rows_all = summary + funnel + engage + audience
+    _apply_prev(rows_all, benches, None if prev is None else build_dense_board(
+        industry=industry, period=period, ind=ind, data=prev, benches_raw=benches_raw, locale=loc,
+    ))
 
     return {
         "industry": industry,

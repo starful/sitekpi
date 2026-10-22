@@ -57,6 +57,7 @@
       <th class="help-col">{{ t("col.help", loc) }}</th>
       <th>{{ t("col.metric", loc) }}</th>
       <th style="text-align:right">{{ t("col.value", loc) }}</th>
+      <th style="text-align:right">{{ t("col.prev", loc) }}</th>
       <th style="text-align:right">{{ t("col.bench", loc) }}</th>
       <th style="text-align:right">{{ t("col.gap", loc) }}</th>
     </tr>
@@ -71,6 +72,7 @@
   <td class="help-cell">{{ help_btn(r.id, r.label) }}</td>
   <td class="name-cell"><span class="row-name">{{ r.label }}</span>{% if r.focus %} {{ focus_tag(t("focus", loc)) }}{% endif %}</td>
   <td class="num">{{ r.value }}</td>
+  <td class="num prev-cell tone-{{ r.delta_tone }}">{{ r.delta }}</td>
   {{ bench_cells(r.cells) }}
 </tr>
 {% endfor %}
@@ -85,6 +87,7 @@
     {% if r.focus %}{{ focus_tag(t("focus", loc)) }}{% endif %}
   </div>
   <div class="metric-card-value">{{ r.value }}</div>
+  <div class="sum-delta tone-{{ r.delta_tone }}">{{ r.delta }} <span class="vs">{{ t("vs_prev", loc) }}</span></div>
   {{ bench_block(r.block) }}
 </article>
 {% endfor %}

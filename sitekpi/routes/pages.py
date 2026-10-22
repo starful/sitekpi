@@ -9,6 +9,7 @@ from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from sitekpi.benchmarks import load_effective
+from sitekpi.board.prev import sample_prev
 from sitekpi.cache import TTLCache
 from sitekpi.flow import apply_mapping, load_mapping
 from sitekpi.ga4.data import (
@@ -167,9 +168,12 @@ def page_live(request: Request, period: str = Query(default="28d")):
     mapping = load_mapping(request.session, pack_slug)
     data, live, err, prop = _live_pack(request, pack_slug, period, mapping)  # type: ignore[arg-type]
     loc = get_locale(request.session)
+    prev = data.pop("_prev", None) if live else sample_prev(pack_slug, period, data)
     if live and mapping:
-        data = apply_mapping(data, pack_slug, mapping,
-                             primary=str(INDUSTRIES[pack_slug].get("primary_event") or ""))
+        primary_ev = str(INDUSTRIES[pack_slug].get("primary_event") or "")
+        data = apply_mapping(data, pack_slug, mapping, primary=primary_ev)
+        if prev:
+            prev = apply_mapping(prev, pack_slug, mapping, primary=primary_ev)
     flow = (live_flow_context(request, pack_slug, period, mapping, loc) if live
             else sample_flow_context(pack_slug, data, loc))
     label = extras["connected"]["name"]
@@ -207,6 +211,7 @@ def page_live(request: Request, period: str = Query(default="28d")):
             locale=loc,
             board_kind="live",
             flow=flow,
+            prev=prev,
         )
     )
 
@@ -247,5 +252,6 @@ def page_industry(request: Request, slug: str, period: str = Query(default="28d"
             connected=extras["connected"],
             locale=get_locale(request.session),
             flow=sample_flow_context(slug, data, get_locale(request.session)),
+            prev=sample_prev(slug, period, data),
         )
     )

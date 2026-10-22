@@ -900,3 +900,12 @@ button.flow-node:hover, button.flow-node[aria-expanded="true"] { border-color: #
   .flow-missing { grid-area: users; margin-top: 0; justify-self: end; }
   .flow-cta { grid-area: reach; justify-self: end; }
 }
+
+/* ---- 自社の前期比 (next to 業界目安) ---- */
+.tone-mid { color: #475569; }
+.tone-na { color: #94a3b8; }
+td.prev-cell { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 0.8rem; }
+.metric-card .sum-delta { margin-top: 2px; }
+.watch-trend { margin: 2px 0 6px; font-size: 0.8rem; color: #334155; }
+.watch-trend span { color: var(--muted); font-weight: 700; margin-right: 6px; }
+.watch-trend b { font-variant-numeric: tabular-nums; margin-right: 4px; }
