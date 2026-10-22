@@ -46,7 +46,7 @@ sitekpi/
   views/             テンプレートに渡すデータ（HTML は書かない）
   templating.py      Jinja2（自動エスケープ・t()・static_url()）
   templates/         base.html と各ページ、partials/、board/_macros.html
-  packs/             業界パック（1ファイル1業界）・sources.py（出典）・flows.py（行動フローの段）
+  packs/             業界パック（1ファイル1業界）・sources.py（出典）・flows.py（行動フローの段）・behaviors.py（行動タイプ → 業種）
   i18n/  metrics/    文言（ja/en/ko）・説明テキスト
 static/              css/・js/・vendor/（Sortable 同梱）・アイコン
 brand/               ロゴ案（配信しない素材）

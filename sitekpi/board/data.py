@@ -203,14 +203,15 @@ def build_dense_board(
     rate_a = (bottom_count / primary_count * 100) if primary_count else 0.0
     rate_b = (primary_count / mid_count * 100) if mid_count else pay_cvr
     # content: mid is click_cta; start→complete uses pay fields differently
-    if industry in ("content", "news", "creator") and mid_count:
+    logic = str(ind.get("logic_as") or industry)  # 行動タイプ packs compute like their representative
+    if logic in ("content", "news", "creator") and mid_count:
         rate_b = primary_count / mid_count * 100 if mid_count else 0.0
-    if industry in ("b2c", "saas", "community"):
+    if logic in ("b2c", "saas", "community"):
         rate_a = (pay_start / signups * 100) if signups else 0.0
         rate_b = pay_cvr
         mid_count = pay_start
         bottom_count = pay_success
-    elif industry in ("ec", "travel", "marketplace", "d2c"):
+    elif logic in ("ec", "travel", "marketplace", "d2c"):
         # mid→primary / bottom→primary（purchase 系）
         cart = int(counts.get(mid_event, mid_count))
         checkout = int(counts.get(bottom_event, bottom_count))
@@ -218,7 +219,7 @@ def build_dense_board(
         rate_b = (primary_count / checkout * 100) if checkout else 0.0
         mid_count = cart
         bottom_count = checkout
-    elif industry in ("edu", "finance", "gov"):
+    elif logic in ("edu", "finance", "gov"):
         # 開始→完了 / 上流完了→主転換
         start = int(counts.get(mid_event, mid_count))
         upstream = int(counts.get(bottom_event, bottom_count))

@@ -115,6 +115,8 @@ def load_effective(
 
 def source_of(spec: dict[str, Any]) -> dict[str, str]:
     src = spec.get("source")
+    if isinstance(src, dict) and src.get("kind") == "blend":
+        return {"kind": "blend", "label": str(src.get("label") or ""), "url": "", "rule": ""}
     if isinstance(src, dict) and src.get("label"):
         return {
             "kind": "cited",

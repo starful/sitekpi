@@ -26,6 +26,8 @@
       <span>{{ t("bench_edit.col.default", loc) }} {{ r.default }}</span>
       {% if r.source.kind == "cited" and r.source.url %}
       <a class="src-btn" href="{{ r.source.url }}" target="_blank" rel="noopener noreferrer" title="{{ r.source.label }}">{{ t("bench_src.button", loc) }}</a>
+      {% elif r.source.kind == "blend" %}
+      <span class="src-none src-blend" title="{{ t('bench_src.blend', loc, label=r.source.label) }}">{{ t("bench_src.blend_short", loc) }}</span>
       {% else %}
       <span class="src-none">{{ t("bench_src.default_short", loc) }}</span>
       {% endif %}
@@ -60,7 +62,7 @@
         <button type="button" class="pop-row{{ ' is-custom' if r.custom else '' }}" data-pop-open="bench-{{ r.key }}" data-pop-keep-anchor>
           <span class="pop-row-name">{{ r.label }}</span>
           <span class="pop-row-range">{{ r.low }}–{{ r.high }}{{ r.unit }}</span>
-          <span class="pop-row-src">{{ t("bench_src.custom", loc) if r.custom else (t("bench_src.cited_short", loc) if r.source.kind == "cited" else t("bench_src.default_short", loc)) }}</span>
+          <span class="pop-row-src">{{ t("bench_src.custom", loc) if r.custom else (t("bench_src.cited_short", loc) if r.source.kind == "cited" else (t("bench_src.blend_short", loc) if r.source.kind == "blend" else t("bench_src.default_short", loc))) }}</span>
         </button>
       </li>
       {% endfor %}

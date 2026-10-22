@@ -54,6 +54,14 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
         if pack_slug
         else ""
     )
+    if pack_slug and INDUSTRIES[pack_slug].get("virtual"):
+        pack_label = t("behavior.no_industry", loc, label=pack_label)
+    elif pack_slug:
+        from sitekpi.packs.behaviors import BEHAVIORS, behavior_label
+
+        cat = str(INDUSTRIES[pack_slug].get("category") or "")
+        if cat in BEHAVIORS:
+            pack_label = f"{behavior_label(cat, loc)} › {pack_label}"
 
     if demo and connected and not selected:
         properties = DEMO_PROPERTIES

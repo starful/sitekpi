@@ -62,7 +62,9 @@ def bench_context(
         "pack_label": pack_text(pack, "label", locale, str(INDUSTRIES[pack]["label"])),
         "property_name": property_name,
         "groups": [
-            {"title": t("bench_edit.group_ga4", locale), "rows": groups["ga4"]},
-            {"title": t("bench_edit.group_biz", locale), "rows": groups["biz"]},
+            g for g in (
+                {"title": t("bench_edit.group_ga4", locale), "rows": groups["ga4"]},
+                {"title": t("bench_edit.group_biz", locale), "rows": groups["biz"]},
+            ) if g["rows"]
         ],
     }

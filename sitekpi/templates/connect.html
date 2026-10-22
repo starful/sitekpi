@@ -72,33 +72,58 @@
       <h2>{{ t("connect.pack.title", loc) }}</h2>
       {% if benchmark_pack_label %}
       <p class="meta">{{ t("connect.pack.selected", loc) }}<strong>{{ benchmark_pack_label }}</strong></p>
-      {% else %}
-      <p class="meta">{{ t("connect.pack.pick", loc) }}</p>
       {% endif %}
       <p class="note">{{ t("connect.pack.flow_hint", loc) }}{% if knows_events %} {{ t("connect.pack.flow_found", loc) }}{% endif %}</p>
-      <form method="post" action="/connect/pack">
-        {% for group in pack_groups %}
-        <div class="pack-group"><h3>{{ group.label }}</h3><div class="prop-list pack-list">
-          {% for p in group.packs %}
-          <label class="prop pack-opt{{ ' is-rec' if p.recommended else '' }}">
-            <input type="radio" name="pack_slug" value="{{ p.slug }}" {% if p.slug == benchmark_pack %}checked{% endif %} required />
+      {% macro mini_flow(flow) -%}
+      <span class="mini-flow" aria-label="{{ t('flow.title', loc) }}">
+        <span class="mf-step is-entry">{{ t("flow.entry", loc) }}</span>
+        {% for s in flow.steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step{{ ' is-found' if s.found else (' is-missing' if s.found is false else '') }}" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
+      </span>
+      {%- endmacro %}
+      <form method="post" action="/connect/pack" class="behaviors">
+        {% for b in pack_groups %}
+        <div class="behavior{{ ' is-rec' if b.recommended else '' }}{{ ' is-selected' if b.selected else '' }}" data-behavior>
+          <label class="prop pack-opt behavior-opt">
+            <input type="radio" name="pack_slug" value="{{ b.slug }}" {% if b.selected and not b.industry_selected %}checked{% endif %} required />
             <span class="pack-body">
               <span class="pack-title">
-                <strong>{{ p.label }}</strong>
-                {% if knows_events and p.flow.hits %}<em class="pack-hits">{{ t("connect.pack.hits", loc, n=p.flow.hits, total=p.flow.total) }}</em>{% endif %}
-                {% if p.recommended %}<em class="pack-rec">{{ t("connect.pack.rec", loc) }}</em>{% endif %}
+                <strong>{{ b.label }}</strong>
+                {% if knows_events and b.hits %}<em class="pack-hits">{{ t("connect.pack.hits", loc, n=b.hits, total=b.flow.total) }}</em>{% endif %}
+                {% if b.recommended %}<em class="pack-rec">{{ t("connect.pack.rec", loc) }}</em>{% endif %}
               </span>
-              <span class="mini-flow" aria-label="{{ t('flow.title', loc) }}">
-                <span class="mf-step is-entry">{{ t("flow.entry", loc) }}</span>
-                {% for s in p.flow.steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step{{ ' is-found' if s.found else (' is-missing' if s.found is false else '') }}" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
-              </span>
+              <small>{{ b.hint }}</small>
+              {{ mini_flow(b.flow) }}
             </span>
           </label>
-          {% endfor %}
-        </div></div>
+          <details class="industries"{% if b.selected %} open{% endif %}>
+            <summary>{{ t("connect.pack.industry", loc) }}</summary>
+            <p class="industries-note">{{ t("connect.pack.industry_note", loc) }}</p>
+            <div class="industry-list">
+              {% for i in b.industries %}
+              <label class="industry-opt{{ ' is-rec' if i.recommended else '' }}">
+                <input type="radio" name="pack_slug" value="{{ i.slug }}" {% if i.slug == benchmark_pack %}checked{% endif %} />
+                <span class="pack-body">
+                  <span class="pack-title"><strong>{{ i.label }}</strong>{% if knows_events and i.flow.hits %}<em class="pack-hits">{{ t("connect.pack.hits", loc, n=i.flow.hits, total=i.flow.total) }}</em>{% endif %}{% if i.recommended %}<em class="pack-rec">{{ t("connect.pack.rec", loc) }}</em>{% endif %}</span>
+                  {{ mini_flow(i.flow) }}
+                </span>
+              </label>
+              {% endfor %}
+            </div>
+          </details>
+        </div>
         {% endfor %}
         <button type="submit" class="primary">{{ t("connect.pack.submit", loc) }}</button>
       </form>
+      <script>
+        /* picking a behaviour opens its (optional) industry list */
+        document.querySelectorAll("[data-behavior]").forEach((box) => {
+          box.querySelectorAll("input[name=pack_slug]").forEach((r) => r.addEventListener("change", () => {
+            document.querySelectorAll("[data-behavior]").forEach((b) => b.classList.toggle("is-selected", b === box));
+            const d = box.querySelector("details");
+            if (d) d.open = true;
+          }));
+        });
+      </script>
     </section>
     {% endif %}
 

@@ -22,6 +22,9 @@ def main() -> int:
     from sitekpi.packs.catalog import CATEGORIES
     from sitekpi.packs.registry import PACK_MODULES
     from sitekpi.views.board import render_sample_dense
+
+    # 行動タイプ packs (type-*) are not sample boards; tests/test_flow.py covers them
+    INDUSTRIES = {k: v for k, v in INDUSTRIES.items() if not v.get("virtual")}
     from sitekpi.views.layout import _rail_nav_html
 
     errors: list[str] = []

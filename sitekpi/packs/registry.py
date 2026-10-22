@@ -67,6 +67,22 @@ def build_registry() -> dict[str, Any]:
         for k, v in (pack.get("event_desc") or {}).items():
             event_desc[str(k)] = str(v)
 
+    # 行動タイプ packs (type-<category>): behaviour chosen, industry skipped
+    from sitekpi.packs.behaviors import BEHAVIORS, blended_benchmarks, slug_of
+
+    for cat, beh in BEHAVIORS.items():
+        members = [s for s, m in industries.items() if m.get("category") == cat and not m.get("virtual")]
+        rep = beh["rep"]
+        vslug = slug_of(cat)
+        meta = dict(industries[rep])
+        meta.update({"slug": vslug, "label": beh["label"]["ja"], "hint": beh["hint"]["ja"],
+                     "virtual": True, "rep": rep, "members": members, "logic_as": rep})
+        industries[vslug] = meta
+        demo[vslug] = demo[rep]
+        pack_copy[vslug] = pack_copy[rep]
+        benchmarks[vslug] = blended_benchmarks(
+            members, benchmarks, [str(industries[m]["label"]) for m in members])
+
     return {
         "INDUSTRIES": industries,
         "DEMO": demo,
@@ -93,6 +109,7 @@ def pack_links() -> list[tuple[str, str, str]]:
     return [
         (s, str(m["label"]), str(m.get("hint") or ""))
         for s, m in INDUSTRIES.items()
+        if not m.get("virtual")
     ]
 
 
@@ -102,6 +119,8 @@ def packs_by_category() -> list[tuple[str, str, list[tuple[str, str, str]]]]:
 
     buckets: dict[str, list[tuple[str, str, str]]] = {}
     for slug, meta in INDUSTRIES.items():
+        if meta.get("virtual"):
+            continue
         cat = str(meta.get("category") or "lead")
         buckets.setdefault(cat, []).append(
             (slug, str(meta["label"]), str(meta.get("hint") or ""))

@@ -115,3 +115,25 @@ code { font-size: 0.85em; }
 .mf-step.is-missing { color: #94a3b8; border-style: dashed; }
 .mf-arrow { color: #94a3b8; font-size: 0.72rem; padding: 0 1px; }
 @media (max-width: 520px) { .pack-list { grid-template-columns: 1fr; } }
+
+/* 行動 → 業種 */
+.behaviors { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 16px; }
+.behavior { border: 1px solid var(--line); border-radius: 12px; background: #fafbfd; }
+.behavior.is-selected { border-color: #bfd2f8; background: #f4f8ff; }
+.behavior.is-rec { border-color: #86efac; }
+.behavior .behavior-opt { border: 0; background: transparent; }
+.behavior-opt .pack-title strong { font-size: 1rem; }
+.behavior-opt small { color: var(--muted); font-size: 0.78rem; }
+.industries { margin: 0 12px 12px 38px; }
+.industries summary { cursor: pointer; font-size: 0.78rem; font-weight: 700; color: var(--accent); }
+.industries-note { margin: 6px 0 8px; font-size: 0.72rem; color: var(--muted); line-height: 1.55; }
+.industry-list { display: flex; flex-direction: column; gap: 6px; }
+.industry-opt {
+  display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line);
+  border-radius: 10px; background: #fff; cursor: pointer;
+}
+.industry-opt:has(input:checked) { border-color: #bfd2f8; background: #eaf1ff; }
+.industry-opt input { margin-top: 3px; }
+.industry-opt .pack-title strong { font-size: 0.86rem; }
+.industry-opt.is-rec { border-color: #86efac; }
+@media (max-width: 520px) { .industries { margin-left: 12px; } }

@@ -41,29 +41,32 @@ def render_connect_page(
         hits = sum(1 for s in steps if s["found"])
         return {"steps": steps, "hits": hits, "total": len(steps)}
 
-    groups = []
-    for cid, cat_label, items in pack_groups or []:
-        shown_cat = t(f"cat.{cid}", loc) if cid != "all" else cat_label
-        if shown_cat.startswith("cat."):
-            shown_cat = cat_label
-        groups.append(
-            {
-                "label": shown_cat,
-                "packs": [
-                    {
-                        "slug": slug,
-                        "label": pack_text(slug, "label", loc, label),
-                        "hint": pack_text(slug, "hint", loc, hint) if hint else shown_cat,
-                        "flow": flow_of(slug),
-                    }
-                    for slug, label, hint in items
-                ],
-            }
-        )
-    best = max((p["flow"]["hits"] for g in groups for p in g["packs"]), default=0)
-    for g in groups:
-        for p in g["packs"]:
-            p["recommended"] = best > 0 and p["flow"]["hits"] == best
+    # 行動 first (type-<category>), then the industry inside it (optional)
+    from sitekpi.packs import INDUSTRIES
+    from sitekpi.packs.behaviors import BEHAVIORS, behavior_hint, behavior_label, slug_of
+
+    groups: list[dict[str, Any]] = []
+    for cat in BEHAVIORS if pack_groups is not None else []:
+        vslug = slug_of(cat)
+        members = INDUSTRIES[vslug]["members"]
+        industries = [
+            {"slug": m, "label": pack_text(m, "label", loc, str(INDUSTRIES[m]["label"])), "flow": flow_of(m)}
+            for m in members
+        ]
+        flow = flow_of(vslug)
+        best_member = max((i["flow"]["hits"] for i in industries), default=0)
+        groups.append({
+            "cat": cat, "slug": vslug, "label": behavior_label(cat, loc), "hint": behavior_hint(cat, loc),
+            "flow": flow, "hits": max(flow["hits"], best_member), "industries": industries,
+            "selected": benchmark_pack == vslug or benchmark_pack in members,
+            "industry_selected": benchmark_pack in members,
+        })
+    best = max((b["hits"] for b in groups), default=0)
+    for b in groups:
+        b["recommended"] = best > 0 and b["hits"] == best
+        for i in b["industries"]:
+            # an industry is the better pick when its own flow matches more than the behaviour's
+            i["recommended"] = b["recommended"] and i["flow"]["hits"] == b["hits"] > b["flow"]["hits"]
     return render(
         "connect.html",
         loc=loc,

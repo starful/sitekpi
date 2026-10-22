@@ -180,6 +180,14 @@ def page_live(request: Request, period: str = Query(default="28d")):
     pack_label = pack_text(
         pack_slug, "label", loc, str(INDUSTRIES[pack_slug]["label"])
     )
+    if INDUSTRIES[pack_slug].get("virtual"):
+        pack_label = t("behavior.no_industry", loc, label=pack_label)
+    else:
+        from sitekpi.packs.behaviors import BEHAVIORS, behavior_label
+
+        cat = str(INDUSTRIES[pack_slug].get("category") or "")
+        if cat in BEHAVIORS:
+            pack_label = f"{behavior_label(cat, loc)} › {pack_label}"
     is_demo = bool(extras["connected"].get("demo"))
     if is_demo:
         # Demo connect: pack sample site numbers, clearly labelled (business stays —)

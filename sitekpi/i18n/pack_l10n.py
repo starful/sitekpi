@@ -1220,6 +1220,14 @@ PACK_L10N: dict[str, dict[str, Any]] = {
 
 
 def pack_text(slug: str, field: str, locale: str, fallback: str = "") -> str:
+    from sitekpi.packs.behaviors import behavior_hint, behavior_label, category_of, rep_of
+
+    cat = category_of(slug)
+    if cat and field == "label":
+        return behavior_label(cat, locale)
+    if cat and field == "hint":
+        return behavior_hint(cat, locale)
+    slug = rep_of(slug)
     row = (PACK_L10N.get(slug) or {}).get(field) or {}
     if isinstance(row, dict):
         return str(row.get(locale) or row.get("ja") or fallback)
@@ -1228,7 +1236,9 @@ def pack_text(slug: str, field: str, locale: str, fallback: str = "") -> str:
 
 def pack_biz_rows(slug: str, locale: str, ja_biz: list) -> list[tuple[str, str, str, str]]:
     """Return [(id, label, meaning, formula), ...] localized."""
-    loc_biz = ((PACK_L10N.get(slug) or {}).get("biz") or {})
+    from sitekpi.packs.behaviors import rep_of
+
+    loc_biz = ((PACK_L10N.get(rep_of(slug)) or {}).get("biz") or {})
     out = []
     for bid, label, meaning, formula in ja_biz:
         b = loc_biz.get(bid) or {}
@@ -1244,7 +1254,9 @@ def pack_biz_rows(slug: str, locale: str, ja_biz: list) -> list[tuple[str, str, 
 
 
 def pack_notes(slug: str, period: str, locale: str, ja_notes: list[str]) -> list[str]:
-    loc_notes = ((PACK_L10N.get(slug) or {}).get("notes") or {}).get(period) or []
+    from sitekpi.packs.behaviors import rep_of
+
+    loc_notes = ((PACK_L10N.get(rep_of(slug)) or {}).get("notes") or {}).get(period) or []
     out = []
     for i, ja in enumerate(ja_notes):
         if i < len(loc_notes) and isinstance(loc_notes[i], dict):

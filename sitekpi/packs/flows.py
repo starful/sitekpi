@@ -105,6 +105,18 @@ PACK_STEP_LABELS: dict[tuple[str, str], dict[str, str]] = {
 }
 
 
+def _add_behavior_flows() -> None:
+    from sitekpi.packs.behaviors import BEHAVIORS, slug_of
+
+    for cat, beh in BEHAVIORS.items():
+        FLOW_STEPS[slug_of(cat)] = list(FLOW_STEPS[beh["rep"]])
+
+
+_add_behavior_flows()
+
+
 def step_label(event: str, locale: str, pack: str = "") -> str:
-    labels = PACK_STEP_LABELS.get((pack, event)) or STEP_LABELS.get(event) or {}
+    from sitekpi.packs.behaviors import rep_of
+
+    labels = PACK_STEP_LABELS.get((rep_of(pack), event)) or STEP_LABELS.get(event) or {}
     return labels.get(locale) or labels.get("ja") or event
