@@ -51,6 +51,7 @@ def _group_channels(flow: dict[str, Any], loc: str) -> list[dict[str, Any]]:
 
 def flow_context(
     *,
+    max_custom: int = 0,
     pack: str,
     flow: dict[str, Any] | None,
     steps: list[dict[str, str]],
@@ -70,7 +71,7 @@ def flow_context(
 
     stages: list[dict[str, Any]] = []
     stages.append({
-        "key": "entry", "label": t("flow.entry", loc), "event": "", "mapped": False,
+        "key": "entry", "label": t("flow.entry", loc), "event": "", "mapped": False, "custom": False,
         "users": entry, "missing": entry <= 0,
         "users_fmt": {"all": _int(entry), **{c["id"]: _int(c["entry"]) for c in channels}},
         "reach_pct": 100.0, "reach": {"all": "100%", **{c["id"]: "100%" for c in channels}},
@@ -84,8 +85,10 @@ def flow_context(
         ch_sum = sum(ch_users.values()) or 1
         reach = _pct(users, entry)
         stages.append({
-            "key": s["step"], "label": step_label(s["step"], loc, pack), "event": ev, "step": s["step"],
-            "mapped": ev != s["step"], "users": users, "missing": users <= 0,
+            "key": s["step"], "event": ev, "step": s["step"],
+            "label": (s.get("label") or ev) if s.get("custom") else step_label(s["step"], loc, pack),
+            "custom": bool(s.get("custom")), "custom_label": s.get("label") or "",
+            "mapped": not s.get("custom") and ev != s["step"], "users": users, "missing": users <= 0,
             "users_fmt": {"all": _int(users), **{cid: _int(v) for cid, v in ch_users.items()}},
             "reach_pct": reach or 0.0,
             "reach": {"all": _fmt_pct(reach),
@@ -162,4 +165,8 @@ def flow_context(
         "last_label": last["label"] if last else "",
         "insights": insights,
         "event_options": event_options or [],
+        # live boards can add up to max_custom steps of their own
+        "can_add": live and sum(1 for st in stages if st.get("custom")) < max_custom,
+        "n_custom": sum(1 for st in stages if st.get("custom")),
+        "max_custom": max_custom,
     }

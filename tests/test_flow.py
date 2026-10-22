@@ -98,8 +98,8 @@ def test_view_model_marks_untracked_steps():
     assert not any("最も高く" in i for i in ctx["insights"])
 
 
-SITE_COUNTS = {"job_view": 9000, "apply_start": 800, "submit_application": 260, "page_view": 40000}
-SITE_USERS = {"job_view": 5000, "apply_start": 600, "submit_application": 200}
+SITE_COUNTS = {"job_view": 9000, "apply_start": 800, "submit_application": 260, "page_view": 40000, "apply_mobile": 500}
+SITE_USERS = {"job_view": 5000, "apply_start": 600, "submit_application": 200, "apply_mobile": 400}
 
 
 @pytest.fixture
@@ -221,3 +221,55 @@ def test_connect_page_lets_you_pick_a_pack_by_its_flow(live):
     assert "記録あり 2/4" in hr.get_text() and "is-rec" in hr["class"]
     ec = soup.select_one("input[name=pack_slug][value=ec]").find_parent("label")
     assert "is-rec" not in ec["class"] and len(ec.select(".mf-step.is-missing")) == 4
+
+
+def _labels(html: str) -> list[str]:
+    return [n.get_text() for n in _soup(html).select("#flow .flow-label")]
+
+
+def test_live_flow_can_add_up_to_three_steps(live):
+    a, b = live(), live()
+    html = a.get("/live").text
+    assert _soup(html).select_one("#flow button.flow-add[data-pop-open='flow-add-apply_start']")
+    add = _template(html, "pop-flow-add-apply_start").select_one("form[action='/flow/custom']")
+    assert add.select_one("input[name=after]")["value"] == "apply_start"
+
+    def post(**data):
+        return a.post("/flow/custom", headers=JSON, data={"pack": "hr", **data})
+
+    r = post(action="add", after="apply_start", event="apply_mobile", label="スマホで応募開始")
+    assert r.status_code == 200 and r.json()["ok"]
+    first = r.json()["id"]
+    html = b.get("/live").text  # same property → same flow
+    assert _labels(html) == ["サイトに来た", "求人を見た", "応募を開始", "スマホで応募開始", "応募を送信", "エントリー完了"]
+    st = _stage(html, "スマホで応募開始")
+    assert "is-custom" in st["class"] and st.select_one(".flow-users strong").get_text() == "400"
+    assert "apply_mobile" in live.calls["flow"][-1]
+    edit = _template(html, f"pop-flow-c{first}")
+    assert edit.select_one("input[name=action][value=update]") and edit.select_one("input[name=action][value=delete]")
+
+    # chained after the added step, then one at the start → 3 = limit
+    assert post(action="add", after=f"c{first}", event="page_view").json()["ok"]
+    assert post(action="add", after="entry", event="page_view", label="LP").json()["ok"]
+    html = a.get("/live").text
+    assert _labels(html)[:2] == ["サイトに来た", "LP"] and _labels(html)[4:6] == ["スマホで応募開始", "page_view"]
+    full = post(action="add", after="job_view", event="page_view")
+    assert full.status_code == 400 and "3 つ" in full.json()["error"]
+    assert not _soup(html).select("#flow .flow-add, #flow .flow-add-tile")
+
+    # delete the middle one: the step chained to it moves up, nothing is lost
+    assert post(action="delete", id=first).json()["ok"]
+    labels = _labels(a.get("/live").text)
+    assert "スマホで応募開始" not in labels and labels[3:5] == ["応募を開始", "page_view"]
+    assert post(action="update", id="nope", event="x").status_code == 404
+
+
+def test_custom_steps_are_validated(live):
+    c = live()
+    post = lambda **d: c.post("/flow/custom", headers=JSON, data={"pack": "hr", **d})  # noqa: E731
+    assert post(action="add", after="apply_start", event="bad name!").status_code == 400
+    assert post(action="add", after="purchase", event="x").status_code == 400
+    assert _client().post("/flow/custom", headers=JSON,
+                          data={"pack": "hr", "action": "add", "after": "entry", "event": "x"}).status_code == 403
+    assert post(action="add", after="entry", event="ok_event", label="  a   very long label that keeps going on  ").json()["ok"]
+    assert "a very long label that k" in _labels(c.get("/live").text)

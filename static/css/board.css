@@ -876,30 +876,6 @@ button.flow-node:hover, button.flow-node[aria-expanded="true"] { border-color: #
 
 @media (max-width: 860px) { .flow { padding: 14px 12px 12px; } }
 /* stack the steps when the panel itself is narrow (rail open on laptops, phones) */
-@container flow (max-width: 900px) {
-  .flow-track { grid-auto-flow: row; grid-auto-columns: auto; }
-  .flow-stage { flex-direction: column; }
-  .flow-link { flex: none; flex-direction: row; justify-content: flex-start; gap: 8px; padding: 6px 0 6px 18px; text-align: left; }
-  .flow-arrow { width: 10px; height: 22px; flex: none; }
-  .flow-arrow::before { left: 4px; right: auto; top: 0; bottom: 6px; width: 2px; height: auto; }
-  .flow-arrow::after { left: 0; right: auto; top: auto; bottom: 0; border: 5px solid transparent; border-top: 7px solid #cbd5e1; border-bottom: 0; }
-  .flow-link.is-worst .flow-arrow::after { border-top-color: #f43f5e; border-left-color: transparent; }
-  .flow-node {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; row-gap: 2px;
-    grid-template-areas: "label users" "event reach" "bar bar" "mix mix" "miss miss" "cta cta";
-    align-items: center; padding: 9px 12px;
-  }
-  .flow-step { display: none; }
-  .flow-label { grid-area: label; padding-right: 0; }
-  .flow-event { grid-area: event; justify-self: start; }
-  .flow-users { grid-area: users; margin-top: 0; text-align: right; }
-  .flow-users strong { font-size: 1.1rem; }
-  .flow-reach { grid-area: reach; text-align: right; }
-  .flow-bar { grid-area: bar; }
-  .flow-mix { grid-area: mix; }
-  .flow-missing { grid-area: users; margin-top: 0; justify-self: end; }
-  .flow-cta { grid-area: reach; justify-self: end; }
-}
 
 /* ---- 自社の前期比 (next to 業界目安) ---- */
 .tone-mid { color: #475569; }
@@ -909,3 +885,74 @@ td.prev-cell { font-weight: 700; white-space: nowrap; font-variant-numeric: tabu
 .watch-trend { margin: 2px 0 6px; font-size: 0.8rem; color: #334155; }
 .watch-trend span { color: var(--muted); font-weight: 700; margin-right: 6px; }
 .watch-trend b { font-variant-numeric: tabular-nums; margin-right: 4px; }
+
+/* 行動フロー: user-added steps */
+.flow-stage.is-custom .flow-node { background: #faf5ff; border-color: #ddd6fe; }
+.flow-custom-tag {
+  font-size: 0.62rem; font-weight: 800; color: #6d28d9; background: #ede9fe; border-radius: 999px; padding: 1px 7px;
+}
+.flow-add {
+  margin-top: 4px; width: 22px; height: 22px; border-radius: 50%; border: 1px dashed #94a3b8;
+  background: #fff; color: #475569; font: inherit; font-size: 0.8rem; line-height: 1; cursor: pointer; padding: 0;
+}
+.flow-add:hover, .flow-add[aria-expanded="true"] { border-style: solid; border-color: var(--accent); color: var(--accent); }
+.flow-add-row { display: flex; justify-content: flex-end; margin-top: 8px; }
+.flow-add-tile {
+  font: inherit; font-size: 0.76rem; font-weight: 700; color: var(--accent); background: #fff;
+  border: 1px dashed #9db8ea; border-radius: 8px; padding: 6px 12px; cursor: pointer;
+}
+.flow-add-tile small { color: var(--muted); font-weight: 600; margin-left: 2px; }
+.pop-field { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; font-size: 0.74rem; font-weight: 700; color: var(--muted); }
+.pop-field input {
+  font: inherit; font-size: 0.86rem; color: var(--ink); padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px;
+}
+.pop-delete { margin-top: 6px; border-top: 1px solid var(--line); padding-top: 6px; display: flex; justify-content: flex-start; }
+.pop-actions .link.danger, .pop-delete .link.danger {
+  font: inherit; font-size: 0.78rem; font-weight: 700; color: #be123c; background: none; border: 0; padding: 6px 2px; cursor: pointer;
+}
+
+/* 行動フロー stacked: when the panel is narrow, or many steps (incl. added ones) on a medium width */
+@container flow (max-width: 900px) {
+  .flow-track { grid-auto-flow: row; grid-auto-columns: auto; }
+  .flow-track .flow-stage { flex-direction: column; }
+  .flow-track .flow-link { flex: none; flex-direction: row; justify-content: flex-start; gap: 8px; padding: 6px 0 6px 18px; text-align: left; }
+  .flow-track .flow-arrow { width: 10px; height: 22px; flex: none; }
+  .flow-track .flow-arrow::before { left: 4px; right: auto; top: 0; bottom: 6px; width: 2px; height: auto; }
+  .flow-track .flow-arrow::after { left: 0; right: auto; top: auto; bottom: 0; border: 5px solid transparent; border-top: 7px solid #cbd5e1; border-bottom: 0; }
+  .flow-track .flow-link.is-worst .flow-arrow::after { border-top-color: #f43f5e; border-left-color: transparent; }
+  .flow-track .flow-node { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; row-gap: 2px; grid-template-areas: "label users" "event reach" "tag tag" "bar bar" "mix mix"; align-items: center; padding: 9px 12px; }
+  .flow-track .flow-step { display: none; }
+  .flow-track .flow-label { grid-area: label; padding-right: 0; }
+  .flow-track .flow-event { grid-area: event; justify-self: start; }
+  .flow-track .flow-custom-tag { grid-area: tag; justify-self: start; }
+  .flow-track .flow-users { grid-area: users; margin-top: 0; text-align: right; }
+  .flow-track .flow-users strong { font-size: 1.1rem; }
+  .flow-track .flow-reach { grid-area: reach; text-align: right; }
+  .flow-track .flow-bar { grid-area: bar; }
+  .flow-track .flow-mix { grid-area: mix; }
+  .flow-track .flow-missing { grid-area: users; margin-top: 0; justify-self: end; }
+  .flow-track .flow-cta { grid-area: reach; justify-self: end; }
+  .flow-track .flow-add { margin: 0 0 0 auto; }
+}
+@container flow (max-width: 1250px) {
+  .flow-track.is-long { grid-auto-flow: row; grid-auto-columns: auto; }
+  .flow-track.is-long .flow-stage { flex-direction: column; }
+  .flow-track.is-long .flow-link { flex: none; flex-direction: row; justify-content: flex-start; gap: 8px; padding: 6px 0 6px 18px; text-align: left; }
+  .flow-track.is-long .flow-arrow { width: 10px; height: 22px; flex: none; }
+  .flow-track.is-long .flow-arrow::before { left: 4px; right: auto; top: 0; bottom: 6px; width: 2px; height: auto; }
+  .flow-track.is-long .flow-arrow::after { left: 0; right: auto; top: auto; bottom: 0; border: 5px solid transparent; border-top: 7px solid #cbd5e1; border-bottom: 0; }
+  .flow-track.is-long .flow-link.is-worst .flow-arrow::after { border-top-color: #f43f5e; border-left-color: transparent; }
+  .flow-track.is-long .flow-node { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; row-gap: 2px; grid-template-areas: "label users" "event reach" "tag tag" "bar bar" "mix mix"; align-items: center; padding: 9px 12px; }
+  .flow-track.is-long .flow-step { display: none; }
+  .flow-track.is-long .flow-label { grid-area: label; padding-right: 0; }
+  .flow-track.is-long .flow-event { grid-area: event; justify-self: start; }
+  .flow-track.is-long .flow-custom-tag { grid-area: tag; justify-self: start; }
+  .flow-track.is-long .flow-users { grid-area: users; margin-top: 0; text-align: right; }
+  .flow-track.is-long .flow-users strong { font-size: 1.1rem; }
+  .flow-track.is-long .flow-reach { grid-area: reach; text-align: right; }
+  .flow-track.is-long .flow-bar { grid-area: bar; }
+  .flow-track.is-long .flow-mix { grid-area: mix; }
+  .flow-track.is-long .flow-missing { grid-area: users; margin-top: 0; justify-self: end; }
+  .flow-track.is-long .flow-cta { grid-area: reach; justify-self: end; }
+  .flow-track.is-long .flow-add { margin: 0 0 0 auto; }
+}
