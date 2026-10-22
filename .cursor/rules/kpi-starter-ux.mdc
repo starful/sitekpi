@@ -1,0 +1,84 @@
+---
+description: KPI Starter UX — beginner-friendly, dense info, clear hierarchy (marketing/growth)
+alwaysApply: true
+---
+
+# KPI Starter UX
+
+Product target: **site / business KPIs for marketing & growth** — not engineering productivity (Findy). Borrow Findy **readability & hierarchy** only; copy, IA, and data sources must stay distinct.
+
+Rules can be edited anytime in this file; changes apply to later chats.
+
+## Settled product direction (do not reopen lightly)
+
+These decisions are **locked** for the current product. Prefer growing packs/metrics inside this frame over redesigning the frame.
+
+1. **One product story** — Marketing/growth site + business KPIs. Not eng-productivity / Findy framing.
+2. **One dense board for all packs** — Same layout for every industry; only DEMO numbers, event vocabulary, 業界目安, and pack copy change.
+3. **Narrative board order** — Summary → オーディエンス → 流入チャネル → エンゲージ → 転換ファネル → イベント → 業務KPI → next-to-watch.
+4. **Display language** — In-app **設定** stores session `locale` (`ja` / `en` / `ko`). Translates **UI chrome** (nav, table headers, 説明, panels) **and pack-owned spoken labels** (指標名, 業界パック名, 説明 body, next-watch). GA event ids (`apply_complete`) and channel group names (`Organic Search`) stay as-is — never as chips under summary values or in the 重点 banner.
+5. **Data honesty** — Sample packs ≠ live. Live = GA4 numbers + chosen pack’s 目安/labels only. Unlinked 業務 = `—`. Always show period / property / pack identity.
+6. **Nav IA** — Top-level: サンプルパック · 接続済み · アプリ. Inside samples: funnel-type categories, collapsible (default closed except current pack’s category), scrollable rail.
+7. **Connect path** — Property → pick 業界パック (`benchmark_pack`) → `/live` uses that pack for 業界目安 only.
+
+## Core
+
+1. **Metric names are the shared language** — Primary on-screen label = what the team says out loud (`登録CVR`, `Organic Search`, `申込完了`). Do not replace them with long paraphrase titles. Raw GA event ids are secondary vocabulary for 説明 / イベント rows, not summary decoration.
+2. **Explanations via「説明」popup** — Keep the row clean (name + value). Place `説明` **before** the metric/event name so help affordances align in one column. Detailed Japanese help (意味 / 計算式 / 見るポイント) opens from that button (not `?`). Put GA event id, formula detail, and beginner glosses **inside 説明** — do not bury the screen in one-line glosses or summary `code` chips. No per-row category chips (主転換/利用 etc.) — primary conversion is board config, not a row tag.
+3. **Maximize useful information** — Prefer dense tables/lists over sparse decorative cards. Cards only when they aid scanning or interaction.
+4. **Summaries pop** — Top band: few key KPIs, large numbers, 前期比, and 業界目安/目安差 where applicable. Do not cram tables, tips, or event-id chips into the summary band. 重点 banner uses Japanese labels (`主転換: 申込完了`), not raw event ids.
+
+## Structure & copy
+
+5. **One purpose per screen/section** — Summary → detail (tables) → “next to watch” / actions. Do not break this order or mix purposes in one block.
+5b. **Detail section order tells a story** — On the site KPI board, panel order is narrative (L→R, top→bottom): **オーディエンス → 流入チャネル → エンゲージ → 転換ファネル → イベント → 業務KPI** (who → where from → depth → convert → evidence → business reality). Do not reshuffle panels arbitrarily.
+5c. **One dense board for all industry packs** — `/{slug}` uses the same `/sample` layout; only DEMO numbers, event names, 業界目安 bands, and pack copy (CVR label etc.) change. Do not maintain a separate card UI per industry. New industries = new `packs/{slug}.py` + registry entry.
+5d. **Nav categories stay separate** — Sidebar groups: **サンプルパック** (industry demos) · **接続済み** (GA4 live `/live`) · **アプリ** (builder/connect). Never mix sample packs into the connected-property list.
+5e. **サンプルパック内カテゴリ** — Inside サンプルパック, group packs by funnel type (`会員・継続` / `コンテンツ` / `採用` / `問い合わせ・リード` / `コマース` / `教育・申込` / `予約`) using each pack’s `category`. Collapsible `<details>`; default **closed** except the category that contains the current pack. Keep pack name + hint as the click target. Rail nav must scroll. Do not flatten dozens of packs into one undifferentiated list.
+5f. **接続時に業界パック選択 → 目安のみ適用** — On GA4 connect (after Property), user picks one 業界パック. Session stores `benchmark_pack`. `/live` uses **GA4 live numbers** + that pack’s **BENCHMARKS / PACK_COPY labels only**. Never copy sample DEMO revenue・会員・業務数字 into the live board. Meta must show `業界目安: {pack label}`. If pack not chosen, send user back to `/connect` to pick one.
+6. **UI language** — Product chrome follows session locale (default Japanese). Primary metric vocabulary stays the spoken industry terms (JP pack copy for now). GA event/channel ids appear where that id *is* the catalog name (イベント表) or inside 説明 — not competing with spoken labels in the summary.
+7. **Discoverability** — When catalogs are large: search, “値ありだけ”, collapsible groups. Settled per-section view modes (no ゲージ):
+   - オーディエンス / エンゲージ: リスト · カード · バー · 比較 · トレンド (default リスト)
+   - 流入チャネル: リスト · カード · バー · スタック (default スタック)
+   - 転換ファネル: リスト · カード · 比較 (default リスト)
+   - イベント: リスト · カード · バー (default バー)
+   - 業務KPI: リスト · カード (default リスト)
+   比較 = GA4 dual bars (今期 vs 前期, or vs 業界目安). トレンド = solid/dashed line. Metric バー = period columns. Persist in localStorage. Rows/cards in a section share equal height. No コンパクト / 目安差 mode (目安差 stays in table/summary). Sample-pack sidebar uses category `<details>`.
+
+## Data honesty
+
+8. **GA4 = live path; industry packs = samples** — Never present demo revenue/membership as live after GA4 connect. Selecting a pack on connect applies **業界目安 bands** (and board vocabulary), not sample KPI values.
+9. **Business KPIs unlinked = explicit** — Show `—` + 業務DB (or equivalent). Do not fill with fake numbers when connected.
+10. **Period, property & industry pack visible** — Always show which Property, date range, and (for samples) which **業界パック** the numbers belong to. Prefer **vertical industry names with a domain hint** (`人事・採用`, `建設・住宅`, `会員・サブスク`, …) over jargon-only labels (`B2C`, bare `人事`). On sample boards: **h1 / `<title>` = pack name**; meta line = role + property + period (e.g. `業界パック見本 · 採用 Demo JP · 直近28日`). On `/live`: meta includes `業界目安: {pack}`. Sample-pack nav may show a one-line funnel hint under the name (`求人〜応募`). Never leave the board looking like anonymous live data when it is pack sample.
+11. **業界目安 (industry standard) is mandatory** — For every comparable rate/ratio KPI where a pack standard exists, always show the industry standard average (or pack band midpoint / labeled 業界目安). Never ship a KPI board that only shows current value + 前期比 and omits 業界目安. Label clearly as pack 目安 (not claiming live public statistics).
+12. **Show gap vs 業界目安** — Next to (or under) the current value, always show the difference from the industry standard (e.g. `目安差 +0.3pt` / `−1.2` / ▲●▼ vs band). Prefer a numeric delta when the 目安 is a single average; band position (▲上 ●標準 ▼下) is fine as a secondary cue, not a replacement for the number when an average is available.
+13. **Same chrome whether 目安 exists or not** — In a shared band/table/card grid, always reserve the 業界目安 + 目安差 slots. If a metric has no pack standard (counts, unlinked, etc.), show `—` in those slots — do not omit the rows/columns so some cards look taller or denser than siblings.
+14. **Wide-layout tables** — Dense KPI tables use full width with `table-layout: fixed` so columns share space evenly (説明 fixed, 指標 slightly wider, numeric cols share the rest). Do not leave a dead empty spacer column, and do not let only 業界目安/目安差 stretch.
+
+## Still open (decide when needed; do not invent a new product direction)
+
+- How far `/live` should **propose pack event→GA4 event mapping** beyond 目安 + labels (user override likely).
+- Fine-tuning of column proportions on ultra-wide screens.
+- Real daily series for `/live` Trend/period-bar (until then those modes stay **sample-only** with 見本系列 note).
+
+## Settled polish (keep)
+
+- Sample-pack rail **search** filters name/hint; matching categories open.
+- Connect / builder **chrome** follows session locale (same as board).
+
+## Anti-patterns
+
+- Replacing metric names with long paraphrase titles (breaks shared vocabulary)
+- Showing GA event ids as summary chips or in the 重点 banner (belongs in 説明 / イベント明細)
+- Card-per-KPI walls that reduce information density
+- Metric names with no「説明」help (hard for beginners)
+- Confusing `?` icon instead of readable「説明」
+- Per-row category chips that dilute the metric name
+- Long inline explanations that compete with the metric name
+- Mixing Findy/dev-productivity framing into product copy
+- Stuffing the hero/summary with secondary metrics or tips
+- KPI rows/cards with current value only — missing 業界目安 and/or 目安差
+- Treating 前期比 alone as enough context (前期比 ≠ 業界目安)
+- Mixing sample DEMO business numbers into `/live`
+- Flattening all sample packs into one long nav list with no categories
+- Leaving the sample-pack rail unscrolled / all categories forced open

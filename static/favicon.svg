@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- SiteKPI mark: browser window + ascending bars -->
+  <rect x="3.5" y="5.5" width="25" height="21" rx="3.5" stroke="#152033" stroke-width="2.2"/>
+  <path d="M3.5 11.5h25" stroke="#152033" stroke-width="2.2"/>
+  <circle cx="8.2" cy="8.4" r="1.15" fill="#152033"/>
+  <circle cx="11.6" cy="8.4" r="1.15" fill="#152033"/>
+  <circle cx="15" cy="8.4" r="1.15" fill="#2f6fed"/>
+  <rect x="8.2" y="20.2" width="3.4" height="3.6" rx="0.6" fill="#152033"/>
+  <rect x="14.3" y="16.6" width="3.4" height="7.2" rx="0.6" fill="#3d7ef0"/>
+  <rect x="20.4" y="13.2" width="3.4" height="10.6" rx="0.6" fill="#2f6fed"/>
+</svg>

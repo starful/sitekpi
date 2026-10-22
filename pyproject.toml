@@ -1,0 +1,17 @@
+[project]
+name = "sitekpi"
+version = "0.1.0"
+description = "Site / business KPI board for marketing & growth (GA4 + industry packs)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.143.0",
+    "starlette==1.8.0",
+    "uvicorn[standard]==0.54.0",
+    "python-multipart==0.0.32",
+    "python-dotenv==1.2.4",
+    "itsdangerous==2.2.0",
+    "google-auth==2.62.0",
+    "google-auth-oauthlib==1.5.0",
+    "google-analytics-admin==0.30.2",
+    "google-analytics-data==0.23.3",
+]

@@ -1,0 +1,35 @@
+---
+description: KPI Starter code structure — where packs, i18n, metrics, and board UI live
+alwaysApply: true
+---
+
+# KPI Starter structure
+
+Keep modular boundaries so new work does not re-bloat `main.py` / inline DEMO.
+
+## Where things go
+
+| Change | Put it here | Do not |
+|--------|-------------|--------|
+| New industry pack | `packs/{slug}.py` + append to `PACK_MODULES` in `packs/registry.py` | Inline DEMO/BENCHMARKS in `main.py` / `dense_packs.py` |
+| Pack spoken labels (en/ko) | `i18n/pack_l10n.py` entry for that slug | Hardcode only-JP in board templates |
+| UI chrome strings | `i18n/strings.py` | Scatter literals across HTML builders |
+| Shared KPI 説明 | `metrics/help.py` | Duplicate long help per pack |
+| Sample nav category | `packs/catalog.py` + `cat.*` in `i18n/strings.py` | Ad-hoc category strings in rail HTML |
+| Board layout / board CSS | `sample_dense.py` / `dense_packs.py` | Per-industry alternate board UIs |
+| Rail nav markup | `_rail_nav_html` in `sample_dense.py` | Fork a second sample nav |
+
+## Pack checklist (new slug)
+
+1. `packs/{slug}.py` with `PACK` (`meta.category`, benchmarks, demo, copy, event_desc)
+2. `PACK_MODULES` in `registry.py`
+3. `PACK_L10N[slug]` with at least `label` / `hint` for `ja` / `en` / `ko`
+4. Run `python scripts/smoke_packs.py`
+
+## Rail CSS
+
+`.rail .pack-cat*` styles are duplicated in `sample_dense.py` and `settings_page.py`. When changing rail look, update **both**, or extract a shared CSS helper — do not leave them drifting.
+
+## Product frame (do not reopen lightly)
+
+Same dense board for every pack; samples ≠ live; connect applies 業界目安 only. Details: `kpi-starter-ux` rule.
