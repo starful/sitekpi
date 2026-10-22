@@ -6,7 +6,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 # Deterministic test config (never touches the real .env values)
-os.environ.setdefault("SESSION_SECRET", "test-secret")
+import tempfile
+
+os.environ["SESSION_SECRET"] = "test-secret-" + "x" * 32
+os.environ["SESSION_DB_PATH"] = str(Path(tempfile.mkdtemp()) / "sessions.sqlite3")
 os.environ["GOOGLE_CLIENT_ID"] = "test-client-id.apps.googleusercontent.com"
 os.environ["GOOGLE_CLIENT_SECRET"] = "test-client-secret"
 os.environ["GOOGLE_REDIRECT_URI"] = "http://127.0.0.1:8766/connect/callback"

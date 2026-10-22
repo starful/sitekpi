@@ -3,7 +3,7 @@ starlette==1.8.0
 uvicorn[standard]==0.54.0
 python-multipart==0.0.32
 python-dotenv==1.2.4
-itsdangerous==2.2.0
+cryptography==50.0.2
 google-auth==2.62.0
 google-auth-oauthlib==1.5.0
 google-analytics-admin==0.30.2

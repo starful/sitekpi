@@ -29,6 +29,7 @@ from sitekpi.ga4.oauth import (
 )
 from sitekpi.i18n import get_locale, t
 from sitekpi.i18n.pack_l10n import pack_text
+from sitekpi.session import regenerate_session
 from sitekpi.views.connect import render_connect_page
 
 router = APIRouter(tags=["ga4-connect"])
@@ -180,6 +181,7 @@ def connect_callback(request: Request):
     request.session.pop("ga4_property", None)
     request.session.pop("ga4_demo", None)
     request.session["ga4_email"] = ""
+    regenerate_session(request)  # new session id once signed in (anti-fixation)
     return RedirectResponse("/connect", status_code=302)
 
 

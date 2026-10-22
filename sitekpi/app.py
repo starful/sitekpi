@@ -19,22 +19,29 @@ if _redirect.startswith("http://") and not os.getenv("OAUTHLIB_INSECURE_TRANSPOR
 
 from fastapi import FastAPI  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
-from starlette.middleware.sessions import SessionMiddleware  # noqa: E402
 
 from sitekpi.routes.connect import router as connect_router  # noqa: E402
 from sitekpi.routes.pages import router as pages_router  # noqa: E402
+from sitekpi.session import (  # noqa: E402
+    ServerSessionMiddleware,
+    SQLiteSessionStore,
+    session_settings,
+)
 from sitekpi.views.branding import BRAND_NAME  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
+SESSION_MAX_AGE = 14 * 24 * 60 * 60
+_session = session_settings()
+
 app = FastAPI(title=BRAND_NAME)
 app.add_middleware(
-    SessionMiddleware,
-    secret_key=os.getenv("SESSION_SECRET", "kpistarter-dev-secret-change-me"),
-    session_cookie="kpistarter_session",
+    ServerSessionMiddleware,
+    store=SQLiteSessionStore(_session["db_path"], _session["secret"], SESSION_MAX_AGE),
+    cookie_name="sitekpi_sid",
+    https_only=_session["https_only"],
     same_site="lax",
-    https_only=False,
-    max_age=14 * 24 * 60 * 60,
+    legacy_cookies=("kpistarter_session",),  # old signed-cookie sessions: expire them
 )
 app.mount("/static", StaticFiles(directory=str(ROOT / "static")), name="static")
 app.include_router(connect_router)
