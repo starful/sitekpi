@@ -69,3 +69,26 @@ document.querySelectorAll(".view-btn[data-section]").forEach((btn) => {
 });
 
 
+
+/* 行動フロー: 全体 / channel switch — swaps the numbers shown on each step */
+(function () {
+  const flow = document.getElementById("flow");
+  if (!flow) return;
+  flow.querySelectorAll("[data-flow-ch]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const ch = btn.dataset.flowCh;
+      flow.dataset.ch = ch;
+      flow.querySelectorAll("[data-flow-ch]").forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle("is-on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      flow.querySelectorAll("[data-v-all]").forEach((el) => {
+        const v = el.getAttribute("data-v-" + ch);
+        el.textContent = v != null ? v : el.getAttribute("data-v-all");
+      });
+      flow.querySelectorAll(".flow-mix i").forEach((i) => i.classList.toggle("is-on", ch !== "all" && i.dataset.ch === ch));
+      flow.querySelectorAll("[data-ch-row]").forEach((r) => r.classList.toggle("is-on", r.dataset.chRow === ch));
+    });
+  });
+})();

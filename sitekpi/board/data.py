@@ -464,7 +464,10 @@ def build_dense_board(
             return 0
         return 2 if name in GA4_AUTO_EVENTS else 1
 
-    candidates = pack_events + [n for n in counts if n not in pack_events]
+    # 行動フロー mapping: a pack event can stand in for the site's own event name
+    alias: dict[str, str] = {str(k): str(v) for k, v in (data.get("event_alias") or {}).items()}
+    aliased_site = set(alias.values()) - set(pack_events)
+    candidates = pack_events + [n for n in counts if n not in pack_events and n not in aliased_site]
     shown = [n for n in candidates if counts.get(n, 0) > 0]
     shown.sort(
         key=lambda n: (
@@ -490,6 +493,7 @@ def build_dense_board(
             {
                 "id": f"ev_{name}",
                 "name": name,
+                "alias": alias.get(name, ""),
                 "cat": cat_of.get(name, ""),
                 "count": int(counts.get(name, 0)),
                 "delta": _event_delta(name, pack_events.index(name) if name in pack_events else i),

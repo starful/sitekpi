@@ -146,6 +146,9 @@ def connected(monkeypatch):
     monkeypatch.setattr(connect_routes, "fetch_preview", lambda creds, pid: None)
     monkeypatch.setattr(pages, "discover_event_names", lambda s, period, limit: ([], None))
     monkeypatch.setattr(pages, "fetch_pack_overlay", lambda s, **kw: (dict(DEMO["hr"]["28d"]), None))
+    import sitekpi.routes.flow as flow_routes
+    monkeypatch.setattr(flow_routes, "fetch_flow", lambda s, **kw: (None, None))
+    monkeypatch.setattr(flow_routes, "discover_event_names", lambda s, period, limit: ([], None))
     pages._LIVE_PACK_CACHE._data.clear()
 
     def login() -> TestClient:

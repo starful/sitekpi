@@ -1,0 +1,47 @@
+{#- 行動フロー: per-step event mapping popovers. Context: flow -#}
+{% set f = flow %}
+{% for st in f.stages if st.key != "entry" %}
+<template id="pop-flow-{{ st.step }}">
+  {% if f.live %}
+  <form method="post" action="/flow/mapping" class="pop-form" data-json-form>
+    <input type="hidden" name="pack" value="{{ f.pack }}" />
+    <input type="hidden" name="step" value="{{ st.step }}" />
+    <div class="pop-head">
+      <div>
+        <strong>{{ t("flow.map_title", loc, label=st.label) }}</strong>
+        <span class="pop-sub">{{ t("flow.map_help", loc) }}</span>
+      </div>
+      <button type="button" class="pop-close" data-pop-close aria-label="{{ t('close', loc) }}">×</button>
+    </div>
+    <label class="visually-hidden" for="flow-ev-{{ st.step }}">{{ t("flow.map_event", loc) }}</label>
+    {% if f.event_options %}
+    <select id="flow-ev-{{ st.step }}" name="event" class="pop-select">
+      <option value=""{% if not st.mapped %} selected{% endif %}>{{ t("flow.map_default", loc, event=st.step) }}</option>
+      {% for o in f.event_options if o.name != st.step %}
+      <option value="{{ o.name }}"{% if st.mapped and o.name == st.event %} selected{% endif %}>{{ o.name }} · {{ o.count | num }}</option>
+      {% endfor %}
+    </select>
+    {% else %}
+    <p class="pop-sub">{{ t("flow.map_none", loc) }}</p>
+    <input type="hidden" name="event" value="" />
+    {% endif %}
+    <p class="pop-error" data-pop-error hidden></p>
+    <div class="pop-actions">
+      <button type="submit" class="primary">{{ t("bench_edit.save_short", loc) }}</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="pop-form">
+    <div class="pop-head">
+      <div>
+        <strong>{{ st.label }}</strong>
+        <span class="pop-sub">{{ t("flow.std_event", loc) }}: <code>{{ st.step }}</code></span>
+      </div>
+      <button type="button" class="pop-close" data-pop-close aria-label="{{ t('close', loc) }}">×</button>
+    </div>
+    <p class="pop-text">{{ t("flow.map_sample", loc) }}</p>
+    <div class="pop-actions"><a class="primary-link" href="/connect">{{ t("flow.map_connect", loc) }}</a></div>
+  </div>
+  {% endif %}
+</template>
+{% endfor %}

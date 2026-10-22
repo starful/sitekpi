@@ -24,7 +24,7 @@ Finder なら `run.command` をダブルクリック。初回（または .venv 
 ## Sessions / deploy notes
 
 - セッションはサーバー側（`.data/sessions.sqlite3`、暗号化）。Cookie にはランダムな ID のみ。
-- 自社目安（/benchmarks）は `.data/app.sqlite3`（`APP_DB_PATH` で変更可）。GA4 プロパティ単位 / 見本はブラウザ単位。
+- 自社目安と行動フローのイベント割り当ては `.data/app.sqlite3`（`APP_DB_PATH` で変更可）。GA4 プロパティ単位（自社目安の見本はブラウザ単位）。
 - 1台のサーバーなら `--workers N` で複数プロセス可（SQLite を共有）。
 - 複数台（Cloud Run の複数インスタンス等）にする場合は、`sitekpi/session.py` のストアを
   共有ストア（Redis / Firestore / Cloud SQL など）に差し替える。
@@ -39,13 +39,14 @@ sitekpi/
   session.py         サーバー側セッション（暗号化 SQLite）
   cache.py           プロセス内 TTL キャッシュ
   benchmarks.py      業界目安（初期値＋自社目安）
-  routes/            pages.py（ボード・ビルダー・設定）/ connect.py（GA4 接続）/ nav.py
+  flow.py            行動フロー（イベント割り当て・見本フロー）
+  routes/            pages.py（ボード・ビルダー・設定）/ connect.py（GA4 接続）/ benchmarks.py / flow.py / nav.py
   ga4/               oauth.py（認証）/ data.py（GA4 Data API）
   board/data.py      ボードの行データ生成
   views/             テンプレートに渡すデータ（HTML は書かない）
   templating.py      Jinja2（自動エスケープ・t()・static_url()）
   templates/         base.html と各ページ、partials/、board/_macros.html
-  packs/             業界パック（1ファイル1業界）
+  packs/             業界パック（1ファイル1業界）・sources.py（出典）・flows.py（行動フローの段）
   i18n/  metrics/    文言（ja/en/ko）・説明テキスト
 static/              css/・js/・vendor/（Sortable 同梱）・アイコン
 brand/               ロゴ案（配信しない素材）

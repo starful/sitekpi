@@ -623,6 +623,7 @@ def _render_sample_dense(
     locale: str = "ja",
     board_kind: str = "sample",
     bench: dict[str, Any] | None = None,
+    flow: dict[str, Any] | None = None,
 ) -> str:
     loc = normalize_locale(locale)
     if data is None or ind is None or benches_raw is None:
@@ -690,6 +691,7 @@ def _render_sample_dense(
             {
                 "id": e["id"],
                 "name": e["name"],
+                "alias": e.get("alias", ""),
                 "count": e["count"],
                 "delta": e["delta"],
                 "focus": bool(e.get("focus")),
@@ -750,6 +752,7 @@ def _render_sample_dense(
         watch=_watch_items(board, loc),
         is_sample=is_sample,
         bench=bench,
+        flow=flow,
         dialogs=[_dialog(item, loc) for item in help_items],
         board_data={
             "close": t("close", loc),

@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from sitekpi.benchmarks import load_effective
 from sitekpi.cache import TTLCache
+from sitekpi.flow import apply_mapping, load_mapping
 from sitekpi.ga4.data import (
     build_live_builder_widgets,
     connection_info,
@@ -18,6 +19,7 @@ from sitekpi.ga4.data import (
     saved_events,
 )
 from sitekpi.i18n import get_locale, set_locale, t
+from sitekpi.routes.flow import live_flow_context, sample_flow_context
 from sitekpi.routes.nav import nav_context, nav_rail_context
 from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.metrics.help import PERIODS
@@ -44,8 +46,12 @@ def index():
 _LIVE_PACK_CACHE = TTLCache(maxsize=256, ttl=60.0)
 
 
-def _live_pack(request: Request, industry: str, period: Period) -> tuple[dict[str, Any], bool, str | None, str]:
-    """Optional GA4 overlay for packs (unused by dense sample routes; kept for tooling)."""
+def _live_pack(
+    request: Request, industry: str, period: Period, mapping: dict[str, str] | None = None
+) -> tuple[dict[str, Any], bool, str | None, str]:
+    """GA4 overlay for the connected board. ``mapping`` adds the site's own event
+    names for 行動フロー steps so they are fetched even with a saved event list."""
+    mapping = mapping or {}
     base = dict(DEMO[industry][period])
     pack_events = list(INDUSTRIES[industry].get("events") or [])
     primary = str(INDUSTRIES[industry].get("primary_event") or (pack_events[0] if pack_events else ""))
@@ -59,7 +65,8 @@ def _live_pack(request: Request, industry: str, period: Period) -> tuple[dict[st
     cache_key = (
         f"{info['property_id']}|{period}|{industry}|"
         f"{','.join(saved['events']) if saved else 'discover'}|"
-        f"{saved.get('primary') if saved else primary}"
+        f"{saved.get('primary') if saved else primary}|"
+        f"{','.join(f'{k}={v}' for k, v in sorted(mapping.items()))}"
     )
     hit = _LIVE_PACK_CACHE.get(cache_key)
     if hit:
@@ -79,6 +86,7 @@ def _live_pack(request: Request, industry: str, period: Period) -> tuple[dict[st
                 primary = events[0] if events else primary
         else:
             events = pack_events
+    events = events + [e for e in mapping.values() if e not in events]
     overlay, err = fetch_pack_overlay(
         request.session,
         period=period,
@@ -156,8 +164,14 @@ def page_live(request: Request, period: str = Query(default="28d")):
     pack_slug = extras.get("benchmark_pack") or ""
     if not pack_slug or pack_slug not in INDUSTRIES:
         return RedirectResponse("/connect", status_code=302)
-    data, live, err, prop = _live_pack(request, pack_slug, period)  # type: ignore[arg-type]
+    mapping = load_mapping(request.session, pack_slug)
+    data, live, err, prop = _live_pack(request, pack_slug, period, mapping)  # type: ignore[arg-type]
     loc = get_locale(request.session)
+    if live and mapping:
+        data = apply_mapping(data, pack_slug, mapping,
+                             primary=str(INDUSTRIES[pack_slug].get("primary_event") or ""))
+    flow = (live_flow_context(request, pack_slug, period, mapping, loc) if live
+            else sample_flow_context(pack_slug, data, loc))
     label = extras["connected"]["name"]
     pack_label = pack_text(
         pack_slug, "label", loc, str(INDUSTRIES[pack_slug]["label"])
@@ -192,6 +206,7 @@ def page_live(request: Request, period: str = Query(default="28d")):
             connected=extras["connected"],
             locale=loc,
             board_kind="live",
+            flow=flow,
         )
     )
 
@@ -231,5 +246,6 @@ def page_industry(request: Request, slug: str, period: str = Query(default="28d"
             nav_active=f"pack:{slug}",
             connected=extras["connected"],
             locale=get_locale(request.session),
+            flow=sample_flow_context(slug, data, get_locale(request.session)),
         )
     )

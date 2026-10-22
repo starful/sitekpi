@@ -58,6 +58,8 @@
           {% if is_sample %}<p class="watch-sample">{{ t("watch.sample", loc) }}</p>{% endif %}
         </section>
 
+        {% if flow %}{% include "board/flow.html" %}{% endif %}
+
         {# Reading order: who → where from → depth → convert → evidence → business #}
         <div class="grid-2">
           {{ m.metric_panel(panels.audience) }}
@@ -141,7 +143,7 @@
                     {% for e in events.rows %}
                     <tr{% if e.cls %} class="{{ e.cls }}"{% endif %}>
                       <td class="help-cell">{{ m.help_btn(e.id, e.name) }}</td>
-                      <td class="name-cell"><code>{{ e.name }}</code>{% if e.focus %} {{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}</td>
+                      <td class="name-cell"><code>{{ e.name }}</code>{% if e.alias %}<span class="ev-alias" title="{{ t('event.alias', loc, name=e.alias) }}">← {{ e.alias }}</span>{% endif %}{% if e.focus %} {{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}</td>
                       <td class="num">{{ e.count|num }}</td>
                       <td class="num muted">{{ e.delta }}</td>
                     </tr>
@@ -154,7 +156,7 @@
                 <article class="metric-card{{ ' ' ~ e.cls if e.cls else '' }}">
                   <div class="metric-card-head">
                     {{ m.help_btn(e.id, e.name) }}
-                    <code class="metric-card-name">{{ e.name }}</code>
+                    <code class="metric-card-name">{{ e.name }}</code>{% if e.alias %}<span class="ev-alias" title="{{ t('event.alias', loc, name=e.alias) }}">← {{ e.alias }}</span>{% endif %}
                     {% if e.focus %}{{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}
                   </div>
                   <div class="metric-card-value">{{ e.count|num }}</div>
@@ -167,7 +169,7 @@
                 <div class="bar-row{{ ' ' ~ e.cls if e.cls else '' }}">
                   <div class="bar-meta">
                     {{ m.help_btn(e.id, e.name) }}
-                    <code class="compact-name">{{ e.name }}</code>
+                    <code class="compact-name">{{ e.name }}</code>{% if e.alias %}<span class="ev-alias" title="{{ t('event.alias', loc, name=e.alias) }}">← {{ e.alias }}</span>{% endif %}
                     {% if e.focus %}{{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}
                     <span class="compact-value">{{ e.count|num }}</span>
                   </div>
@@ -243,6 +245,7 @@
 {% endblock %}
 {% block after_shell %}
   {% if bench %}{% include "board/bench_pops.html" %}{% endif %}
+  {% if flow %}{% include "board/flow_pops.html" %}{% endif %}
   <div class="pop" id="pop" role="dialog" aria-modal="false" hidden></div>
   {% for d in dialogs %}{{ m.help_dialog(d) }}{% endfor %}
 {% endblock %}
