@@ -38,6 +38,13 @@ static/  brand/  scripts/
 | New page / route | handler in `sitekpi/routes/*`, HTML in `sitekpi/views/*` | HTML inside route modules |
 | GA4 API calls | `sitekpi/ga4/*` | Google client calls from views |
 
+## Request state (multi-user)
+
+- Per-user state lives in `request.session` only (server-side, encrypted — `sitekpi/session.py`).
+- Never keep per-request values in module globals (`global X`); use arguments or a `ContextVar`
+  (see `_ACTIVE_BENCH` in `views/board.py`). Process-wide caches must be bounded + locked (`sitekpi/cache.py`).
+- Never write user choices to files in the repo.
+
 ## Pack checklist (new slug)
 
 1. `sitekpi/packs/{slug}.py` with `PACK` (`meta.category`, benchmarks, demo, copy, event_desc)

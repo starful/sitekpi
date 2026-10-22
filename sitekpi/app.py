@@ -16,6 +16,8 @@ except ImportError:  # pragma: no cover
 _redirect = (os.getenv("GOOGLE_REDIRECT_URI") or os.getenv("APP_BASE_URL") or "").lower()
 if _redirect.startswith("http://") and not os.getenv("OAUTHLIB_INSECURE_TRANSPORT"):
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+# If Google returns extra previously-granted scopes, don't fail the token exchange
+os.environ.setdefault("OAUTHLIB_RELAX_TOKEN_SCOPE", "1")
 
 from fastapi import FastAPI  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402

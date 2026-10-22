@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from contextvars import ContextVar
 from html import escape
 from typing import Any
 
@@ -51,8 +52,9 @@ def _kind_label(kind: str, locale: str) -> str:
         return t(key, locale)
     return KINDS.get(kind, kind)
 
-# Active pack benches (set per render from DEMO BENCHMARKS)
-_ACTIVE_BENCH: dict[str, dict[str, Any]] = {}
+# Active pack benches for the render in progress. A ContextVar (not a module
+# global) so concurrent requests rendering different packs can't mix 業界目安.
+_ACTIVE_BENCH: ContextVar[dict[str, dict[str, Any]]] = ContextVar("_ACTIVE_BENCH", default={})
 
 
 def _fmt_num(n: float, unit: str) -> str:
@@ -110,7 +112,7 @@ def _viz_scale(
 def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | None:
     if not bench_key:
         return None
-    spec = _ACTIVE_BENCH.get(bench_key)
+    spec = _ACTIVE_BENCH.get().get(bench_key)
     if not spec:
         return None
     low = float(spec["low"])
@@ -922,7 +924,16 @@ def _rail_nav_html(
     """
 
 
-def render_sample_dense(
+def render_sample_dense(*args: Any, **kwargs: Any) -> str:
+    """Render the dense board; 業界目安 for this render are scoped to it."""
+    token = _ACTIVE_BENCH.set({})
+    try:
+        return _render_sample_dense(*args, **kwargs)
+    finally:
+        _ACTIVE_BENCH.reset(token)
+
+
+def _render_sample_dense(
     *,
     industry: str = "hr",
     period: str = "28d",
@@ -939,7 +950,6 @@ def render_sample_dense(
     locale: str = "ja",
     board_kind: str = "sample",
 ) -> str:
-    global _ACTIVE_BENCH
     loc = normalize_locale(locale)
 
     # Prefer caller-supplied pack data (route) — avoid importing main on every request
@@ -975,7 +985,7 @@ def render_sample_dense(
         benches_raw=benches_raw,
         locale=loc,
     )
-    _ACTIVE_BENCH = board["benches"]
+    _ACTIVE_BENCH.set(board["benches"])
     SUMMARY = board["summary"]
     FUNNEL_ROWS = board["funnel"]
     ENGAGE_ROWS = board["engage"]

@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import time
+import copy
 from typing import Any, Literal
 
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from sitekpi.cache import TTLCache
 from sitekpi.ga4.data import (
     build_live_builder_widgets,
     connection_info,
@@ -34,9 +35,10 @@ def index():
     return HTMLResponse(render_home())
 
 
-# Short-lived cache so switching sample packs does not re-hit GA4 every click
-_LIVE_PACK_CACHE: dict[str, tuple[float, dict[str, Any], str]] = {}
-_LIVE_PACK_TTL_SEC = 60.0
+# Short-lived per-process cache so switching periods does not re-hit GA4 every
+# click. Keyed by property (access is checked when the property is selected),
+# bounded, and locked because sync routes run in a thread pool.
+_LIVE_PACK_CACHE = TTLCache(maxsize=256, ttl=60.0)
 
 
 def _live_pack(request: Request, industry: str, period: Period) -> tuple[dict[str, Any], bool, str | None, str]:
@@ -56,12 +58,11 @@ def _live_pack(request: Request, industry: str, period: Period) -> tuple[dict[st
         f"{','.join(saved['events']) if saved else 'discover'}|"
         f"{saved.get('primary') if saved else primary}"
     )
-    now = time.time()
     hit = _LIVE_PACK_CACHE.get(cache_key)
-    if hit and now - hit[0] < _LIVE_PACK_TTL_SEC:
-        cached_overlay, prop = hit[1], hit[2]
+    if hit:
+        cached_overlay, prop = hit
         merged = dict(base)
-        merged.update(cached_overlay)
+        merged.update(copy.deepcopy(cached_overlay))  # callers may mutate nested rows
         return merged, True, None, prop
 
     if saved:
@@ -90,7 +91,7 @@ def _live_pack(request: Request, industry: str, period: Period) -> tuple[dict[st
     stash = dict(overlay)
     stash["_live_events"] = events
     stash["_live_primary"] = primary
-    _LIVE_PACK_CACHE[cache_key] = (now, stash, prop)
+    _LIVE_PACK_CACHE.set(cache_key, (stash, prop))
     base.update(stash)
     return base, True, None, prop
 

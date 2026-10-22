@@ -21,12 +21,22 @@ Finder なら `run.command` をダブルクリック。初回（または .venv 
 .venv/bin/python scripts/smoke_packs.py         # 全業界パック × 3言語の描画
 ```
 
+## Sessions / deploy notes
+
+- セッションはサーバー側（`.data/sessions.sqlite3`、暗号化）。Cookie にはランダムな ID のみ。
+- 1台のサーバーなら `--workers N` で複数プロセス可（SQLite を共有）。
+- 複数台（Cloud Run の複数インスタンス等）にする場合は、`sitekpi/session.py` のストアを
+  共有ストア（Redis / Firestore / Cloud SQL など）に差し替える。
+- 本番（https）では `SESSION_SECRET` 必須。未設定・例の値のままだと起動しない。
+
 ## Structure
 
 ```
 main.py              エントリ（uvicorn main:app）
 sitekpi/
-  app.py             FastAPI 本体・セッション・ルーター登録
+  app.py             FastAPI 本体・ルーター登録
+  session.py         サーバー側セッション（暗号化 SQLite）
+  cache.py           プロセス内 TTL キャッシュ
   routes/            pages.py（ボード・ビルダー・設定）/ connect.py（GA4 接続）
   ga4/               oauth.py（認証）/ data.py（GA4 Data API）
   board/data.py      ボードの行データ生成

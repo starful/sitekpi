@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import json
-import os
 import secrets
-from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
@@ -33,10 +31,6 @@ from sitekpi.session import regenerate_session
 from sitekpi.views.connect import render_connect_page
 
 router = APIRouter(tags=["ga4-connect"])
-
-# Local MVP: last chosen property/pack is mirrored to the repo root (gitignored).
-_LOCAL_CHOICE_PATH = Path(__file__).resolve().parents[2] / ".ga4_connection.json"
-
 
 def _page_from_request(request: Request, error: str | None = None) -> HTMLResponse:
     from sitekpi.packs import INDUSTRIES, packs_by_category
@@ -169,8 +163,6 @@ def connect_callback(request: Request):
     flow = Flow.from_client_config(client_config(), scopes=SCOPES, state=expected_state)
     flow.redirect_uri = redirect_uri()
     flow.code_verifier = code_verifier
-    # If Google still returns extra scopes, don't fail the token exchange
-    os.environ.setdefault("OAUTHLIB_RELAX_TOKEN_SCOPE", "1")
     try:
         flow.fetch_token(authorization_response=auth_response)
     except Exception as exc:  # noqa: BLE001
@@ -205,12 +197,6 @@ def select_property(request: Request, property_id: str = Form(...)):
     if not chosen:
         return _page_from_request(request, error="選択した Property が見つかりません。")
     session["ga4_property"] = chosen
-    # Persist lightweight choice for local MVP
-    _save_local_choice(
-        chosen,
-        demo=demo,
-        benchmark_pack=str(session.get("benchmark_pack") or ""),
-    )
     return RedirectResponse("/connect", status_code=302)
 
 
@@ -226,34 +212,10 @@ def select_pack(request: Request, pack_slug: str = Form(...)):
     if pack_slug not in INDUSTRIES:
         return _page_from_request(request, error="選択した業界パックが見つかりません。")
     session["benchmark_pack"] = pack_slug
-    prop = session.get("ga4_property")
-    if isinstance(prop, dict):
-        _save_local_choice(
-            prop,
-            demo=bool(session.get("ga4_demo")),
-            benchmark_pack=pack_slug,
-        )
     return RedirectResponse("/live", status_code=302)
 
 
 @router.post("/connect/disconnect")
 def disconnect(request: Request):
-    request.session.clear()
-    path = _LOCAL_CHOICE_PATH
-    if path.exists():
-        path.unlink()
+    request.session.clear()  # server row + cookie are dropped by the session middleware
     return RedirectResponse("/connect", status_code=302)
-
-
-def _save_local_choice(
-    prop: dict[str, str], *, demo: bool, benchmark_pack: str = ""
-) -> None:
-    path = _LOCAL_CHOICE_PATH
-    path.write_text(
-        json.dumps(
-            {"property": prop, "demo": demo, "benchmark_pack": benchmark_pack},
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
