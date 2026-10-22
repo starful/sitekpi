@@ -33,16 +33,20 @@ FLOW_STEPS: dict[str, list[str]] = {
     "gov": ["guide_view", "form_start", "doc_upload", "form_complete"],
 }
 
-# Worldwide first step after arriving: viewing a page (GA4 collects page_view automatically)
+# Worldwide first steps after arriving: opened the site, engaged (GA4 collects both automatically)
 for _slug, _steps in FLOW_STEPS.items():
-    if _steps[0] != "page_view":
-        _steps.insert(0, "page_view")
+    if _steps[0] != "session_start":
+        _steps[:0] = ["session_start", "user_engagement"]
 
 # Short behaviour labels (what the person did), ja / en / ko.
 STEP_LABELS: dict[str, dict[str, str]] = {
     # GA4 automatically collected / enhanced measurement / recommended
+    "session_start": {"ja": "サイトを開いた", "en": "Opened the site", "ko": "사이트를 열었다"},
     "page_view": {"ja": "ページを見た", "en": "Viewed a page", "ko": "페이지 열람"},
-    "user_engagement": {"ja": "じっくり見た", "en": "Engaged", "ko": "충분히 봄"},
+    "user_engagement": {"ja": "しっかり見た（10秒以上）", "en": "Engaged (10 s+)", "ko": "제대로 봤다 (10초 이상)"},
+    "video_start": {"ja": "動画を再生", "en": "Started a video", "ko": "동영상 재생"},
+    "video_progress": {"ja": "動画を途中まで見た", "en": "Watched part of a video", "ko": "동영상 일부 시청"},
+    "video_complete": {"ja": "動画を最後まで見た", "en": "Watched a video to the end", "ko": "동영상 끝까지 시청"},
     "scroll": {"ja": "最後までスクロール", "en": "Scrolled to the end", "ko": "끝까지 스크롤"},
     "click": {"ja": "外部リンクをクリック", "en": "Clicked an outbound link", "ko": "외부 링크 클릭"},
     "view_search_results": {"ja": "サイト内を検索", "en": "Searched the site", "ko": "사이트 내 검색"},
@@ -125,6 +129,26 @@ PACK_STEP_LABELS: dict[tuple[str, str], dict[str, str]] = {
     ("type-education", "form_start"): {"ja": "申込を開始", "en": "Started application", "ko": "신청 시작"},
     ("type-education", "form_submit"): {"ja": "申込を送信", "en": "Sent application", "ko": "신청 제출"},
     ("type-content", "sign_up"): {"ja": "登録・購読", "en": "Signed up / subscribed", "ko": "가입·구독"},
+    ("type-comparison", "click"): {"ja": "販売先へ移動", "en": "Went to the seller", "ko": "판매처로 이동"},
+    ("type-donation", "begin_checkout"): {"ja": "寄付フォームを開始", "en": "Started donating", "ko": "기부 시작"},
+    ("type-donation", "purchase"): {"ja": "寄付を完了", "en": "Donated", "ko": "기부 완료"},
+    ("type-doc_request", "view_item"): {"ja": "製品・サービスを見た", "en": "Viewed a product", "ko": "제품·서비스 열람"},
+    ("type-doc_request", "form_start"): {"ja": "資料請求を開始", "en": "Started a request", "ko": "자료 요청 시작"},
+    ("type-doc_request", "form_submit"): {"ja": "資料請求を送信", "en": "Sent a request", "ko": "자료 요청 제출"},
+    ("type-quote", "view_item"): {"ja": "事例・料金を見た", "en": "Viewed work / prices", "ko": "사례·가격 열람"},
+    ("type-quote", "form_start"): {"ja": "見積もり依頼を開始", "en": "Started a quote request", "ko": "견적 의뢰 시작"},
+    ("type-quote", "form_submit"): {"ja": "見積もり依頼を送信", "en": "Sent a quote request", "ko": "견적 의뢰 제출"},
+    ("type-call_line", "view_item"): {"ja": "サービス内容を見た", "en": "Viewed services", "ko": "서비스 내용 열람"},
+    ("type-call_line", "click"): {"ja": "電話・LINE をタップ", "en": "Tapped phone / LINE", "ko": "전화·LINE 탭"},
+    ("type-store_visit", "view_item"): {"ja": "店舗・メニューを見た", "en": "Viewed store / menu", "ko": "매장·메뉴 열람"},
+    ("type-store_visit", "click"): {"ja": "地図・経路を開いた", "en": "Opened the map", "ko": "지도·경로 열기"},
+    ("type-store_visit", "form_start"): {"ja": "来店予約を開始", "en": "Started a visit booking", "ko": "방문 예약 시작"},
+    ("type-store_visit", "form_submit"): {"ja": "来店予約を送信", "en": "Booked a visit", "ko": "방문 예약 제출"},
+    ("type-free_trial", "view_item"): {"ja": "料金・プランを見た", "en": "Viewed pricing", "ko": "요금·플랜 열람"},
+    ("type-free_trial", "sign_up"): {"ja": "トライアル登録", "en": "Started the trial", "ko": "체험 등록"},
+    ("type-app_download", "view_item"): {"ja": "アプリ紹介を見た", "en": "Viewed the app page", "ko": "앱 소개 열람"},
+    ("type-app_download", "click"): {"ja": "ストアへ移動", "en": "Went to the store", "ko": "스토어로 이동"},
+    ("type-members_only", "view_item"): {"ja": "限定記事の入口を見た", "en": "Hit a members-only article", "ko": "전용 글 입구 열람"},
     ("finance", "apply_start"): {"ja": "申込を開始", "en": "Started application", "ko": "신청 시작"},
     ("parttime", "job_view"): {"ja": "求人を見た", "en": "Viewed shift job", "ko": "알바 공고 열람"},
     ("marketplace", "view_item"): {"ja": "出品を見た", "en": "Viewed listing", "ko": "상품 열람"},

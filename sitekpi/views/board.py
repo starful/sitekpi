@@ -137,8 +137,14 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
     title = t(key, loc, band=band, avg=avg)
     title += " · " + _source_text(spec, loc)
     scale = _viz_scale(low, high, value, unit)
+    # 基準なし: no published figure and no target of the user's own → nothing to compare with
+    none = not custom and kind not in ("cited", "blend")
+    if none:
+        avg, band, title = t("bench_none", loc), "", t("bench_none_title", loc)
+        scale = {k: None for k in scale}
     base: dict[str, Any] = {
         "key": bench_key,
+        "none": none,
         "custom": custom,
         "band": band,
         "avg": avg,
@@ -149,7 +155,7 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
         "unit": unit,
         **scale,
     }
-    if value is None:
+    if value is None or none:
         return {
             **base,
             "gap": "—",
@@ -164,9 +170,6 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
         arrow, tone = ("▲", "up") if hib else ("▼", "down")
     else:
         arrow, tone = ("▼", "down") if hib else ("▲", "up")
-    # SiteKPI 初期値 (no source, not the user's own target): shown for reference, never judged
-    if not custom and kind not in ("cited", "blend"):
-        tone, arrow = "na", ""
     return {
         **base,
         "gap": _fmt_gap(gap, gap_unit),
@@ -325,6 +328,7 @@ def _bench_block(info: dict[str, Any] | None, locale: str, *, gap_bar: bool = Fa
         "gap": b["gap"],
         "judge": _judge(None if empty else info),
         "custom": bool((info or {}).get("custom")),
+        "none": bool((info or {}).get("none")),
         "key": str((info or {}).get("key") or ""),
         "gapbar": _gap_bar(None if empty else info) if gap_bar else None,
     }
@@ -342,6 +346,7 @@ def _bench_cells(info: dict[str, Any] | None) -> dict[str, Any]:
         "gap": info["gap"],
         "judge": _judge(info),
         "custom": bool(info.get("custom")),
+        "none": bool(info.get("none")),
         "key": str(info.get("key") or ""),
     }
 
@@ -456,7 +461,7 @@ def _viz_rows(rows: list[dict[str, Any]], *, locale: str, mode: str) -> list[dic
         bench_val = r.get("value_num") if r.get("value_num") is not None else cur
         info = _bench_info(bench_val if r.get("bench") else None, r.get("bench"))
         prior = r.get("prev_num") if r.get("prev_num") is not None else _prior_from_delta(cur, r.get("delta"))
-        mid = float(info["mid"]) if info and info.get("mid") is not None else None
+        mid = float(info["mid"]) if info and info.get("mid") is not None and not info.get("none") else None
         unit = str((info or {}).get("unit") or "")
         seed = str(r.get("id") or label)
         if mode == "compare":

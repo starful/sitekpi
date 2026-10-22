@@ -55,9 +55,10 @@ def _behavior_demo(base: dict[str, dict[str, Any]], flow: list[str]) -> dict[str
         d = dict(data)
         counts = dict(data.get("event_counts") or {})
         uu = int(data.get("uu") or 0)
-        known = {"page_view": uu * 0.97, "user_engagement": uu * float(data.get("engaged_rate") or 50) / 100}
+        known = {"session_start": uu * 0.99, "page_view": uu * 0.97,
+                 "user_engagement": uu * float(data.get("engaged_rate") or 50) / 100}
         values: list[float | None] = [
-            float(counts[ev]) if ev in counts and ev != "page_view" else known.get(ev) for ev in flow
+            known[ev] if ev in known else (float(counts[ev]) if ev in counts else None) for ev in flow
         ]
         if values[-1] is None:
             values[-1] = float(max(int(data.get("signups") or 0), 1))
@@ -68,14 +69,14 @@ def _behavior_demo(base: dict[str, dict[str, Any]], flow: list[str]) -> dict[str
                 j = i
                 while values[j] is None:
                     j += 1
-                a = values[i - 1] if i else uu * 0.97
+                a = values[i - 1] if i else uu * 0.99
                 b = values[j]
                 for k in range(i, j):
                     values[k] = a * (b / a) ** ((k - i + 1) / (j - i + 1)) if a else 0.0
                 i = j
             i += 1
         for ev, v in zip(flow, values):
-            if ev not in counts or ev == "page_view":
+            if ev not in counts or ev in known:
                 counts[ev] = round(v or 0)
         d["event_counts"] = counts
         out[period] = d
@@ -120,23 +121,25 @@ def build_registry() -> dict[str, Any]:
     from sitekpi.packs.behaviors import BEHAVIORS, blended_benchmarks, slug_of
 
     for cat, beh in BEHAVIORS.items():
-        members = [s for s, m in industries.items() if m.get("category") == cat and not m.get("virtual")]
+        members = beh.get("industries")
+        if members is None:
+            members = [s for s, m in industries.items() if m.get("category") == cat and not m.get("virtual")]
         rep = beh["rep"]
         vslug = slug_of(cat)
         meta = dict(industries[rep])
         flow = list(beh["flow"])
-        board = beh.get("board")
         meta.update({"slug": vslug, "label": beh["label"]["ja"], "hint": beh["hint"]["ja"],
-                     "virtual": True, "rep": rep, "members": members,
-                     "logic_as": "edu" if board else rep,  # edu = primary ÷ mid, primary ÷ bottom
+                     "virtual": True, "rep": rep, "members": list(members), "group": beh["group"],
+                     "logic_as": str(industries[rep].get("logic_as") or rep) if beh.get("keep_copy") else "edu",
                      "events": flow + [e for e in meta.get("events") or [] if e not in flow]})
         bcopy = dict(pack_copy[rep])
-        if board:
-            meta["primary_event"] = board["primary"]
-            meta["signup_label"] = board["signup_label"]["ja"]
-            bcopy.update({"mid_event": board["mid"], "bottom_event": board["bottom"],
-                          **{k: board[k]["ja"] for k in ("cvr_label", "mid_label", "bottom_label",
-                                                         "rate_a_label", "rate_b_label")}})
+        if not beh.get("keep_copy"):
+            from sitekpi.packs.behaviors import board_events
+
+            ev = board_events(cat)
+            meta["primary_event"] = ev["primary"]
+            meta["signup_label"] = beh["signup_label"]["ja"]
+            bcopy.update({"mid_event": ev["mid"], "bottom_event": ev["bottom"], "cvr_label": beh["cvr_label"]["ja"]})
         industries[vslug] = meta
         demo[vslug] = _behavior_demo(demo[rep], flow)
         pack_copy[vslug] = bcopy

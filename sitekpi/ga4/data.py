@@ -651,3 +651,23 @@ def fetch_flow(
         return {"entry": entry, "entry_by": entry_by, "totals": totals, "by_channel": by_channel, "sample": False}, None
     except Exception as exc:  # noqa: BLE001
         return None, str(exc)
+
+
+def fetch_site_basics(session: dict[str, Any], *, period: str = "28d") -> dict[str, float] | None:
+    """Users and engagement rate for the property (used to compare with an industry)."""
+    info = connection_info(session)
+    if not info or not HAS_DATA or not HAS_GOOGLE_AUTH:
+        return None
+    ranges = PERIOD_RANGE.get(period) or PERIOD_RANGE["28d"]
+    try:
+        creds = creds_from_session(session)
+        if not creds:
+            return None
+        client = BetaAnalyticsDataClient(credentials=creds)
+        r = _run(client, info["property_id"], ranges[0], ranges[1], ["activeUsers", "engagementRate", "sessions"])
+        if not r.rows:
+            return None
+        v = _vals(r.rows[0])
+        return {"uu": _i(v[0]), "engaged_rate": round(_f(v[1]) * 100, 1), "sessions": _i(v[2])}
+    except Exception:  # noqa: BLE001
+        return None

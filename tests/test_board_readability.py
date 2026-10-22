@@ -51,7 +51,7 @@ def test_band_only_in_tooltip_and_judge_chips_in_tables(client):
     s = _soup(client, "/hr")
     assert not s.select(".bench-band")
     cell = s.select_one("#panel-funnel td.bench-cell[title]")
-    assert "40–65%" in s.select_one("#panel-funnel").decode() and cell
+    assert "基準なし" in s.select_one("#panel-funnel").decode() and cell
     chips = [c.get_text() for c in s.select("#panel-funnel td.bench-gap .judge")]
     assert chips == ["要注意"]  # only the sourced 応募CVR is judged; 初期値 rows get no chip
     row = [tr for tr in s.select("#panel-funnel tr") if "開始→完了率" in tr.get_text()][0]
@@ -91,7 +91,7 @@ def test_cited_benchmarks_link_their_source(client):
         return BeautifulSoup(raw.replace("<template", "<section").replace("</template>", "</section>"), "html.parser")
     link = pop("signup_to_pay").select_one("a.src-btn[href='https://baymard.com/lists/cart-abandonment-rate']")
     assert link and "70.22%" in link["title"] and link.get_text(strip=True) == "出典"
-    assert "SiteKPI 初期値" in pop("pages_session").select_one(".src-none").get_text()
+    assert pop("pages_session").select_one(".pop-why") and not pop("pages_session").select_one("a.src-btn")
     cell = s.select_one("#panel-funnel td.bench-cell[title*='Baymard']")
     assert cell and cell.get_text() == "29.8%" and "±10pt" in cell["title"]
     assert cell["title"].startswith("業界目安帯 19.78–39.78%")

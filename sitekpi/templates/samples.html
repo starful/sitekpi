@@ -5,8 +5,10 @@
   <main class="connect samples">
     <h1>{{ t("samples.title", loc) }}</h1>
     <p class="lead">{{ t("samples.lead", loc) }}</p>
+    {% for g in groups %}
+    <h2 class="sample-group">{{ g.label }}</h2>
     <div class="sample-list">
-      {% for b in behaviors %}
+      {% for b in g.behaviors %}
       <section class="card sample-beh">
         <div class="sample-head">
           <div>
@@ -27,5 +29,6 @@
       </section>
       {% endfor %}
     </div>
+    {% endfor %}
   </main>
 {% endblock %}

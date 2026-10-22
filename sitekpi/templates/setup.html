@@ -23,31 +23,41 @@
     {% if step == "flow" %}
     <h1>{{ t("setup.flow.q", loc) }}</h1>
     <p class="lead">{{ t("setup.flow.lead", loc) }}{% if knows_events %} <span class="legend"><i></i>{{ t("connect.pack.flow_found", loc) }}</span>{% endif %}</p>
+    {% macro flow_choice(b) -%}
+    <button type="submit" name="behavior" value="{{ b.cat }}" class="choice{{ ' is-rec' if b.recommended else '' }}{{ ' is-selected' if b.selected else '' }}">
+      <span class="choice-top">
+        <strong>{{ b.label }}</strong>
+        {% if b.recommended %}<em class="pack-rec">{{ t("setup.flow.closest", loc) }}</em>{% endif %}
+        {% if knows_events and b.hits %}<em class="pack-hits">{{ t("connect.pack.hits", loc, n=b.hits, total=b.total) }}</em>{% endif %}
+        {% if b.selected %}<em class="pack-now">{{ t("setup.now", loc) }}</em>{% endif %}
+      </span>
+      <span class="choice-hint">{{ b.hint }}</span>
+      {{ mini_flow(b.steps) }}
+      <span class="choice-go" aria-hidden="true">›</span>
+    </button>
+    {%- endmacro %}
     <form method="post" action="/setup/flow" class="choice-list">
-      {% for b in options %}
-      <button type="submit" name="behavior" value="{{ b.cat }}" class="choice{{ ' is-rec' if b.recommended else '' }}{{ ' is-selected' if b.selected else '' }}">
-        <span class="choice-top">
-          <strong>{{ b.label }}</strong>
-          {% if b.recommended %}<em class="pack-rec">{{ t("setup.flow.closest", loc) }}</em>{% endif %}
-          {% if b.selected %}<em class="pack-now">{{ t("setup.now", loc) }}</em>{% endif %}
-        </span>
-        <span class="choice-hint">{{ b.hint }}</span>
-        {{ mini_flow(b.steps) }}
-        <span class="choice-go" aria-hidden="true">›</span>
-      </button>
+      {% if options.closest %}
+      <p class="choice-group is-closest">{{ t("setup.flow.closest_group", loc) }}</p>
+      {% for b in options.closest %}{{ flow_choice(b) }}{% endfor %}
+      {% endif %}
+      {% for g in options.groups %}
+      <p class="choice-group">{{ g.label }}</p>
+      {% for b in g.options %}{{ flow_choice(b) }}{% endfor %}
       {% endfor %}
     </form>
 
     {% elif step == "industry" %}
     <h1>{{ t("setup.industry.q", loc) }}</h1>
-    <p class="lead">{{ t("setup.industry.lead", loc, flow=behavior_label) }}</p>
+    <p class="lead">{{ t("setup.industry.lead", loc, flow=behavior_label) }}{% if site %} {{ t("setup.industry.your_eng", loc, v=site.engaged_rate | round(1)) }}{% endif %}</p>
     <form method="post" action="/setup/industry">
       {% if not industries.main %}<p class="note">{{ t("setup.industry.no_main", loc) }}</p>{% endif %}
       <div class="choice-grid">
         {% for i in industries.main %}
         <button type="submit" name="industry" value="{{ i.slug }}" class="choice small{{ ' is-selected' if i.selected else '' }}">
           <span class="choice-top"><strong>{{ i.label }}</strong>{% if i.selected %}<em class="pack-now">{{ t("setup.now", loc) }}</em>{% endif %}</span>
-          <span class="choice-hint">{{ i.hint }}</span>
+          <span class="choice-hint">{{ i.about or i.hint }}</span>
+          {% if i.compare %}<span class="choice-compare">{{ t("setup.industry.compare", loc) }} <b class="tone-{{ i.compare.tone }}">{{ i.compare.you }}</b> / {{ t("setup.industry.this", loc) }} {{ i.compare.std }} <em class="tone-{{ i.compare.tone }}">{{ i.compare.diff }}</em></span>{% endif %}
           <span class="choice-meta">{{ t("setup.industry.cited", loc, n=i.cited) if i.cited else t("setup.industry.default", loc) }}</span>
           <span class="choice-go" aria-hidden="true">›</span>
         </button>
@@ -60,7 +70,7 @@
         <p class="more-group">{{ g.label }}</p>
         <div class="chip-row">
           {% for i in g.packs %}
-          <button type="submit" name="industry" value="{{ i.slug }}" class="chip{{ ' is-selected' if i.selected else '' }}">{{ i.label }}</button>
+          <button type="submit" name="industry" value="{{ i.slug }}" class="chip{{ ' is-selected' if i.selected else '' }}" title="{{ i.about }}">{{ i.label }}{% if i.compare %} <small class="tone-{{ i.compare.tone }}">{{ i.compare.diff }}</small>{% endif %}</button>
           {% endfor %}
         </div>
         {% endfor %}

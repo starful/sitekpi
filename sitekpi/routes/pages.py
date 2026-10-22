@@ -184,6 +184,8 @@ def page_live(request: Request, period: str = Query(default="28d")):
         if prev:
             prev = apply_mapping(prev, pack_slug, mapping, primary=primary_ev)
     flow = live_flow if live else sample_flow_context(pack_slug, data, loc)
+    if flow:
+        flow["sessions"] = f"{int(data.get('sessions') or 0):,}"
     label = extras["connected"]["name"]
     pack_label = selection_label(sel, loc)
     is_demo = bool(extras["connected"].get("demo"))
@@ -222,6 +224,12 @@ def page_live(request: Request, period: str = Query(default="28d")):
             prev=prev,
         )
     )
+
+
+def _with_sessions(flow: dict[str, Any] | None, data: dict[str, Any]) -> dict[str, Any] | None:
+    if flow:
+        flow["sessions"] = f"{int(data.get('sessions') or 0):,}"
+    return flow
 
 
 @router.get("/samples", response_class=HTMLResponse)
@@ -268,7 +276,7 @@ def page_industry(request: Request, slug: str, period: str = Query(default="28d"
             nav_active=f"pack:{slug}",
             connected=extras["connected"],
             locale=get_locale(request.session),
-            flow=sample_flow_context(slug, data, get_locale(request.session)),
+            flow=_with_sessions(sample_flow_context(slug, data, get_locale(request.session)), data),
             prev=sample_prev(slug, period, data),
         )
     )

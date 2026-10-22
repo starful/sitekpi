@@ -189,6 +189,7 @@ def flow_context(
         "last_label": last["label"] if last else "",
         "insights": insights,
         "event_options": event_options or [],
+        "sessions": "",
         # live boards can show up to max_branches other behaviours above / below a stage
         "can_add": live and len(branches or []) < max_branches,
         "n_branches": len(branches or []),

@@ -1009,3 +1009,12 @@ td.prev-cell { font-weight: 700; white-space: nowrap; font-variant-numeric: tabu
 
 .flow-src { font-size: 0.68rem; color: #475569; line-height: 1.4; }
 @container flow (max-width: 900px) { .flow-node .flow-src { grid-column: 1 / -1; } }
+
+/* 基準なし / 全業種 */
+button.bench-open.is-none { color: #94a3b8; font-weight: 700; border-bottom-style: dotted; }
+.src-btn.is-all { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+.pop-why { margin: 0 0 10px; padding: 10px 12px; border-radius: 8px; background: #f8fafc; font-size: 0.78rem; line-height: 1.6; color: #334155; }
+.pop-why p { margin: 0 0 6px; }
+.pop-why p:last-child { margin: 0; }
+.pop-why-set { color: var(--muted); }
+.pop-note { margin: 6px 0 0; font-size: 0.72rem; color: #9a3412; line-height: 1.5; }

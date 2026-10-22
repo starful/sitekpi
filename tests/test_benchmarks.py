@@ -178,8 +178,9 @@ def test_source_is_a_button_not_a_full_url():
     assert cited and cited.get_text(strip=True) == "出典" and cited["href"].startswith("https://")
     assert cited["target"] == "_blank" and "noopener" in cited["rel"]
     assert cited["title"]  # publisher name on hover, not printed
-    provisional = [t for t in _pops(html).select("section") if t.select_one(".src-none")]
-    assert provisional and "SiteKPI 初期値" in provisional[0].get_text()
+    # no published figure → 基準なし, and the popover explains why instead of citing a source
+    none = [t for t in _pops(html).select("section") if t.select_one(".pop-why")]
+    assert none and "基準なし" in none[0].get_text() and not none[0].select_one("a.src-btn")
 
 
 def test_added_industries_cite_their_own_published_figures():

@@ -18,6 +18,8 @@ from sitekpi.flow import (
     parse_custom_flow,
     property_scope,
 )
+from sitekpi.cache import TTLCache
+from sitekpi.ga4.data import connection_info, fetch_site_basics
 from sitekpi.i18n import get_locale, t
 from sitekpi.packs import INDUSTRIES
 from sitekpi.packs.behaviors import BEHAVIORS, slug_of
@@ -64,6 +66,21 @@ def current_flow(request: Request, behavior: str, locale: str) -> list[dict[str,
     ]
 
 
+_BASICS_CACHE = TTLCache(maxsize=256, ttl=300.0)
+
+
+def site_basics(request: Request) -> dict[str, float] | None:
+    info = connection_info(request.session)
+    if not info:
+        return None
+    hit = _BASICS_CACHE.get(info["property_id"])
+    if hit is not None:
+        return hit or None
+    basics = fetch_site_basics(request.session)
+    _BASICS_CACHE.set(info["property_id"], basics or {})
+    return basics
+
+
 def _page(request: Request, step: str, error: str | None = None) -> HTMLResponse:
     loc = get_locale(request.session)
     sel = selection(request.session)
@@ -73,6 +90,7 @@ def _page(request: Request, step: str, error: str | None = None) -> HTMLResponse
         step=step, sel=sel, locale=loc, counts=counts, flows=flows, error=error,
         can_adjust=property_scope(request.session) is not None, max_steps=MAX_FLOW_STEPS,
         rail=nav_rail_context(request, "connect"),
+        site=site_basics(request) if step == "industry" else None,
     ))
 
 

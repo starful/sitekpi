@@ -71,7 +71,8 @@ def compose_benchmarks(behavior: str, industry: str) -> dict[str, dict[str, Any]
     src = BENCHMARKS[industry]
     same_goal = INDUSTRIES[industry].get("category") == behavior  # 主転換 means the same thing
     keep_all = same_goal and same_funnel(behavior, industry)       # step rates computed the same way
-    keep = set(SITE_METRICS) | ({"signup_rate"} if same_goal else set())
+    # 主転換CVR: always the chosen industry's figure — CVR levels differ by industry
+    keep = set(SITE_METRICS) | {"signup_rate"}
     return {k: dict(v) for k, v in src.items() if keep_all or k in keep}
 
 

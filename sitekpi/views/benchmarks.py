@@ -52,9 +52,12 @@ def bench_context(
                 "higher": bool(spec["higher_is_better"]),
                 "default": f"{_fmt(spec['default_low'])}–{_fmt(spec['default_high'])}{unit}",
                 "source": spec.get("source") or {"kind": "provisional", "label": "", "url": ""},
-                "low": _fmt(spec["low"]),
-                "high": _fmt(spec["high"]),
                 "custom": bool(spec.get("custom")),
+                # 基準なし: no published figure → empty inputs, the popover explains why
+                "none": not spec.get("custom") and (spec.get("source") or {}).get("kind") not in ("cited", "blend"),
+                "low": _fmt(spec["low"]) if spec.get("custom") or (spec.get("source") or {}).get("kind") in ("cited", "blend") else "",
+                "high": _fmt(spec["high"]) if spec.get("custom") or (spec.get("source") or {}).get("kind") in ("cited", "blend") else "",
+                "all_industries": "All industries" in str((spec.get("source") or {}).get("label") or ""),
             }
         )
     return {

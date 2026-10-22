@@ -348,3 +348,14 @@ button.chip:hover, button.chip.is-selected { border-color: var(--accent); color:
   .setup-sum dt { grid-column: 1 / -1; }
 }
 .ind-link.is-flow { background: #eef4ff; border-color: #c9dbfb; color: #1e40af; }
+
+.choice-group { margin: 14px 0 0; font-size: 0.8rem; font-weight: 800; color: var(--muted); letter-spacing: 0.02em; }
+.choice-group:first-child { margin-top: 0; }
+.choice-group.is-closest { color: #166534; }
+
+.choice-compare { font-size: 0.76rem; color: #334155; font-weight: 600; }
+.choice-compare b { font-weight: 800; }
+.choice-compare em { font-style: normal; font-weight: 800; margin-left: 4px; }
+.tone-up { color: #047857; } .tone-down { color: #b45309; } .tone-ok { color: #475569; }
+button.chip small { font-weight: 800; margin-left: 2px; }
+.sample-group { margin: 22px 0 10px; font-size: 0.9rem; color: var(--muted); }

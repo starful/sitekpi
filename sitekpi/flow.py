@@ -300,11 +300,14 @@ def sample_flow(pack: str, data: dict[str, Any]) -> dict[str, Any]:
     steps = FLOW_STEPS.get(pack) or []
     totals: dict[str, int] = {}
     prev = entry
+    # GA4 basics every visitor goes through: opened the site, viewed a page, engaged
+    basics = {"session_start": entry * 0.99, "page_view": entry * 0.97,
+              "user_engagement": entry * float(data.get("engaged_rate") or 50) / 100}
     for s in steps:
-        raw = counts.get(s)
-        if raw is None and s == "page_view":  # every visitor views a page
-            raw = round(entry * 0.97)
-        users = min(int(raw or 0), int(prev * 0.92)) if s != "page_view" else min(int(raw or 0), entry)
+        if s in basics:
+            users = min(round(basics[s]), int(prev))
+        else:
+            users = min(int(counts.get(s) or 0), int(prev * 0.92))
         totals[s] = max(users, 0)
         prev = totals[s] or prev
     channels = [(str(n), float(p)) for n, p in (data.get("channels") or [])]

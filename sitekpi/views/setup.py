@@ -10,32 +10,53 @@ from sitekpi.packs.flows import FLOW_STEPS, step_label
 from sitekpi.templating import render
 
 
+UNIVERSAL = {"session_start", "user_engagement", "page_view"}
+
+
 def _flow_options(loc: str, sel: dict[str, str], counts: dict[str, int] | None,
-                  flows: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
-    from sitekpi.packs.behaviors import BEHAVIORS, behavior_hint, behavior_label, slug_of
+                  flows: dict[str, list[dict[str, str]]]) -> dict[str, Any]:
+    """Step ① choices: the closest flows first, then every flow by group."""
+    from sitekpi.packs.behaviors import BEHAVIORS, GROUPS, behavior_hint, behavior_label
 
     out = []
-    for cat in BEHAVIORS:
+    for cat, beh in BEHAVIORS.items():
         steps = [{**s, "found": None if counts is None else s["event"] in counts} for s in flows[cat]]
+        own = [s for s in steps if s["event"] not in UNIVERSAL]
         out.append({
-            "cat": cat, "label": behavior_label(cat, loc), "hint": behavior_hint(cat, loc),
-            # page_view is everyone's first step — it says nothing about which flow fits
-            "steps": steps, "hits": sum(1 for s in steps if s["found"] and s["event"] != "page_view"),
-            "selected": sel["behavior"] == cat,
+            "cat": cat, "group": beh["group"], "label": behavior_label(cat, loc), "hint": behavior_hint(cat, loc),
+            # the universal first steps say nothing about which flow fits
+            "steps": steps, "hits": sum(1 for s in own if s["found"]), "total": len(own),
+            "selected": sel["behavior"] == cat, "recommended": False,
         })
     best = max((b["hits"] for b in out), default=0)
-    for b in out:
-        b["recommended"] = best > 0 and b["hits"] == best
-    # closest to the site first, the rest in their usual order
-    return sorted(out, key=lambda b: (not b["recommended"],))
+    closest = sorted([b for b in out if best and b["hits"] == best], key=lambda b: -b["hits"] / max(b["total"], 1))[:3]
+    for b in closest:
+        b["recommended"] = True
+    rest = [b for b in out if b not in closest]
+    groups = [{"id": g, "label": lab.get(loc) or lab["ja"], "options": [b for b in rest if b["group"] == g]}
+              for g, lab in GROUPS.items()]
+    return {"closest": closest, "groups": [g for g in groups if g["options"]], "count": len(out)}
 
 
-def _industry_options(loc: str, sel: dict[str, str]) -> dict[str, Any]:
+def _industry_options(loc: str, sel: dict[str, str], site: dict[str, float] | None = None) -> dict[str, Any]:
     from sitekpi.packs import BENCHMARKS, INDUSTRIES, packs_by_category
     from sitekpi.packs.behaviors import behavior_label
 
+    def compare(slug: str) -> dict[str, Any] | None:
+        """One number that shows how the site differs: its engagement rate vs this industry's."""
+        spec = BENCHMARKS[slug].get("engaged_rate")
+        if not site or spec is None or not (spec.get("source") or {}).get("url"):
+            return None
+        std = (float(spec["low"]) + float(spec["high"])) / 2
+        you = float(site["engaged_rate"])
+        return {"you": f"{you:.1f}%", "std": f"{std:.1f}%", "diff": f"{you - std:+.1f}pt".replace("-", "−"),
+                # same rule as the board: inside the band is neutral, outside is good / needs attention
+                "tone": "up" if you > float(spec["high"]) else "down" if you < float(spec["low"]) else "ok"}
+
     def item(slug: str, label: str) -> dict[str, Any]:
         return {"slug": slug, "label": pack_text(slug, "label", loc, label),
+                "about": pack_text(slug, "blurb", loc, str(INDUSTRIES[slug].get("blurb") or "")),
+                "compare": compare(slug),
                 "hint": pack_text(slug, "hint", loc, str(INDUSTRIES[slug].get("hint") or "")),
                 "cited": sum(1 for spec in BENCHMARKS[slug].values() if (spec.get("source") or {}).get("url")),
                 "selected": sel["industry"] == slug}
@@ -62,6 +83,7 @@ def render_setup(
     max_steps: int,
     rail: dict[str, Any],
     error: str | None = None,
+    site: dict[str, float] | None = None,
 ) -> str:
     from sitekpi.packs.behaviors import behavior_label, slug_of
 
@@ -72,7 +94,8 @@ def render_setup(
         ctx["options"] = _flow_options(loc, sel, counts, flows)
     elif step == "industry":
         ctx["behavior_label"] = behavior_label(sel["behavior"], loc)
-        ctx["industries"] = _industry_options(loc, sel)
+        ctx["industries"] = _industry_options(loc, sel, site)
+        ctx["site"] = site
     else:
         pack = slug_of(sel["behavior"])
         ctx["behavior_label"] = behavior_label(sel["behavior"], loc)

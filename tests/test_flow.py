@@ -33,10 +33,9 @@ def _template(html: str, tid: str) -> BeautifulSoup:
 def test_every_pack_has_a_flow_of_its_own_events():
     assert set(FLOW_STEPS) == set(INDUSTRIES)
     for slug, steps in FLOW_STEPS.items():
-        assert steps[0] == "page_view"  # worldwide first step after arriving
-        assert 4 <= len(steps) <= 5
-        assert len(steps) == 5 or not slug.startswith("type-")  # behaviours start with 5
-        assert all(s == "page_view" or s in INDUSTRIES[slug]["events"] for s in steps)
+        assert steps[:2] == ["session_start", "user_engagement"]  # worldwide GA4 start: opened, really looked
+        assert 5 <= len(steps) <= 6
+        assert all(s in ("session_start", "user_engagement") or s in INDUSTRIES[slug]["events"] for s in steps)
         assert all(s in STEP_LABELS for s in steps)
         for label in (STEP_LABELS[s] for s in steps):
             assert label["ja"] and label["en"] and label["ko"]
@@ -58,7 +57,7 @@ def test_sample_board_shows_flow_with_worst_step_and_no_mapping_form():
     flow = _soup(html).select_one("section#flow")
     assert flow and "見本" in flow.select_one("h2").get_text()
     stages = flow.select(".flow-stage")
-    assert [s.select_one(".flow-label").get_text() for s in stages] == ["サイトに来た", "ページを見た", "商品を見た", "カートに追加", "購入手続きへ", "購入"]
+    assert [s.select_one(".flow-label").get_text() for s in stages] == ["サイトに来た", "サイトを開いた", "しっかり見た（10秒以上）", "商品を見た", "カートに追加", "購入手続きへ", "購入"]
     assert stages[0].select_one(".flow-users strong").get_text() == "68,500"
     assert "流入元: Organic Search 25%" in stages[0].get_text()  # where visitors came from
     assert len(flow.select(".flow-link.is-worst")) == 1
@@ -84,12 +83,12 @@ def test_flow_is_localised(loc, label):
 
 def test_view_model_marks_untracked_steps():
     f = {"entry": 1000, "entry_by": {"Direct": 600, "Email": 400}, "sample": False,
-         "totals": {"page_view": 990, "job_view": 500, "apply_start": 0, "apply_submit": 40, "entry_complete": 10},
+         "totals": {"session_start": 990, "user_engagement": 700, "job_view": 500, "apply_start": 0, "apply_submit": 40, "entry_complete": 10},
          "by_channel": {"Direct": {"job_view": 300, "apply_submit": 10, "entry_complete": 2},
                         "Email": {"job_view": 200, "apply_submit": 30, "entry_complete": 8}}}
     steps = [{"step": s, "event": s} for s in FLOW_STEPS["hr"]]
     ctx = flow_context(pack="hr", flow=f, steps=steps, locale="ja", live=True)
-    assert [s["missing"] for s in ctx["stages"]] == [False, False, False, True, False, False]
+    assert [s["missing"] for s in ctx["stages"]] == [False, False, False, False, True, False, False]
     assert any("応募を開始" in i and "クリック" in i for i in ctx["insights"])
     rows = {r["name"]: r for r in ctx["ch_rows"]}
     assert rows["Email"]["best"] and rows["Direct"]["low"]
@@ -102,9 +101,9 @@ def test_view_model_marks_untracked_steps():
     assert not any("最も高く" in i for i in ctx["insights"])
 
 
-SITE_COUNTS = {"page_view": 40000, "view_search_results": 7000, "view_item": 9000, "form_start": 800,
+SITE_COUNTS = {"session_start": 21000, "user_engagement": 14000, "page_view": 40000, "view_search_results": 7000, "view_item": 9000, "form_start": 800,
                "submit_application": 260, "apply_mobile": 500}
-SITE_USERS = {"page_view": 19000, "view_search_results": 6000, "view_item": 5000, "form_start": 600,
+SITE_USERS = {"session_start": 19800, "user_engagement": 12000, "page_view": 19000, "view_search_results": 6000, "view_item": 5000, "form_start": 600,
               "submit_application": 200, "apply_mobile": 400}
 
 
@@ -178,7 +177,7 @@ def test_live_flow_maps_a_step_to_the_sites_own_event(live):
     a, b = live(), live()
     html = a.get("/live").text
     labels = [n.get_text() for n in _soup(html).select("#flow .flow-node .flow-label")]
-    assert labels == ["サイトに来た", "ページを見た", "求人を検索", "求人を見た", "応募を開始", "応募を送信"]
+    assert labels == ["サイトに来た", "サイトを開いた", "しっかり見た（10秒以上）", "求人を検索", "求人を見た", "応募を開始", "応募を送信"]
     assert "is-missing" in _stage(html, "応募を送信")["class"]  # site sends submit_application
     assert "見本" not in _soup(html).select_one("#flow h2").get_text()
     form = _template(html, "pop-flow-form_submit").select_one("form[action='/flow/mapping']")
@@ -193,7 +192,7 @@ def test_live_flow_maps_a_step_to_the_sites_own_event(live):
     assert "is-missing" not in st["class"]
     assert st.select_one("code.flow-event.is-mapped").get_text() == "submit_application"
     assert st.select_one(".flow-users strong").get_text() == "200"
-    assert live.calls["flow"][-1] == ["page_view", "view_search_results", "view_item", "form_start", "submit_application"]
+    assert live.calls["flow"][-1] == ["session_start", "user_engagement", "view_search_results", "view_item", "form_start", "submit_application"]
     assert "submit_application" in live.calls["overlay"][-1]
     # イベント: the flow's event stands in for the site's event (no duplicate row)
     events = html.split('id="panel-events"', 1)[1].split('id="panel-biz"', 1)[0]
@@ -234,9 +233,9 @@ def test_setup_is_three_short_steps(live):
     first = soup.select("button.choice")[0]
     assert first["value"] == "recruit" and "あなたのサイトに近い" in first.get_text()
     assert [s["title"] for s in first.select(".mf-step.is-found")] == [
-        "page_view", "view_search_results", "view_item", "form_start"]
+        "session_start", "user_engagement", "view_search_results", "view_item", "form_start"]
     names = [b.select_one("strong").get_text() for b in soup.select("button[name=behavior]")]
-    assert len(names) == 8 and "ブログ・記事を読んでもらう" in names
+    assert len(set(names)) == 18 and "ブログ・記事を読んでもらう" in names
     assert c.get("/setup/adjust").headers["location"] == "/setup/flow"  # can't skip ahead
     r = c.post("/setup/flow", data={"behavior": "recruit"})
     assert r.headers["location"] == "/setup/industry"
@@ -251,10 +250,10 @@ def test_setup_is_three_short_steps(live):
     soup = _soup(c.get("/setup/adjust").text)
     rows = soup.select("ol.adj-steps > [data-step]")
     assert [r.select_one("[name=label]")["value"] for r in rows] == [
-        "ページを見た", "求人を検索", "求人を見た", "応募を開始", "応募を送信"]
-    assert ["is-missing" in r["class"] for r in rows] == [False, False, False, False, True]
+        "サイトを開いた", "しっかり見た（10秒以上）", "求人を検索", "求人を見た", "応募を開始", "応募を送信"]
+    assert ["is-missing" in r["class"] for r in rows] == [False, False, False, False, False, True]
     assert "1 段のイベントが GA4 に見つかりません" in soup.get_text()
-    assert "submit_application" in [o["value"] for o in rows[4].select("select[name=event] option")]
+    assert "submit_application" in [o["value"] for o in rows[5].select("select[name=event] option")]
     # connect page now just summarises, with links to change each step
     soup = _soup(c.get("/connect").text)
     assert [a["href"] for a in soup.select(".setup-sum .sum-rows a")] == ["/setup/flow", "/setup/industry", "/setup/adjust"]
@@ -271,27 +270,27 @@ def _form_lists(pairs):
 def test_adjust_the_flow_to_the_site(live):
     c = live()
     data = []
-    for key, ev, label in [("page_view", "page_view", "ページを見た"), ("", "apply_mobile", "スマホ応募"),
+    for key, ev, label in [("session_start", "session_start", "サイトを開いた"), ("", "apply_mobile", "スマホ応募"),
                            ("form_submit", "submit_application", "応募を送信")]:
         data += [("key", key), ("event", ev), ("label", label)]
     r = c.post("/setup/adjust", data=_form_lists(data))
     assert r.status_code == 303 and r.headers["location"] == "/live"
     html = c.get("/live").text
     labels = [n.get_text() for n in _soup(html).select("#flow .flow-node .flow-label")]
-    assert labels == ["サイトに来た", "ページを見た", "スマホ応募", "応募を送信"]
-    assert live.calls["flow"][-1] == ["page_view", "apply_mobile", "submit_application"]
+    assert labels == ["サイトに来た", "サイトを開いた", "スマホ応募", "応募を送信"]
+    assert live.calls["flow"][-1] == ["session_start", "apply_mobile", "submit_application"]
     assert "260" in _soup(html).select_one(".summary").get_text()  # last step = 主転換
     rows = _soup(c.get("/setup/adjust").text).select("ol.adj-steps > [data-step]")
-    assert [r.select_one("[name=label]")["value"] for r in rows] == ["ページを見た", "スマホ応募", "応募を送信"]
+    assert [r.select_one("[name=label]")["value"] for r in rows] == ["サイトを開いた", "スマホ応募", "応募を送信"]
     bad = [("key", ""), ("event", "bad name"), ("label", "")]
     assert "イベント名" in c.post("/setup/adjust", data=_form_lists(bad)).text
     many = [x for n in range(9) for x in (("key", ""), ("event", f"e{n}"), ("label", ""))]
     assert "8 つまで" in c.post("/setup/adjust", data=_form_lists(many)).text
-    std = [x for k in ("page_view", "view_search_results", "view_item", "form_start", "form_submit")
+    std = [x for k in ("session_start", "user_engagement", "view_search_results", "view_item", "form_start", "form_submit")
            for x in (("key", k), ("event", k), ("label", ""))]
     c.post("/setup/adjust", data=_form_lists(std))
     labels = [n.get_text() for n in _soup(c.get("/live").text).select("#flow .flow-node .flow-label")]
-    assert labels == ["サイトに来た", "ページを見た", "求人を検索", "求人を見た", "応募を開始", "応募を送信"]
+    assert labels == ["サイトに来た", "サイトを開いた", "しっかり見た（10秒以上）", "求人を検索", "求人を見た", "応募を開始", "応募を送信"]
 
 
 def test_industry_of_another_kind_uses_site_wide_standards_only(live):
@@ -302,7 +301,8 @@ def test_industry_of_another_kind_uses_site_wide_standards_only(live):
     soup = _soup(html)
     assert "買う × 士業・法律事務所" in soup.select_one("header.top .meta").get_text()
     assert "Consulting & Professional Services" in _template(html, "pop-bench-engaged_rate").select_one("a.src-btn")["title"]
-    assert not soup.select("template#pop-bench-signup_rate")
+    # CVR standards always follow the chosen industry, whatever the flow
+    assert _template(html, "pop-bench-signup_rate").select_one("a.src-btn, .pop-why")
     c.post("/setup/industry", data={"industry": "apparel"})
     assert "Baymard" in _template(c.get("/live").text, "pop-bench-signup_to_pay").select_one("a.src-btn")["title"]
 
@@ -352,7 +352,7 @@ def test_live_flow_shows_other_behaviours_above_and_below_a_step(live):
     first = r.json()["id"]
     html = b.get("/live").text  # same property → same flow
     # the main path is unchanged — the branch sits under its step
-    assert _labels(html) == ["サイトに来た", "ページを見た", "求人を検索", "求人を見た", "応募を開始", "応募を送信"]
+    assert _labels(html) == ["サイトに来た", "サイトを開いた", "しっかり見た（10秒以上）", "求人を検索", "求人を見た", "応募を開始", "応募を送信"]
     assert _branches(html, "form_start", "below") == ["スマホで応募開始"]
     br = _soup(html).select_one("#flow .flow-branch")
     assert br.select_one(".flow-users strong").get_text() == "400"
@@ -391,7 +391,7 @@ def test_branches_are_validated(live):
     assert "a very long label that k" in _branches(c.get("/live").text, "form_start", "below")
 
 
-@pytest.mark.parametrize("cat", ["commerce", "membership", "lead", "booking", "education", "recruit", "content", "blog"])
+@pytest.mark.parametrize("cat", list(__import__("sitekpi.packs.behaviors", fromlist=["BEHAVIORS"]).BEHAVIORS))
 def test_every_behaviour_has_a_sample_board_built_on_ga4_basics(cat):
     from sitekpi.packs.behaviors import BEHAVIORS
 
@@ -400,7 +400,7 @@ def test_every_behaviour_has_a_sample_board_built_on_ga4_basics(cat):
         c.post("/settings", data={"locale": loc})
         html = c.get(f"/type-{cat}").text
         nodes = _soup(html).select("#flow .flow-node")
-        assert len(nodes) == 6  # サイトに来た + 5 steps
+        assert len(nodes) == 1 + len(BEHAVIORS[cat]["flow"])  # サイトに来た + the flow
         assert [n.select_one("code").get_text() for n in nodes[1:]] == BEHAVIORS[cat]["flow"]
         assert not any(n.select_one(".flow-missing") for n in nodes)  # the sample records every step
 
@@ -415,3 +415,15 @@ def test_blog_flow_takes_any_industry(live):
     html = c.get("/live").text
     assert "ブログ・記事を読んでもらう × ニュース・購読" in _soup(html).select_one("header.top .meta").get_text()
     assert _template(html, "pop-bench-engaged_rate")  # site-wide standards still apply
+
+
+def test_industry_step_compares_the_site_with_each_industry(live, monkeypatch):
+    import sitekpi.routes.setup as setup_routes
+
+    monkeypatch.setattr(setup_routes, "fetch_site_basics", lambda session, period="28d": {"uu": 19000, "engaged_rate": 48.0, "sessions": 21000})
+    setup_routes._BASICS_CACHE._data.clear()
+    c = live()
+    c.post("/setup/flow", data={"behavior": "recruit"})
+    soup = _soup(c.get("/setup/industry").text)
+    assert "48" in soup.select_one(".wizard-head, header, .lead, p").get_text() or "48%" in soup.get_text()
+    assert soup.select(".choice-compare")
