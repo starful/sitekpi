@@ -33,7 +33,7 @@
 {% macro bench_block(b) -%}
 <div class="bench-line{{ ' is-empty' if b.empty else '' }}" title="{{ b.title }}">
   {%- if b.gapbar %}{{ gap_bar(b.gapbar) }}{% endif -%}
-  <span class="bench-k">{{ t("bench", loc) }}</span>
+  <span class="bench-k">{{ t("bench_custom" if b.custom else "bench", loc) }}</span>
   <span class="bench-vals"><span class="bench-v">{{ b.avg }}</span></span>
   <span class="bench-k">{{ t("bench_gap", loc) }}</span>
   <span class="bench-vals"><span class="bench-gap tone-{{ b.tone }}">{{ b.gap }}</span>{{ judge_chip(b.judge) }}</span>
@@ -44,7 +44,7 @@
 {% if c.empty -%}
 <td class="num muted bench-cell is-empty" title="{{ t('bench_empty_short', loc) }}">—</td><td class="num muted bench-gap tone-na">—</td>
 {%- else -%}
-<td class="num bench-cell" title="{{ c.title }}"><span class="bench-v">{{ c.avg }}</span></td>
+<td class="num bench-cell{{ ' is-custom' if c.custom else '' }}" title="{{ c.title }}"><span class="bench-v">{{ c.avg }}</span>{% if c.custom %}<span class="src-tag">{{ t("bench_custom_tag", loc) }}</span>{% endif %}</td>
 <td class="num bench-gap tone-{{ c.tone }}">{{ c.gap }}{{ judge_chip(c.judge) }}</td>
 {%- endif %}
 {%- endmacro %}

@@ -24,6 +24,7 @@ Finder なら `run.command` をダブルクリック。初回（または .venv 
 ## Sessions / deploy notes
 
 - セッションはサーバー側（`.data/sessions.sqlite3`、暗号化）。Cookie にはランダムな ID のみ。
+- 自社目安（/benchmarks）は `.data/app.sqlite3`（`APP_DB_PATH` で変更可）。GA4 プロパティ単位 / 見本はブラウザ単位。
 - 1台のサーバーなら `--workers N` で複数プロセス可（SQLite を共有）。
 - 複数台（Cloud Run の複数インスタンス等）にする場合は、`sitekpi/session.py` のストアを
   共有ストア（Redis / Firestore / Cloud SQL など）に差し替える。
@@ -37,6 +38,7 @@ sitekpi/
   app.py             FastAPI 本体・セッション・gzip・ルーター登録
   session.py         サーバー側セッション（暗号化 SQLite）
   cache.py           プロセス内 TTL キャッシュ
+  benchmarks.py      業界目安（初期値＋自社目安）
   routes/            pages.py（ボード・ビルダー・設定）/ connect.py（GA4 接続）/ nav.py
   ga4/               oauth.py（認証）/ data.py（GA4 Data API）
   board/data.py      ボードの行データ生成

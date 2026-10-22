@@ -98,6 +98,15 @@ def _viz_scale(
     }
 
 
+def _source_text(spec: dict[str, Any], locale: str) -> str:
+    if spec.get("custom"):
+        return t("bench_src.custom", locale)
+    src = spec.get("source") or {}
+    if src.get("kind") == "cited":
+        return t("bench_src.cited", locale, label=src.get("label", ""))
+    return t("bench_src.provisional", locale)
+
+
 def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | None:
     if not bench_key:
         return None
@@ -112,9 +121,13 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
     gap_unit = str(spec.get("gap_unit") or unit)
     band = f"{low:g}–{high:g}{unit}"
     avg = _fmt_num(mid, unit)
-    title = t("bench_title", _ACTIVE_LOCALE.get(), band=band, avg=avg)
+    loc = _ACTIVE_LOCALE.get()
+    custom = bool(spec.get("custom"))
+    title = t("bench_title_custom" if custom else "bench_title", loc, band=band, avg=avg)
+    title += " · " + _source_text(spec, loc)
     scale = _viz_scale(low, high, value, unit)
     base: dict[str, Any] = {
+        "custom": custom,
         "band": band,
         "avg": avg,
         "title": title,
@@ -296,6 +309,7 @@ def _bench_block(info: dict[str, Any] | None, locale: str, *, gap_bar: bool = Fa
         "tone": b["tone"],
         "gap": b["gap"],
         "judge": _judge(None if empty else info),
+        "custom": bool((info or {}).get("custom")),
         "gapbar": _gap_bar(None if empty else info) if gap_bar else None,
     }
 
@@ -311,6 +325,7 @@ def _bench_cells(info: dict[str, Any] | None) -> dict[str, Any]:
         "tone": info["tone"],
         "gap": info["gap"],
         "judge": _judge(info),
+        "custom": bool(info.get("custom")),
     }
 
 
@@ -596,6 +611,7 @@ def _render_sample_dense(
     connected: dict[str, str] | None = None,
     locale: str = "ja",
     board_kind: str = "sample",
+    adjust_href: str = "",
 ) -> str:
     loc = normalize_locale(locale)
     if data is None or ind is None or benches_raw is None:
@@ -729,6 +745,7 @@ def _render_sample_dense(
         business_unlinked=bool(business) and not any(b["linked"] for b in business),
         watch=_watch_items(board, loc),
         is_sample=is_sample,
+        adjust_href=adjust_href,
         dialogs=[_dialog(item, loc) for item in help_items],
         board_data={
             "close": t("close", loc),

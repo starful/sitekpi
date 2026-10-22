@@ -76,6 +76,9 @@ def _benches_for_sample(raw: dict[str, dict[str, Any]]) -> dict[str, dict[str, A
             "unit": unit,
             "hib": bool(spec["higher_is_better"]),
             "gap_unit": "pt" if unit == "%" else unit,
+            # 自社目安 (user override) vs pack default, and where the default came from
+            "custom": bool(spec.get("custom")),
+            "source": spec.get("source") or {"kind": "provisional", "label": "", "url": ""},
         }
     return out
 

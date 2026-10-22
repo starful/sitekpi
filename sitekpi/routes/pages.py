@@ -8,6 +8,7 @@ from typing import Any, Literal
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from sitekpi.benchmarks import load_effective
 from sitekpi.cache import TTLCache
 from sitekpi.ga4.data import (
     build_live_builder_widgets,
@@ -176,7 +177,8 @@ def page_live(request: Request, period: str = Query(default="28d")):
             period=period,
             data=data,
             ind=INDUSTRIES[pack_slug],
-            benches_raw=BENCHMARKS[pack_slug],
+            benches_raw=load_effective(request.session, pack_slug, BENCHMARKS[pack_slug], live=True),
+            adjust_href=f"/benchmarks?pack={pack_slug}&board=live",
             property_name=prop or label,
             industry_label=label,
             industry_note=note,
@@ -215,7 +217,8 @@ def page_industry(request: Request, slug: str, period: str = Query(default="28d"
             period=period,
             data=data,
             ind=INDUSTRIES[slug],
-            benches_raw=BENCHMARKS[slug],
+            benches_raw=load_effective(request.session, slug, BENCHMARKS[slug], live=False),
+            adjust_href=f"/benchmarks?pack={slug}&board=sample",
             property_name="",
             pack_links=extras["pack_links"],
             pack_groups=extras["pack_groups"],

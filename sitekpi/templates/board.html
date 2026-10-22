@@ -11,6 +11,7 @@
           <div class="meta">{{ pack_meta }}</div>
         </div>
         <div class="top-right">
+          {% if adjust_href %}<a class="adjust-link" href="{{ adjust_href }}">{{ t("bench_adjust", loc) }}</a>{% endif %}
           <div class="mode-toggle" role="group" aria-label="{{ t('mode.aria', loc) }}">
             <button type="button" class="mode-btn" data-board-mode="simple">{{ t("mode.simple", loc) }}</button>
             <button type="button" class="mode-btn" data-board-mode="detail">{{ t("mode.detail", loc) }}</button>

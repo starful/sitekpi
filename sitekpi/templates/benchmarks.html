@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}SiteKPI · {{ t("bench_edit.title", loc) }}{% endblock %}
+{% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/benchmarks.css') }}" />{% endblock %}
+{% block main %}
+      <header class="top">
+        <div>
+          <h1>{{ t("bench_edit.title", loc) }}</h1>
+          <div class="meta">{{ pack_label }}</div>
+        </div>
+        <a class="back" href="{{ back_href }}">{{ t("bench_edit.back", loc) }}</a>
+      </header>
+      <div class="content">
+        {% if flash %}<p class="flash ok" role="status">{{ t(flash, loc) }}</p>{% endif %}
+        {% if has_errors %}<p class="flash err" role="alert">{{ t("bench_edit.has_errors", loc) }}</p>{% endif %}
+        <p class="lead">{{ t("bench_edit.lead", loc) }}</p>
+
+        <div class="explain">
+          <section><h2>{{ t("bench_edit.what_title", loc) }}</h2><p>{{ t("bench_edit.what_body", loc) }}</p></section>
+          <section class="is-source"><h2>{{ t("bench_edit.source_title", loc) }}</h2><p>{{ t("bench_edit.source_body", loc) }}</p></section>
+          <section><h2>{{ t("bench_edit.tips_title", loc) }}</h2><p>{{ t("bench_edit.tips_body", loc) }}</p></section>
+        </div>
+
+        {% if board == "live" %}
+        <p class="scope is-live">{{ t("bench_edit.scope_live", loc, name=property_name) }}</p>
+        {% else %}
+        <p class="scope">{{ t("bench_edit.scope_sample", loc) }}</p>
+        <form method="get" action="/benchmarks" class="pack-pick">
+          <input type="hidden" name="board" value="sample" />
+          <label for="pack">{{ t("bench_edit.pack", loc) }}</label>
+          <select id="pack" name="pack">
+            {% for g in packs %}
+            <optgroup label="{{ g.group }}">
+              {% for p in g.packs %}<option value="{{ p.slug }}"{% if p.slug == pack %} selected{% endif %}>{{ p.label }}</option>{% endfor %}
+            </optgroup>
+            {% endfor %}
+          </select>
+          <button type="submit" class="ghost">{{ t("bench_edit.pack_go", loc) }}</button>
+        </form>
+        {% endif %}
+
+        <form method="post" action="/benchmarks" class="bench-form">
+          <input type="hidden" name="pack" value="{{ pack }}" />
+          <input type="hidden" name="board" value="{{ board }}" />
+          {% for g in groups %}
+          <section class="card">
+            <h2>{{ g.title }}</h2>
+            <div class="table-wrap">
+            <table class="bench-table">
+              <thead>
+                <tr>
+                  <th>{{ t("bench_edit.col.metric", loc) }}</th>
+                  <th>{{ t("bench_edit.col.direction", loc) }}</th>
+                  <th>{{ t("bench_edit.col.default", loc) }}</th>
+                  <th>{{ t("bench_edit.col.yours", loc) }}</th>
+                  <th>{{ t("bench_edit.col.state", loc) }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in g.rows %}
+                <tr class="{{ 'is-custom' if r.custom else '' }}{{ ' has-error' if r.error else '' }}">
+                  <td class="metric">{{ r.label }}</td>
+                  <td class="dir">{{ t("bench_edit.higher" if r.higher else "bench_edit.lower", loc) }}</td>
+                  <td class="default">{{ r.default }}</td>
+                  <td class="inputs">
+                    <label class="visually-hidden" for="low_{{ r.key }}">{{ r.label }} {{ t("bench_edit.low", loc) }}</label>
+                    <input id="low_{{ r.key }}" name="low_{{ r.key }}" value="{{ r.low }}" inputmode="decimal" />
+                    <span class="sep">〜</span>
+                    <label class="visually-hidden" for="high_{{ r.key }}">{{ r.label }} {{ t("bench_edit.high", loc) }}</label>
+                    <input id="high_{{ r.key }}" name="high_{{ r.key }}" value="{{ r.high }}" inputmode="decimal" />
+                    <span class="unit">{{ r.unit }}</span>
+                    {% if r.error %}<p class="row-error">{{ r.error }}</p>{% endif %}
+                  </td>
+                  <td class="state">
+                    {% if r.custom %}
+                    <span class="state-tag is-custom">{{ t("bench_edit.state_custom", loc) }}</span>
+                    <button type="submit" class="link" formaction="/benchmarks/reset" name="metric" value="{{ r.key }}">{{ t("bench_edit.reset_one", loc) }}</button>
+                    {% else %}
+                    <span class="state-tag">{{ t("bench_edit.state_default", loc) }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            </div>
+          </section>
+          {% endfor %}
+          <div class="actions">
+            <button type="submit" class="primary">{{ t("bench_edit.save", loc) }}</button>
+            <button type="submit" class="ghost" formaction="/benchmarks/reset" name="metric" value="">{{ t("bench_edit.reset_all", loc) }}</button>
+          </div>
+        </form>
+      </div>
+{% endblock %}
