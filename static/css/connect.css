@@ -1,0 +1,92 @@
+/* GA4 connect page */
+:root {
+  --ink: #1c2430; --muted: #6b7788; --line: #e6eaf0; --accent: #2f6fed;
+  --bg: #f6f8fc; --card: #fff;
+  --font-ui: "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
+  --font-num: "DM Sans", "IBM Plex Sans JP", sans-serif;
+  --rail-w: 268px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; color: var(--ink);
+  font-family: "Noto Sans JP", "DM Sans", sans-serif; background: var(--bg);
+}
+.top a.nav:hover { color: var(--accent); }
+main { max-width: 720px; margin: 0 auto; padding: 28px 20px 48px; }
+h1 {
+  font-family: "DM Sans", "Noto Sans JP", sans-serif;
+  font-size: 1.8rem; margin: 0 0 8px; color: #152033;
+}
+.lead { color: var(--muted); line-height: 1.6; margin: 0 0 20px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 18px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(21,32,51,0.04);
+}
+.card.hero { padding: 22px; }
+.card h2 { margin: 0 0 8px; font-size: 1.15rem; }
+.meta { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+.hint { margin: 10px 0 0; color: var(--muted); font-size: 0.82rem; }
+.badge {
+  display: inline-block; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em;
+  text-transform: uppercase; color: #0f766e; background: #e7f7f3;
+  border: 1px solid #b7e5d8; border-radius: 999px; padding: 3px 8px; margin-bottom: 8px;
+}
+.steps { margin: 8px 0 0; padding-left: 1.2rem; color: var(--ink); line-height: 1.7; font-size: 0.88rem; }
+.env {
+  margin: 12px 0 0; padding: 12px; background: #0f172a; color: #e2e8f0;
+  border-radius: 10px; font-size: 0.78rem; overflow: auto; line-height: 1.5;
+}
+.note { margin: 0 0 8px; color: var(--muted); font-size: 0.88rem; }
+.ok { color: #0f766e; font-weight: 700; margin: 0 0 8px; font-size: 0.88rem; }
+.banner {
+  padding: 12px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 0.9rem; line-height: 1.5;
+}
+.banner.err { background: #fff1f2; border: 1px solid #fecdd3; color: #9f1239; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+a.btn, button {
+  display: inline-flex; align-items: center; justify-content: center;
+  font: inherit; font-weight: 700; padding: 10px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: #fff; color: var(--ink);
+  text-decoration: none; cursor: pointer;
+}
+a.btn.primary, button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+a.btn.ghost:hover, button.ghost:hover { border-color: var(--accent); color: var(--accent); }
+.prop-list { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 16px; }
+.prop {
+  display: flex; gap: 10px; align-items: flex-start; padding: 12px;
+  border: 1px solid var(--line); border-radius: 10px; cursor: pointer; background: #fafbfd;
+}
+.prop:has(input:checked) { border-color: #bfd2f8; background: #eaf1ff; }
+.prop strong { display: block; font-size: 0.95rem; }
+.prop small { color: var(--muted); font-size: 0.8rem; }
+.pack-group { margin: 0 0 14px; }
+.pack-group h3 {
+  margin: 0 0 8px; font-size: 0.78rem; font-weight: 800; color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.pack-group .prop-list { margin-top: 0; }
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px;
+}
+.kpi-grid div {
+  padding: 12px; border-radius: 10px; background: #f6f8fc; border: 1px solid var(--line);
+}
+.kpi-grid span { display: block; font-size: 0.75rem; color: var(--muted); font-weight: 700; }
+.kpi-grid strong {
+  font-family: "DM Sans", "Noto Sans JP", sans-serif;
+  font-size: 1.35rem; font-weight: 800;
+}
+code { font-size: 0.85em; }
+.dev {
+  margin-top: 28px; border: 1px dashed #d8dee8; border-radius: 12px;
+  background: #fafbfd; padding: 0 14px;
+}
+.dev summary {
+  cursor: pointer; font-size: 0.82rem; font-weight: 700; color: #93a0b4;
+  padding: 12px 0; list-style: none;
+}
+.dev summary::-webkit-details-marker { display: none; }
+.dev summary::before { content: "▸ "; }
+.dev[open] summary::before { content: "▾ "; }
+.dev-body { padding: 0 0 14px; }

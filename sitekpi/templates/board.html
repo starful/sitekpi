@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% import "board/_macros.html" as m with context %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" />{% endblock %}
+{% block main %}
+      <header class="top">
+        <div>
+          <h1>{{ industry_label }}</h1>
+          <div class="meta">{{ pack_meta }}</div>
+        </div>
+        <div class="top-right">
+          <label class="period">
+            <span class="sr-only">{{ t("period.label", loc) }}</span>
+            <select disabled aria-label="{{ t('period.label', loc) }}">
+              <option{% if period == "28d" %} selected{% endif %}>{{ t("period.28d", loc) }}</option>
+              <option{% if period == "7d" %} selected{% endif %}>{{ t("period.7d", loc) }}</option>
+            </select>
+          </label>
+        </div>
+      </header>
+      <div class="content">
+        <div class="focus-banner" role="status">{{ focus_line }}</div>
+        <section class="summary" aria-label="{{ t('summary_aria', loc) }}">
+          {% for k in summary %}
+          <div class="sum-item{{ ' is-focus' if k.focus else '' }}">
+            <div class="sum-head">
+              {{ m.help_btn(k.id, k.label) }}
+              <div class="sum-label" title="{{ k.label }}">{{ k.label }}</div>
+              {% if k.focus %}{{ m.focus_tag(t("focus", loc)) }}{% endif %}
+            </div>
+            <div class="sum-value">{{ k.value }}</div>
+            <div class="sum-delta tone-{{ k.tone }}">{{ k.delta }} <span class="vs">{{ t("vs_prev", loc) }}</span></div>
+            {{ m.bench_block(k.block) }}
+          </div>
+          {% endfor %}
+        </section>
+
+        <section class="insights" aria-label="{{ t('next_watch', loc) }}">
+          <h2>{{ t("next_watch", loc) }}</h2>
+          <ol>
+            {% for title, body in next_watch %}
+            <li>
+              <strong>{{ title }}</strong>
+              <span>{{ body }}</span>
+            </li>
+            {% endfor %}
+          </ol>
+        </section>
+
+        {# Reading order: who → where from → depth → convert → evidence → business #}
+        <div class="grid-2">
+          {{ m.metric_panel(panels.audience) }}
+          <section class="panel" id="panel-channels">
+            <div class="panel-head">
+              <div class="panel-head-left">
+                <h2>{{ t("panel.channels", loc) }}</h2>
+                <span class="sub">{{ t("panel.channels_sub", loc) }}</span>
+              </div>
+              {{ m.view_switch("channels", ["list", "card", "bar", "stack"]) }}
+            </div>
+            <div class="panel-body" data-section-body="channels" data-view-mode="list">
+              <div class="mode-pane mode-list">
+                {% for c in channels %}
+                <div class="chan">
+                  <div class="chan-meta">{{ m.help_btn(c.id, c.name) }}<span class="row-name">{{ c.name }}</span><strong>{{ c.pct }}%</strong></div>
+                  <div class="chan-bar"><i style="width:{{ c.pct }}%;background:{{ c.color }}"></i></div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="mode-pane mode-card">
+                {% for c in channels %}
+                <article class="metric-card">
+                  <div class="metric-card-head">{{ m.help_btn(c.id, c.name) }}<span class="metric-card-name">{{ c.name }}</span></div>
+                  <div class="metric-card-value">{{ c.pct }}%</div>
+                  <div class="chan-bar"><i style="width:{{ c.pct }}%;background:{{ c.color }}"></i></div>
+                </article>
+                {% endfor %}
+              </div>
+              <div class="mode-pane mode-bar">
+                {% for c in channels %}
+                <div class="bar-row">
+                  <div class="bar-meta">{{ m.help_btn(c.id, c.name) }}<span class="compact-name">{{ c.name }}</span><span class="compact-value">{{ c.pct }}%</span></div>
+                  <div class="rank-bar"><i style="width:{{ c.pct }}%;background:{{ c.color }}"></i></div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="mode-pane mode-stack">
+                {% if channels_stack %}
+                <div class="chan-stack" role="img" aria-label="{{ t('panel.channels', loc) }}">
+                  {%- for c in channels_stack %}<i class="chan-stack-seg" style="width:{{ c.pct }}%;background:{{ c.color }}" title="{{ c.name }} {{ c.pct }}%"></i>{% endfor -%}
+                </div>
+                {% endif %}
+                {% for c in channels %}
+                <div class="chan">
+                  <div class="chan-meta">{{ m.help_btn(c.id, c.name) }}<span class="row-name">{{ c.name }}</span><strong>{{ c.pct }}%</strong></div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="grid-2">
+          {{ m.metric_panel(panels.engage) }}
+          {{ m.metric_panel(panels.funnel) }}
+        </div>
+
+        <div class="grid-2">
+          <section class="panel" id="panel-events">
+            <div class="panel-head">
+              <div class="panel-head-left">
+                <h2>{{ t("panel.events", loc) }}</h2>
+                <span class="sub" data-count-sub="events">{{ events.sub_closed }}</span>
+              </div>
+              {{ m.view_switch("events", ["list", "card", "bar"]) }}
+            </div>
+            <div class="panel-body" data-section-body="events" data-view-mode="bar">
+              {% if not events.rows %}<p class="ev-empty">{{ t("events.empty", loc) }}</p>{% endif %}
+              <div class="mode-pane mode-list">
+                <table class="dense">
+                  <thead>
+                    <tr>
+                      <th class="help-col">{{ t("col.help", loc) }}</th>
+                      <th>{{ t("col.event", loc) }}</th>
+                      <th style="text-align:right">{{ t("col.count", loc) }}</th>
+                      <th style="text-align:right">{{ t("col.delta", loc) }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for e in events.rows %}
+                    <tr{% if e.cls %} class="{{ e.cls }}"{% endif %}>
+                      <td class="help-cell">{{ m.help_btn(e.id, e.name) }}</td>
+                      <td class="name-cell"><code>{{ e.name }}</code>{% if e.focus %} {{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}</td>
+                      <td class="num">{{ e.count|num }}</td>
+                      <td class="num muted">{{ e.delta }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <div class="mode-pane mode-card">
+                {% for e in events.rows %}
+                <article class="metric-card{{ ' ' ~ e.cls if e.cls else '' }}">
+                  <div class="metric-card-head">
+                    {{ m.help_btn(e.id, e.name) }}
+                    <code class="metric-card-name">{{ e.name }}</code>
+                    {% if e.focus %}{{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}
+                  </div>
+                  <div class="metric-card-value">{{ e.count|num }}</div>
+                  <div class="metric-card-delta">{{ e.delta }}</div>
+                </article>
+                {% endfor %}
+              </div>
+              <div class="mode-pane mode-bar">
+                {% for e in events.rows %}
+                <div class="bar-row{{ ' ' ~ e.cls if e.cls else '' }}">
+                  <div class="bar-meta">
+                    {{ m.help_btn(e.id, e.name) }}
+                    <code class="compact-name">{{ e.name }}</code>
+                    {% if e.focus %}{{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}
+                    <span class="compact-value">{{ e.count|num }}</span>
+                  </div>
+                  <div class="rank-bar"><i style="width:{{ e.bar_pct }}%"></i></div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="panel-foot">
+              {% if events.more_n %}
+              <div class="more-wrap" data-more-wrap="events">
+                <div class="more-fade" aria-hidden="true"></div>
+                <button type="button" class="more-chip" data-more="events">{{ t("more_n", loc, n=events.more_n) }}</button>
+              </div>
+              {% endif %}
+              {% if events.missing %}
+              <p class="ev-missing" title="{{ t('events.missing_hint', loc) }}"><span class="ev-missing-k">{{ t("events.missing", loc) }}</span> {% for n in events.missing %}<code>{{ n }}</code>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+              {% endif %}
+            </div>
+          </section>
+          <section class="panel" id="panel-biz">
+            <div class="panel-head">
+              <div class="panel-head-left">
+                <h2>{{ t("panel.biz", loc) }}</h2>
+                <span class="sub">{{ t("panel.biz_sub", loc) }}</span>
+              </div>
+              {{ m.view_switch("biz", ["list", "card"]) }}
+            </div>
+            <div class="panel-body" data-section-body="biz" data-view-mode="list">
+              <div class="mode-pane mode-list">
+                {% call m.dense_table() %}
+                {% for b in business %}
+                <tr>
+                  <td class="help-cell">{{ m.help_btn(b.id, b.label) }}</td>
+                  <td class="name-cell"><span class="row-name">{{ b.label }}</span>
+                    <span class="biz-status {{ 'is-linked' if b.linked else 'is-unlinked' }}">{{ t("biz.linked" if b.linked else "biz.unlinked", loc) }}</span></td>
+                  <td class="num na">{{ b.value }}</td>
+                  {{ m.bench_cells(b.cells) }}
+                </tr>
+                {% endfor %}
+                {% endcall %}
+              </div>
+              <div class="mode-pane mode-card">
+                {% for b in business %}
+                <article class="metric-card">
+                  <div class="metric-card-head">
+                    {{ m.help_btn(b.id, b.label) }}
+                    <span class="metric-card-name">{{ b.label }}</span>
+                    <span class="biz-status {{ 'is-linked' if b.linked else 'is-unlinked' }}">{{ t("biz.linked" if b.linked else "biz.unlinked", loc) }}</span>
+                  </div>
+                  <div class="metric-card-value na">{{ b.value }}</div>
+                  {{ m.bench_block(b.block) }}
+                </article>
+                {% endfor %}
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+{% endblock %}
+{% block after_shell %}
+  {% for d in dialogs %}{{ m.help_dialog(d) }}{% endfor %}
+{% endblock %}
+{% block scripts %}
+  <script type="application/json" id="board-data">{{ board_data|tojson }}</script>
+  <script src="{{ static_url('js/board.js') }}" defer></script>
+{% endblock %}

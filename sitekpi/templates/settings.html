@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}SiteKPI · {{ t("settings.title", loc) }}{% endblock %}
+{% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/settings.css') }}" />{% endblock %}
+{% block main %}
+      <header class="top"><h1>{{ t("settings.title", loc) }}</h1></header>
+      <div class="content">
+        {% if saved %}<p class="saved" role="status">{{ t("settings.saved", loc) }}</p>{% endif %}
+        <div class="card">
+          <p class="lead">{{ t("settings.lead", loc) }}</p>
+          <form method="post" action="/settings">
+            <label class="field" for="locale">{{ t("settings.language", loc) }}</label>
+            <select id="locale" name="locale">
+              {% for code, label in locales %}<option value="{{ code }}"{% if code == loc %} selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+            <p class="hint">{{ t("settings.language_help", loc) }}</p>
+            <div class="actions">
+              <button type="submit" class="primary">{{ t("settings.save", loc) }}</button>
+              <a class="back" href="{{ back_href }}">{{ t("settings.back", loc) }}</a>
+            </div>
+          </form>
+        </div>
+      </div>
+{% endblock %}

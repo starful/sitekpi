@@ -12,17 +12,23 @@ Keep modular boundaries so new work does not re-bloat route modules / inline DEM
 ```
 main.py                    # entry only: `uvicorn main:app` (run.sh)
 sitekpi/
-  app.py                   # FastAPI app, session middleware, static, routers
+  app.py                   # FastAPI app, sessions, gzip, static, routers
   routes/pages.py          # /, /{slug}, /live, /builder, /settings
   routes/connect.py        # /connect* — OAuth (PKCE), property, 業界パック pick
-  ga4/oauth.py             # OAuth config, session creds, property list, preview
-  ga4/data.py              # GA4 Data API → board overlay / builder widgets
+  routes/nav.py            # rail context (connected property) for every page
+  ga4/oauth.py, ga4/data.py
   board/data.py            # build_dense_board: pack + data → board rows
-  views/board.py           # dense board HTML/CSS/JS
-  views/layout.py          # shared rail nav + mobile drawer (all pages)
-  views/{home,builder,settings,connect,branding}.py
-  packs/  i18n/  metrics/  # industry packs, l10n, shared 説明
-static/  brand/  scripts/
+  views/*.py               # view models only (dicts for templates) — NO HTML strings
+  templating.py            # Jinja2 env (autoescape, t(), static_url())
+  templates/
+    base.html              # <head>, rail shell, blocks: title/fonts/css/main/page/scripts
+    partials/              # rail, rail_nav, mobile_bar, logo, head_icons, fonts_full
+    board.html, board/_macros.html, builder.html, connect.html, settings.html, home.html
+  packs/  i18n/  metrics/
+static/
+  css/   brand, rail, board, builder, connect, settings, home
+  js/    rail.js (drawer + pack search), board.js, builder.js
+  vendor/sortable-1.15.6.min.js (bundled, MIT)
 ```
 
 ## Where things go
@@ -30,14 +36,18 @@ static/  brand/  scripts/
 | Change | Put it here | Do not |
 |--------|-------------|--------|
 | New industry pack | `sitekpi/packs/{slug}.py` + append to `PACK_MODULES` in `sitekpi/packs/registry.py` | Inline DEMO/BENCHMARKS in routes / `board/data.py` |
-| Pack spoken labels (en/ko) | `sitekpi/i18n/pack_l10n.py` entry for that slug | Hardcode only-JP in board templates |
-| UI chrome strings | `sitekpi/i18n/strings.py` | Scatter literals across HTML builders |
+| Pack spoken labels (en/ko) | `sitekpi/i18n/pack_l10n.py` entry for that slug | Hardcode only-JP in templates |
+| UI chrome strings | `sitekpi/i18n/strings.py`, used as `{{ t("key", loc) }}` | Scatter literals across templates |
 | Shared KPI 説明 | `sitekpi/metrics/help.py` | Duplicate long help per pack |
-| Sample nav category | `sitekpi/packs/catalog.py` + `cat.*` in `sitekpi/i18n/strings.py` | Ad-hoc category strings in rail HTML |
-| Board layout / board CSS | `sitekpi/views/board.py` / `sitekpi/board/data.py` | Per-industry alternate board UIs |
-| Rail nav markup | `_rail_nav_html` in `sitekpi/views/layout.py` | Fork a second sample nav / top nav |
-| New page / route | handler in `sitekpi/routes/*`, HTML in `sitekpi/views/*` | HTML inside route modules |
-| GA4 API calls | `sitekpi/ga4/*` | Google client calls from views |
+| Sample nav category | `sitekpi/packs/catalog.py` + `cat.*` in `sitekpi/i18n/strings.py` | Ad-hoc category strings in rail markup |
+| Board markup | `templates/board.html` + macros in `templates/board/_macros.html` | Per-industry alternate board UIs |
+| Board numbers / chart points | view models in `sitekpi/views/board.py` | Math inside templates |
+| Board styles / behaviour | `static/css/board.css` / `static/js/board.js` | `<style>`/`<script>` blocks in templates |
+| Rail | `templates/partials/rail*.html`, `static/css/rail.css`, `static/js/rail.js`; data `views/layout.rail_context` | A second nav / top nav |
+| New page | route in `routes/`, view model in `views/`, template extending `base.html`, assets in `static/` via `static_url()` | HTML/CSS built in Python |
+| Data for JS | `<script type="application/json" id="…">{{ data|tojson }}</script>` | Interpolating values into JS source |
+
+Templates autoescape: never mark user/GA4 values `|safe`. `scripts/smoke_packs.py` fails if a view builds HTML/CSS again.
 
 ## Request state (multi-user)
 
@@ -52,13 +62,6 @@ static/  brand/  scripts/
 2. `PACK_MODULES` in `sitekpi/packs/registry.py`
 3. `PACK_L10N[slug]` with at least `label` / `hint` for `ja` / `en` / `ko`
 4. Run `python scripts/smoke_packs.py`
-
-## Rail / app chrome
-
-Rail markup, CSS, the mobile drawer and its JS live only in `sitekpi/views/layout.py`
-(`rail_css()`, `rail_html()`, `mobile_bar_html()`, `rail_js()`; nav context from
-`sitekpi/routes/nav.py`). Every page uses them — never re-declare `.rail` styles in a page.
-`scripts/smoke_packs.py` fails if rail CSS is duplicated.
 
 ## Product frame (do not reopen lightly)
 

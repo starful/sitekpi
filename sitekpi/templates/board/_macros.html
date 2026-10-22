@@ -1,0 +1,179 @@
+{#- KPI board building blocks. Import with: {% import "board/_macros.html" as m with context %} -#}
+
+{% macro help_btn(id, title) -%}
+<button type="button" class="help-btn" data-help="{{ id }}" aria-label="{{ t('help_of', loc, title=title) }}">{{ t("help", loc) }}</button>
+{%- endmacro %}
+
+{% macro focus_tag(label) -%}
+<span class="focus-tag">{{ label }}</span>
+{%- endmacro %}
+
+{% macro view_switch(section, modes) -%}
+<div class="view-switch" data-section-switch="{{ section }}" role="group" aria-label="{{ t('view.switch', loc) }}">
+  {%- for mode in modes -%}
+  <button type="button" class="view-btn" data-section="{{ section }}" data-mode="{{ mode }}">{{ t("view." ~ mode, loc) }}</button>
+  {%- endfor -%}
+</div>
+{%- endmacro %}
+
+{# --- 業界目安 / 目安差 --- #}
+{% macro gap_bar(g) -%}
+{% if g.empty -%}
+<div class="gap-bar is-empty" aria-hidden="true"><div class="gap-bar-track"></div></div>
+{%- else -%}
+<div class="gap-bar" title="{{ g.title }}"><div class="gap-bar-track"><i class="gap-bar-fill tone-{{ g.tone }}" style="{{ g.fill_style }}"></i><i class="gap-bar-mid" style="{{ g.mid_style }}"></i><i class="gap-bar-val tone-{{ g.tone }}" style="{{ g.val_style }}"></i></div></div>
+{%- endif %}
+{%- endmacro %}
+
+{% macro bench_block(b) -%}
+<div class="bench-line{{ ' is-empty' if b.empty else '' }}" title="{{ b.title }}">
+  {%- if b.gapbar %}{{ gap_bar(b.gapbar) }}{% endif -%}
+  <span class="bench-k">{{ t("bench", loc) }}</span>
+  <span class="bench-vals"><span class="bench-v">{{ b.avg }}</span>
+    {%- if b.band %}<span class="bench-band">{{ t("bench_band", loc) }} <span class="bench-band-v">{{ b.band }}</span></span>{% endif -%}
+  </span>
+  <span class="bench-k">{{ t("bench_gap", loc) }}</span>
+  <span class="bench-vals"><span class="bench-gap tone-{{ b.tone }}">{{ b.gap }}{% if b.arrow %} {{ b.arrow }}{% endif %}</span></span>
+</div>
+{%- endmacro %}
+
+{% macro bench_cells(c) -%}
+{% if c.empty -%}
+<td class="num muted bench-cell is-empty" title="{{ t('bench_empty_short', loc) }}">—</td><td class="num muted bench-gap tone-na">—</td>
+{%- else -%}
+<td class="num bench-cell" title="{{ c.title }}"><span class="bench-v">{{ c.avg }}</span>{% if c.band %}<span class="bench-band">{{ c.band }}</span>{% endif %}</td>
+<td class="num bench-gap tone-{{ c.tone }}">{{ c.gap }}{% if c.arrow %} {{ c.arrow }}{% endif %}</td>
+{%- endif %}
+{%- endmacro %}
+
+{# --- metric tables / cards --- #}
+{% macro dense_table() -%}
+<table class="dense">
+  <thead>
+    <tr>
+      <th class="help-col">{{ t("col.help", loc) }}</th>
+      <th>{{ t("col.metric", loc) }}</th>
+      <th style="text-align:right">{{ t("col.value", loc) }}</th>
+      <th style="text-align:right">{{ t("col.bench", loc) }}</th>
+      <th style="text-align:right">{{ t("col.gap", loc) }}</th>
+    </tr>
+  </thead>
+  <tbody>{{ caller() }}</tbody>
+</table>
+{%- endmacro %}
+
+{% macro metric_rows(rows) -%}
+{% for r in rows %}
+<tr{% if r.focus %} class="is-focus"{% endif %}>
+  <td class="help-cell">{{ help_btn(r.id, r.label) }}</td>
+  <td class="name-cell"><span class="row-name">{{ r.label }}</span>{% if r.focus %} {{ focus_tag(t("focus", loc)) }}{% endif %}</td>
+  <td class="num">{{ r.value }}</td>
+  {{ bench_cells(r.cells) }}
+</tr>
+{% endfor %}
+{%- endmacro %}
+
+{% macro metric_cards(rows) -%}
+{% for r in rows %}
+<article class="metric-card{{ ' is-focus' if r.focus else '' }}">
+  <div class="metric-card-head">
+    {{ help_btn(r.id, r.label) }}
+    <span class="metric-card-name">{{ r.label }}</span>
+    {% if r.focus %}{{ focus_tag(t("focus", loc)) }}{% endif %}
+  </div>
+  <div class="metric-card-value">{{ r.value }}</div>
+  {{ bench_block(r.block) }}
+</article>
+{% endfor %}
+{%- endmacro %}
+
+{# --- view-mode plots (compare / trend / period bars) --- #}
+{% macro plot(p) -%}
+{% if p.kind == "compare" -%}
+<div class="compare-bars{{ ' is-empty' if p.empty else '' }}">
+  {%- for b in p.bars -%}
+  <div class="compare-row"><span class="compare-k">{{ b.label }}</span><div class="compare-track"><i class="compare-fill {{ b.cls }}" style="{{ b.style }}"></i></div><span class="compare-n">{{ b.shown }}</span></div>
+  {%- endfor -%}
+</div>
+{%- elif p.kind == "trend" -%}
+{% if p.empty -%}
+<div class="trend-chart is-empty" aria-hidden="true"><svg viewBox="0 0 140 40" preserveAspectRatio="none"></svg></div>
+{%- else -%}
+<div class="trend-chart" role="img"><svg viewBox="0 0 140 40" preserveAspectRatio="none">
+  {%- for g in p.grid %}<line class="trend-grid" x1="{{ g.x1 }}" x2="{{ g.x2 }}" y1="{{ g.y }}" y2="{{ g.y }}"/>{% endfor -%}
+  {%- if p.cmp %}<polyline class="trend-line is-cmp" fill="none" points="{{ p.cmp }}"/>{% endif -%}
+  <polyline class="trend-line is-cur" fill="none" points="{{ p.cur }}"/></svg></div>
+{%- endif %}
+{%- elif p.kind == "bars" -%}
+{% if p.empty -%}
+<div class="period-bars is-empty" aria-hidden="true"></div>
+{%- else -%}
+<div class="period-bars">{% for b in p.bars %}<i class="period-bar {{ b.cls }}" style="{{ b.style }}"></i>{% endfor %}</div>
+{%- endif %}
+{%- endif %}
+{%- endmacro %}
+
+{% macro viz_meta(meta) -%}
+{% if meta.kind == "delta" -%}
+<span class="viz-meta">{{ meta.text }}</span>
+{%- elif meta.kind == "gap" -%}
+<span class="bench-gap tone-{{ meta.tone }}">{{ meta.text }}</span>
+{%- else -%}
+<span class="bench-gap tone-na">—</span>
+{%- endif %}
+{%- endmacro %}
+
+{% macro viz_rows(rows) -%}
+{% for r in rows -%}
+<div class="viz-row{{ ' is-focus' if r.focus else '' }}">{{ help_btn(r.id, r.label) }}<span class="viz-name">{{ r.label }}{% if r.focus %} {{ focus_tag(t("focus", loc)) }}{% endif %}</span><span class="viz-value">{{ r.value }}</span><div class="viz-plot">{{ plot(r.plot) }}</div>{{ viz_meta(r.meta) }}</div>
+{%- endfor %}
+{%- endmacro %}
+
+{% macro metric_panel(panel) -%}
+<section class="panel" id="panel-{{ panel.id }}">
+  <div class="panel-head">
+    <div class="panel-head-left">
+      <h2>{{ panel.title }}</h2>
+      <span class="sub" data-count-sub="{{ panel.id }}">{{ panel.sub }}</span>
+    </div>
+    {{ view_switch(panel.id, panel.modes) }}
+  </div>
+  <div class="panel-body" data-section-body="{{ panel.id }}" data-view-mode="list">
+    <div class="mode-pane mode-list">
+      {% call dense_table() %}{{ metric_rows(panel.rows) }}{% endcall %}
+    </div>
+    <div class="mode-pane mode-card">{{ metric_cards(panel.rows) }}</div>
+    {% for pane in panel.extra %}
+    <div class="mode-pane mode-{{ pane.mode }}">{% if pane.note %}<p class="series-note">{{ t("series.sample_note", loc) }}</p>{% endif %}{{ viz_rows(pane.rows) }}</div>
+    {% endfor %}
+  </div>
+  <div class="panel-foot"></div>
+</section>
+{%- endmacro %}
+
+{# --- 説明 dialogs --- #}
+{% macro help_dialog(d) -%}
+<dialog class="help-dialog" id="help-{{ d.id }}" data-help-dialog>
+  <form method="dialog" class="help-sheet">
+    <header>
+      <div>
+        <p class="help-kind">{{ d.kind }}</p>
+        <h3>{{ d.title }}</h3>
+      </div>
+      <button type="submit" class="help-close" aria-label="{{ t('close', loc) }}">×</button>
+    </header>
+    <section>
+      <h4>{{ t("meaning", loc) }}</h4>
+      <p>{{ d.meaning|nl2br }}</p>
+    </section>
+    <section>
+      <h4>{{ t("formula", loc) }}</h4>
+      <p class="formula">{{ d.formula|nl2br }}</p>
+    </section>
+    <section>
+      <h4>{{ t("tip", loc) }}</h4>
+      <p>{{ d.tip }}</p>
+    </section>
+  </form>
+</dialog>
+{%- endmacro %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/home.css') }}" />{% endblock %}
+{% block page %}
+  <main>
+    {% with logo_class="logo home-brand" %}{% include "partials/logo.html" %}{% endwith %}
+    <p>まずは GA4 を接続し、ビルダーで自分の指標・イベントを並べるのが本線です。業界パックは見本サンプルです。</p>
+    <div class="grid">
+      <a class="home-card" href="/hr">
+        <strong>サイトKPI（密集ボード）</strong>
+        <span>全業界パック共通レイアウト。業種ごとに数字・イベント・業界目安だけが変わります（例: 人事・採用）。</span>
+      </a>
+      <a class="home-card" href="/connect">
+        <strong>GA4 接続</strong>
+        <span>OAuth で Google 連携 → Property を1つ選択。接続後、実データがパレットに入ります。</span>
+      </a>
+      <a class="home-card" href="/builder">
+        <strong>カスタムビルダー</strong>
+        <span>接続 Property の指標・イベントをドラッグして、自分用ダッシュボードを組み立てます。</span>
+      </a>
+      {% for p in packs %}
+      <a class="home-card" href="/{{ p.slug }}"><strong>{{ p.label }}（サンプル）</strong><span>{{ p.blurb }} · 業界パックの見本。本番はビルダー＋GA4接続を推奨。</span></a>
+      {% endfor %}
+    </div>
+  </main>
+{% endblock %}

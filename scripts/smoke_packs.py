@@ -21,7 +21,8 @@ def main() -> int:
     from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES
     from sitekpi.packs.catalog import CATEGORIES
     from sitekpi.packs.registry import PACK_MODULES
-    from sitekpi.views.board import _rail_nav_html, render_sample_dense
+    from sitekpi.views.board import render_sample_dense
+    from sitekpi.views.layout import _rail_nav_html
 
     errors: list[str] = []
 
@@ -93,12 +94,13 @@ def main() -> int:
             if "pack-cat" not in html:
                 errors.append(f"render {slug}/{locale}: missing pack-cat nav")
 
-    # Rail CSS must live only in sitekpi/views/layout.py
-    marker = ".rail .pack-cat summary"
+    # Markup lives in templates; views must not build HTML strings again
     for rel in ("sitekpi/views/board.py", "sitekpi/views/settings.py",
-                "sitekpi/views/builder.py", "sitekpi/views/connect.py"):
-        if marker in (ROOT / rel).read_text(encoding="utf-8"):
-            errors.append(f"{rel}: rail CSS duplicated — use views/layout.rail_css()")
+                "sitekpi/views/builder.py", "sitekpi/views/connect.py",
+                "sitekpi/views/home.py", "sitekpi/views/layout.py"):
+        src = (ROOT / rel).read_text(encoding="utf-8")
+        if "<!doctype" in src.lower() or "<style" in src or ".rail .pack-cat" in src:
+            errors.append(f"{rel}: inline HTML/CSS — use sitekpi/templates + static/")
 
     if errors:
         print(f"FAIL ({len(errors)}):")

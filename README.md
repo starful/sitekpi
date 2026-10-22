@@ -34,18 +34,22 @@ Finder なら `run.command` をダブルクリック。初回（または .venv 
 ```
 main.py              エントリ（uvicorn main:app）
 sitekpi/
-  app.py             FastAPI 本体・ルーター登録
+  app.py             FastAPI 本体・セッション・gzip・ルーター登録
   session.py         サーバー側セッション（暗号化 SQLite）
   cache.py           プロセス内 TTL キャッシュ
-  routes/            pages.py（ボード・ビルダー・設定）/ connect.py（GA4 接続）
+  routes/            pages.py（ボード・ビルダー・設定）/ connect.py（GA4 接続）/ nav.py
   ga4/               oauth.py（認証）/ data.py（GA4 Data API）
   board/data.py      ボードの行データ生成
-  views/             HTML（board / builder / connect / settings / home / branding）
+  views/             テンプレートに渡すデータ（HTML は書かない）
+  templating.py      Jinja2（自動エスケープ・t()・static_url()）
+  templates/         base.html と各ページ、partials/、board/_macros.html
   packs/             業界パック（1ファイル1業界）
   i18n/  metrics/    文言（ja/en/ko）・説明テキスト
-static/              配信する画像・アイコン
+static/              css/・js/・vendor/（Sortable 同梱）・アイコン
 brand/               ロゴ案（配信しない素材）
 scripts/             smoke_packs.py など
 ```
+
+静的ファイルは `static_url()` で `?v=<内容ハッシュ>` 付きになり、1年キャッシュされる（中身が変われば URL も変わる）。
 
 業界パックの追加方法は [sitekpi/packs/README.md](sitekpi/packs/README.md) を参照。

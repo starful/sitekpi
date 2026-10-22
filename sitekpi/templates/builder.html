@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}SiteKPI · {{ t("builder.title", loc) }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/builder.css') }}" />{% endblock %}
+{% block main %}
+  <header class="top">
+    <div>
+      <h1 class="page-title">{{ t("builder.title", loc) }}</h1>
+    </div>
+    <div class="top-actions">
+      <span class="status" id="status">{{ t("builder.status.unsaved", loc) }}</span>
+      <button type="button" class="ghost" id="btn-clear">{{ t("builder.btn.clear", loc) }}</button>
+      <button type="button" class="primary" id="btn-save">{{ t("builder.btn.save", loc) }}</button>
+    </div>
+  </header>
+  {% if property_name %}
+  <p class="live-banner">{{ t("builder.live_on", loc, name=property_name, n_digital=n_digital, n_event=n_event) }}</p>
+  {% elif live_error %}
+  <p class="live-err">{{ t("builder.live_err", loc, err=live_error) }}</p>
+  {% else %}
+  <p class="live-hint"><a href="/connect">{{ t("builder.nav.connect", loc) }}</a> — {{ t("builder.live_hint", loc) }}</p>
+  {% endif %}
+
+  <div class="layout">
+    <aside class="palette">
+      <h2>{{ t("builder.palette", loc) }}</h2>
+      <p class="sub">{{ t("builder.palette_sub", loc) }}</p>
+      <div class="search-wrap">
+        <input type="search" id="pal-search" placeholder="{{ t('builder.search_ph', loc) }}" autocomplete="off" />
+        <p class="search-empty" id="search-empty">{{ t("builder.search_empty", loc) }}</p>
+      </div>
+      <div class="pal-filters">
+        <label><input type="checkbox" id="flt-has-value" /> {{ t("builder.filter_valued", loc) }}</label>
+        <span id="flt-value-stats"></span>
+      </div>
+      <div class="pal-fold-bar">
+        <button type="button" class="ghost" id="btn-expand-all">{{ t("builder.expand_all", loc) }}</button>
+        <button type="button" class="ghost" id="btn-collapse-all">{{ t("builder.collapse_all", loc) }}</button>
+      </div>
+      {% for g in palette %}
+      <div class="pal-group{% if g.collapsed %} is-collapsed{% endif %}" data-group-key="{{ g.id }}">
+        <button type="button" class="pal-group-title tone-{{ g.tone }}" data-toggle-group="{{ g.id }}" aria-expanded="false"><span class="chev" aria-hidden="true">▶</span><span class="pal-group-name">{{ g.label }}</span><span class="pal-count">{{ g.count }}</span></button>
+        <div class="pal-list" data-palette="{{ g.id }}">
+          {% if g.id == "layout" %}
+          <div class="pal-item pal-section" data-type="section" data-id="__section__">
+            <span class="pal-label">＋ カテゴリ見出し</span>
+            <span class="pal-hint">何度でも追加可 · 右で名前を編集</span>
+          </div>
+          {% else %}
+          {% for w in g.widgets %}
+          <div class="pal-item {{ 'no-value' if w.empty else 'has-value' }}" data-type="widget" data-id="{{ w.id }}" data-group="{{ w.group }}" data-has-value="{{ '0' if w.empty else '1' }}">
+            <div class="pal-top">
+              <span class="pal-label">{{ w.label }}</span>
+              <span class="pal-value" title="期間中の値">{{ w.display }}</span>
+            </div>
+            <span class="pal-hint">{{ w.hint }}</span>
+          </div>
+          {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </aside>
+    <section class="canvas-wrap">
+      <div class="canvas-head">
+        <div>
+          <h2>{{ t("builder.canvas", loc) }}</h2>
+          <p>{{ t("builder.canvas_help", loc) }}</p>
+        </div>
+        <span id="count-label" style="font-size:0.85rem;color:#6b7788;font-weight:700;">0 件</span>
+      </div>
+      <div class="canvas empty" id="canvas" aria-label="ダッシュボード"></div>
+    </section>
+  </div>
+{% endblock %}
+{% block scripts %}
+  <script type="application/json" id="builder-data">{{ builder_data|tojson }}</script>
+  <script src="{{ static_url('vendor/sortable-1.15.6.min.js') }}" defer></script>
+  <script src="{{ static_url('js/builder.js') }}" defer></script>
+{% endblock %}

@@ -21,7 +21,10 @@ def client():
 def test_page_has_shared_rail_and_mobile_menu(client, path):
     html = client.get(path).text
     assert html.count('<aside class="rail" id="rail"') == 1
-    assert "data-rail-toggle" in html and "__sitekpiRail" in html
+    assert "data-rail-toggle" in html
+    src = re.search(r'<script src="(/static/js/rail\.js\?v=[0-9a-f]+)" defer>', html)
+    assert src, "rail.js must be loaded"
+    assert "__sitekpiRail" in client.get(src.group(1)).text
     assert 'class="mobile-bar"' in html
     # no legacy top nav / dead links
     assert 'href="/b2c">B2C<' not in html and 'href="/content">Content<' not in html

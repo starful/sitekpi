@@ -1,0 +1,8 @@
+{# Left rail: サンプルパック (by category) / 接続済み / アプリ. Context: rail (see views/layout.rail_context) #}
+<aside class="rail" id="rail" aria-label="{{ t('nav.menu', loc) }}">
+  <button type="button" class="nav-close" data-rail-close>{{ t("close", loc) }}</button>
+  {% include "partials/logo.html" %}
+  <nav>
+    {% include "partials/rail_nav.html" %}
+  </nav>
+</aside>

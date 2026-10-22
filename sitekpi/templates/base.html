@@ -1,0 +1,35 @@
+{#- Every page: <head> chrome + optional rail shell. Blocks: title, fonts, css, main/page, after_shell, scripts -#}
+<!doctype html>
+<html lang="{{ html_lang(loc) }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}{{ brand_name }}{% endblock %}</title>
+{% include "partials/head_icons.html" %}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  {% block fonts %}<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600;700&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet" />{% endblock %}
+  <link rel="stylesheet" href="{{ static_url('css/brand.css') }}" />
+  {% if rail is defined and rail %}<link rel="stylesheet" href="{{ static_url('css/rail.css') }}" />{% endif %}
+  {% block css %}{% endblock %}
+  {% block head_scripts %}{% endblock %}
+</head>
+<body>
+{% if rail is defined and rail %}
+  {% include "partials/mobile_bar.html" %}
+  <div class="shell">
+    {% include "partials/rail.html" %}
+    <div class="main">
+{% block main %}{% endblock %}
+    </div>
+  </div>
+{% else %}
+{% block page %}{{ self.main() }}{% endblock %}
+{% endif %}
+{% block after_shell %}{% endblock %}
+{% block scripts %}{% endblock %}
+{% if rail is defined and rail %}
+  <script src="{{ static_url('js/rail.js') }}" defer></script>
+{% endif %}
+</body>
+</html>

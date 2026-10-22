@@ -1,0 +1,15 @@
+/* SiteKPI logo (rail, mobile bar, home) */
+.logo, a.brand.logo {
+  display: inline-flex; align-items: center; gap: 12px;
+  text-decoration: none; color: #152033;
+  font-family: "DM Sans", "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
+  font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em;
+}
+.logo .logo-mark, a.brand.logo .logo-mark {
+  flex: 0 0 auto; width: 36px; height: 36px; display: block;
+}
+.logo .logo-text, a.brand.logo .logo-text {
+  display: inline-flex; align-items: baseline;
+}
+.logo .logo-site, a.brand.logo .logo-site { color: #152033; }
+.logo .logo-kpi, a.brand.logo .logo-kpi { color: #2f6fed; }

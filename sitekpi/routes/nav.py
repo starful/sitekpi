@@ -9,7 +9,7 @@ from fastapi import Request
 from sitekpi.ga4.data import connection_info
 from sitekpi.i18n import get_locale, t
 from sitekpi.packs import INDUSTRIES, pack_links, packs_by_category
-from sitekpi.views.layout import app_nav_html
+from sitekpi.views.layout import rail_context
 
 
 def nav_context(request: Request) -> dict[str, Any]:
@@ -38,10 +38,10 @@ def nav_context(request: Request) -> dict[str, Any]:
     }
 
 
-def nav_rail(request: Request, nav_active: str) -> str:
-    """Ready-to-embed rail <aside> for non-board pages."""
+def nav_rail_context(request: Request, nav_active: str) -> dict[str, Any]:
+    """Rail data for templates (templates/partials/rail.html)."""
     ctx = nav_context(request)
-    return app_nav_html(
+    return rail_context(
         nav_active=nav_active,
         locale=get_locale(request.session),
         connected=ctx["connected"],

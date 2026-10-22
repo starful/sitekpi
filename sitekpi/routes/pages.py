@@ -17,7 +17,7 @@ from sitekpi.ga4.data import (
     saved_events,
 )
 from sitekpi.i18n import get_locale, set_locale, t
-from sitekpi.routes.nav import nav_context, nav_rail
+from sitekpi.routes.nav import nav_context, nav_rail_context
 from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.metrics.help import PERIODS
 from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES
@@ -108,7 +108,7 @@ def page_builder(request: Request):
             live_error=live_error,
             widgets=widgets or None,
             locale=get_locale(request.session),
-            nav_html=nav_rail(request, "builder"),
+            rail=nav_rail_context(request, "builder"),
         )
     )
 

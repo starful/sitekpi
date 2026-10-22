@@ -1,0 +1,5 @@
+{# Top bar with the menu button — only visible under 900px (rail.css) #}
+<div class="mobile-bar">
+  <button type="button" class="menu-btn" data-rail-toggle aria-controls="rail" aria-expanded="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>{{ t("nav.menu", loc) }}</button>
+  {% include "partials/logo.html" %}
+</div>
