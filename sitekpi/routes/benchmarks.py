@@ -8,19 +8,28 @@ from fastapi.responses import JSONResponse, RedirectResponse, Response
 from sitekpi.benchmarks import get_store, parse_range, scope_for
 from sitekpi.i18n import get_locale, t
 from sitekpi.packs import BENCHMARKS, INDUSTRIES
+from sitekpi.selection import compose_benchmarks, is_ready, selection
 
 router = APIRouter(tags=["benchmarks"])
 
 
 def resolve(session, pack: str, board: str) -> tuple[str, str]:
-    """Live edits are only for the connected property's pack; everything else is sample scope."""
+    """Live edits are only for the connected property's 業種; everything else is sample scope."""
     live_ok = bool(session.get("ga4_credentials") and session.get("ga4_property"))
-    live_pack = str(session.get("benchmark_pack") or "")
-    if board == "live" and live_ok and live_pack in INDUSTRIES:
-        return live_pack, "live"
-    if pack not in INDUSTRIES:
-        pack = live_pack if live_pack in INDUSTRIES else "hr"
+    sel = selection(session)
+    if board == "live" and live_ok and is_ready(sel):
+        return sel["industry"], "live"
+    if pack not in INDUSTRIES or INDUSTRIES[pack].get("virtual"):
+        pack = sel["industry"] or "hr"
     return pack, "sample"
+
+
+def _defaults(session, pack: str, board: str) -> dict:
+    """The standards that board shows (a live board: 行動 × 業種)."""
+    if board == "live":
+        sel = selection(session)
+        return compose_benchmarks(sel["behavior"], sel["industry"])
+    return BENCHMARKS[pack]
 
 
 def _board_url(pack: str, board: str) -> str:
@@ -44,7 +53,7 @@ async def benchmarks_save(request: Request) -> Response:
     form = await request.form()
     pack, board = resolve(request.session, str(form.get("pack") or ""), str(form.get("board") or "sample"))
     loc = get_locale(request.session)
-    defaults = BENCHMARKS[pack]
+    defaults = _defaults(request.session, pack, board)
     values: dict[str, tuple[float, float]] = {}
     to_default: list[str] = []
     errors: dict[str, str] = {}
@@ -81,7 +90,7 @@ async def benchmarks_reset(request: Request) -> Response:
     metric = str(form.get("metric") or "")
     scope = scope_for(request.session, live=board == "live")
     if scope:
-        get_store().reset(scope, pack, metric if metric in BENCHMARKS[pack] else None)
+        get_store().reset(scope, pack, metric if metric in _defaults(request.session, pack, board) else None)
     if _wants_json(request):
         return JSONResponse({"ok": True})
     return RedirectResponse(_board_url(pack, board), status_code=303)

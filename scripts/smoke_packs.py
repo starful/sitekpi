@@ -63,16 +63,14 @@ def main() -> int:
         # cat.* keys live in strings; render path uses t(f"cat.{cid}")
         pass
 
-    # Rail must include every registered pack link
-    rail = _rail_nav_html(
-        industry="hr",
-        nav_active="pack:hr",
-        pack_groups=None,
-        locale="ja",
-    )
+    # 見本ボード一覧 must link every registered industry
+    from sitekpi.views.samples import render_samples
+    from sitekpi.views.layout import rail_context
+
+    gallery = render_samples(locale="ja", rail=rail_context(nav_active="samples", locale="ja"))
     for slug in INDUSTRIES:
-        if f'href="/{slug}"' not in rail:
-            errors.append(f"rail missing link /{slug}")
+        if f'href="/{slug}"' not in gallery:
+            errors.append(f"/samples missing link /{slug}")
 
     # Dense board + full sample HTML for each slug × locale
     for slug, ind in INDUSTRIES.items():
@@ -99,8 +97,8 @@ def main() -> int:
             except Exception as exc:  # noqa: BLE001 — smoke reports any failure
                 errors.append(f"render {slug}/{locale}: {exc}")
                 continue
-            if "pack-cat" not in html:
-                errors.append(f"render {slug}/{locale}: missing pack-cat nav")
+            if 'href="/samples"' not in html:
+                errors.append(f"render {slug}/{locale}: menu missing 見本ボード一覧")
 
     # Markup lives in templates; views must not build HTML strings again
     for rel in ("sitekpi/views/board.py", "sitekpi/views/settings.py",

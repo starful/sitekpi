@@ -28,13 +28,16 @@ def nav_context(request: Request) -> dict[str, Any]:
             "email": str((info or {}).get("email") or session.get("ga4_email") or ""),
             "demo": "1" if is_demo else "",
         }
-    pack = request.session.get("benchmark_pack")
-    benchmark_pack = str(pack) if isinstance(pack, str) and pack in INDUSTRIES else ""
+    from sitekpi.selection import selection, selection_label
+
+    sel = selection(session)
+    if connected is not None:
+        connected["selection"] = selection_label(sel, get_locale(session))
     return {
         "connected": connected,
         "pack_links": pack_links(),
         "pack_groups": packs_by_category(),
-        "benchmark_pack": benchmark_pack,
+        "selection": sel,
     }
 
 
@@ -45,5 +48,4 @@ def nav_rail_context(request: Request, nav_active: str) -> dict[str, Any]:
         nav_active=nav_active,
         locale=get_locale(request.session),
         connected=ctx["connected"],
-        pack_groups=ctx["pack_groups"],
     )

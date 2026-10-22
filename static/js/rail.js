@@ -1,4 +1,4 @@
-/* Rail: mobile drawer + sample-pack search (all pages) */
+/* Rail: mobile drawer (all pages) */
 (function () {
   if (window.__sitekpiRail) return;
   window.__sitekpiRail = true;
@@ -21,31 +21,4 @@
     if (e.key === "Escape" && body.classList.contains("rail-open")) { set(false); btn.focus(); }
   });
   rail.querySelectorAll("a[href]").forEach((a) => a.addEventListener("click", () => set(false)));
-})();
-
-(function () {
-  if (window.__sitekpiPackSearch) return;
-  window.__sitekpiPackSearch = true;
-  const input = document.querySelector("[data-pack-search]");
-  const empty = document.querySelector("[data-pack-search-empty]");
-  const nav = document.querySelector("[data-pack-nav]");
-  if (!input || !nav) return;
-  const cats = () => Array.from(nav.querySelectorAll(".pack-cat"));
-  input.addEventListener("input", () => {
-    const q = (input.value || "").trim().toLowerCase();
-    let any = false;
-    cats().forEach((cat) => {
-      let hit = false;
-      cat.querySelectorAll(".pack-cat-body a").forEach((a) => {
-        const hay = (a.getAttribute("data-pack-q") || a.textContent || "").toLowerCase();
-        const show = !q || hay.includes(q);
-        a.hidden = !show;
-        if (show) hit = true;
-      });
-      cat.hidden = Boolean(q) && !hit;
-      if (q && hit) cat.open = true;
-      if (hit) any = true;
-    });
-    if (empty) empty.hidden = !(q && !any);
-  });
 })();

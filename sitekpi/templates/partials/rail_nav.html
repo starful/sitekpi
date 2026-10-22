@@ -1,29 +1,23 @@
-<div class="nav-group">{{ t("nav.samples", loc) }}</div>
-<div class="pack-search-wrap">
-  <label class="visually-hidden" for="pack-search">{{ t("nav.pack_search", loc) }}</label>
-  <input type="search" id="pack-search" class="pack-search" placeholder="{{ t('nav.pack_search_ph', loc) }}" autocomplete="off" data-pack-search />
-  <p class="pack-search-empty" data-pack-search-empty hidden>{{ t("nav.pack_search_empty", loc) }}</p>
-</div>
-<div class="nav-sub" role="navigation" aria-label="{{ t('nav.packs_aria', loc) }}" data-pack-nav>
-  {% for group in rail.groups %}
-  <details class="pack-cat"{% if group.open %} open{% endif %}><summary><span class="pack-cat-label">{{ group.label }}</span></summary><div class="pack-cat-body">
-    {% for p in group.packs %}
-    <a href="/{{ p.slug }}" class="{{ 'is-on' if p.on else '' }}" data-pack-q="{{ p.q }}"><span class="pack-name">{{ p.label }}</span>{% if p.hint %}<span class="pack-hint">{{ p.hint }}</span>{% endif %}</a>
-    {% endfor %}
-  </div></details>
-  {% endfor %}
-</div>
-<div class="nav-group">{{ t("nav.connected", loc) }}</div>
-<div class="nav-sub" role="navigation" aria-label="{{ t('nav.ga4_aria', loc) }}">
-  {% if rail.connected %}
-  <a href="/live" class="{{ 'is-on' if rail.active == 'live' else '' }}" title="{{ rail.connected.email or '' }}">{{ rail.connected.name or t("nav.property", loc) }}</a>
-  <a href="/connect" class="nav-add">{{ t("nav.change_property", loc) }}</a>
-  {% else %}
-  <a href="/connect" class="nav-muted">{{ t("nav.disconnected", loc) }}</a>
-  <a href="/connect" class="nav-add">{{ t("nav.add_ga4", loc) }}</a>
-  {% endif %}
-</div>
-<div class="nav-group">{{ t("nav.app", loc) }}</div>
+{#- Left menu: マイサイト / ツール / 見本 / 設定. Context: rail (views/layout.rail_context) -#}
+<div class="nav-group">{{ t("nav.my_site", loc) }}</div>
+{% if rail.connected %}
+<a href="/live" class="nav-site{{ ' is-on' if rail.active == 'live' else '' }}" title="{{ rail.connected.email or '' }}">
+  <span class="nav-dot" aria-hidden="true"></span>
+  <span class="nav-site-body"><span class="nav-site-name">{{ rail.connected.name or t("nav.property", loc) }}</span>{% if rail.selection_label %}<span class="nav-site-sub">{{ rail.selection_label }}</span>{% endif %}</span>
+</a>
+<a href="/connect" class="nav-indent{{ ' is-on' if rail.active == 'connect' else '' }}">{{ t("nav.setup", loc) }}</a>
+{% else %}
+<a href="/connect" class="nav-cta{{ ' is-on' if rail.active == 'connect' else '' }}">＋ {{ t("nav.add_ga4", loc) }}</a>
+<p class="nav-note">{{ t("nav.add_ga4_note", loc) }}</p>
+{% endif %}
+
+<div class="nav-group">{{ t("nav.tools", loc) }}</div>
 <a href="/builder" class="{{ 'is-on' if rail.active == 'builder' else '' }}">{{ t("nav.builder", loc) }}</a>
-<a href="/connect" class="{{ 'is-on' if rail.active == 'connect' else '' }}">{{ t("nav.connect", loc) }}</a>
-<a href="/settings" class="{{ 'is-on' if rail.active == 'settings' else '' }}">{{ t("nav.settings", loc) }}</a>
+
+<div class="nav-group">{{ t("nav.samples", loc) }}</div>
+<a href="/samples" class="{{ 'is-on' if rail.active == 'samples' else '' }}">{{ t("nav.samples_all", loc) }}</a>
+{% if rail.sample %}<a href="/{{ rail.sample.slug }}" class="nav-indent is-on">{{ rail.sample.label }}</a>{% endif %}
+
+<div class="nav-bottom">
+  <a href="/settings" class="{{ 'is-on' if rail.active == 'settings' else '' }}">{{ t("nav.settings", loc) }}</a>
+</div>

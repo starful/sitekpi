@@ -70,6 +70,9 @@ def flow_context(
     channels = _group_channels(flow, loc)
     ch_total_entry = sum(c["entry"] for c in channels) or 1
 
+    from sitekpi.packs.flows import FLOW_STEPS
+
+    std = set(FLOW_STEPS.get(pack) or [])
     stages: list[dict[str, Any]] = []
     stages.append({
         "key": "entry", "label": t("flow.entry", loc), "event": "", "mapped": False,
@@ -88,8 +91,8 @@ def flow_context(
         reach = _pct(users, entry)
         stages.append({
             "key": s["step"], "event": ev, "step": s["step"],
-            "label": step_label(s["step"], loc, pack),
-            "mapped": ev != s["step"], "users": users, "missing": users <= 0,
+            "label": s.get("label") or (step_label(s["step"], loc, pack) if s["step"] in std else ev),
+            "mapped": s["step"] in std and ev != s["step"], "users": users, "missing": users <= 0,
             "above": [], "below": [],
             "users_fmt": {"all": _int(users), **{cid: _int(v) for cid, v in ch_users.items()}},
             "reach_pct": reach or 0.0,

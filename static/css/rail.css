@@ -37,19 +37,6 @@
   color: #8b97a8; text-transform: none;
 }
 .rail .nav-group:first-child { margin-top: 0; }
-.rail .pack-search-wrap { padding: 0 10px 8px; }
-.rail .pack-search {
-  width: 100%; box-sizing: border-box;
-  border: 1px solid var(--line); border-radius: 8px;
-  padding: 7px 10px; font: inherit; font-size: 0.78rem;
-  background: #fff; color: var(--ink);
-}
-.rail .pack-search:focus {
-  outline: none; border-color: #bfd2f8; box-shadow: 0 0 0 2px #eaf1ff;
-}
-.rail .pack-search-empty {
-  margin: 6px 0 0; font-size: 0.72rem; color: #94a3b8; font-weight: 600;
-}
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
@@ -142,3 +129,17 @@
   }
   .menu-btn svg { width: 16px; height: 16px; }
 }
+
+/* menu: マイサイト / ツール / 見本 / 設定 */
+.rail nav { display: flex; flex-direction: column; }
+.rail nav a.nav-site { display: flex; gap: 8px; align-items: flex-start; padding: 9px 10px; }
+.rail .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px #dcfce7; margin-top: 6px; flex: none; }
+.rail .nav-site-body { min-width: 0; display: flex; flex-direction: column; }
+.rail .nav-site-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail .nav-site-sub { font-size: 0.7rem; font-weight: 600; color: #8b97a8; line-height: 1.35; }
+.rail nav a.is-on .nav-site-sub { color: #6b8fd4; }
+.rail nav a.nav-indent { padding-left: 26px; font-size: 0.84rem; color: #5b6878; }
+.rail nav a.nav-indent.is-on { color: var(--accent); }
+.rail nav a.nav-cta { color: var(--accent); border: 1px dashed #bfd2f8; text-align: center; }
+.rail .nav-note { margin: 4px 10px 0; font-size: 0.7rem; color: #8b97a8; line-height: 1.5; }
+.rail .nav-bottom { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); }

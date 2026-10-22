@@ -366,9 +366,9 @@ HELP_TMPL: dict[str, dict[str, dict[str, str]]] = {
 
 BOARD_TMPL: dict[str, dict[str, str]] = {
     "focus_line": {
-        "ja": "この業界の重点 · {names}（主転換: {signup}）",
-        "en": "Focus for this pack · {names} (Primary: {signup})",
-        "ko": "이 업계 중점 · {names}（주전환: {signup})",
+        "ja": "重点 · {names}（主転換: {signup}）",
+        "en": "Focus · {names} (Primary: {signup})",
+        "ko": "중점 · {names} (주전환: {signup})",
     },
     "focus_line_simple": {
         "ja": "主転換: {signup}",

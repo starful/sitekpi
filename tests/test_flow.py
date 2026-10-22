@@ -172,7 +172,7 @@ def test_live_flow_maps_a_step_to_the_sites_own_event(live):
     options = [o["value"] for o in form.select("select[name=event] option")]
     assert options[0] == "" and "submit_application" in options
 
-    r = a.post("/flow/mapping", headers=JSON, data={"pack": "hr", "step": "apply_submit", "event": "submit_application"})
+    r = a.post("/flow/mapping", headers=JSON, data={"pack": "type-recruit", "step": "apply_submit", "event": "submit_application"})
     assert r.status_code == 200 and r.json() == {"ok": True, "step": "apply_submit", "event": "submit_application"}
 
     html = b.get("/live").text  # same property, another browser
@@ -189,15 +189,15 @@ def test_live_flow_maps_a_step_to_the_sites_own_event(live):
     # 主転換 (apply_submit) now counts the site's event
     assert "260" in _soup(html).select_one(".summary").get_text()
 
-    a.post("/flow/mapping", headers=JSON, data={"pack": "hr", "step": "apply_submit", "event": ""})
+    a.post("/flow/mapping", headers=JSON, data={"pack": "type-recruit", "step": "apply_submit", "event": ""})
     assert "is-missing" in _stage(a.get("/live").text, "応募を送信")["class"]
 
 
 def test_mapping_is_validated(live):
     c = live()
-    bad = c.post("/flow/mapping", headers=JSON, data={"pack": "hr", "step": "apply_submit", "event": "x y;"})
+    bad = c.post("/flow/mapping", headers=JSON, data={"pack": "type-recruit", "step": "apply_submit", "event": "x y;"})
     assert bad.status_code == 400 and bad.json()["ok"] is False
-    other = c.post("/flow/mapping", headers=JSON, data={"pack": "hr", "step": "purchase", "event": "buy"})
+    other = c.post("/flow/mapping", headers=JSON, data={"pack": "type-recruit", "step": "purchase", "event": "buy"})
     assert other.status_code == 400
     wrong_pack = c.post("/flow/mapping", headers=JSON, data={"pack": "ec", "step": "purchase", "event": "buy"})
     assert wrong_pack.status_code == 403
@@ -208,41 +208,85 @@ def test_sample_visitors_cannot_map():
     assert r.status_code == 403
 
 
-def test_connect_page_picks_behaviour_first_industry_optional(live):
+def test_connect_page_has_behaviour_and_industry_sections(live):
     c = live()
     html = c.get("/connect").text
     soup = _soup(html)
-    assert "接続プレビュー" not in html  # preview removed
-    assert len(soup.select(".stepper li.is-done")) == 3  # signed in, property, pack (hr) chosen
-    names = [b.select_one(".beh-top strong").get_text() for b in soup.select(".beh-card")]
+    assert "接続プレビュー" not in html and not soup.select("[data-pack-search]")
+    assert len(soup.select(".stepper li.is-done")) == 3  # signed in, property, behaviour + industry
+    form = soup.select_one("form[action='/connect/selection']")
+    names = [b.select_one(".beh-top strong").get_text() for b in form.select(".beh-card")]
     assert names == ["買う", "会員になって使い続ける", "問い合わせる", "予約する", "申し込む", "応募する", "読む・見る"]
-    rec = soup.select_one(".beh-card[data-beh=recruit]")
-    # the site records job_view + apply_start → 応募する is the closest behaviour
-    assert "is-rec" in rec["class"] and "記録あり 2/4" in rec.get_text()
+    rec = form.select_one(".beh-card[data-beh=recruit]")
+    assert "is-rec" in rec["class"] and rec.select_one("input[name=behavior]").has_attr("checked")
     assert [s["title"] for s in rec.select(".mf-step.is-found")] == ["job_view", "apply_start"]
-    # industries are optional, in a panel for the behaviour, each with its own flow + sourced standards
-    panel = soup.select_one(".ind-panel[data-beh=recruit]")
-    assert not panel.has_attr("hidden") and panel.select_one("input[value=hr]").has_attr("checked")
-    assert soup.select_one(".ind-panel[data-beh=commerce]").has_attr("hidden")
-    assert [i["value"] for i in panel.select("input[name=pack_slug]")] == ["hr", "parttime", "agency"]
-    assert panel.select_one("label.is-none[for=beh-recruit]")
-    assert "出典つき目安" in panel.select_one("input[value=hr]").find_parent("label").get_text()
-    lead = soup.select_one(".ind-panel[data-beh=lead]")
-    assert {"manufacturing", "legal", "home_service", "auto", "it_services"} <= {
-        i["value"] for i in lead.select("input[name=pack_slug]")}
-    # a behaviour alone is a valid choice → the board uses behaviour-level standards
-    r = c.post("/connect/pack", data={"pack_slug": "type-commerce"})
-    assert r.status_code == 302 and r.headers["location"] == "/live"
-    soup = _soup(c.get("/connect").text)
-    assert soup.select_one("#beh-commerce").has_attr("checked")
-    assert "is-selected" in soup.select_one(".beh-card[data-beh=commerce]")["class"]
-    assert not soup.select_one(".ind-panel[data-beh=commerce]").has_attr("hidden")
-    assert "買う（業種指定なし）" in soup.select_one("[data-beh-summary]").get_text()
-    # change property keeps the Google sign-in
-    r = c.post("/connect/property/change")
+    # B: every industry is a choice of its own, whatever the behaviour
+    industries = [i["value"] for i in form.select("input[name=industry]")]
+    assert len(industries) == 30 and "legal" in industries and form.select_one("input[value=hr]").has_attr("checked")
+    # the chosen behaviour's flow is editable, fed by the property's events
+    edit = form.select_one("[data-edit=recruit]")
+    assert not edit.has_attr("hidden")
+    assert [i["value"] for i in edit.select("input[name=recruit-event]")] == ["job_view", "apply_start", "apply_submit", "entry_complete"]
+    assert "submit_application" in [o["value"] for o in soup.select("datalist#ga4-events option")]
+
+
+def test_choose_behaviour_and_industry_separately(live):
+    c = live()
+    # an industry of another kind: only site-wide standards apply
+    r = c.post("/connect/selection", data={"behavior": "commerce", "industry": "legal"})
+    assert r.status_code == 303 and r.headers["location"] == "/live"
+    html = c.get("/live").text
+    soup = _soup(html)
+    assert "買う × 士業・法律事務所" in soup.select_one("header.top .meta").get_text()
+    assert [n.get_text() for n in soup.select("#flow .flow-node .flow-label")][1] == "商品を見た"
+    pop = _template(html, "pop-bench-engaged_rate")
+    assert "Consulting & Professional Services" in pop.select_one("a.src-btn")["title"]
+    assert not soup.select("template#pop-bench-signup_rate")  # purchase CVR ≠ inquiry CVR
+    # same kind → the industry's own CVR / funnel standards too
+    c.post("/connect/selection", data={"behavior": "commerce", "industry": "apparel"})
+    html = c.get("/live").text
+    assert "Baymard" in _template(html, "pop-bench-signup_to_pay").select_one("a.src-btn")["title"]
+    # both are required
+    r = c.post("/connect/selection", data={"behavior": "commerce"})
+    assert r.status_code == 200 and "両方" in r.text
+
+
+def _form_lists(pairs):
+    out: dict[str, list[str]] = {}
+    for k, v in pairs:
+        out.setdefault(k, []).append(v)
+    return out
+
+
+def test_edit_the_behaviour_flow(live):
+    c = live()
+    data = [("behavior", "recruit"), ("industry", "hr"), ("recruit-edited", "1")]
+    for key, ev, label in [("job_view", "job_view", "求人を見た"), ("", "apply_mobile", "スマホ応募"),
+                           ("apply_submit", "submit_application", "応募を送信")]:
+        data += [("recruit-key", key), ("recruit-event", ev), ("recruit-label", label)]
+    r = c.post("/connect/selection", data=_form_lists(data))
     assert r.status_code == 303
+    html = c.get("/live").text
+    labels = [n.get_text() for n in _soup(html).select("#flow .flow-node .flow-label")]
+    assert labels == ["サイトに来た", "求人を見た", "スマホ応募", "応募を送信"]
+    assert live.calls["flow"][-1] == ["job_view", "apply_mobile", "submit_application"]
+    # the last step is the main conversion
+    assert "260" in _soup(html).select_one(".summary").get_text()
     soup = _soup(c.get("/connect").text)
-    assert soup.select_one("form[action='/connect/property']") and not soup.select(".beh-card")
+    assert "カスタム" in soup.select_one(".beh-card[data-beh=recruit]").get_text()
+    # invalid event names are refused, too many steps too
+    bad = data[:3] + [("recruit-key", ""), ("recruit-event", "bad name"), ("recruit-label", "")]
+    assert "イベント名" in c.post("/connect/selection", data=_form_lists(bad)).text
+    many = data[:3]
+    for n in range(7):
+        many += [("recruit-key", ""), ("recruit-event", f"e{n}"), ("recruit-label", "")]
+    assert "6 つまで" in c.post("/connect/selection", data=_form_lists(many)).text
+    # back to standard
+    std = data[:3] + [x for k in ("job_view", "apply_start", "apply_submit", "entry_complete")
+                      for x in (("recruit-key", k), ("recruit-event", k), ("recruit-label", ""))]
+    c.post("/connect/selection", data=_form_lists(std))
+    labels = [n.get_text() for n in _soup(c.get("/live").text).select("#flow .flow-node .flow-label")]
+    assert labels == ["サイトに来た", "求人を見た", "応募を開始", "応募を送信", "エントリー完了"]
 
 def test_behaviour_only_uses_industry_median_for_shared_metrics_only():
     from sitekpi.packs import BENCHMARKS, INDUSTRIES
@@ -283,7 +327,7 @@ def test_live_flow_shows_other_behaviours_above_and_below_a_step(live):
     assert add.select_one("input[name=pos]")["value"] == "below"
 
     def post(**data):
-        return a.post("/flow/branch", headers=JSON, data={"pack": "hr", **data})
+        return a.post("/flow/branch", headers=JSON, data={"pack": "type-recruit", **data})
 
     r = post(action="add", at="apply_start", pos="below", event="apply_mobile", label="スマホで応募開始")
     assert r.status_code == 200 and r.json()["ok"]
@@ -318,7 +362,7 @@ def test_live_flow_shows_other_behaviours_above_and_below_a_step(live):
 
 def test_branches_are_validated(live):
     c = live()
-    post = lambda **d: c.post("/flow/branch", headers=JSON, data={"pack": "hr", **d})  # noqa: E731
+    post = lambda **d: c.post("/flow/branch", headers=JSON, data={"pack": "type-recruit", **d})  # noqa: E731
     assert post(action="add", at="apply_start", pos="below", event="bad name!").status_code == 400
     assert post(action="add", at="entry", pos="below", event="x").status_code == 400
     assert post(action="add", at="apply_start", pos="left", event="x").status_code == 400
@@ -327,19 +371,3 @@ def test_branches_are_validated(live):
     assert post(action="add", at="apply_start", pos="below", event="ok_event",
                 label="  a   very long label that keeps going on  ").json()["ok"]
     assert "a very long label that k" in _branches(c.get("/live").text, "apply_start", "below")
-
-
-def test_live_board_with_behaviour_only(live):
-    c = live()
-    c.post("/connect/pack", data={"pack_slug": "type-recruit"})
-    html = c.get("/live").text
-    soup = _soup(html)
-    assert "応募する" in soup.select_one("header.top .meta").get_text()
-    pop = _template(html, "pop-bench-engaged_rate")
-    assert pop.select_one(".src-blend").get_text() == "業種の中央値"
-    assert "人事・採用 / アルバイト・シフト / 人材紹介・エージェント" in pop.select_one(".src-blend")["title"]
-    assert not soup.select("template#pop-bench-pay_cvr")  # funnel-step rate: no standard without an industry
-    assert [n.get_text() for n in soup.select("#flow .flow-node .flow-label")][:2] == ["サイトに来た", "求人を見た"]
-    # mapping / branches work for a behaviour pack too
-    r = c.post("/flow/mapping", headers=JSON, data={"pack": "type-recruit", "step": "apply_submit", "event": "submit_application"})
-    assert r.json()["ok"]

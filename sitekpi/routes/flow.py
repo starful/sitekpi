@@ -14,6 +14,8 @@ from sitekpi.flow import (
     clean_label,
     get_mapping_store,
     load_branches,
+    load_custom_flow,
+    step_keys,
     property_scope,
     resolved_steps,
     sample_flow,
@@ -22,6 +24,7 @@ from sitekpi.flow import (
 from sitekpi.ga4.data import connection_info, discover_event_names, fetch_flow
 from sitekpi.i18n import get_locale, t
 from sitekpi.packs.flows import FLOW_STEPS
+from sitekpi.selection import flow_pack, selection
 from sitekpi.views.flow import flow_context
 
 router = APIRouter(tags=["flow"])
@@ -54,8 +57,9 @@ def live_flow_context(
     request: Request, pack: str, period: str, mapping: dict[str, str], locale: str
 ) -> dict[str, Any] | None:
     info = connection_info(request.session)
-    steps = resolved_steps(pack, mapping)
-    branches = load_branches(request.session, pack)
+    custom = load_custom_flow(request.session, pack)
+    steps = resolved_steps(pack, mapping, custom)
+    branches = load_branches(request.session, pack, custom)
     if not info:
         return None
     events = [s["event"] for s in steps] + [b["event"] for b in branches if b["event"] not in
@@ -86,13 +90,21 @@ async def flow_mapping(request: Request) -> Response:
         return RedirectResponse("/live#flow", status_code=303)
 
     scope = property_scope(request.session)
-    if not scope or pack != str(request.session.get("benchmark_pack") or ""):
+    if not scope or pack != flow_pack(selection(request.session)):
         return fail(t("flow.err.live", loc), 403)
-    if step not in (FLOW_STEPS.get(pack) or []):
+    store = get_mapping_store()
+    custom = store.custom_flow(scope, pack)
+    if step not in step_keys(pack, custom):
         return fail(t("flow.err.event", loc), 400)
     if event and not valid_event_name(event):
         return fail(t("flow.err.event", loc), 400)
-    get_mapping_store().set(scope, pack, step, event or None)
+    if custom:  # a customised flow: change that step's event
+        for c in custom:
+            if c["key"] == step:
+                c["event"] = event or (step if step in (FLOW_STEPS.get(pack) or []) else c["event"])
+        store.set_custom_flow(scope, pack, custom)
+    else:
+        store.set(scope, pack, step, event or None)
     if wants_json:
         return JSONResponse({"ok": True, "step": step, "event": event or step})
     return RedirectResponse("/live#flow", status_code=303)
@@ -115,7 +127,7 @@ async def flow_branch(request: Request) -> Response:
         return RedirectResponse("/live#flow", status_code=303)
 
     scope = property_scope(request.session)
-    if not scope or pack != str(request.session.get("benchmark_pack") or "") or pack not in FLOW_STEPS:
+    if not scope or pack != flow_pack(selection(request.session)) or pack not in FLOW_STEPS:
         return done({"ok": False, "error": t("flow.err.live", loc)}, 403)
     store = get_mapping_store()
     if action == "delete":
@@ -127,7 +139,7 @@ async def flow_branch(request: Request) -> Response:
         ok = store.update_branch(scope, pack, str(form.get("id") or ""), event, label)
         return done({"ok": ok}, 200 if ok else 404)
     at, pos = str(form.get("at") or ""), str(form.get("pos") or "below")
-    if at not in FLOW_STEPS[pack] or pos not in BRANCH_POS:
+    if at not in step_keys(pack, store.custom_flow(scope, pack)) or pos not in BRANCH_POS:
         return done({"ok": False, "error": t("flow.err.event", loc)}, 400)
     new_id = store.add_branch(scope, pack, at, pos, event, label)
     if not new_id:

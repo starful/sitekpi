@@ -26,6 +26,9 @@ from sitekpi.ga4.oauth import (
 from sitekpi.i18n import get_locale, t
 from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.routes.nav import nav_rail_context
+from sitekpi.flow import MAX_FLOW_STEPS
+from sitekpi.packs.flows import FLOW_STEPS
+from sitekpi.selection import clear_selection, is_ready, save_selection, selection, selection_label
 from sitekpi.session import regenerate_session
 from sitekpi.views.connect import render_connect_page
 
@@ -43,22 +46,8 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
     properties: list[dict[str, str]] = []
     err = error
     loc = get_locale(session)
-    pack_slug = str(session.get("benchmark_pack") or "")
-    if pack_slug not in INDUSTRIES:
-        pack_slug = ""
-    pack_label = (
-        pack_text(pack_slug, "label", loc, str(INDUSTRIES[pack_slug]["label"]))
-        if pack_slug
-        else ""
-    )
-    if pack_slug and INDUSTRIES[pack_slug].get("virtual"):
-        pack_label = t("behavior.no_industry", loc, label=pack_label)
-    elif pack_slug:
-        from sitekpi.packs.behaviors import BEHAVIORS, behavior_label
-
-        cat = str(INDUSTRIES[pack_slug].get("category") or "")
-        if cat in BEHAVIORS:
-            pack_label = f"{behavior_label(cat, loc)} › {pack_label}"
+    sel = selection(session)
+    sel_label = selection_label(sel, loc)
 
     if demo and connected and not selected:
         properties = DEMO_PROPERTIES
@@ -71,11 +60,27 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
                 err = t("connect.err.list_props", loc, exc=exc)
 
     site_event_names: set[str] | None = None
+    event_options: list[dict[str, Any]] = []
+    flows: dict[str, list[dict[str, str]]] = {}
     if connected and selected and not demo:
+        from sitekpi.flow import get_mapping_store, property_scope
+        from sitekpi.packs.behaviors import BEHAVIORS, slug_of
         from sitekpi.routes.flow import site_events
 
-        found = site_events(request)
-        site_event_names = {e["name"] for e in found} if found else None
+        event_options = site_events(request)
+        site_event_names = {e["name"] for e in event_options} if event_options else None
+        scope = property_scope(session)
+        if scope:
+            store = get_mapping_store()
+            for cat in BEHAVIORS:
+                custom = store.custom_flow(scope, slug_of(cat))
+                if custom:
+                    flows[cat] = custom
+                else:  # standard steps with any event chosen on the board
+                    mapping = store.get(scope, slug_of(cat))
+                    if mapping:
+                        flows[cat] = [{"key": k, "event": mapping.get(k) or k, "label": ""}
+                                      for k in FLOW_STEPS[slug_of(cat)]]
 
     html = render_connect_page(
         configured=configured,
@@ -86,12 +91,15 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
         selected=selected if isinstance(selected, dict) else None,
         error=err,
         libs_ok=HAS_GOOGLE_AUTH and HAS_ADMIN and HAS_DATA,
-        pack_groups=packs_by_category() if (connected and selected) else None,
-        benchmark_pack=pack_slug,
-        benchmark_pack_label=pack_label,
+        sel=sel,
+        sel_label=sel_label,
+        flows=flows,
+        event_options=event_options,
+        can_edit_flow=bool(connected and selected and not demo),
         site_events=site_event_names,
         locale=loc,
         rail=nav_rail_context(request, "connect"),
+        max_steps=MAX_FLOW_STEPS,
     )
     return HTMLResponse(html)
 
@@ -205,10 +213,47 @@ def select_property(request: Request, property_id: str = Form(...)):
 
 @router.post("/connect/property/change")
 def change_property(request: Request):
-    """Pick another property: keep the Google sign-in, forget the property and its pack."""
+    """Pick another property: keep the Google sign-in, forget the property and its choices."""
     request.session.pop("ga4_property", None)
-    request.session.pop("benchmark_pack", None)
+    clear_selection(request.session)
     return RedirectResponse("/connect", status_code=303)
+
+
+@router.post("/connect/selection")
+async def save_choice(request: Request):
+    """訪問者の行動 (+ its edited flow) and 業種 — both required."""
+    from sitekpi.flow import get_mapping_store, parse_custom_flow, property_scope
+    from sitekpi.packs import INDUSTRIES
+    from sitekpi.packs.behaviors import BEHAVIORS, slug_of
+
+    session = request.session
+    if not (session.get("ga4_credentials") or session.get("ga4_demo")) or not session.get("ga4_property"):
+        return RedirectResponse("/connect", status_code=303)
+    form = await request.form()
+    loc = get_locale(session)
+    behavior = str(form.get("behavior") or "")
+    industry = str(form.get("industry") or "")
+    if behavior not in BEHAVIORS or industry not in INDUSTRIES or INDUSTRIES[industry].get("virtual"):
+        return _page_from_request(request, error=t("connect.err.choose_both", loc))
+    scope = property_scope(session)
+    if scope and form.get(f"{behavior}-edited"):
+        pack = slug_of(behavior)
+        steps, err = parse_custom_flow(
+            pack,
+            [str(x) for x in form.getlist(f"{behavior}-key")],
+            [str(x) for x in form.getlist(f"{behavior}-event")],
+            [str(x) for x in form.getlist(f"{behavior}-label")],
+            loc,
+        )
+        if err:
+            return _page_from_request(request, error=t(err, loc, n=MAX_FLOW_STEPS))
+        store = get_mapping_store()
+        store.set_custom_flow(scope, pack, steps)
+        if steps is None:  # back to the standard flow: forget per-step event choices too
+            for k in FLOW_STEPS[pack]:
+                store.set(scope, pack, k, None)
+    save_selection(session, behavior, industry)
+    return RedirectResponse("/live", status_code=303)
 
 
 @router.post("/connect/pack")
@@ -222,8 +267,14 @@ def select_pack(request: Request, pack_slug: str = Form(...)):
         return _page_from_request(request, error="先に Property を選んでください。")
     if pack_slug not in INDUSTRIES:
         return _page_from_request(request, error="選択した業界パックが見つかりません。")
-    session["benchmark_pack"] = pack_slug
-    return RedirectResponse("/live", status_code=302)
+    # legacy one-field form: an industry implies its usual behaviour
+    from sitekpi.packs.behaviors import category_of, is_behavior
+
+    if is_behavior(pack_slug):
+        save_selection(session, category_of(pack_slug), selection(session)["industry"])
+    else:
+        save_selection(session, str(INDUSTRIES[pack_slug].get("category") or ""), pack_slug)
+    return RedirectResponse("/live" if is_ready(selection(session)) else "/connect", status_code=302)
 
 
 @router.post("/connect/disconnect")

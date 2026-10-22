@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import secrets
@@ -22,6 +23,7 @@ from sitekpi.benchmarks import ROOT
 from sitekpi.packs.flows import FLOW_STEPS
 
 MAX_BRANCHES = 3
+MAX_FLOW_STEPS = 6
 BRANCH_POS = ("above", "below")
 LABEL_MAX = 24
 EVENT_NAME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,39}$")  # GA4 event-name rules
@@ -41,6 +43,11 @@ class MappingStore:
         path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as db:
             db.execute("PRAGMA journal_mode=WAL")
+            db.execute(
+                "CREATE TABLE IF NOT EXISTS flow_custom ("
+                " scope TEXT NOT NULL, pack TEXT NOT NULL, steps TEXT NOT NULL,"
+                " updated_at INTEGER NOT NULL, PRIMARY KEY (scope, pack))"
+            )
             db.execute(
                 "CREATE TABLE IF NOT EXISTS flow_branches ("
                 " scope TEXT NOT NULL, pack TEXT NOT NULL, id TEXT NOT NULL,"
@@ -79,6 +86,31 @@ class MappingStore:
                 (scope, pack, step, event, int(time.time())),
             )
 
+
+    # --- カスタムの流れ: the behaviour's steps as the site defines them ---
+    def custom_flow(self, scope: str, pack: str) -> list[dict[str, str]] | None:
+        with self._connect() as db:
+            row = db.execute(
+                "SELECT steps FROM flow_custom WHERE scope = ? AND pack = ?", (scope, pack)
+            ).fetchone()
+        if not row:
+            return None
+        try:
+            steps = json.loads(row[0])
+        except ValueError:
+            return None
+        return steps if isinstance(steps, list) and steps else None
+
+    def set_custom_flow(self, scope: str, pack: str, steps: list[dict[str, str]] | None) -> None:
+        with self._lock, self._connect() as db:
+            if not steps:
+                db.execute("DELETE FROM flow_custom WHERE scope = ? AND pack = ?", (scope, pack))
+                return
+            db.execute(
+                "INSERT INTO flow_custom (scope, pack, steps, updated_at) VALUES (?, ?, ?, ?)"
+                " ON CONFLICT(scope, pack) DO UPDATE SET steps = excluded.steps, updated_at = excluded.updated_at",
+                (scope, pack, json.dumps(steps, ensure_ascii=False), int(time.time())),
+            )
 
     # --- 分岐 (branches): another behaviour at the same stage, shown above / below it ---
     def branches(self, scope: str, pack: str) -> list[dict[str, str]]:
@@ -148,16 +180,88 @@ def load_mapping(session: MutableMapping[str, Any], pack: str) -> dict[str, str]
     return {k: v for k, v in get_mapping_store().get(scope, pack).items() if k in steps}
 
 
-def load_branches(session: MutableMapping[str, Any], pack: str) -> list[dict[str, str]]:
+def load_custom_flow(session: MutableMapping[str, Any], pack: str) -> list[dict[str, str]] | None:
     scope = property_scope(session)
-    steps = set(FLOW_STEPS.get(pack) or [])
+    return get_mapping_store().custom_flow(scope, pack) if scope else None
+
+
+def step_keys(pack: str, custom: list[dict[str, str]] | None) -> list[str]:
+    return [c["key"] for c in custom] if custom else list(FLOW_STEPS.get(pack) or [])
+
+
+def load_branches(session: MutableMapping[str, Any], pack: str,
+                  custom: list[dict[str, str]] | None = None) -> list[dict[str, str]]:
+    scope = property_scope(session)
+    steps = set(step_keys(pack, custom))
     rows = get_mapping_store().branches(scope, pack) if scope else []
     return [r for r in rows if r["at"] in steps and r["pos"] in BRANCH_POS]
 
 
-def resolved_steps(pack: str, mapping: dict[str, str]) -> list[dict[str, Any]]:
-    """[{step, event}] — event is what GA4 is asked for (mapped or the pack's own)."""
-    return [{"step": s, "event": mapping.get(s) or s} for s in FLOW_STEPS.get(pack) or []]
+def resolved_steps(pack: str, mapping: dict[str, str],
+                   custom: list[dict[str, str]] | None = None) -> list[dict[str, Any]]:
+    """[{step, event, label}] — event is what GA4 is asked for.
+
+    A customised flow replaces the behaviour's steps; otherwise the standard steps
+    ask GA4 for the mapped event (or their own name).
+    """
+    if custom:
+        return [{"step": c["key"], "event": c["event"], "label": c.get("label") or ""} for c in custom]
+    return [{"step": s, "event": mapping.get(s) or s, "label": ""} for s in FLOW_STEPS.get(pack) or []]
+
+
+def board_mapping(pack: str, mapping: dict[str, str], custom: list[dict[str, str]] | None,
+                  primary: str) -> dict[str, str]:
+    """Event aliases for the board's numbers. With a customised flow, standard
+    steps keep their (possibly changed) event and the last step is the 主転換."""
+    if not custom:
+        return mapping
+    out = {c["key"]: c["event"] for c in custom if c["key"] in (FLOW_STEPS.get(pack) or []) and c["event"] != c["key"]}
+    last = custom[-1]["event"]
+    if primary and last != primary:
+        out[primary] = last
+    return out
+
+
+def default_flow(pack: str, mapping: dict[str, str], locale: str) -> list[dict[str, str]]:
+    from sitekpi.packs.flows import step_label
+
+    return [{"key": s, "event": mapping.get(s) or s, "label": step_label(s, locale, pack)}
+            for s in FLOW_STEPS.get(pack) or []]
+
+
+def parse_custom_flow(pack: str, keys: list[str], events: list[str], labels: list[str],
+                      locale: str) -> tuple[list[dict[str, str]] | None, str | None]:
+    """Validate an edited flow. Returns (steps, None), (None, None) when it equals
+    the standard flow, or (None, error_key)."""
+    from sitekpi.packs.flows import step_label
+
+    steps: list[dict[str, str]] = []
+    for key, ev, label in zip(keys, events, labels):
+        ev = ev.strip()
+        if not ev:
+            continue
+        if not valid_event_name(ev):
+            return None, "flow.err.event"
+        key = key if key in (FLOW_STEPS.get(pack) or []) or re.fullmatch(r"c[0-9a-f]{8}", key or "") else ""
+        steps.append({"key": key or "c" + secrets.token_hex(4), "event": ev, "label": clean_label(label)})
+    if not steps:
+        return None, "flow.err.empty"
+    if len(steps) > MAX_FLOW_STEPS:
+        return None, "flow.err.too_many"
+    seen: set[str] = set()
+    for st in steps:  # a key may appear once
+        if st["key"] in seen:
+            st["key"] = "c" + secrets.token_hex(4)
+        seen.add(st["key"])
+    std = FLOW_STEPS.get(pack) or []
+    if [s["key"] for s in steps] == std and all(
+        s["event"] == s["key"] and s["label"] in ("", step_label(s["key"], locale, pack)) for s in steps
+    ):
+        return None, None
+    for st in steps:  # keep the standard wording out of storage so it stays translated
+        if st["key"] in std and st["label"] == step_label(st["key"], locale, pack):
+            st["label"] = ""
+    return steps, None
 
 
 def apply_mapping(data: dict[str, Any], pack: str, mapping: dict[str, str], *, primary: str) -> dict[str, Any]:

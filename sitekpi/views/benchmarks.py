@@ -38,8 +38,9 @@ def bench_context(
     effective: dict[str, dict[str, Any]],
     locale: str,
     property_name: str = "",
+    labels_from: str = "",
 ) -> dict[str, Any]:
-    labels = metric_labels(pack, locale)
+    labels = metric_labels(labels_from or pack, locale)  # metric names as the board words them
     groups: dict[str, list[dict[str, Any]]] = {"ga4": [], "biz": []}
     for key, spec in effective.items():
         unit = spec.get("unit", "")

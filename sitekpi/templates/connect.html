@@ -8,8 +8,8 @@
     <p class="lead">{{ t("connect.lead", loc) }}</p>
     <ol class="stepper" aria-label="{{ t('connect.title', loc) }}">
       {% for n, key in [(1, "connect.step1"), (2, "connect.step2"), (3, "connect.step3")] %}
-      <li class="{{ 'is-done' if n < step or (n == 3 and benchmark_pack) else ('is-current' if n == step else '') }}"{% if n == step %} aria-current="step"{% endif %}>
-        <span class="num">{{ '✓' if n < step or (n == 3 and benchmark_pack) else n }}</span><span class="txt">{{ t(key, loc) }}</span>
+      <li class="{{ 'is-done' if n < step or (n == 3 and ready) else ('is-current' if n == step else '') }}"{% if n == step %} aria-current="step"{% endif %}>
+        <span class="num">{{ '✓' if n < step or (n == 3 and ready) else n }}</span><span class="txt">{{ t(key, loc) }}</span>
       </li>
       {% endfor %}
     </ol>
@@ -62,96 +62,138 @@
         </div>
       </div>
       <div class="status-actions">
-        {% if benchmark_pack %}<a class="btn primary small" href="/live">{{ t("connect.live_board", loc) }}</a>{% endif %}
+        {% if ready %}<a class="btn primary small" href="/live">{{ t("connect.live_board", loc) }}</a>{% endif %}
         <form method="post" action="/connect/property/change"><button type="submit" class="ghost small">{{ t("connect.change_property", loc) }}</button></form>
         <form method="post" action="/connect/disconnect"><button type="submit" class="ghost small">{{ t("connect.disconnect", loc) }}</button></form>
       </div>
     </section>
 
-    {# ③ behaviour → industry (optional) #}
-    {% macro mini_flow(flow) -%}
+    {# ③ 訪問者の行動 (flow, editable) + 業種 (standards) — one form #}
+    {% macro mini_flow(steps) -%}
     <span class="mini-flow" aria-label="{{ t('flow.title', loc) }}">
       <span class="mf-step is-entry">{{ t("flow.entry", loc) }}</span>
-      {% for s in flow.steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step{{ ' is-found' if s.found else (' is-missing' if s.found is false else '') }}" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
+      {% for s in steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step{{ ' is-found' if s.found else (' is-missing' if s.found is false else '') }}" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
     </span>
     {%- endmacro %}
-    <section class="card pick">
-      <h2>{{ t("connect.pack.title", loc) }}</h2>
-      <p class="meta">{{ t("connect.pack.flow_hint", loc) }}{% if knows_events %} <span class="legend"><i></i>{{ t("connect.pack.flow_found", loc) }}</span>{% endif %}</p>
-      <form method="post" action="/connect/pack" class="beh-form" data-beh-form>
-        <div class="beh-grid" role="radiogroup" aria-label="{{ t('connect.step3', loc) }}">
-          {% for b in pack_groups %}
+    <form method="post" action="/connect/selection" class="choose" data-choose>
+      <section class="card pick">
+        <div class="sec-head">
+          <span class="sec-num">A</span>
+          <div>
+            <h2>{{ t("connect.beh.title", loc) }}</h2>
+            <p class="meta">{{ t("connect.beh.lead", loc) }}{% if knows_events %} <span class="legend"><i></i>{{ t("connect.pack.flow_found", loc) }}</span>{% endif %}</p>
+          </div>
+        </div>
+        <div class="beh-grid" role="radiogroup" aria-label="{{ t('connect.beh.title', loc) }}">
+          {% for b in behaviors %}
           <label class="beh-card{{ ' is-rec' if b.recommended else '' }}{{ ' is-selected' if b.selected else '' }}" data-beh="{{ b.cat }}">
-            <input type="radio" id="beh-{{ b.cat }}" name="pack_slug" value="{{ b.slug }}" data-label="{{ b.label }}" {% if b.selected and not b.industry_selected %}checked{% endif %} required />
+            <input type="radio" name="behavior" value="{{ b.cat }}" data-label="{{ b.label }}" {% if b.selected %}checked{% endif %} required />
             <span class="beh-top">
               <strong>{{ b.label }}</strong>
+              {% if b.custom %}<em class="pack-custom">{{ t("connect.beh.customised", loc) }}</em>{% endif %}
               {% if b.recommended %}<em class="pack-rec">{{ t("connect.pack.rec", loc) }}</em>{% endif %}
-              {% if knows_events and b.hits %}<em class="pack-hits">{{ t("connect.pack.hits", loc, n=b.hits, total=b.flow.total) }}</em>{% endif %}
+              {% if knows_events and b.hits %}<em class="pack-hits">{{ t("connect.pack.hits", loc, n=b.hits, total=b.steps|length) }}</em>{% endif %}
             </span>
             <span class="beh-hint">{{ b.hint }}</span>
-            {{ mini_flow(b.flow) }}
-            <span class="beh-meta">{{ t("connect.pack.n_industries", loc, n=b.industries|length) }}</span>
+            {{ mini_flow(b.steps) }}
           </label>
           {% endfor %}
         </div>
 
-        {% for b in pack_groups %}
-        <div class="ind-panel" data-beh="{{ b.cat }}"{% if not b.selected %} hidden{% endif %}>
-          <p class="ind-title">{{ t("connect.pack.industry_for", loc, label=b.label) }}</p>
-          <div class="ind-grid">
-            <label class="ind-opt is-none{{ ' is-on' if b.selected and not b.industry_selected else '' }}" for="beh-{{ b.cat }}">
-              <span class="ind-top"><strong>{{ t("connect.pack.none", loc) }}</strong></span>
-              <small>{{ t("connect.pack.none_note", loc) }}</small>
-            </label>
-            {% for i in b.industries %}
-            <label class="ind-opt{{ ' is-rec' if i.recommended else '' }}">
-              <input type="radio" name="pack_slug" value="{{ i.slug }}" data-label="{{ b.label }} › {{ i.label }}" {% if i.slug == benchmark_pack %}checked{% endif %} />
-              <span class="ind-top">
-                <strong>{{ i.label }}</strong>
-                {% if i.cited %}<em class="pack-cited">{{ t("connect.pack.cited", loc, n=i.cited) }}</em>{% endif %}
-                {% if i.recommended %}<em class="pack-rec">{{ t("connect.pack.rec", loc) }}</em>{% endif %}
-              </span>
-              {{ mini_flow(i.flow) }}
-            </label>
-            {% endfor %}
+        {# flow editor for the chosen behaviour #}
+        {% for b in behaviors %}
+        <div class="flow-edit" data-edit="{{ b.cat }}" data-std="{{ b.std | tojson | forceescape }}"{% if not b.selected %} hidden{% endif %}>
+          <div class="fe-head">
+            <strong>{{ t("connect.edit.title", loc, label=b.label) }}</strong>
+            {% if can_edit_flow %}<button type="button" class="link" data-fe-toggle>{{ t("connect.edit.open", loc) }}</button>{% endif %}
           </div>
+          {% if can_edit_flow %}
+          <div class="fe-body" data-fe-body hidden>
+            <p class="fe-note">{{ t("connect.edit.note", loc, n=max_steps) }}</p>
+            <input type="hidden" name="{{ b.cat }}-edited" value="" data-fe-edited />
+            <ol class="fe-steps" data-fe-steps data-max="{{ max_steps }}">
+              <li class="fe-entry"><span class="fe-num">0</span><span>{{ t("flow.entry", loc) }}</span></li>
+              {% for s in b.steps %}
+              <li class="fe-step" data-fe-step>
+                <span class="fe-num"></span>
+                <input type="hidden" name="{{ b.cat }}-key" value="{{ s.key }}" />
+                <label class="fe-field"><span>{{ t("connect.edit.label", loc) }}</span><input name="{{ b.cat }}-label" value="{{ s.label }}" maxlength="24" /></label>
+                <label class="fe-field"><span>{{ t("flow.map_event", loc) }}</span><input name="{{ b.cat }}-event" value="{{ s.event }}" list="ga4-events" maxlength="40" pattern="[A-Za-z][A-Za-z0-9_]*" required /></label>
+                <span class="fe-tools">
+                  <button type="button" class="fe-btn" data-fe-up aria-label="{{ t('connect.edit.up', loc) }}">↑</button>
+                  <button type="button" class="fe-btn" data-fe-down aria-label="{{ t('connect.edit.down', loc) }}">↓</button>
+                  <button type="button" class="fe-btn danger" data-fe-del aria-label="{{ t('connect.edit.del', loc) }}">×</button>
+                </span>
+              </li>
+              {% endfor %}
+            </ol>
+            <div class="fe-actions">
+              <button type="button" class="ghost small" data-fe-add data-cat="{{ b.cat }}">＋ {{ t("connect.edit.add", loc) }}</button>
+              <button type="button" class="link" data-fe-reset>{{ t("connect.edit.reset", loc) }}</button>
+            </div>
+            <p class="fe-last">{{ t("connect.edit.last", loc) }}</p>
+          </div>
+          {% else %}
+          <p class="fe-note">{{ t("connect.edit.need_ga4", loc) }}</p>
+          {% endif %}
         </div>
         {% endfor %}
+        <datalist id="ga4-events">{% for o in event_options %}<option value="{{ o.name }}">{{ o.count | num }}</option>{% endfor %}</datalist>
+      </section>
 
-        <div class="beh-submit">
-          <span class="beh-summary" data-beh-summary>{% if benchmark_pack_label %}{{ t("connect.pack.selected", loc) }}<strong>{{ benchmark_pack_label }}</strong>{% else %}{{ t("connect.pack.choose", loc) }}{% endif %}</span>
-          <button type="submit" class="primary">{{ t("connect.pack.submit", loc) }}</button>
+      <section class="card pick">
+        <div class="sec-head">
+          <span class="sec-num">B</span>
+          <div>
+            <h2>{{ t("connect.ind.title", loc) }}</h2>
+            <p class="meta">{{ t("connect.ind.lead", loc) }}</p>
+          </div>
         </div>
-      </form>
-      <script>
-        (function () {
-          const form = document.querySelector("[data-beh-form]");
-          if (!form) return;
-          const sum = form.querySelector("[data-beh-summary]");
-          const prefix = {{ t("connect.pack.selected", loc) | tojson }};
-          function sync() {
-            const on = form.querySelector("input[name=pack_slug]:checked");
-            if (!on) return;
-            const host = on.closest("[data-beh]");
-            const beh = host ? host.dataset.beh : "";
-            form.querySelectorAll(".beh-card").forEach((c) => c.classList.toggle("is-selected", c.dataset.beh === beh));
-            form.querySelectorAll(".ind-panel").forEach((p) => { p.hidden = p.dataset.beh !== beh; });
-            form.querySelectorAll(".ind-opt.is-none").forEach((n) => n.classList.toggle("is-on", on.id === "beh-" + beh && n.htmlFor === on.id));
-            sum.textContent = "";
-            sum.append(prefix);
-            const b = document.createElement("strong"); b.textContent = on.dataset.label || ""; sum.append(b);
-          }
-          form.addEventListener("change", (e) => {
-            sync();
-            /* a new behaviour: bring its (optional) industries into view */
-            if (e.target.closest(".beh-card")) {
-              const panel = form.querySelector(".ind-panel:not([hidden])");
-              if (panel) panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-            }
-          });
-        })();
-      </script>
-    </section>
+        <div class="ind-groups" data-ind-groups>
+          {% for g in industry_groups %}
+          <fieldset class="ind-group" data-cat="{{ g.cat }}">
+            <legend>{{ g.label }} <em class="match-tag">{{ t("connect.ind.match", loc) }}</em></legend>
+            <div class="ind-chips">
+              {% for i in g.packs %}
+              <label class="ind-chip">
+                <input type="radio" name="industry" value="{{ i.slug }}" data-label="{{ i.label }}" data-cat="{{ g.cat }}" {% if i.selected %}checked{% endif %} required />
+                <span>{{ i.label }}</span>{% if i.cited %}<em class="pack-cited" title="{{ t('connect.pack.cited', loc, n=i.cited) }}">{{ i.cited }}</em>{% endif %}
+              </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+          {% endfor %}
+        </div>
+        <p class="ind-scope" data-ind-scope hidden></p>
+      </section>
+
+      <div class="beh-submit">
+        <span class="beh-summary" data-beh-summary>{% if sel_label %}{{ t("connect.pack.selected", loc) }}<strong>{{ sel_label }}</strong>{% else %}{{ t("connect.pick.both", loc) }}{% endif %}</span>
+        <button type="submit" class="primary">{{ t("connect.pick.submit", loc) }}</button>
+      </div>
+    </form>
+    <template id="fe-step-tpl">
+      <li class="fe-step" data-fe-step>
+        <span class="fe-num"></span>
+        <input type="hidden" data-n="key" value="" />
+        <label class="fe-field"><span>{{ t("connect.edit.label", loc) }}</span><input data-n="label" value="" maxlength="24" placeholder="{{ t('flow.add_label_ph', loc) }}" /></label>
+        <label class="fe-field"><span>{{ t("flow.map_event", loc) }}</span><input data-n="event" value="" list="ga4-events" maxlength="40" pattern="[A-Za-z][A-Za-z0-9_]*" required /></label>
+        <span class="fe-tools">
+          <button type="button" class="fe-btn" data-fe-up aria-label="{{ t('connect.edit.up', loc) }}">↑</button>
+          <button type="button" class="fe-btn" data-fe-down aria-label="{{ t('connect.edit.down', loc) }}">↓</button>
+          <button type="button" class="fe-btn danger" data-fe-del aria-label="{{ t('connect.edit.del', loc) }}">×</button>
+        </span>
+      </li>
+    </template>
+    <script>
+      window.SITEKPI_CONNECT = {
+        prefix: {{ t("connect.pack.selected", loc) | tojson }},
+        join: {{ t("selection.join", loc) | tojson }},
+        scopeAll: {{ t("connect.ind.scope_all", loc) | tojson }},
+        scopeSite: {{ t("connect.ind.scope_site", loc) | tojson }},
+      };
+    </script>
+    <script src="{{ static_url('js/connect.js') }}" defer></script>
     {% endif %}
 
     {# Setup help — only while OAuth/packages are not ready (end users never see it) #}

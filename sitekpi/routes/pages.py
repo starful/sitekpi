@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sitekpi.benchmarks import load_effective
 from sitekpi.board.prev import sample_prev
 from sitekpi.cache import TTLCache
-from sitekpi.flow import apply_mapping, load_mapping
+from sitekpi.flow import apply_mapping, board_mapping, load_custom_flow, load_mapping
 from sitekpi.ga4.data import (
     build_live_builder_widgets,
     connection_info,
@@ -22,6 +22,7 @@ from sitekpi.ga4.data import (
 )
 from sitekpi.i18n import get_locale, set_locale, t
 from sitekpi.routes.flow import live_flow_context, sample_flow_context
+from sitekpi.selection import compose_benchmarks, flow_pack, is_ready, selection, selection_label
 from sitekpi.routes.nav import nav_context, nav_rail_context
 from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.metrics.help import PERIODS
@@ -162,12 +163,16 @@ def page_live(request: Request, period: str = Query(default="28d")):
     extras = nav_context(request)
     if not extras["connected"]:
         return RedirectResponse("/connect", status_code=302)
-    # Industry pack = 業界目安 source only (not DEMO revenue as live)
-    pack_slug = extras.get("benchmark_pack") or ""
-    if not pack_slug or pack_slug not in INDUSTRIES:
+    # 訪問者の行動 → flow / events / wording;  業種 → 業界目安
+    sel = selection(request.session)
+    if not is_ready(sel):
         return RedirectResponse("/connect", status_code=302)
-    mapping = load_mapping(request.session, pack_slug)
+    pack_slug = flow_pack(sel)
+    industry = sel["industry"]
     loc = get_locale(request.session)
+    primary_ev = str(INDUSTRIES[pack_slug].get("primary_event") or "")
+    mapping = board_mapping(pack_slug, load_mapping(request.session, pack_slug),
+                            load_custom_flow(request.session, pack_slug), primary_ev)
     # Board numbers and the 行動フロー are independent GA4 calls → fetch them side by side
     with ThreadPoolExecutor(max_workers=2) as pool:
         flow_job = pool.submit(live_flow_context, request, pack_slug, period, mapping, loc)
@@ -175,23 +180,12 @@ def page_live(request: Request, period: str = Query(default="28d")):
         live_flow = flow_job.result()
     prev = data.pop("_prev", None) if live else sample_prev(pack_slug, period, data)
     if live and mapping:
-        primary_ev = str(INDUSTRIES[pack_slug].get("primary_event") or "")
         data = apply_mapping(data, pack_slug, mapping, primary=primary_ev)
         if prev:
             prev = apply_mapping(prev, pack_slug, mapping, primary=primary_ev)
     flow = live_flow if live else sample_flow_context(pack_slug, data, loc)
     label = extras["connected"]["name"]
-    pack_label = pack_text(
-        pack_slug, "label", loc, str(INDUSTRIES[pack_slug]["label"])
-    )
-    if INDUSTRIES[pack_slug].get("virtual"):
-        pack_label = t("behavior.no_industry", loc, label=pack_label)
-    else:
-        from sitekpi.packs.behaviors import BEHAVIORS, behavior_label
-
-        cat = str(INDUSTRIES[pack_slug].get("category") or "")
-        if cat in BEHAVIORS:
-            pack_label = f"{behavior_label(cat, loc)} › {pack_label}"
+    pack_label = selection_label(sel, loc)
     is_demo = bool(extras["connected"].get("demo"))
     if is_demo:
         # Demo connect: pack sample site numbers, clearly labelled (business stays —)
@@ -208,9 +202,11 @@ def page_live(request: Request, period: str = Query(default="28d")):
             period=period,
             data=data,
             ind=INDUSTRIES[pack_slug],
-            benches_raw=(effective := load_effective(request.session, pack_slug, BENCHMARKS[pack_slug], live=True)),
+            benches_raw=(effective := load_effective(
+                request.session, industry, compose_benchmarks(sel["behavior"], industry), live=True)),
             bench=bench_context(
-                pack=pack_slug, board="live" if not is_demo else "sample", effective=effective, locale=loc,
+                pack=industry, board="live" if not is_demo else "sample", effective=effective, locale=loc,
+                labels_from=pack_slug,
                 property_name=str((request.session.get("ga4_property") or {}).get("name") or ""),
             ),
             property_name=prop or label,
@@ -226,6 +222,15 @@ def page_live(request: Request, period: str = Query(default="28d")):
             prev=prev,
         )
     )
+
+
+@router.get("/samples", response_class=HTMLResponse)
+def page_samples(request: Request):
+    """見本ボード一覧 (behaviour → industries)."""
+    from sitekpi.views.samples import render_samples
+
+    return HTMLResponse(render_samples(locale=get_locale(request.session),
+                                       rail=nav_rail_context(request, "samples")))
 
 
 @router.get("/b2c_membership")

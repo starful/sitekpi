@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}SiteKPI · {{ t("samples.title", loc) }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/connect.css') }}" />{% endblock %}
+{% block main %}
+  <main class="connect samples">
+    <h1>{{ t("samples.title", loc) }}</h1>
+    <p class="lead">{{ t("samples.lead", loc) }}</p>
+    <div class="sample-list">
+      {% for b in behaviors %}
+      <section class="card sample-beh">
+        <div class="sample-head">
+          <div>
+            <h2>{{ b.label }}</h2>
+            <p class="meta">{{ b.hint }}</p>
+          </div>
+        </div>
+        <span class="mini-flow" aria-label="{{ t('flow.title', loc) }}">
+          <span class="mf-step is-entry">{{ t("flow.entry", loc) }}</span>
+          {% for s in b.steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
+        </span>
+        <div class="sample-inds">
+          {% for i in b.industries %}
+          <a class="ind-link" href="/{{ i.slug }}">{{ i.label }}{% if i.cited %}<em class="pack-cited" title="{{ t('connect.pack.cited', loc, n=i.cited) }}">{{ i.cited }}</em>{% endif %}<span aria-hidden="true">›</span></a>
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+  </main>
+{% endblock %}

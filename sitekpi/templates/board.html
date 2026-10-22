@@ -7,7 +7,7 @@
       <header class="top">
         <div>
           <h1>{{ industry_label }}</h1>
-          <div class="meta">{{ pack_meta }}</div>
+          <div class="meta">{{ pack_meta }}{% if is_sample %} · <a class="switch-link" href="/samples">{{ t("samples.switch", loc) }}</a>{% endif %}</div>
         </div>
         <div class="top-right">
           {% if bench %}<button type="button" class="adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}

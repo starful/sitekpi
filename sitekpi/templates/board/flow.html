@@ -33,7 +33,7 @@
   </button>
   {%- endmacro %}
   {% set n = f.stages | length %}
-  <ol class="flow-track" style="--n: {{ n }}; grid-template-columns: repeat({{ n - 1 }}, minmax(0, 1fr) var(--link-w)) minmax(0, 1fr);">
+  <ol class="flow-track{{ ' is-long' if n > 5 else '' }}" style="--n: {{ n }}; grid-template-columns: repeat({{ n - 1 }}, minmax(0, 1fr) var(--link-w)) minmax(0, 1fr);">
     {% for st in f.stages %}
     {% set col = loop.index0 * 2 + 1 %}
     <li class="flow-stage{{ ' is-missing' if st.missing else '' }}{{ ' is-entry' if st.key == 'entry' else '' }}">

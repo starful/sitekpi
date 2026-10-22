@@ -965,6 +965,44 @@ td.prev-cell { font-weight: 700; white-space: nowrap; font-variant-numeric: tabu
   .flow-node .flow-missing { grid-area: users; margin-top: 0; justify-self: end; }
   .flow-node .flow-cta { grid-area: reach; justify-self: end; }
 }
+/* more than 5 stages (a customised flow): stack on medium widths too */
+@container flow (max-width: 1250px) {
+  .flow-track.is-long { grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: none; row-gap: 0; }
+  .flow-track.is-long .flow-up, .flow-track.is-long .flow-node, .flow-track.is-long .flow-down, .flow-track.is-long .flow-link { grid-column: 1; grid-row: auto; }
+  .flow-track.is-long .flow-up { padding: 0 0 6px 22px; }
+  .flow-track.is-long .flow-down { padding: 6px 0 0 22px; }
+  .flow-track.is-long .flow-add { align-self: flex-end; margin-right: 6px; }
+  .flow-track.is-long .flow-up .flow-add { display: none; }  /* one ＋ per step when stacked (above/below read the same here) */
+  .flow-track.is-long .flow-down:has(> .flow-add:only-child) { padding-top: 0; margin-top: -11px; position: relative; z-index: 1; }
+  .flow-track.is-long .flow-branch { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "mark mark" "label users" "event reach"; column-gap: 12px; }
+  .flow-track.is-long .flow-branch-mark { grid-area: mark; }
+  .flow-track.is-long .flow-branch .flow-label { grid-area: label; }
+  .flow-track.is-long .flow-branch .flow-event { grid-area: event; justify-self: start; }
+  .flow-track.is-long .flow-branch .flow-users { grid-area: users; text-align: right; }
+  .flow-track.is-long .flow-branch .flow-reach { grid-area: reach; text-align: right; }
+  .flow-track.is-long .flow-branch .flow-missing { grid-area: users; justify-self: end; }
+  .flow-track.is-long .flow-branch::before { left: -12px; height: auto; top: -6px; bottom: 50%; border-left: 2px dotted #c4b5fd; border-bottom: 2px dotted #c4b5fd; width: 10px; }
+  .flow-track.is-long .flow-branch.is-above::before { top: 50%; bottom: -6px; border-bottom: 0; border-top: 2px dotted #c4b5fd; }
+  .flow-track.is-long .flow-link { flex-direction: row; justify-content: flex-start; gap: 8px; padding: 6px 0 6px 18px; text-align: left; }
+  .flow-track.is-long .flow-arrow { width: 10px; height: 22px; flex: none; }
+  .flow-track.is-long .flow-arrow::before { left: 4px; right: auto; top: 0; bottom: 6px; width: 2px; height: auto; }
+  .flow-track.is-long .flow-arrow::after { left: 0; right: auto; top: auto; bottom: 0; border: 5px solid transparent; border-top: 7px solid #cbd5e1; border-bottom: 0; }
+  .flow-track.is-long .flow-link.is-worst .flow-arrow::after { border-top-color: #f43f5e; border-left-color: transparent; }
+  .flow-track.is-long .flow-node { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; row-gap: 2px; grid-template-areas: "label users" "event reach" "bar bar" "mix mix"; align-items: center; padding: 9px 12px; }
+  .flow-track.is-long .flow-step { display: none; }
+  .flow-track.is-long .flow-node .flow-label { grid-area: label; padding-right: 0; }
+  .flow-track.is-long .flow-node .flow-event { grid-area: event; justify-self: start; }
+  .flow-track.is-long .flow-node .flow-users { grid-area: users; margin-top: 0; text-align: right; }
+  .flow-track.is-long .flow-node .flow-users strong { font-size: 1.1rem; }
+  .flow-track.is-long .flow-node .flow-reach { grid-area: reach; text-align: right; }
+  .flow-track.is-long .flow-node .flow-bar { grid-area: bar; }
+  .flow-track.is-long .flow-node .flow-mix { grid-area: mix; }
+  .flow-track.is-long .flow-node .flow-missing { grid-area: users; margin-top: 0; justify-self: end; }
+  .flow-track.is-long .flow-node .flow-cta { grid-area: reach; justify-self: end; }
+}
 
 .pop.is-saving { cursor: progress; }
 .pop.is-saving .pop-actions .primary { opacity: 0.75; }
+
+.switch-link { color: var(--accent); font-weight: 700; text-decoration: none; }
+.switch-link:hover { text-decoration: underline; }

@@ -1,4 +1,4 @@
-"""Shared app chrome data: the left rail (サンプルパック / 接続済み / アプリ).
+"""Shared app chrome data: the left menu (マイサイト / ツール / 見本 / 設定).
 
 Markup: templates/partials/rail.html, rail_nav.html, mobile_bar.html
 Styles: static/css/rail.css   Behaviour: static/js/rail.js
@@ -21,43 +21,17 @@ def rail_context(
     pack_links: Any = None,
     industry: str = "",
 ) -> dict[str, Any]:
-    """Data for templates/partials/rail*.html."""
-    if pack_groups is None:
-        from sitekpi.packs import packs_by_category
-
-        pack_groups = packs_by_category()
-    elif not pack_groups and pack_links:
-        items_: list[tuple[str, str, str]] = []
-        for item in pack_links:
-            items_.append((item[0], item[1], item[2] if len(item) >= 3 else ""))
-        pack_groups = [("all", t("cat.all", locale), items_)]
-    active_slug = nav_active.removeprefix("pack:") if nav_active.startswith("pack:") else ""
-    groups: list[dict[str, Any]] = []
-    for cid, cat_label, items in pack_groups:
-        shown = t(f"cat.{cid}", locale) if cid != "all" else cat_label
-        if shown.startswith("cat."):
-            shown = cat_label
-        rows = []
-        for slug, label, hint in items:
-            shown_label = pack_text(slug, "label", locale, label)
-            shown_hint = pack_text(slug, "hint", locale, hint) if hint else ""
-            rows.append(
-                {
-                    "slug": slug,
-                    "label": shown_label,
-                    "hint": shown_hint,
-                    "q": f"{shown_label} {shown_hint} {slug}".strip().lower(),
-                    "on": nav_active == f"pack:{slug}",
-                }
-            )
-        groups.append(
-            {
-                "label": shown,
-                "open": bool(active_slug) and any(s == active_slug for s, _, _ in items),
-                "packs": rows,
-            }
-        )
-    return {"groups": groups, "connected": connected, "active": nav_active}
+    """Data for templates/partials/rail*.html (マイサイト / ツール / 見本 / 設定)."""
+    sample = None
+    if nav_active.startswith("pack:"):
+        slug = nav_active.removeprefix("pack:")
+        sample = {"slug": slug, "label": pack_text(slug, "label", locale, slug)}
+    return {
+        "connected": connected,
+        "active": "samples" if sample else nav_active,
+        "sample": sample,
+        "selection_label": str((connected or {}).get("selection") or ""),
+    }
 
 
 def _rail_nav_html(

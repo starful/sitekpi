@@ -39,7 +39,8 @@ sitekpi/
   session.py         サーバー側セッション（暗号化 SQLite）
   cache.py           プロセス内 TTL キャッシュ
   benchmarks.py      業界目安（初期値＋自社目安）
-  flow.py            行動フロー（イベント割り当て・見本フロー）
+  flow.py            行動フロー（イベント割り当て・カスタムの流れ・分岐・見本フロー）
+  selection.py       ライブボードの「訪問者の行動 × 業種」
   routes/            pages.py（ボード・ビルダー・設定）/ connect.py（GA4 接続）/ benchmarks.py / flow.py / nav.py
   ga4/               oauth.py（認証）/ data.py（GA4 Data API）
   board/data.py      ボードの行データ生成

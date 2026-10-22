@@ -31,10 +31,29 @@ def test_page_has_shared_rail_and_mobile_menu(client, path):
     assert '<a class="nav"' not in html
 
 
-@pytest.mark.parametrize("path,label", [("/builder", "ビルダー"), ("/connect", "GA4 接続"), ("/settings", "設定")])
+@pytest.mark.parametrize("path,label", [("/builder", "ダッシュボードを作る"), ("/samples", "見本ボード一覧"),
+                                        ("/settings", "設定")])
 def test_active_item_is_marked(client, path, label):
     html = client.get(path).text
     assert re.search(rf'<a href="{path}" class="is-on">{label}</a>', html)
+
+
+def test_menu_sections_and_no_pack_search(client):
+    html = client.get("/ec").text
+    rail = html.split('<aside class="rail"', 1)[1].split("</aside>", 1)[0]
+    groups = re.findall(r'<div class="nav-group">([^<]+)</div>', rail)
+    assert groups == ["マイサイト", "ツール", "見本"]
+    assert "pack-search" not in rail and "pack-cat" not in rail
+    assert 'href="/connect" class="nav-cta' in rail  # not connected → connect CTA
+    assert re.search(r'<a href="/ec" class="nav-indent is-on">EC・小売</a>', rail)  # current sample
+
+
+def test_samples_gallery_links_every_industry(client):
+    from sitekpi.packs import INDUSTRIES
+
+    html = client.get("/samples").text
+    for slug, meta in INDUSTRIES.items():
+        assert (f'href="/{slug}"' in html) == (not meta.get("virtual")), slug
 
 
 def test_connected_property_appears_on_every_page(client):
@@ -42,4 +61,6 @@ def test_connected_property_appears_on_every_page(client):
     client.post("/connect/property", data={"property_id": "123456789"})
     client.post("/connect/pack", data={"pack_slug": "ec"})
     for path in PAGES:
-        assert "Demo Shop JP（デモ）" in client.get(path).text, path
+        html = client.get(path).text
+        assert "Demo Shop JP（デモ）" in html, path
+        assert "買う × EC・小売" in html, path  # 行動 × 業種 under the property

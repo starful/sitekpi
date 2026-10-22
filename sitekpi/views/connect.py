@@ -1,14 +1,62 @@
-"""GA4 connect page."""
+"""GA4 connect page: Google → property → 訪問者の行動 (flow, editable) + 業種 (standards)."""
 
 from __future__ import annotations
 
 from typing import Any
 
 from sitekpi.ga4.oauth import base_url, redirect_uri
-from sitekpi.i18n import normalize_locale, t
+from sitekpi.i18n import normalize_locale
 from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.packs.flows import FLOW_STEPS, step_label
 from sitekpi.templating import render
+
+
+def _behaviors(loc: str, sel: dict[str, str], site_events: set[str] | None,
+               flows: dict[str, list[dict[str, str]]]) -> list[dict[str, Any]]:
+    from sitekpi.packs import INDUSTRIES
+    from sitekpi.packs.behaviors import BEHAVIORS, behavior_hint, behavior_label, slug_of
+
+    out = []
+    for cat in BEHAVIORS:
+        pack = slug_of(cat)
+        steps = flows.get(cat) or [
+            {"key": s, "event": s, "label": step_label(s, loc, pack)} for s in FLOW_STEPS.get(pack) or []
+        ]
+        shown = [
+            {**s, "label": s.get("label") or (step_label(s["key"], loc, pack) if s["key"] in FLOW_STEPS[pack] else s["event"]),
+             "found": None if site_events is None else s["event"] in site_events}
+            for s in steps
+        ]
+        hits = sum(1 for s in shown if s["found"])
+        out.append({
+            "cat": cat, "pack": pack, "label": behavior_label(cat, loc), "hint": behavior_hint(cat, loc),
+            "steps": shown, "hits": hits, "custom": cat in flows, "selected": sel.get("behavior") == cat,
+            "industries": [m for m in INDUSTRIES[pack]["members"]],
+            "std": [{"key": k, "event": k, "label": step_label(k, loc, pack)} for k in FLOW_STEPS.get(pack) or []],
+        })
+    best = max((b["hits"] for b in out), default=0)
+    for b in out:
+        b["recommended"] = best > 0 and b["hits"] == best
+    return out
+
+
+def _industries(loc: str, sel: dict[str, str]) -> list[dict[str, Any]]:
+    from sitekpi.packs import BENCHMARKS, packs_by_category
+    from sitekpi.packs.behaviors import BEHAVIORS, behavior_label
+
+    groups = []
+    for cid, _label, items in packs_by_category():
+        groups.append({
+            "cat": cid,
+            "label": behavior_label(cid, loc) if cid in BEHAVIORS else cid,
+            "packs": [
+                {"slug": s, "label": pack_text(s, "label", loc, lab),
+                 "cited": sum(1 for spec in BENCHMARKS[s].values() if (spec.get("source") or {}).get("url")),
+                 "selected": sel.get("industry") == s}
+                for s, lab, _hint in items
+            ],
+        })
+    return groups
 
 
 def render_connect_page(
@@ -21,53 +69,19 @@ def render_connect_page(
     selected: dict[str, str] | None,
     error: str | None,
     libs_ok: bool,
-    pack_groups: list[tuple[str, str, list[tuple[str, str, str]]]] | None = None,
-    benchmark_pack: str = "",
-    benchmark_pack_label: str = "",
+    sel: dict[str, str] | None = None,
+    sel_label: str = "",
+    flows: dict[str, list[dict[str, str]]] | None = None,
+    event_options: list[dict[str, Any]] | None = None,
+    can_edit_flow: bool = False,
     locale: str = "ja",
     rail: dict[str, Any] | None = None,
     site_events: set[str] | None = None,
+    max_steps: int = 6,
 ) -> str:
     loc = normalize_locale(locale)
-
-    def flow_of(slug: str) -> dict[str, Any]:
-        """The pack's 行動フロー, and (when we know the site's events) which steps it records."""
-        steps = [
-            {"label": step_label(ev, loc, slug), "event": ev,
-             "found": None if site_events is None else ev in site_events}
-            for ev in FLOW_STEPS.get(slug) or []
-        ]
-        hits = sum(1 for s in steps if s["found"])
-        return {"steps": steps, "hits": hits, "total": len(steps)}
-
-    # 行動 first (type-<category>), then the industry inside it (optional)
-    from sitekpi.packs import BENCHMARKS, INDUSTRIES
-    from sitekpi.packs.behaviors import BEHAVIORS, behavior_hint, behavior_label, slug_of
-
-    groups: list[dict[str, Any]] = []
-    for cat in BEHAVIORS if pack_groups is not None else []:
-        vslug = slug_of(cat)
-        members = INDUSTRIES[vslug]["members"]
-        industries = [
-            {"slug": m, "label": pack_text(m, "label", loc, str(INDUSTRIES[m]["label"])), "flow": flow_of(m),
-             "cited": sum(1 for spec in BENCHMARKS[m].values()
-                          if (spec.get("source") or {}).get("url"))}
-            for m in members
-        ]
-        flow = flow_of(vslug)
-        best_member = max((i["flow"]["hits"] for i in industries), default=0)
-        groups.append({
-            "cat": cat, "slug": vslug, "label": behavior_label(cat, loc), "hint": behavior_hint(cat, loc),
-            "flow": flow, "hits": max(flow["hits"], best_member), "industries": industries,
-            "selected": benchmark_pack == vslug or benchmark_pack in members,
-            "industry_selected": benchmark_pack in members,
-        })
-    best = max((b["hits"] for b in groups), default=0)
-    for b in groups:
-        b["recommended"] = best > 0 and b["hits"] == best
-        for i in b["industries"]:
-            # an industry is the better pick when its own flow matches more than the behaviour's
-            i["recommended"] = b["recommended"] and i["flow"]["hits"] == b["hits"] > b["flow"]["hits"]
+    sel = sel or {"behavior": "", "industry": ""}
+    picking = connected and bool(selected)
     return render(
         "connect.html",
         loc=loc,
@@ -80,10 +94,15 @@ def render_connect_page(
         properties=properties,
         selected=selected,
         error=error,
-        pack_groups=groups,
-        benchmark_pack=benchmark_pack,
-        benchmark_pack_label=benchmark_pack_label,
+        sel=sel,
+        sel_label=sel_label,
+        ready=bool(sel.get("behavior") and sel.get("industry")),
+        behaviors=_behaviors(loc, sel, site_events, flows or {}) if picking else [],
+        industry_groups=_industries(loc, sel) if picking else [],
+        event_options=event_options or [],
+        can_edit_flow=can_edit_flow,
         knows_events=site_events is not None,
+        max_steps=max_steps,
         redirect_uri=redirect_uri(),
         base_url=base_url(),
     )
