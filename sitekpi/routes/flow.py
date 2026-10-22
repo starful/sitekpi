@@ -26,7 +26,7 @@ from sitekpi.views.flow import flow_context
 
 router = APIRouter(tags=["flow"])
 
-_FLOW_CACHE = TTLCache(maxsize=256, ttl=60.0)
+_FLOW_CACHE = TTLCache(maxsize=256, ttl=300.0)
 _EVENTS_CACHE = TTLCache(maxsize=256, ttl=300.0)
 
 

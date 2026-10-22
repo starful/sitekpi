@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Literal
 
 from fastapi import APIRouter, Query, Request
@@ -44,7 +45,7 @@ def index():
 # Short-lived per-process cache so switching periods does not re-hit GA4 every
 # click. Keyed by property (access is checked when the property is selected),
 # bounded, and locked because sync routes run in a thread pool.
-_LIVE_PACK_CACHE = TTLCache(maxsize=256, ttl=60.0)
+_LIVE_PACK_CACHE = TTLCache(maxsize=256, ttl=300.0)  # GA4 data moves daily; 5 min is plenty
 
 
 def _live_pack(
@@ -166,16 +167,19 @@ def page_live(request: Request, period: str = Query(default="28d")):
     if not pack_slug or pack_slug not in INDUSTRIES:
         return RedirectResponse("/connect", status_code=302)
     mapping = load_mapping(request.session, pack_slug)
-    data, live, err, prop = _live_pack(request, pack_slug, period, mapping)  # type: ignore[arg-type]
     loc = get_locale(request.session)
+    # Board numbers and the 行動フロー are independent GA4 calls → fetch them side by side
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        flow_job = pool.submit(live_flow_context, request, pack_slug, period, mapping, loc)
+        data, live, err, prop = _live_pack(request, pack_slug, period, mapping)  # type: ignore[arg-type]
+        live_flow = flow_job.result()
     prev = data.pop("_prev", None) if live else sample_prev(pack_slug, period, data)
     if live and mapping:
         primary_ev = str(INDUSTRIES[pack_slug].get("primary_event") or "")
         data = apply_mapping(data, pack_slug, mapping, primary=primary_ev)
         if prev:
             prev = apply_mapping(prev, pack_slug, mapping, primary=primary_ev)
-    flow = (live_flow_context(request, pack_slug, period, mapping, loc) if live
-            else sample_flow_context(pack_slug, data, loc))
+    flow = live_flow if live else sample_flow_context(pack_slug, data, loc)
     label = extras["connected"]["name"]
     pack_label = pack_text(
         pack_slug, "label", loc, str(INDUSTRIES[pack_slug]["label"])

@@ -13,6 +13,7 @@ from sitekpi.ga4.oauth import (
 try:
     from google.analytics.data_v1beta import BetaAnalyticsDataClient
     from google.analytics.data_v1beta.types import (
+        BatchRunReportsRequest,
         DateRange,
         Dimension,
         Filter,
@@ -146,6 +147,43 @@ def _run(
     return client.run_report(req)
 
 
+def _req(
+    start: str,
+    end: str,
+    metrics: list[str],
+    dimensions: list[str] | None = None,
+    dimension_filter: Any | None = None,
+    limit: int | None = None,
+) -> Any:
+    req = RunReportRequest(
+        date_ranges=[DateRange(start_date=start, end_date=end)],
+        metrics=[Metric(name=m) for m in metrics],
+        dimensions=[Dimension(name=d) for d in (dimensions or [])],
+    )
+    if dimension_filter is not None:
+        req.dimension_filter = dimension_filter
+    if limit is not None:
+        req.limit = limit
+    return req
+
+
+def _batch(client: Any, property_id: str, reqs: list[Any]) -> list[Any]:
+    """Several reports in one round trip (GA4 allows 5 per batch)."""
+    out: list[Any] = []
+    for i in range(0, len(reqs), 5):
+        resp = client.batch_run_reports(
+            BatchRunReportsRequest(property=f"properties/{property_id}", requests=reqs[i:i + 5])
+        )
+        out.extend(resp.reports)
+    return out
+
+
+def _event_filter(names: list[str]) -> Any:
+    return FilterExpression(
+        filter=Filter(field_name="eventName", in_list_filter=Filter.InListFilter(values=list(names)))
+    )
+
+
 def _totals(cv: list[str]) -> dict[str, Any]:
     """Site totals from the 8 totals metrics (same order as the request)."""
     uu = _i(cv[0])
@@ -218,8 +256,21 @@ def fetch_pack_overlay(
             "averageSessionDuration",
             "userEngagementDuration",
         ]
-        cur = _run(client, property_id, cur_start, cur_end, totals_metrics)
-        prev = _run(client, property_id, prev_start, prev_end, totals_metrics)
+        # One round trip: totals now / before, events now / before, channels
+        reqs = [
+            _req(cur_start, cur_end, totals_metrics),
+            _req(prev_start, prev_end, totals_metrics),
+            _req(cur_start, cur_end, ["sessions"], dimensions=["sessionDefaultChannelGroup"], limit=10),
+        ]
+        if event_names:
+            filt = _event_filter(event_names)
+            lim = max(len(event_names), 10)
+            reqs += [
+                _req(cur_start, cur_end, ["eventCount"], ["eventName"], filt, lim),
+                _req(prev_start, prev_end, ["eventCount"], ["eventName"], filt, lim),
+            ]
+        reports = _batch(client, property_id, reqs)
+        cur, prev, ch = reports[0], reports[1], reports[2]
         cur_t = _totals(_vals(cur.rows[0]) if cur.rows else ["0"] * 8)
         prev_t = _totals(_vals(prev.rows[0]) if prev.rows else ["0"] * 8)
         uu, sessions = cur_t["uu"], cur_t["sessions"]
@@ -229,63 +280,14 @@ def fetch_pack_overlay(
             round(100 * (sessions - sess_prev) / sess_prev, 1) if sess_prev else 0.0
         )
 
-        # Events
         event_counts: dict[str, int] = {e: 0 for e in event_names}
         event_counts_prev: dict[str, int] = {}
         if event_names:
-            filt = FilterExpression(
-                or_group=FilterExpressionList(
-                    expressions=[
-                        FilterExpression(
-                            filter=Filter(
-                                field_name="eventName",
-                                string_filter=Filter.StringFilter(
-                                    value=name,
-                                    match_type=Filter.StringFilter.MatchType.EXACT,
-                                ),
-                            )
-                        )
-                        for name in event_names
-                    ]
-                )
-            )
-            ev = _run(
-                client,
-                property_id,
-                cur_start,
-                cur_end,
-                ["eventCount"],
-                dimensions=["eventName"],
-                dimension_filter=filt,
-                limit=max(len(event_names), 10),
-            )
-            for row in ev.rows or []:
-                name = row.dimension_values[0].value
-                event_counts[name] = _i(_vals(row)[0])
-            # Same events, previous period → real 前期比 per event
-            ev_prev = _run(
-                client,
-                property_id,
-                prev_start,
-                prev_end,
-                ["eventCount"],
-                dimensions=["eventName"],
-                dimension_filter=filt,
-                limit=max(len(event_names), 10),
-            )
-            for row in ev_prev.rows or []:
+            for row in reports[3].rows or []:
+                event_counts[row.dimension_values[0].value] = _i(_vals(row)[0])
+            for row in reports[4].rows or []:
                 event_counts_prev[row.dimension_values[0].value] = _i(_vals(row)[0])
 
-        # Channels (top by sessions)
-        ch = _run(
-            client,
-            property_id,
-            cur_start,
-            cur_end,
-            ["sessions"],
-            dimensions=["sessionDefaultChannelGroup"],
-            limit=10,
-        )
         ch_rows = []
         ch_total = 0
         for row in ch.rows or []:
@@ -624,23 +626,26 @@ def fetch_flow(
             return None, "GA4 認証が無効です。再接続してください。"
         client = BetaAnalyticsDataClient(credentials=creds)
         ch_dim = "sessionDefaultChannelGroup"
-        total = _run(client, pid, start, end, ["totalUsers"])
+        reqs = [
+            _req(start, end, ["totalUsers"]),
+            _req(start, end, ["totalUsers"], [ch_dim], limit=25),
+        ]
+        if events:
+            filt = _event_filter(events)
+            reqs += [
+                _req(start, end, ["totalUsers"], ["eventName"], filt, len(events) + 5),
+                _req(start, end, ["totalUsers"], [ch_dim, "eventName"], filt, 500),
+            ]
+        reports = _batch(client, pid, reqs)  # one round trip
+        total, by_ch_entry = reports[0], reports[1]
         entry = _i(_vals(total.rows[0])[0]) if total.rows else 0
-        by_ch_entry = _run(client, pid, start, end, ["totalUsers"], dimensions=[ch_dim], limit=25)
         entry_by = {(r.dimension_values[0].value or "Other"): _i(_vals(r)[0]) for r in by_ch_entry.rows or []}
         totals: dict[str, int] = {e: 0 for e in events}
         by_channel: dict[str, dict[str, int]] = {c: {} for c in entry_by}
         if events:
-            filt = FilterExpression(
-                filter=Filter(field_name="eventName", in_list_filter=Filter.InListFilter(values=list(events)))
-            )
-            ev = _run(client, pid, start, end, ["totalUsers"], dimensions=["eventName"],
-                      dimension_filter=filt, limit=len(events) + 5)
-            for r in ev.rows or []:
+            for r in reports[2].rows or []:
                 totals[r.dimension_values[0].value] = _i(_vals(r)[0])
-            ev_ch = _run(client, pid, start, end, ["totalUsers"], dimensions=[ch_dim, "eventName"],
-                         dimension_filter=filt, limit=500)
-            for r in ev_ch.rows or []:
+            for r in reports[3].rows or []:
                 ch = r.dimension_values[0].value or "Other"
                 by_channel.setdefault(ch, {})[r.dimension_values[1].value] = _i(_vals(r)[0])
         return {"entry": entry, "entry_by": entry_by, "totals": totals, "by_channel": by_channel, "sample": False}, None

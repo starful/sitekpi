@@ -329,7 +329,8 @@ td.bench-cell {
   min-width: 6.2rem; vertical-align: middle;
 }
 td.bench-cell .bench-gauge { margin: 0 0 4px; max-width: none; }
-td.bench-cell .bench-v { display: block; }
+td.bench-cell .bench-v { display: inline-block; }
+td.bench-cell .src-tag { text-align: right; }
 td.bench-cell.is-empty { color: #94a3b8; }
 td.bench-gap { font-weight: 800; white-space: nowrap; min-width: 4.2rem; }
 .metric-card .bench-line {
@@ -964,3 +965,6 @@ td.prev-cell { font-weight: 700; white-space: nowrap; font-variant-numeric: tabu
   .flow-node .flow-missing { grid-area: users; margin-top: 0; justify-self: end; }
   .flow-node .flow-cta { grid-area: reach; justify-self: end; }
 }
+
+.pop.is-saving { cursor: progress; }
+.pop.is-saving .pop-actions .primary { opacity: 0.75; }

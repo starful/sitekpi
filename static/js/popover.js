@@ -98,10 +98,13 @@
     if (!form || !(form.matches("[data-bench-form], [data-bench-reset-all], [data-json-form]"))) return;
     e.preventDefault();
     const btn = form.querySelector("[type=submit]");
-    if (btn) btn.disabled = true;
+    const label = btn ? btn.textContent : "";
+    if (btn) { btn.disabled = true; btn.textContent = document.documentElement.lang === "en" ? "Saving…" : document.documentElement.lang === "ko" ? "저장 중…" : "保存中…"; }
+    pop.classList.add("is-saving");
     const r = await post(form.getAttribute("action"), new FormData(form));
     if (r.ok) { location.reload(); return; }
-    if (btn) btn.disabled = false;
+    pop.classList.remove("is-saving");
+    if (btn) { btn.disabled = false; btn.textContent = label; }
     showError(form, r.data);
   });
 
