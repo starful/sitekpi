@@ -32,7 +32,9 @@ def render_connect_page(
         f'<div class="banner err">{escape(error)}</div>' if error else ""
     )
 
-    # Developer-only block (collapsed). Never the main user path.
+    # Setup help (collapsed) — only while OAuth/packages are not ready.
+    # Once the app is configured, end users never see it.
+    setup_needed = not (configured and libs_ok)
     status_line = (
         f'<p class="ok">{escape(t("connect.dev.ok", loc))}</p>'
         if configured and libs_ok
@@ -42,7 +44,7 @@ def render_connect_page(
             else f'<p class="note">{escape(t("connect.dev.pkgs", loc))}</p>'
         )
     )
-    setup = f"""
+    setup = "" if not setup_needed else f"""
     <details class="dev">
       <summary>{escape(t("connect.dev.summary", loc))}</summary>
       <div class="dev-body">
@@ -56,7 +58,7 @@ def render_connect_page(
         <pre class="env">GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 GOOGLE_REDIRECT_URI={escape(redirect_uri())}
-SESSION_SECRET=change-me
+SESSION_SECRET=（長いランダム文字列）
 APP_BASE_URL={escape(base_url())}</pre>
       </div>
     </details>

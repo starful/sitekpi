@@ -104,6 +104,12 @@ UI: dict[str, dict[str, str]] = {
     "col.delta": {"ja": "前期比", "en": "vs prior", "ko": "전기 대비"},
     "bench": {"ja": "業界目安", "en": "Industry std.", "ko": "업계 기준"},
     "bench_gap": {"ja": "目安差", "en": "Gap vs std.", "ko": "기준 차이"},
+    "bench_band": {"ja": "帯", "en": "range", "ko": "범위"},
+    "bench_title": {
+        "ja": "パック標準帯 {band}（平均目安 {avg}）",
+        "en": "Pack standard range {band} (average {avg})",
+        "ko": "팩 기준 범위 {band} (평균 기준 {avg})",
+    },
     "bench_empty": {
         "ja": "比較可能な業界目安がない指標です（件数など）",
         "en": "No comparable industry standard (e.g. counts).",
@@ -264,9 +270,9 @@ UI: dict[str, dict[str, str]] = {
         "ko": "데모 데이터로 시도",
     },
     "connect.hint.demo_oauth": {
-        "ja": "本番OAuth前のMVPでは、ボタンからデモ接続を開始します。",
-        "en": "Before production OAuth, the button starts a demo connection.",
-        "ko": "프로덕션 OAuth 전에는 버튼으로 데모 연결을 시작합니다.",
+        "ja": "Google 接続はまだ設定されていないため、いまはデモ接続で始まります。",
+        "en": "Google sign-in isn't set up yet, so this starts a demo connection for now.",
+        "ko": "Google 연결이 아직 설정되지 않아, 지금은 데모 연결로 시작합니다.",
     },
     "connect.badge.on": {"ja": "接続中", "en": "Connected", "ko": "연결됨"},
     "connect.badge.demo": {"ja": "デモ", "en": "Demo", "ko": "데모"},
@@ -347,9 +353,9 @@ UI: dict[str, dict[str, str]] = {
         "ko": "연결 미리보기",
     },
     "connect.dev.summary": {
-        "ja": "開発者向け（ユーザーには見せない設定）",
-        "en": "Developer (hidden from end users)",
-        "ko": "개발자용(사용자에게 숨김)",
+        "ja": "管理者向け: Google 接続のセットアップ",
+        "en": "For admins: set up Google sign-in",
+        "ko": "관리자용: Google 연결 설정",
     },
     "connect.dev.ok": {
         "ja": "OAuth クライアント設定済み · API パッケージ OK",

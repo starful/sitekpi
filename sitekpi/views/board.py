@@ -55,6 +55,7 @@ def _kind_label(kind: str, locale: str) -> str:
 # Active pack benches for the render in progress. A ContextVar (not a module
 # global) so concurrent requests rendering different packs can't mix 業界目安.
 _ACTIVE_BENCH: ContextVar[dict[str, dict[str, Any]]] = ContextVar("_ACTIVE_BENCH", default={})
+_ACTIVE_LOCALE: ContextVar[str] = ContextVar("_ACTIVE_LOCALE", default="ja")
 
 
 def _fmt_num(n: float, unit: str) -> str:
@@ -123,7 +124,7 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
     gap_unit = str(spec.get("gap_unit") or unit)
     band = f"{low:g}–{high:g}{unit}"
     avg = _fmt_num(mid, unit)
-    title = f"パック標準帯 {band}（平均目安 {avg}）"
+    title = t("bench_title", _ACTIVE_LOCALE.get(), band=band, avg=avg)
     scale = _viz_scale(low, high, value, unit)
     base: dict[str, Any] = {
         "band": band,
@@ -235,7 +236,8 @@ def _bench_block(
     if empty:
         b = {**b, "title": t("bench_empty", locale)}
     band = (
-        f'<span class="bench-band">{escape(b["band"])}</span>'
+        f'<span class="bench-band">{escape(t("bench_band", locale))} '
+        f'<span class="bench-band-v">{escape(b["band"])}</span></span>'
         if b.get("band")
         else ""
     )
@@ -251,13 +253,13 @@ def _bench_block(
     return (
         f'<div class="bench-line{empty_cls}" title="{escape(b["title"])}">'
         f"{gauge}"
-        f'<div class="bench-row"><span class="bench-k">{escape(t("bench", locale))}</span>'
-        f'<span class="bench-v">{escape(b["avg"])}</span>{band}</div>'
-        f'<div class="bench-row"><span class="bench-k">{escape(t("bench_gap", locale))}</span>'
-        f'<span class="bench-gap tone-{escape(b["tone"])}">'
+        f'<span class="bench-k">{escape(t("bench", locale))}</span>'
+        f'<span class="bench-vals"><span class="bench-v">{escape(b["avg"])}</span>{band}</span>'
+        f'<span class="bench-k">{escape(t("bench_gap", locale))}</span>'
+        f'<span class="bench-vals"><span class="bench-gap tone-{escape(b["tone"])}">'
         f'{escape(b["gap"])}'
         f'{" " + escape(b["arrow"]) if b["arrow"] else ""}'
-        f"</span></div></div>"
+        f"</span></span></div>"
     )
 
 
@@ -927,9 +929,11 @@ def _rail_nav_html(
 def render_sample_dense(*args: Any, **kwargs: Any) -> str:
     """Render the dense board; 業界目安 for this render are scoped to it."""
     token = _ACTIVE_BENCH.set({})
+    loc_token = _ACTIVE_LOCALE.set(normalize_locale(kwargs.get("locale") or "ja"))
     try:
         return _render_sample_dense(*args, **kwargs)
     finally:
+        _ACTIVE_LOCALE.reset(loc_token)
         _ACTIVE_BENCH.reset(token)
 
 
@@ -1642,10 +1646,13 @@ def _render_sample_dense(
     }}
     .bar-row:last-child {{ border-bottom: none; }}
     .bar-meta {{
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      gap: 8px; align-items: center; margin-bottom: 4px;
+      display: flex; align-items: center; gap: 8px; margin-bottom: 4px; min-width: 0;
     }}
+    .bar-meta .compact-name {{
+      flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }}
+    .bar-meta .focus-tag {{ flex: 0 0 auto; }}
+    .bar-meta .compact-value {{ flex: 0 0 auto; margin-left: auto; }}
     .rank-bar {{
       height: 8px; background: #eef2f7; border-radius: 999px; overflow: hidden;
     }}
@@ -1714,20 +1721,22 @@ def _render_sample_dense(
     .bench-line {{
       margin-top: 8px; padding-top: 8px;
       border-top: 1px solid var(--line);
-      display: flex; flex-direction: column; gap: 4px;
+      /* label | values — label column sized to the longest label (ja/en/ko) */
+      display: grid; grid-template-columns: max-content minmax(0, 1fr);
+      column-gap: 8px; row-gap: 4px; align-items: baseline;
+      font-size: 0.7rem; line-height: 1.3;
       min-height: 3.2em;
+    }}
+    .bench-line > .bench-gauge, .bench-line > .gap-bar {{ grid-column: 1 / -1; }}
+    .bench-vals {{
+      display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; min-width: 0;
     }}
     .bench-line.is-empty .bench-v,
     .bench-line.is-empty .bench-gap {{
       color: #94a3b8; font-weight: 700;
     }}
-    .bench-row {{
-      display: flex; align-items: baseline; gap: 6px;
-      font-size: 0.7rem; line-height: 1.3; flex-wrap: wrap;
-    }}
     .bench-k {{
-      color: var(--muted); font-weight: 700; flex-shrink: 0;
-      width: 3.6em;
+      color: var(--muted); font-weight: 700; white-space: nowrap;
     }}
     .bench-v {{
       font-weight: 800; color: #1e40af; font-variant-numeric: tabular-nums;
@@ -1735,7 +1744,7 @@ def _render_sample_dense(
     .bench-band {{
       color: #94a3b8; font-weight: 600; font-variant-numeric: tabular-nums;
     }}
-    .bench-band::before {{ content: "帯 "; font-weight: 600; }}
+    .bench-band-v {{ white-space: nowrap; }}
     .bench-gap {{ font-weight: 800; font-variant-numeric: tabular-nums; }}
     .bench-gap.tone-up {{ color: var(--up); }}
     .bench-gap.tone-down {{ color: var(--down); }}
@@ -1748,7 +1757,6 @@ def _render_sample_dense(
     td.bench-cell .bench-gauge {{ margin: 0 0 4px; max-width: none; }}
     td.bench-cell .bench-v {{ display: block; }}
     td.bench-cell .bench-band {{ display: block; font-size: 0.68rem; }}
-    td.bench-cell .bench-band::before {{ content: ""; }}
     td.bench-cell.is-empty {{ color: #94a3b8; }}
     td.bench-gap {{ font-weight: 800; white-space: nowrap; min-width: 4.2rem; }}
     .metric-card .bench-line {{
