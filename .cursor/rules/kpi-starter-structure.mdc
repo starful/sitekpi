@@ -16,7 +16,7 @@ sitekpi/
   routes/pages.py          # /, /{slug}, /live, /builder, /settings
   routes/connect.py        # /connect* — OAuth (PKCE), property, 業界パック pick
   routes/nav.py            # rail context (connected property) for every page
-  routes/benchmarks.py     # /benchmarks — 自社目安 edit / reset
+  routes/benchmarks.py     # POST /benchmarks(/reset) — 自社目安 from the board's bottom sheet
   benchmarks.py            # pack defaults + overrides store (.data/app.sqlite3), scopes, validation
   ga4/oauth.py, ga4/data.py
   board/data.py            # build_dense_board: pack + data → board rows
@@ -43,7 +43,8 @@ static/
 | Shared KPI 説明 | `sitekpi/metrics/help.py` | Duplicate long help per pack |
 | Sample nav category | `sitekpi/packs/catalog.py` + `cat.*` in `sitekpi/i18n/strings.py` | Ad-hoc category strings in rail markup |
 | Board markup | `templates/board.html` + macros in `templates/board/_macros.html` | Per-industry alternate board UIs |
-| 業界目安 defaults / sources | `benchmarks` + optional `source` in `sitekpi/packs/{slug}.py` | Claiming a source that isn't in the spec |
+| 業界目安 defaults | `benchmarks` in `sitekpi/packs/{slug}.py` (shown as SiteKPI 初期値) | — |
+| 業界目安 sources | `sitekpi/packs/sources.py` (verified figure = band middle; band rule labelled) | Citing a figure you haven't checked verbatim, or a different metric definition (e.g. landing-page CVR for site CVR) |
 | 自社目安 (user overrides) | `sitekpi/benchmarks.py` (`load_effective`) | Reading pack BENCHMARKS directly in routes |
 | Board numbers / chart points | view models in `sitekpi/views/board.py` | Math inside templates |
 | Board styles / behaviour | `static/css/board.css` / `static/js/board.js` | `<style>`/`<script>` blocks in templates |

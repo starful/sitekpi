@@ -11,6 +11,8 @@ from __future__ import annotations
 from importlib import import_module
 from typing import Any
 
+from sitekpi.packs.sources import apply_sources
+
 # Registration order = sample nav order (within category UI later).
 PACK_MODULES: list[str] = [
     "b2c",
@@ -59,7 +61,8 @@ def build_registry() -> dict[str, Any]:
         meta.setdefault("slug", slug)
         industries[slug] = meta
         demo[slug] = pack["demo"]
-        benchmarks[slug] = pack["benchmarks"]
+        # cited 業界目安 (packs/sources.py) replace SiteKPI defaults where a source matches
+        benchmarks[slug] = apply_sources(slug, pack["benchmarks"])
         pack_copy[slug] = pack["copy"]
         for k, v in (pack.get("event_desc") or {}).items():
             event_desc[str(k)] = str(v)

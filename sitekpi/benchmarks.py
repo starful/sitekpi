@@ -116,8 +116,13 @@ def load_effective(
 def source_of(spec: dict[str, Any]) -> dict[str, str]:
     src = spec.get("source")
     if isinstance(src, dict) and src.get("label"):
-        return {"kind": "cited", "label": str(src["label"]), "url": str(src.get("url") or "")}
-    return {"kind": "provisional", "label": "", "url": ""}
+        return {
+            "kind": "cited",
+            "label": str(src["label"]),
+            "url": str(src.get("url") or ""),
+            "rule": str(src.get("rule") or ""),
+        }
+    return {"kind": "provisional", "label": "", "url": "", "rule": ""}
 
 
 def effective_benchmarks(

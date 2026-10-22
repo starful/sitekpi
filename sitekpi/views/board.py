@@ -103,7 +103,13 @@ def _source_text(spec: dict[str, Any], locale: str) -> str:
         return t("bench_src.custom", locale)
     src = spec.get("source") or {}
     if src.get("kind") == "cited":
-        return t("bench_src.cited", locale, label=src.get("label", ""))
+        text = t("bench_src.cited", locale, label=src.get("label", ""))
+        kind, _, n = str(src.get("rule") or "").partition(":")
+        if kind == "pt":
+            text += " · " + t("bench_rule.pt", locale, n=n)
+        elif kind == "rel":
+            text += " · " + t("bench_rule.rel", locale, n=f"{float(n) * 100:g}")
+        return text
     return t("bench_src.provisional", locale)
 
 
@@ -123,7 +129,9 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
     avg = _fmt_num(mid, unit)
     loc = _ACTIVE_LOCALE.get()
     custom = bool(spec.get("custom"))
-    title = t("bench_title_custom" if custom else "bench_title", loc, band=band, avg=avg)
+    cited = (spec.get("source") or {}).get("kind") == "cited"
+    key = "bench_title_custom" if custom else "bench_title_cited" if cited else "bench_title"
+    title = t(key, loc, band=band, avg=avg)
     title += " · " + _source_text(spec, loc)
     scale = _viz_scale(low, high, value, unit)
     base: dict[str, Any] = {

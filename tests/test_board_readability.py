@@ -41,7 +41,7 @@ def test_watch_ranks_metrics_outside_benchmark(client):
 
 
 def test_watch_says_so_when_nothing_is_off(client):
-    s = _soup(client, "/ec")
+    s = _soup(client, "/b2c")
     assert not s.select(".watch-item")
     assert "大きく外れている指標はありません" in s.select_one(".watch").get_text()
 
@@ -78,3 +78,16 @@ def test_localized(client, loc, text):
     html = client.get("/hr").text
     assert text in html and "今見るべきこと" not in html
     assert not re.search(r'class="judge[^"]*">(要注意|目安内|良好)<', html)
+
+
+def test_cited_benchmarks_link_their_source(client):
+    html = client.get("/ec").text
+    s = BeautifulSoup(html, "html.parser")
+    sheet = s.select_one("dialog#bench-sheet")
+    row = sheet.select_one("[data-bench-row=signup_to_pay]")
+    link = row.select_one("a[href='https://baymard.com/lists/cart-abandonment-rate']")
+    assert link and "70.22%" in link.get_text()
+    assert "SiteKPI 初期値" in sheet.select_one("[data-bench-row=pages_session]").get_text()
+    cell = s.select_one("#panel-funnel td.bench-cell[title*='Baymard']")
+    assert cell and cell.get_text() == "29.8%" and "±10pt" in cell["title"]
+    assert cell["title"].startswith("業界目安帯 19.78–39.78%")

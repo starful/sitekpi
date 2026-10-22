@@ -12,6 +12,7 @@ from sitekpi.i18n.metric_l10n import (
     shared_label,
     tmpl,
 )
+from sitekpi.benchmarks import source_of
 from sitekpi.i18n.pack_l10n import pack_biz_rows, pack_text
 from sitekpi.packs import PACK_COPY
 
@@ -78,7 +79,7 @@ def _benches_for_sample(raw: dict[str, dict[str, Any]]) -> dict[str, dict[str, A
             "gap_unit": "pt" if unit == "%" else unit,
             # 自社目安 (user override) vs pack default, and where the default came from
             "custom": bool(spec.get("custom")),
-            "source": spec.get("source") or {"kind": "provisional", "label": "", "url": ""},
+            "source": spec["source"] if (spec.get("source") or {}).get("kind") else source_of(spec),
         }
     return out
 

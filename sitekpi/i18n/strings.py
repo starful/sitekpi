@@ -108,6 +108,11 @@ UI: dict[str, dict[str, str]] = {
     "bench_band": {"ja": "帯", "en": "range", "ko": "범위"},
     "bench_custom": {"ja": "自社目安", "en": "Your target", "ko": "자사 기준"},
     "bench_custom_tag": {"ja": "自社", "en": "yours", "ko": "자사"},
+    "bench_title_cited": {
+        "ja": "業界目安帯 {band}（中央＝出典値 {avg}）",
+        "en": "Industry range {band} (middle = source value {avg})",
+        "ko": "업계 기준 범위 {band} (중앙 = 출처 값 {avg})",
+    },
     "bench_title_custom": {
         "ja": "自社目安 {band}（中央 {avg}）",
         "en": "Your target range {band} (middle {avg})",
@@ -119,6 +124,16 @@ UI: dict[str, dict[str, str]] = {
         "ko": "SiteKPI 초기값",
     },
     "bench_src.default_short": {"ja": "SiteKPI 初期値", "en": "SiteKPI default", "ko": "SiteKPI 초기값"},
+    "bench_rule.pt": {
+        "ja": "帯は出典値 ±{n}pt（SiteKPI の設定）",
+        "en": "range = source value ±{n}pt (SiteKPI rule)",
+        "ko": "범위는 출처 값 ±{n}pt(SiteKPI 설정)",
+    },
+    "bench_rule.rel": {
+        "ja": "帯は出典値 ±{n}%（SiteKPI の設定）",
+        "en": "range = source value ±{n}% (SiteKPI rule)",
+        "ko": "범위는 출처 값 ±{n}%(SiteKPI 설정)",
+    },
     "bench_src.custom": {"ja": "自社で設定", "en": "Set by you", "ko": "자사에서 설정"},
     "bench_src.cited": {"ja": "出典: {label}", "en": "Source: {label}", "ko": "출처: {label}"},
     "bench_adjust": {"ja": "目安を調整", "en": "Adjust targets", "ko": "기준 조정"},
@@ -230,9 +245,9 @@ UI: dict[str, dict[str, str]] = {
     },
     "bench_edit.source_title": {"ja": "初期値について", "en": "About the defaults", "ko": "초기값에 대해"},
     "bench_edit.source_body": {
-        "ja": "初期値は SiteKPI が業種ごとに仮に置いた範囲で、公開統計や調査にもとづく値ではありません（出典なし）。サイトの規模や集客方法で大きく変わるので、自社の過去の実績や目標に合わせて調整してください。",
-        "en": "The defaults are provisional ranges SiteKPI set per industry. They are not based on published statistics or surveys (no source). They vary a lot with site size and acquisition, so adjust them to your own history or goals.",
-        "ko": "초기값은 SiteKPI가 업종별로 임시로 둔 범위이며, 공개 통계나 조사에 근거한 값이 아닙니다(출처 없음). 사이트 규모나 유입 방식에 따라 크게 달라지므로 자사의 과거 실적이나 목표에 맞게 조정하세요.",
+        "ja": "公開されているベンチマークがある指標は、その値（出典をリンク）を帯の中央にしています。帯の幅は SiteKPI の設定です。出典のない指標は「SiteKPI 初期値」で、公開統計にもとづく値ではありません。どちらもサイトの規模や集客方法で大きく変わるので、自社の過去の実績や目標に合わせて調整してください。",
+        "en": "Where a published benchmark exists, its value (linked) is the middle of the range; the range width is a SiteKPI rule. Metrics without a source show 'SiteKPI default' and are not based on published statistics. Both vary a lot with site size and acquisition — adjust them to your own history or goals.",
+        "ko": "공개된 벤치마크가 있는 지표는 그 값(출처 링크)을 범위의 중앙으로 둡니다. 범위 폭은 SiteKPI 설정입니다. 출처가 없는 지표는 'SiteKPI 초기값'이며 공개 통계에 근거한 값이 아닙니다. 둘 다 사이트 규모나 유입 방식에 따라 크게 달라지므로 자사의 과거 실적이나 목표에 맞게 조정하세요.",
     },
     "bench_edit.tips_body": {
         "ja": "過去3か月の実績の「悪い月〜良い月」を範囲にするのが手軽です。目標がある指標は、目標値を良い側の端にします。",
