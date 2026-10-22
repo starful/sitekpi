@@ -237,10 +237,11 @@ def test_behaviour_only_uses_industry_median_for_shared_metrics_only():
 
     b = BENCHMARKS["type-commerce"]
     assert set(b) <= set(SHARED_METRICS) and "signup_to_pay" not in b and "pay_cvr" not in b
-    lows = sorted(BENCHMARKS[m]["engaged_rate"]["low"] for m in ("ec", "marketplace", "d2c"))
-    assert b["engaged_rate"]["low"] == lows[1]  # median
+    from statistics import median
+    members = INDUSTRIES["type-commerce"]["members"]
+    assert b["engaged_rate"]["low"] == round(median(BENCHMARKS[m]["engaged_rate"]["low"] for m in members), 2)
     assert b["engaged_rate"]["source"]["kind"] == "blend"
-    assert INDUSTRIES["type-commerce"]["members"] == ["ec", "marketplace", "d2c"]
+    assert INDUSTRIES["type-commerce"]["members"][:3] == ["ec", "marketplace", "d2c"]
     # behaviour packs never show up as sample boards in the menu
     from sitekpi.packs import packs_by_category
     assert not any(s.startswith("type-") for _, _, items in packs_by_category() for s, _, _ in items)

@@ -181,3 +181,26 @@ def test_source_is_a_button_not_a_full_url():
     assert cited["title"]  # publisher name on hover, not printed
     provisional = [t for t in _pops(html).select("section") if t.select_one(".src-none")]
     assert provisional and "SiteKPI 初期値" in provisional[0].get_text()
+
+
+def test_added_industries_cite_their_own_published_figures():
+    from sitekpi.packs.derived import DERIVED
+
+    def cited(slug, key):
+        src = BENCHMARKS[slug][key].get("source") or {}
+        return src.get("label", "")
+
+    assert "Apparel & Footwear: 60.23%" in cited("apparel", "engaged_rate")
+    assert "Automotive: 41.06%" in cited("auto", "bounce_rate")
+    assert "Industrials & Manufacturing" in cited("manufacturing", "engaged_rate")
+    assert "Manufacturing: 2.2%" in cited("manufacturing", "signup_rate")
+    assert "Legal Services: 7.4%" in cited("legal", "signup_rate")
+    assert "HVAC Services: 3.1%" in cited("home_service", "signup_rate")
+    assert "Financial Services: 1.9%" in cited("finance", "signup_rate")
+    assert "Food & Beverage: 4.9%" in cited("food_ec", "signup_rate")
+    assert "Home & Furniture: 1.4%" in cited("furniture_ec", "signup_rate")
+    # a derived pack never inherits its base pack's citation
+    assert "B2B SaaS" not in cited("legal", "signup_rate") and "Construction" not in cited("legal", "signup_rate")
+    for slug in DERIVED:
+        r = _client().get(f"/{slug}")
+        assert r.status_code == 200 and DERIVED[slug]["label"]["ja"] in r.text

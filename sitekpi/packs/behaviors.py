@@ -51,8 +51,10 @@ def category_of(slug: str) -> str:
 
 
 def rep_of(slug: str) -> str:
-    """The industry pack a behaviour pack borrows its flow / copy / sample from."""
-    return BEHAVIORS[category_of(slug)]["rep"] if is_behavior(slug) else slug
+    """The pack whose flow / copy / wording a behaviour or derived pack borrows."""
+    from sitekpi.packs.derived import base_of
+
+    return BEHAVIORS[category_of(slug)]["rep"] if is_behavior(slug) else base_of(slug)
 
 
 def behavior_label(cat: str, locale: str) -> str:

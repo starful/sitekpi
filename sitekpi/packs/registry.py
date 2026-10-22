@@ -67,6 +67,21 @@ def build_registry() -> dict[str, Any]:
         for k, v in (pack.get("event_desc") or {}).items():
             event_desc[str(k)] = str(v)
 
+    # Packs derived from a base pack for industries with a published benchmark
+    from sitekpi.packs.derived import DERIVED, scaled_demo
+
+    for dslug, spec in DERIVED.items():
+        base = spec["base"]
+        meta = dict(industries[base])
+        meta.update({"slug": dslug, "label": spec["label"]["ja"], "hint": spec["hint"]["ja"],
+                     "category": spec["category"], "derived": True, "logic_as": base})
+        industries[dslug] = meta
+        demo[dslug] = scaled_demo(demo[base], float(spec.get("scale") or 1.0))
+        bcopy = dict(pack_copy[base])
+        bcopy["property"] = f"{spec['label']['ja']} Demo"
+        pack_copy[dslug] = bcopy
+        benchmarks[dslug] = apply_sources(dslug, _load_pack(base)["benchmarks"])
+
     # 行動タイプ packs (type-<category>): behaviour chosen, industry skipped
     from sitekpi.packs.behaviors import BEHAVIORS, blended_benchmarks, slug_of
 
@@ -101,8 +116,10 @@ EVENT_DESC: dict[str, str] = _REG["EVENT_DESC"]
 
 
 def get_pack(slug: str) -> dict[str, Any]:
-    """Return raw PACK dict for a slug."""
-    return _load_pack(slug)
+    """Return raw PACK dict for a slug (a derived pack returns its base)."""
+    from sitekpi.packs.derived import base_of
+
+    return _load_pack(base_of(slug))
 
 
 def pack_links() -> list[tuple[str, str, str]]:

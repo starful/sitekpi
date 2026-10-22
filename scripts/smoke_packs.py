@@ -29,7 +29,9 @@ def main() -> int:
 
     errors: list[str] = []
 
-    if set(PACK_MODULES) != set(INDUSTRIES):
+    from sitekpi.packs.derived import DERIVED
+
+    if set(PACK_MODULES) | set(DERIVED) != set(INDUSTRIES):
         errors.append(
             f"PACK_MODULES ≠ INDUSTRIES: "
             f"only_modules={set(PACK_MODULES) - set(INDUSTRIES)} "
@@ -37,10 +39,13 @@ def main() -> int:
         )
 
     for slug in INDUSTRIES:
-        if slug not in PACK_L10N:
+        if slug in DERIVED:
+            row = {f: DERIVED[slug][f] for f in ("label", "hint")}  # wording beyond label/hint: base pack
+        elif slug not in PACK_L10N:
             errors.append(f"{slug}: missing PACK_L10N entry")
             continue
-        row = PACK_L10N[slug]
+        else:
+            row = PACK_L10N[slug]
         for field in ("label", "hint"):
             loc = row.get(field) or {}
             for locale in ("ja", "en", "ko"):

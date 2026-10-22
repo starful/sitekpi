@@ -5,7 +5,9 @@ Each cited value becomes the *middle* of the band, so the board's 業界目安 e
 the published figure; the band width is a SiteKPI rule and is labelled as such.
 Metrics/packs not listed keep their SiteKPI 初期値 (no external source).
 
-Checked 2026-10-22.
+Checked 2026-10-22; Databox Apparel/Automotive/Industrials/IT, First Page Sage
+Financial/Manufacturing/Legal/HVAC and Dynamic Yield Food & Beverage / Home & Furniture
+added 2026-10-23.
 """
 
 from __future__ import annotations
@@ -48,6 +50,10 @@ _DATABOX = {
     "SaaS": (52.43, 48.24),
     "Consulting & Professional Services": (52.43, 49.47),
     "Travel & Leisure": (61.55, 36.0),
+    "Apparel & Footwear": (60.23, 27.92),
+    "Automotive": (60.36, 41.06),
+    "Industrials & Manufacturing": (58.33, 41.32),
+    "Information Technology & Services": (52.64, 48.22),
     "All industries": (56.23, 44.82),
 }
 _DATABOX_SEGMENT = {
@@ -64,6 +70,14 @@ _DATABOX_SEGMENT = {
     "b2b": "Consulting & Professional Services",
     "agency": "Consulting & Professional Services",
     "travel": "Travel & Leisure",
+    "apparel": "Apparel & Footwear",
+    "food_ec": "Food",
+    "furniture_ec": "eCommerce & Marketplaces",
+    "manufacturing": "Industrials & Manufacturing",
+    "it_services": "Information Technology & Services",
+    "legal": "Consulting & Professional Services",
+    "home_service": "Construction",
+    "auto": "Automotive",
     # no matching industry → all-industry median (labelled as such)
     "b2c": "All industries",
     "community": "All industries",
@@ -86,6 +100,11 @@ _FPS = {
     "parttime": ("Staffing & Recruiting", 2.9),
     "agency": ("Staffing & Recruiting", 2.9),
     "edu": ("Higher Education & College", 2.8),
+    "finance": ("Financial Services", 1.9),
+    "manufacturing": ("Manufacturing", 2.2),
+    "it_services": ("IT & Managed Services", 1.5),
+    "legal": ("Legal Services", 7.4),
+    "home_service": ("HVAC Services", 3.1),
 }
 
 CITED: dict[str, dict[str, tuple[str, str, float, tuple[str, float]]]] = {}
@@ -95,8 +114,11 @@ for _slug, _seg in _DATABOX_SEGMENT.items():
     CITED[_slug]["bounce_rate"] = ("databox_ga4", _seg, bounce, ENGAGE_RULE)
 for _slug, (_seg, _v) in _FPS.items():
     CITED.setdefault(_slug, {})["signup_rate"] = ("fps_b2b", _seg, _v, CVR_RULE)
-for _slug in ("ec", "marketplace", "d2c"):
-    CITED[_slug]["signup_rate"] = ("dynamic_yield", "All retail (overall)", 2.9, CVR_RULE)
+# Dynamic Yield purchase CVR per user: industry figure where the article states one in text
+_DY = {"food_ec": ("Food & Beverage", 4.9), "furniture_ec": ("Home & Furniture", 1.4)}
+for _slug in ("ec", "marketplace", "d2c", "apparel", "food_ec", "furniture_ec"):
+    _seg, _v = _DY.get(_slug, ("All retail (overall)", 2.9))
+    CITED[_slug]["signup_rate"] = ("dynamic_yield", _seg, _v, CVR_RULE)
     CITED[_slug]["signup_to_pay"] = ("baymard", "Average of 50 studies", round(100 - 70.22, 2), CART_RULE)
 
 
