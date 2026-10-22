@@ -58,9 +58,8 @@ def is_ready(sel: dict[str, str]) -> bool:
 
 def same_funnel(behavior: str, industry: str) -> bool:
     """Do the industry's funnel-step rates mean the same as the behaviour's?"""
-    rep = BEHAVIORS[behavior]["rep"]
     logic = lambda s: str(INDUSTRIES[s].get("logic_as") or s)  # noqa: E731
-    return logic(industry) == logic(rep)
+    return logic(industry) == logic(slug_of(behavior))
 
 
 # Same meaning whatever the visitors are asked to do (主転換CVR is not: purchase ≠ inquiry)

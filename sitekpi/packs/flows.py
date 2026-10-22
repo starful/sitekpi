@@ -33,8 +33,23 @@ FLOW_STEPS: dict[str, list[str]] = {
     "gov": ["guide_view", "form_start", "doc_upload", "form_complete"],
 }
 
+# Worldwide first step after arriving: viewing a page (GA4 collects page_view automatically)
+for _slug, _steps in FLOW_STEPS.items():
+    if _steps[0] != "page_view":
+        _steps.insert(0, "page_view")
+
 # Short behaviour labels (what the person did), ja / en / ko.
 STEP_LABELS: dict[str, dict[str, str]] = {
+    # GA4 automatically collected / enhanced measurement / recommended
+    "page_view": {"ja": "ページを見た", "en": "Viewed a page", "ko": "페이지 열람"},
+    "user_engagement": {"ja": "じっくり見た", "en": "Engaged", "ko": "충분히 봄"},
+    "scroll": {"ja": "最後までスクロール", "en": "Scrolled to the end", "ko": "끝까지 스크롤"},
+    "click": {"ja": "外部リンクをクリック", "en": "Clicked an outbound link", "ko": "외부 링크 클릭"},
+    "view_search_results": {"ja": "サイト内を検索", "en": "Searched the site", "ko": "사이트 내 검색"},
+    "file_download": {"ja": "資料をダウンロード", "en": "Downloaded a file", "ko": "자료 다운로드"},
+    "form_start": {"ja": "フォーム入力を開始", "en": "Started a form", "ko": "폼 입력 시작"},
+    "form_submit": {"ja": "フォームを送信", "en": "Sent a form", "ko": "폼 제출"},
+    "login": {"ja": "ログイン", "en": "Logged in", "ko": "로그인"},
     "sign_up": {"ja": "会員登録", "en": "Signed up", "ko": "회원가입"},
     "trial_start": {"ja": "トライアル開始", "en": "Started trial", "ko": "체험 시작"},
     "pay_start": {"ja": "決済を開始", "en": "Started payment", "ko": "결제 시작"},
@@ -91,14 +106,25 @@ STEP_LABELS: dict[str, dict[str, str]] = {
     "tour_book": {"ja": "内見を予約", "en": "Booked viewing", "ko": "방문 예약"},
     "store_view": {"ja": "店舗情報を見た", "en": "Viewed store", "ko": "매장 정보 열람"},
     "guide_view": {"ja": "案内を見た", "en": "Viewed guide", "ko": "안내 열람"},
-    "form_start": {"ja": "申請を開始", "en": "Started form", "ko": "신청 시작"},
     "doc_upload": {"ja": "書類を提出", "en": "Uploaded documents", "ko": "서류 제출"},
     "form_complete": {"ja": "申請完了", "en": "Form completed", "ko": "신청 완료"},
 }
 
 
-# Same event name, different wording in a given industry.
+# Same event name, different wording in a given industry / behaviour.
 PACK_STEP_LABELS: dict[tuple[str, str], dict[str, str]] = {
+    ("type-booking", "view_item"): {"ja": "メニュー・プランを見た", "en": "Viewed menu / plans", "ko": "메뉴·플랜 열람"},
+    ("type-booking", "form_start"): {"ja": "予約を開始", "en": "Started booking", "ko": "예약 시작"},
+    ("type-booking", "form_submit"): {"ja": "予約を送信", "en": "Sent booking", "ko": "예약 제출"},
+    ("type-recruit", "view_search_results"): {"ja": "求人を検索", "en": "Searched jobs", "ko": "공고 검색"},
+    ("type-recruit", "view_item"): {"ja": "求人を見た", "en": "Viewed a job", "ko": "공고 열람"},
+    ("type-recruit", "form_start"): {"ja": "応募を開始", "en": "Started application", "ko": "지원 시작"},
+    ("type-recruit", "form_submit"): {"ja": "応募を送信", "en": "Sent application", "ko": "지원 제출"},
+    ("type-lead", "form_submit"): {"ja": "問い合わせを送信", "en": "Sent inquiry", "ko": "문의 제출"},
+    ("gov", "form_start"): {"ja": "申請を開始", "en": "Started form", "ko": "신청 시작"},
+    ("type-education", "form_start"): {"ja": "申込を開始", "en": "Started application", "ko": "신청 시작"},
+    ("type-education", "form_submit"): {"ja": "申込を送信", "en": "Sent application", "ko": "신청 제출"},
+    ("type-content", "sign_up"): {"ja": "登録・購読", "en": "Signed up / subscribed", "ko": "가입·구독"},
     ("finance", "apply_start"): {"ja": "申込を開始", "en": "Started application", "ko": "신청 시작"},
     ("parttime", "job_view"): {"ja": "求人を見た", "en": "Viewed shift job", "ko": "알바 공고 열람"},
     ("marketplace", "view_item"): {"ja": "出品を見た", "en": "Viewed listing", "ko": "상품 열람"},
@@ -115,7 +141,7 @@ def _add_behavior_flows() -> None:
             PACK_STEP_LABELS[(dslug, ev)] = labels
 
     for cat, beh in BEHAVIORS.items():
-        FLOW_STEPS[slug_of(cat)] = list(FLOW_STEPS[beh["rep"]])
+        FLOW_STEPS[slug_of(cat)] = list(beh["flow"])
 
 
 _add_behavior_flows()

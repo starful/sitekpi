@@ -1006,3 +1006,6 @@ td.prev-cell { font-weight: 700; white-space: nowrap; font-variant-numeric: tabu
 
 .switch-link { color: var(--accent); font-weight: 700; text-decoration: none; }
 .switch-link:hover { text-decoration: underline; }
+
+.flow-src { font-size: 0.68rem; color: #475569; line-height: 1.4; }
+@container flow (max-width: 900px) { .flow-node .flow-src { grid-column: 1 / -1; } }

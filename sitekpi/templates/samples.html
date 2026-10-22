@@ -19,6 +19,7 @@
           {% for s in b.steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
         </span>
         <div class="sample-inds">
+          <a class="ind-link is-flow" href="/{{ b.slug }}">{{ t("samples.flow_sample", loc) }}<span aria-hidden="true">›</span></a>
           {% for i in b.industries %}
           <a class="ind-link" href="/{{ i.slug }}">{{ i.label }}{% if i.cited %}<em class="pack-cited" title="{{ t('connect.pack.cited', loc, n=i.cited) }}">{{ i.cited }}</em>{% endif %}<span aria-hidden="true">›</span></a>
           {% endfor %}

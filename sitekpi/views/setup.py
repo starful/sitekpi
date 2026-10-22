@@ -19,7 +19,9 @@ def _flow_options(loc: str, sel: dict[str, str], counts: dict[str, int] | None,
         steps = [{**s, "found": None if counts is None else s["event"] in counts} for s in flows[cat]]
         out.append({
             "cat": cat, "label": behavior_label(cat, loc), "hint": behavior_hint(cat, loc),
-            "steps": steps, "hits": sum(1 for s in steps if s["found"]), "selected": sel["behavior"] == cat,
+            # page_view is everyone's first step — it says nothing about which flow fits
+            "steps": steps, "hits": sum(1 for s in steps if s["found"] and s["event"] != "page_view"),
+            "selected": sel["behavior"] == cat,
         })
     best = max((b["hits"] for b in out), default=0)
     for b in out:
@@ -46,7 +48,7 @@ def _industry_options(loc: str, sel: dict[str, str]) -> dict[str, Any]:
         else:
             others.append({"label": behavior_label(cid, loc), "packs": rows})
     return {"main": main, "others": others,
-            "other_selected": any(i["selected"] for g in others for i in g["packs"])}
+            "other_selected": not main or any(i["selected"] for g in others for i in g["packs"])}
 
 
 def render_setup(

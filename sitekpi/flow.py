@@ -23,7 +23,7 @@ from sitekpi.benchmarks import ROOT
 from sitekpi.packs.flows import FLOW_STEPS
 
 MAX_BRANCHES = 3
-MAX_FLOW_STEPS = 6
+MAX_FLOW_STEPS = 8
 BRANCH_POS = ("above", "below")
 LABEL_MAX = 24
 EVENT_NAME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,39}$")  # GA4 event-name rules
@@ -301,7 +301,10 @@ def sample_flow(pack: str, data: dict[str, Any]) -> dict[str, Any]:
     totals: dict[str, int] = {}
     prev = entry
     for s in steps:
-        users = min(int(counts.get(s, 0)), int(prev * 0.92))
+        raw = counts.get(s)
+        if raw is None and s == "page_view":  # every visitor views a page
+            raw = round(entry * 0.97)
+        users = min(int(raw or 0), int(prev * 0.92)) if s != "page_view" else min(int(raw or 0), entry)
         totals[s] = max(users, 0)
         prev = totals[s] or prev
     channels = [(str(n), float(p)) for n, p in (data.get("channels") or [])]

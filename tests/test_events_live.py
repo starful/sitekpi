@@ -58,8 +58,8 @@ def test_only_recorded_events_are_rows(live_client):
     panel = _events_panel(live_client.get("/live").text)
     rows = _list_rows(panel)
     assert "sign_up" not in rows and "pay_start" not in rows
-    # site's own event before GA4 auto-collected ones; auto ones by count
-    assert rows == ["contact_submit", "page_view", "session_start", "scroll"]
+    # the flow's events first (page_view starts every flow), then the site's own, then GA4 auto ones
+    assert rows == ["page_view", "contact_submit", "session_start", "scroll"]
 
 
 def test_zero_hit_pack_events_listed_as_not_tracked(live_client):

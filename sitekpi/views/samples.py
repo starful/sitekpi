@@ -20,6 +20,7 @@ def render_samples(*, locale: str, rail: dict[str, Any]) -> str:
         pack = slug_of(cat)
         behaviors.append({
             "cat": cat,
+            "slug": pack,
             "label": behavior_label(cat, loc),
             "hint": behavior_hint(cat, loc),
             "steps": [{"label": step_label(s, loc, pack), "event": s, "found": None} for s in FLOW_STEPS[pack]],

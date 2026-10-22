@@ -42,6 +42,7 @@
     <h1>{{ t("setup.industry.q", loc) }}</h1>
     <p class="lead">{{ t("setup.industry.lead", loc, flow=behavior_label) }}</p>
     <form method="post" action="/setup/industry">
+      {% if not industries.main %}<p class="note">{{ t("setup.industry.no_main", loc) }}</p>{% endif %}
       <div class="choice-grid">
         {% for i in industries.main %}
         <button type="submit" name="industry" value="{{ i.slug }}" class="choice small{{ ' is-selected' if i.selected else '' }}">
@@ -53,8 +54,8 @@
         {% endfor %}
       </div>
       <details class="more-inds"{% if industries.other_selected %} open{% endif %}>
-        <summary>{{ t("setup.industry.more", loc) }}</summary>
-        <p class="note">{{ t("setup.industry.more_note", loc) }}</p>
+        <summary>{{ t("setup.industry.more" if industries.main else "setup.industry.all", loc) }}</summary>
+        {% if industries.main %}<p class="note">{{ t("setup.industry.more_note", loc) }}</p>{% endif %}
         {% for g in industries.others %}
         <p class="more-group">{{ g.label }}</p>
         <div class="chip-row">

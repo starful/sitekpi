@@ -1220,13 +1220,16 @@ PACK_L10N: dict[str, dict[str, Any]] = {
 
 
 def pack_text(slug: str, field: str, locale: str, fallback: str = "") -> str:
-    from sitekpi.packs.behaviors import behavior_hint, behavior_label, category_of, rep_of
+    from sitekpi.packs.behaviors import behavior_board_text, behavior_hint, behavior_label, category_of, rep_of
 
     from sitekpi.packs.derived import derived_text
 
     own = derived_text(slug, field, locale)
     if own:
         return own
+    board_text = behavior_board_text(slug, field, locale)
+    if board_text:
+        return board_text
     cat = category_of(slug)
     if cat and field == "label":
         return behavior_label(cat, locale)

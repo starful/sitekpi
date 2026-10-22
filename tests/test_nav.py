@@ -52,8 +52,8 @@ def test_samples_gallery_links_every_industry(client):
     from sitekpi.packs import INDUSTRIES
 
     html = client.get("/samples").text
-    for slug, meta in INDUSTRIES.items():
-        assert (f'href="/{slug}"' in html) == (not meta.get("virtual")), slug
+    for slug in INDUSTRIES:  # every industry + every behaviour's own sample
+        assert f'href="/{slug}"' in html, slug
 
 
 def test_connected_property_appears_on_every_page(client):

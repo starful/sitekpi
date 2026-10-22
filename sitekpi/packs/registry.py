@@ -48,6 +48,40 @@ def _load_pack(slug: str) -> dict[str, Any]:
     return pack
 
 
+def _behavior_demo(base: dict[str, dict[str, Any]], flow: list[str]) -> dict[str, dict[str, Any]]:
+    """Sample counts for a behaviour's own flow: narrowing from page views to the main conversion."""
+    out: dict[str, dict[str, Any]] = {}
+    for period, data in base.items():
+        d = dict(data)
+        counts = dict(data.get("event_counts") or {})
+        uu = int(data.get("uu") or 0)
+        known = {"page_view": uu * 0.97, "user_engagement": uu * float(data.get("engaged_rate") or 50) / 100}
+        values: list[float | None] = [
+            float(counts[ev]) if ev in counts and ev != "page_view" else known.get(ev) for ev in flow
+        ]
+        if values[-1] is None:
+            values[-1] = float(max(int(data.get("signups") or 0), 1))
+        # fill the gaps geometrically between the known neighbours
+        i = 0
+        while i < len(values):
+            if values[i] is None:
+                j = i
+                while values[j] is None:
+                    j += 1
+                a = values[i - 1] if i else uu * 0.97
+                b = values[j]
+                for k in range(i, j):
+                    values[k] = a * (b / a) ** ((k - i + 1) / (j - i + 1)) if a else 0.0
+                i = j
+            i += 1
+        for ev, v in zip(flow, values):
+            if ev not in counts or ev == "page_view":
+                counts[ev] = round(v or 0)
+        d["event_counts"] = counts
+        out[period] = d
+    return out
+
+
 def build_registry() -> dict[str, Any]:
     industries: dict[str, dict[str, Any]] = {}
     demo: dict[str, dict[str, dict[str, Any]]] = {}
@@ -90,13 +124,30 @@ def build_registry() -> dict[str, Any]:
         rep = beh["rep"]
         vslug = slug_of(cat)
         meta = dict(industries[rep])
+        flow = list(beh["flow"])
+        board = beh.get("board")
         meta.update({"slug": vslug, "label": beh["label"]["ja"], "hint": beh["hint"]["ja"],
-                     "virtual": True, "rep": rep, "members": members, "logic_as": rep})
+                     "virtual": True, "rep": rep, "members": members,
+                     "logic_as": "edu" if board else rep,  # edu = primary ÷ mid, primary ÷ bottom
+                     "events": flow + [e for e in meta.get("events") or [] if e not in flow]})
+        bcopy = dict(pack_copy[rep])
+        if board:
+            meta["primary_event"] = board["primary"]
+            meta["signup_label"] = board["signup_label"]["ja"]
+            bcopy.update({"mid_event": board["mid"], "bottom_event": board["bottom"],
+                          **{k: board[k]["ja"] for k in ("cvr_label", "mid_label", "bottom_label",
+                                                         "rate_a_label", "rate_b_label")}})
         industries[vslug] = meta
-        demo[vslug] = demo[rep]
-        pack_copy[vslug] = pack_copy[rep]
-        benchmarks[vslug] = blended_benchmarks(
-            members, benchmarks, [str(industries[m]["label"]) for m in members])
+        demo[vslug] = _behavior_demo(demo[rep], flow)
+        pack_copy[vslug] = bcopy
+        if members:
+            benchmarks[vslug] = blended_benchmarks(
+                members, benchmarks, [str(industries[m]["label"]) for m in members])
+        else:  # a behaviour no industry pack belongs to (e.g. blog): site-wide standards only
+            from sitekpi.packs.behaviors import SHARED_METRICS
+
+            benchmarks[vslug] = {k: dict(v) for k, v in benchmarks[rep].items()
+                                 if k in SHARED_METRICS and k != "signup_rate"}
 
     return {
         "INDUSTRIES": industries,

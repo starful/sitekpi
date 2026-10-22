@@ -50,6 +50,7 @@
         {% if st.key != "entry" %}<span class="flow-cta">{{ t("flow.map", loc) }}</span>{% endif %}
         {% else %}
         <span class="flow-users"><strong{% for k, v in st.users_fmt.items() %} data-v-{{ k }}="{{ v }}"{% endfor %}>{{ st.users_fmt.all }}</strong> <small>{{ t("flow.people", loc) }}</small></span>
+        {% if st.key == "entry" and st.mix %}<span class="flow-src">{{ t("flow.sources", loc) }}: {% for m in st.mix[:3] %}{{ m.name }} {{ m.pct | round | int }}%{{ " · " if not loop.last }}{% endfor %}</span>{% endif %}
         {% if st.key != "entry" %}<span class="flow-reach">{{ t("flow.of_entry", loc) }} <b{% for k, v in st.reach.items() %} data-v-{{ k }}="{{ v }}"{% endfor %}>{{ st.reach.all }}</b></span>{% endif %}
         <span class="flow-bar" aria-hidden="true"><i style="width:{{ [st.reach_pct, 1.5] | max }}%"></i></span>
         {% if st.mix %}
