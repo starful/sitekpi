@@ -19,7 +19,6 @@ def render_connect_page(
     email: str,
     properties: list[dict[str, str]],
     selected: dict[str, str] | None,
-    preview: dict[str, Any] | None,
     error: str | None,
     libs_ok: bool,
     pack_groups: list[tuple[str, str, list[tuple[str, str, str]]]] | None = None,
@@ -42,7 +41,7 @@ def render_connect_page(
         return {"steps": steps, "hits": hits, "total": len(steps)}
 
     # 行動 first (type-<category>), then the industry inside it (optional)
-    from sitekpi.packs import INDUSTRIES
+    from sitekpi.packs import BENCHMARKS, INDUSTRIES
     from sitekpi.packs.behaviors import BEHAVIORS, behavior_hint, behavior_label, slug_of
 
     groups: list[dict[str, Any]] = []
@@ -50,7 +49,9 @@ def render_connect_page(
         vslug = slug_of(cat)
         members = INDUSTRIES[vslug]["members"]
         industries = [
-            {"slug": m, "label": pack_text(m, "label", loc, str(INDUSTRIES[m]["label"])), "flow": flow_of(m)}
+            {"slug": m, "label": pack_text(m, "label", loc, str(INDUSTRIES[m]["label"])), "flow": flow_of(m),
+             "cited": sum(1 for spec in BENCHMARKS[m].values()
+                          if (spec.get("source") or {}).get("url"))}
             for m in members
         ]
         flow = flow_of(vslug)
@@ -78,7 +79,6 @@ def render_connect_page(
         email=email,
         properties=properties,
         selected=selected,
-        preview=preview,
         error=error,
         pack_groups=groups,
         benchmark_pack=benchmark_pack,

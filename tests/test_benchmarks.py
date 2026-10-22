@@ -143,7 +143,6 @@ def connected(monkeypatch):
     monkeypatch.setattr(Flow, "credentials", property(lambda self: Creds()))
     monkeypatch.setattr(connect_routes, "creds_from_session", lambda session: object())
     monkeypatch.setattr(connect_routes, "list_properties", lambda creds: props)
-    monkeypatch.setattr(connect_routes, "fetch_preview", lambda creds, pid: None)
     monkeypatch.setattr(pages, "discover_event_names", lambda s, period, limit: ([], None))
     monkeypatch.setattr(pages, "fetch_pack_overlay", lambda s, **kw: (dict(DEMO["hr"]["28d"]), None))
     import sitekpi.routes.flow as flow_routes

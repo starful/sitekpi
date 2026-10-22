@@ -119,7 +119,6 @@ def live(monkeypatch):
     monkeypatch.setattr(connect_routes, "creds_from_session", lambda session: object())
     monkeypatch.setattr(connect_routes, "list_properties",
                         lambda creds: [{"id": "4242", "name": "Jobs", "account": "A"}])
-    monkeypatch.setattr(connect_routes, "fetch_preview", lambda creds, pid: None)
     discovered = ([{"name": n, "count": c} for n, c in SITE_COUNTS.items()], None)
     monkeypatch.setattr(pages, "discover_event_names", lambda s, period, limit: discovered)
     monkeypatch.setattr(flow_routes, "discover_event_names", lambda s, period, limit: discovered)
@@ -211,25 +210,39 @@ def test_sample_visitors_cannot_map():
 
 def test_connect_page_picks_behaviour_first_industry_optional(live):
     c = live()
-    soup = _soup(c.get("/connect").text)
-    behaviours = soup.select("[data-behavior]")
-    names = [b.select_one(".behavior-opt strong").get_text() for b in behaviours]
+    html = c.get("/connect").text
+    soup = _soup(html)
+    assert "接続プレビュー" not in html  # preview removed
+    assert len(soup.select(".stepper li.is-done")) == 3  # signed in, property, pack (hr) chosen
+    names = [b.select_one(".beh-top strong").get_text() for b in soup.select(".beh-card")]
     assert names == ["買う", "会員になって使い続ける", "問い合わせる", "予約する", "申し込む", "応募する", "読む・見る"]
-    rec = soup.select_one("input[value=type-recruit]").find_parent("div", class_="behavior")
+    rec = soup.select_one(".beh-card[data-beh=recruit]")
     # the site records job_view + apply_start → 応募する is the closest behaviour
-    assert "is-rec" in rec["class"] and "記録あり 2/4" in rec.select_one(".behavior-opt").get_text()
-    assert [s["title"] for s in rec.select(".behavior-opt .mf-step.is-found")] == ["job_view", "apply_start"]
-    # industries are optional, inside the behaviour, each with its own flow
-    inds = [i["value"] for i in rec.select(".industries input[name=pack_slug]")]
-    assert inds == ["hr", "parttime", "agency"]
-    assert rec.select_one(".industries input[value=hr]").find_parent("label").select(".mf-step")
+    assert "is-rec" in rec["class"] and "記録あり 2/4" in rec.get_text()
+    assert [s["title"] for s in rec.select(".mf-step.is-found")] == ["job_view", "apply_start"]
+    # industries are optional, in a panel for the behaviour, each with its own flow + sourced standards
+    panel = soup.select_one(".ind-panel[data-beh=recruit]")
+    assert not panel.has_attr("hidden") and panel.select_one("input[value=hr]").has_attr("checked")
+    assert soup.select_one(".ind-panel[data-beh=commerce]").has_attr("hidden")
+    assert [i["value"] for i in panel.select("input[name=pack_slug]")] == ["hr", "parttime", "agency"]
+    assert panel.select_one("label.is-none[for=beh-recruit]")
+    assert "出典つき目安" in panel.select_one("input[value=hr]").find_parent("label").get_text()
+    lead = soup.select_one(".ind-panel[data-beh=lead]")
+    assert {"manufacturing", "legal", "home_service", "auto", "it_services"} <= {
+        i["value"] for i in lead.select("input[name=pack_slug]")}
     # a behaviour alone is a valid choice → the board uses behaviour-level standards
     r = c.post("/connect/pack", data={"pack_slug": "type-commerce"})
     assert r.status_code == 302 and r.headers["location"] == "/live"
     soup = _soup(c.get("/connect").text)
-    assert soup.select_one("input[value=type-commerce]").has_attr("checked")
-    assert "is-selected" in soup.select_one("input[value=type-commerce]").find_parent("div", class_="behavior")["class"]
-
+    assert soup.select_one("#beh-commerce").has_attr("checked")
+    assert "is-selected" in soup.select_one(".beh-card[data-beh=commerce]")["class"]
+    assert not soup.select_one(".ind-panel[data-beh=commerce]").has_attr("hidden")
+    assert "買う（業種指定なし）" in soup.select_one("[data-beh-summary]").get_text()
+    # change property keeps the Google sign-in
+    r = c.post("/connect/property/change")
+    assert r.status_code == 303
+    soup = _soup(c.get("/connect").text)
+    assert soup.select_one("form[action='/connect/property']") and not soup.select(".beh-card")
 
 def test_behaviour_only_uses_industry_median_for_shared_metrics_only():
     from sitekpi.packs import BENCHMARKS, INDUSTRIES

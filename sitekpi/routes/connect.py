@@ -19,8 +19,6 @@ from sitekpi.ga4.oauth import (
     Flow,
     client_config,
     creds_from_session,
-    demo_preview,
-    fetch_preview,
     list_properties,
     oauth_configured,
     redirect_uri,
@@ -43,7 +41,6 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
     email = str(session.get("ga4_email") or ("demo@kpistarter.local" if demo else ""))
     selected = session.get("ga4_property")
     properties: list[dict[str, str]] = []
-    preview: dict[str, Any] | None = None
     err = error
     loc = get_locale(session)
     pack_slug = str(session.get("benchmark_pack") or "")
@@ -73,17 +70,6 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
             except Exception as exc:  # noqa: BLE001
                 err = t("connect.err.list_props", loc, exc=exc)
 
-    if selected:
-        if demo:
-            preview = demo_preview(str(selected.get("id", "")))
-        else:
-            creds = creds_from_session(session)
-            if creds:
-                try:
-                    preview = fetch_preview(creds, str(selected["id"]))
-                except Exception as exc:  # noqa: BLE001
-                    err = t("connect.err.preview", loc, exc=exc)
-
     site_event_names: set[str] | None = None
     if connected and selected and not demo:
         from sitekpi.routes.flow import site_events
@@ -98,7 +84,6 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
         email=email,
         properties=properties,
         selected=selected if isinstance(selected, dict) else None,
-        preview=preview,
         error=err,
         libs_ok=HAS_GOOGLE_AUTH and HAS_ADMIN and HAS_DATA,
         pack_groups=packs_by_category() if (connected and selected) else None,
@@ -216,6 +201,14 @@ def select_property(request: Request, property_id: str = Form(...)):
         return _page_from_request(request, error="選択した Property が見つかりません。")
     session["ga4_property"] = chosen
     return RedirectResponse("/connect", status_code=302)
+
+
+@router.post("/connect/property/change")
+def change_property(request: Request):
+    """Pick another property: keep the Google sign-in, forget the property and its pack."""
+    request.session.pop("ga4_property", None)
+    request.session.pop("benchmark_pack", None)
+    return RedirectResponse("/connect", status_code=303)
 
 
 @router.post("/connect/pack")
