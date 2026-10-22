@@ -10,21 +10,22 @@
 </select>
 {%- endmacro %}
 
-{% if f.can_add %}{% for st in f.stages %}
-<template id="pop-flow-add-{{ st.key }}">
-  <form method="post" action="/flow/custom" class="pop-form" data-json-form>
+{% if f.can_add %}{% for st in f.stages if st.key != "entry" %}{% for pos in ["above", "below"] %}
+<template id="pop-flow-add-{{ st.key }}-{{ pos }}">
+  <form method="post" action="/flow/branch" class="pop-form" data-json-form>
     <input type="hidden" name="pack" value="{{ f.pack }}" />
     <input type="hidden" name="action" value="add" />
-    <input type="hidden" name="after" value="{{ st.key }}" />
+    <input type="hidden" name="at" value="{{ st.key }}" />
+    <input type="hidden" name="pos" value="{{ pos }}" />
     <div class="pop-head">
       <div>
-        <strong>{{ t("flow.add_title", loc, after=st.label) }}</strong>
-        <span class="pop-sub">{{ t("flow.add_help", loc, n=f.max_custom, left=f.max_custom - f.n_custom) }}</span>
+        <strong>{{ t("flow.add_title_" ~ pos, loc, at=st.label) }}</strong>
+        <span class="pop-sub">{{ t("flow.branch_help", loc, n=f.max_branches, left=f.max_branches - f.n_branches) }}</span>
       </div>
       <button type="button" class="pop-close" data-pop-close aria-label="{{ t('close', loc) }}">×</button>
     </div>
     {% if f.event_options %}
-    {{ event_select("flow-add-ev-" ~ st.key, "") }}
+    {{ event_select("flow-add-ev-" ~ st.key ~ "-" ~ pos, "") }}
     <label class="pop-field">{{ t("flow.add_label", loc) }}<input name="label" maxlength="24" placeholder="{{ t('flow.add_label_ph', loc) }}" autocomplete="off" /></label>
     <p class="pop-error" data-pop-error hidden></p>
     <div class="pop-actions"><button type="submit" class="primary">{{ t("flow.add_submit", loc) }}</button></div>
@@ -33,36 +34,40 @@
     {% endif %}
   </form>
 </template>
-{% endfor %}{% endif %}
+{% endfor %}{% endfor %}{% endif %}
 
-{% for st in f.stages if st.key != "entry" %}
-<template id="pop-flow-{{ st.step }}">
-  {% if f.live and st.custom %}
+{% if f.live %}{% for st in f.stages %}{% for b in st.above + st.below %}
+<template id="pop-flow-b{{ b.id }}">
   <div class="pop-form">
-    <form method="post" action="/flow/custom" data-json-form>
+    <form method="post" action="/flow/branch" data-json-form>
       <input type="hidden" name="pack" value="{{ f.pack }}" />
       <input type="hidden" name="action" value="update" />
-      <input type="hidden" name="id" value="{{ st.step[1:] }}" />
+      <input type="hidden" name="id" value="{{ b.id }}" />
       <div class="pop-head">
         <div>
-          <strong>{{ t("flow.custom_title", loc, label=st.label) }}</strong>
-          <span class="pop-sub">{{ t("flow.map_help", loc) }}</span>
+          <strong>{{ t("flow.branch_title", loc, label=b.label) }}</strong>
+          <span class="pop-sub">{{ t("flow.branch_stats", loc, prev=b.prev_label, from_prev=b.from_prev, main=b.main_label, vs_main=b.vs_main) }}</span>
         </div>
         <button type="button" class="pop-close" data-pop-close aria-label="{{ t('close', loc) }}">×</button>
       </div>
-      {{ event_select("flow-ev-" ~ st.step, st.event) }}
-      <label class="pop-field">{{ t("flow.add_label", loc) }}<input name="label" maxlength="24" value="{{ st.custom_label }}" placeholder="{{ t('flow.add_label_ph', loc) }}" autocomplete="off" /></label>
+      {{ event_select("flow-b-ev-" ~ b.id, b.event) }}
+      <label class="pop-field">{{ t("flow.add_label", loc) }}<input name="label" maxlength="24" value="{{ b.custom_label }}" placeholder="{{ t('flow.add_label_ph', loc) }}" autocomplete="off" /></label>
       <p class="pop-error" data-pop-error hidden></p>
       <div class="pop-actions"><button type="submit" class="primary">{{ t("bench_edit.save_short", loc) }}</button></div>
     </form>
-    <form method="post" action="/flow/custom" data-json-form class="pop-delete">
+    <form method="post" action="/flow/branch" data-json-form class="pop-delete">
       <input type="hidden" name="pack" value="{{ f.pack }}" />
       <input type="hidden" name="action" value="delete" />
-      <input type="hidden" name="id" value="{{ st.step[1:] }}" />
+      <input type="hidden" name="id" value="{{ b.id }}" />
       <button type="submit" class="link danger">{{ t("flow.delete", loc) }}</button>
     </form>
   </div>
-  {% elif f.live %}
+</template>
+{% endfor %}{% endfor %}{% endif %}
+
+{% for st in f.stages if st.key != "entry" %}
+<template id="pop-flow-{{ st.step }}">
+  {% if f.live %}
   <form method="post" action="/flow/mapping" class="pop-form" data-json-form>
     <input type="hidden" name="pack" value="{{ f.pack }}" />
     <input type="hidden" name="step" value="{{ st.step }}" />

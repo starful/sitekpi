@@ -51,7 +51,8 @@ def _group_channels(flow: dict[str, Any], loc: str) -> list[dict[str, Any]]:
 
 def flow_context(
     *,
-    max_custom: int = 0,
+    max_branches: int = 0,
+    branches: list[dict[str, str]] | None = None,
     pack: str,
     flow: dict[str, Any] | None,
     steps: list[dict[str, str]],
@@ -71,7 +72,8 @@ def flow_context(
 
     stages: list[dict[str, Any]] = []
     stages.append({
-        "key": "entry", "label": t("flow.entry", loc), "event": "", "mapped": False, "custom": False,
+        "key": "entry", "label": t("flow.entry", loc), "event": "", "mapped": False,
+        "above": [], "below": [],
         "users": entry, "missing": entry <= 0,
         "users_fmt": {"all": _int(entry), **{c["id"]: _int(c["entry"]) for c in channels}},
         "reach_pct": 100.0, "reach": {"all": "100%", **{c["id"]: "100%" for c in channels}},
@@ -86,9 +88,9 @@ def flow_context(
         reach = _pct(users, entry)
         stages.append({
             "key": s["step"], "event": ev, "step": s["step"],
-            "label": (s.get("label") or ev) if s.get("custom") else step_label(s["step"], loc, pack),
-            "custom": bool(s.get("custom")), "custom_label": s.get("label") or "",
-            "mapped": not s.get("custom") and ev != s["step"], "users": users, "missing": users <= 0,
+            "label": step_label(s["step"], loc, pack),
+            "mapped": ev != s["step"], "users": users, "missing": users <= 0,
+            "above": [], "below": [],
             "users_fmt": {"all": _int(users), **{cid: _int(v) for cid, v in ch_users.items()}},
             "reach_pct": reach or 0.0,
             "reach": {"all": _fmt_pct(reach),
@@ -96,6 +98,25 @@ def flow_context(
             "mix": [{"name": c["name"], "color": c["color"], "pct": round(100 * ch_users[c["id"]] / ch_sum, 1)}
                     for c in channels] if users else [],
             "ch_users": ch_users,
+        })
+
+    # 分岐: other behaviours at the same stage — compared with the stage before
+    by_key = {st["key"]: i for i, st in enumerate(stages)}
+    for b in branches or []:
+        i = by_key.get(b["at"])
+        if i is None:
+            continue
+        before = stages[i - 1]
+        users = int(totals.get(b["event"], 0))
+        from_prev = _pct(users, before["users"]) if before["users"] and users else None
+        stages[i][b["pos"]].append({
+            "id": b["id"], "event": b["event"], "label": b["label"] or b["event"],
+            "custom_label": b["label"], "users": users, "missing": users <= 0,
+            "users_fmt": _int(users),
+            "reach": _fmt_pct(_pct(users, entry)) if users else "—",
+            "from_prev": _fmt_pct(min(from_prev, 100.0)) if from_prev is not None else "—",
+            "vs_main": _fmt_pct(_pct(users, stages[i]["users"])) if users and stages[i]["users"] else "—",
+            "prev_label": before["label"], "main_label": stages[i]["label"],
         })
 
     # Links between stages: share that went on to the next step, and the drop-off.
@@ -165,8 +186,8 @@ def flow_context(
         "last_label": last["label"] if last else "",
         "insights": insights,
         "event_options": event_options or [],
-        # live boards can add up to max_custom steps of their own
-        "can_add": live and sum(1 for st in stages if st.get("custom")) < max_custom,
-        "n_custom": sum(1 for st in stages if st.get("custom")),
-        "max_custom": max_custom,
+        # live boards can show up to max_branches other behaviours above / below a stage
+        "can_add": live and len(branches or []) < max_branches,
+        "n_branches": len(branches or []),
+        "max_branches": max_branches,
     }

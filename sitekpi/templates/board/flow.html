@@ -22,13 +22,28 @@
   </ul>
   {% endif %}
 
-  <ol class="flow-track{{ ' is-long' if f.stages | length > 5 else '' }}">
+  {% macro branch(b, pos) -%}
+  <button type="button" class="flow-branch is-{{ pos }}{{ ' is-missing' if b.missing else '' }}" data-pop-open="flow-b{{ b.id }}">
+    <span class="flow-branch-mark">{{ t("flow.branch_tag", loc) }}</span>
+    <span class="flow-label">{{ b.label }}</span>
+    <code class="flow-event">{{ b.event }}</code>
+    {% if b.missing %}<span class="flow-missing">{{ t("flow.missing", loc) }}</span>
+    {% else %}<span class="flow-users"><strong>{{ b.users_fmt }}</strong> <small>{{ t("flow.people", loc) }}</small></span>
+    <span class="flow-reach">{{ t("flow.branch_from", loc, prev=b.prev_label) }} <b>{{ b.from_prev }}</b></span>{% endif %}
+  </button>
+  {%- endmacro %}
+  {% set n = f.stages | length %}
+  <ol class="flow-track" style="--n: {{ n }}; grid-template-columns: repeat({{ n - 1 }}, minmax(0, 1fr) var(--link-w)) minmax(0, 1fr);">
     {% for st in f.stages %}
-    <li class="flow-stage{{ ' is-missing' if st.missing else '' }}{{ ' is-entry' if st.key == 'entry' else '' }}{{ ' is-custom' if st.custom else '' }}">
-      {% if st.key == "entry" %}<div class="flow-node">{% else %}<button type="button" class="flow-node" data-pop-open="flow-{{ st.step }}" aria-label="{{ st.label }} — {{ t('flow.map_change' if st.mapped else 'flow.map', loc) }}">{% endif %}
+    {% set col = loop.index0 * 2 + 1 %}
+    <li class="flow-stage{{ ' is-missing' if st.missing else '' }}{{ ' is-entry' if st.key == 'entry' else '' }}">
+      <div class="flow-up" style="--c: {{ col }}">
+        {% for b in st.above %}{{ branch(b, "above") }}{% endfor %}
+        {% if f.can_add and st.key != "entry" %}<button type="button" class="flow-add" data-pop-open="flow-add-{{ st.key }}-above" title="{{ t('flow.add_above', loc) }}" aria-label="{{ st.label }}: {{ t('flow.add_above', loc) }}">＋</button>{% endif %}
+      </div>
+      {% if st.key == "entry" %}<div class="flow-node" style="--c: {{ col }}">{% else %}<button type="button" class="flow-node" style="--c: {{ col }}" data-pop-open="flow-{{ st.step }}" aria-label="{{ st.label }} — {{ t('flow.map_change' if st.mapped else 'flow.map', loc) }}">{% endif %}
         <span class="flow-step">{{ loop.index }}</span>
         <span class="flow-label">{{ st.label }}</span>
-        {% if st.custom %}<span class="flow-custom-tag">{{ t("flow.custom_tag", loc) }}</span>{% endif %}
         {% if st.event %}<code class="flow-event{{ ' is-mapped' if st.mapped else '' }}" title="{{ t('event.alias', loc, name=st.event) if st.mapped else st.event }}">{{ st.event }}</code>{% endif %}
         {% if st.missing %}
         <span class="flow-missing">{{ t("flow.missing", loc) }}</span>
@@ -42,21 +57,21 @@
         {% endif %}
         {% endif %}
       {% if st.key == "entry" %}</div>{% else %}</button>{% endif %}
+      <div class="flow-down" style="--c: {{ col }}">
+        {% if f.can_add and st.key != "entry" %}<button type="button" class="flow-add" data-pop-open="flow-add-{{ st.key }}-below" title="{{ t('flow.add_below', loc) }}" aria-label="{{ st.label }}: {{ t('flow.add_below', loc) }}">＋</button>{% endif %}
+        {% for b in st.below %}{{ branch(b, "below") }}{% endfor %}
+      </div>
       {% if st.link %}
-      <div class="flow-link{{ ' is-worst' if st.link.worst else '' }}">
+      <div class="flow-link{{ ' is-worst' if st.link.worst else '' }}" style="--c: {{ col + 1 }}">
         <span class="flow-arrow" aria-hidden="true"></span>
         <span class="flow-go">{{ t("flow.next", loc) }} <b{% for k, v in st.link.go.items() %} data-v-{{ k }}="{{ v }}"{% endfor %}>{{ st.link.go.all }}</b></span>
         <span class="flow-drop">{{ t("flow.drop", loc) }} <span{% for k, v in st.link.drops.items() %} data-v-{{ k }}="{{ v }}"{% endfor %}>{{ st.link.drop }}</span></span>
         {% if st.link.worst %}<span class="flow-worst">{{ t("flow.worst", loc) }}</span>{% endif %}
-        {% if f.can_add %}<button type="button" class="flow-add" data-pop-open="flow-add-{{ st.key }}" aria-label="{{ t('flow.add_here', loc) }}" title="{{ t('flow.add_here', loc) }}">＋</button>{% endif %}
       </div>
       {% endif %}
     </li>
     {% endfor %}
   </ol>
-  {% if f.can_add %}
-  <div class="flow-add-row"><button type="button" class="flow-add-tile" data-pop-open="flow-add-{{ f.stages[-1].key }}">＋ {{ t("flow.add", loc) }}<small>（{{ f.n_custom }}/{{ f.max_custom }}）</small></button></div>
-  {% endif %}
 
   {% if f.ch_rows %}
   <div class="flow-chtable">
@@ -73,5 +88,5 @@
   </div>
   {% endif %}
   <p class="flow-note">{{ t("flow.note_live" if f.live else "flow.note_sample", loc) }}
-    {% if f.live %}{{ t("flow.custom_note", loc, n=f.max_custom, used=f.n_custom) }}{% else %}{{ t("flow.custom_sample", loc) }}{% endif %}</p>
+    {% if f.live %}{{ t("flow.branch_note", loc, n=f.max_branches, used=f.n_branches) }}{% else %}{{ t("flow.branch_sample", loc) }}{% endif %}</p>
 </section>

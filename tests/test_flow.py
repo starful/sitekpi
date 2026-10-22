@@ -224,52 +224,70 @@ def test_connect_page_lets_you_pick_a_pack_by_its_flow(live):
 
 
 def _labels(html: str) -> list[str]:
-    return [n.get_text() for n in _soup(html).select("#flow .flow-label")]
+    return [n.get_text() for n in _soup(html).select("#flow .flow-node .flow-label")]
 
 
-def test_live_flow_can_add_up_to_three_steps(live):
+def _branches(html: str, step: str, pos: str) -> list[str]:
+    """Labels of the other behaviours drawn above / below a step (same grid column)."""
+    soup = _soup(html)
+    node = soup.select_one(f"#flow .flow-node[data-pop-open='flow-{step}']")
+    box = node.find_previous_sibling("div", class_="flow-up") if pos == "above" else \
+        node.find_next_sibling("div", class_="flow-down")
+    return [b.select_one(".flow-label").get_text() for b in box.select(".flow-branch")]
+
+
+def test_live_flow_shows_other_behaviours_above_and_below_a_step(live):
     a, b = live(), live()
     html = a.get("/live").text
-    assert _soup(html).select_one("#flow button.flow-add[data-pop-open='flow-add-apply_start']")
-    add = _template(html, "pop-flow-add-apply_start").select_one("form[action='/flow/custom']")
-    assert add.select_one("input[name=after]")["value"] == "apply_start"
+    soup = _soup(html)
+    assert soup.select_one("#flow .flow-add[data-pop-open='flow-add-apply_start-above']")
+    assert soup.select_one("#flow .flow-add[data-pop-open='flow-add-apply_start-below']")
+    assert not soup.select("#flow .flow-add[data-pop-open^='flow-add-entry-']")
+    add = _template(html, "pop-flow-add-apply_start-below").select_one("form[action='/flow/branch']")
+    assert add.select_one("input[name=pos]")["value"] == "below"
 
     def post(**data):
-        return a.post("/flow/custom", headers=JSON, data={"pack": "hr", **data})
+        return a.post("/flow/branch", headers=JSON, data={"pack": "hr", **data})
 
-    r = post(action="add", after="apply_start", event="apply_mobile", label="スマホで応募開始")
+    r = post(action="add", at="apply_start", pos="below", event="apply_mobile", label="スマホで応募開始")
     assert r.status_code == 200 and r.json()["ok"]
     first = r.json()["id"]
     html = b.get("/live").text  # same property → same flow
-    assert _labels(html) == ["サイトに来た", "求人を見た", "応募を開始", "スマホで応募開始", "応募を送信", "エントリー完了"]
-    st = _stage(html, "スマホで応募開始")
-    assert "is-custom" in st["class"] and st.select_one(".flow-users strong").get_text() == "400"
+    # the main path is unchanged — the branch sits under its step
+    assert _labels(html) == ["サイトに来た", "求人を見た", "応募を開始", "応募を送信", "エントリー完了"]
+    assert _branches(html, "apply_start", "below") == ["スマホで応募開始"]
+    br = _soup(html).select_one("#flow .flow-branch")
+    assert br.select_one(".flow-users strong").get_text() == "400"
+    assert "「求人を見た」から" in br.get_text() and "8.0%" in br.get_text()  # 400 / 5,000
     assert "apply_mobile" in live.calls["flow"][-1]
-    edit = _template(html, f"pop-flow-c{first}")
+    edit = _template(html, f"pop-flow-b{first}")
+    assert "「応募を開始」の 66.7%" in edit.get_text()
     assert edit.select_one("input[name=action][value=update]") and edit.select_one("input[name=action][value=delete]")
 
-    # chained after the added step, then one at the start → 3 = limit
-    assert post(action="add", after=f"c{first}", event="page_view").json()["ok"]
-    assert post(action="add", after="entry", event="page_view", label="LP").json()["ok"]
+    assert post(action="add", at="apply_start", pos="above", event="page_view", label="PV").json()["ok"]
+    assert post(action="add", at="job_view", pos="below", event="page_view").json()["ok"]
     html = a.get("/live").text
-    assert _labels(html)[:2] == ["サイトに来た", "LP"] and _labels(html)[4:6] == ["スマホで応募開始", "page_view"]
-    full = post(action="add", after="job_view", event="page_view")
+    assert _branches(html, "apply_start", "above") == ["PV"]
+    assert _branches(html, "job_view", "below") == ["page_view"]
+    full = post(action="add", at="entry_complete", pos="below", event="page_view")
     assert full.status_code == 400 and "3 つ" in full.json()["error"]
-    assert not _soup(html).select("#flow .flow-add, #flow .flow-add-tile")
+    assert not _soup(html).select("#flow .flow-add")
 
-    # delete the middle one: the step chained to it moves up, nothing is lost
+    assert post(action="update", id=first, event="apply_mobile", label="スマホ").json()["ok"]
     assert post(action="delete", id=first).json()["ok"]
-    labels = _labels(a.get("/live").text)
-    assert "スマホで応募開始" not in labels and labels[3:5] == ["応募を開始", "page_view"]
+    html = a.get("/live").text
+    assert _branches(html, "apply_start", "below") == [] and _branches(html, "apply_start", "above") == ["PV"]
     assert post(action="update", id="nope", event="x").status_code == 404
 
 
-def test_custom_steps_are_validated(live):
+def test_branches_are_validated(live):
     c = live()
-    post = lambda **d: c.post("/flow/custom", headers=JSON, data={"pack": "hr", **d})  # noqa: E731
-    assert post(action="add", after="apply_start", event="bad name!").status_code == 400
-    assert post(action="add", after="purchase", event="x").status_code == 400
-    assert _client().post("/flow/custom", headers=JSON,
-                          data={"pack": "hr", "action": "add", "after": "entry", "event": "x"}).status_code == 403
-    assert post(action="add", after="entry", event="ok_event", label="  a   very long label that keeps going on  ").json()["ok"]
-    assert "a very long label that k" in _labels(c.get("/live").text)
+    post = lambda **d: c.post("/flow/branch", headers=JSON, data={"pack": "hr", **d})  # noqa: E731
+    assert post(action="add", at="apply_start", pos="below", event="bad name!").status_code == 400
+    assert post(action="add", at="entry", pos="below", event="x").status_code == 400
+    assert post(action="add", at="apply_start", pos="left", event="x").status_code == 400
+    assert _client().post("/flow/branch", headers=JSON, data={
+        "pack": "hr", "action": "add", "at": "apply_start", "pos": "below", "event": "x"}).status_code == 403
+    assert post(action="add", at="apply_start", pos="below", event="ok_event",
+                label="  a   very long label that keeps going on  ").json()["ok"]
+    assert "a very long label that k" in _branches(c.get("/live").text, "apply_start", "below")

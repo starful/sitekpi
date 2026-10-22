@@ -21,7 +21,8 @@ from typing import Any, MutableMapping
 from sitekpi.benchmarks import ROOT
 from sitekpi.packs.flows import FLOW_STEPS
 
-MAX_CUSTOM_STEPS = 3
+MAX_BRANCHES = 3
+BRANCH_POS = ("above", "below")
 LABEL_MAX = 24
 EVENT_NAME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,39}$")  # GA4 event-name rules
 
@@ -41,9 +42,9 @@ class MappingStore:
         with self._connect() as db:
             db.execute("PRAGMA journal_mode=WAL")
             db.execute(
-                "CREATE TABLE IF NOT EXISTS flow_custom_steps ("
+                "CREATE TABLE IF NOT EXISTS flow_branches ("
                 " scope TEXT NOT NULL, pack TEXT NOT NULL, id TEXT NOT NULL,"
-                " after TEXT NOT NULL, event TEXT NOT NULL, label TEXT NOT NULL,"
+                " at TEXT NOT NULL, pos TEXT NOT NULL, event TEXT NOT NULL, label TEXT NOT NULL,"
                 " created_at INTEGER NOT NULL, PRIMARY KEY (scope, pack, id))"
             )
             db.execute(
@@ -79,55 +80,43 @@ class MappingStore:
             )
 
 
-    # --- 追加した段 (user-added steps, max MAX_CUSTOM_STEPS per property + pack) ---
-    def custom_steps(self, scope: str, pack: str) -> list[dict[str, str]]:
+    # --- 分岐 (branches): another behaviour at the same stage, shown above / below it ---
+    def branches(self, scope: str, pack: str) -> list[dict[str, str]]:
         with self._connect() as db:
             rows = db.execute(
-                "SELECT id, after, event, label FROM flow_custom_steps WHERE scope = ? AND pack = ?"
+                "SELECT id, at, pos, event, label FROM flow_branches WHERE scope = ? AND pack = ?"
                 " ORDER BY created_at, rowid", (scope, pack),
             ).fetchall()
-        return [{"id": i, "after": a, "event": e, "label": lb} for i, a, e, lb in rows]
+        return [{"id": i, "at": a, "pos": p, "event": e, "label": lb} for i, a, p, e, lb in rows]
 
-    def add_custom(self, scope: str, pack: str, after: str, event: str, label: str) -> str | None:
+    def add_branch(self, scope: str, pack: str, at: str, pos: str, event: str, label: str) -> str | None:
         """Returns the new id, or None when the limit is reached."""
         with self._lock, self._connect() as db:
             n = db.execute(
-                "SELECT COUNT(*) FROM flow_custom_steps WHERE scope = ? AND pack = ?", (scope, pack)
+                "SELECT COUNT(*) FROM flow_branches WHERE scope = ? AND pack = ?", (scope, pack)
             ).fetchone()[0]
-            if n >= MAX_CUSTOM_STEPS:
+            if n >= MAX_BRANCHES:
                 return None
             new_id = secrets.token_hex(4)
             db.execute(
-                "INSERT INTO flow_custom_steps (scope, pack, id, after, event, label, created_at)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (scope, pack, new_id, after, event, label, time.time_ns()),
+                "INSERT INTO flow_branches (scope, pack, id, at, pos, event, label, created_at)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (scope, pack, new_id, at, pos, event, label, time.time_ns()),
             )
             return new_id
 
-    def update_custom(self, scope: str, pack: str, step_id: str, event: str, label: str) -> bool:
+    def update_branch(self, scope: str, pack: str, branch_id: str, event: str, label: str) -> bool:
         with self._lock, self._connect() as db:
             cur = db.execute(
-                "UPDATE flow_custom_steps SET event = ?, label = ? WHERE scope = ? AND pack = ? AND id = ?",
-                (event, label, scope, pack, step_id),
+                "UPDATE flow_branches SET event = ?, label = ? WHERE scope = ? AND pack = ? AND id = ?",
+                (event, label, scope, pack, branch_id),
             )
             return cur.rowcount > 0
 
-    def delete_custom(self, scope: str, pack: str, step_id: str) -> None:
+    def delete_branch(self, scope: str, pack: str, branch_id: str) -> None:
         with self._lock, self._connect() as db:
-            # steps added after the deleted one move to where it was
-            row = db.execute(
-                "SELECT after FROM flow_custom_steps WHERE scope = ? AND pack = ? AND id = ?",
-                (scope, pack, step_id),
-            ).fetchone()
-            if not row:
-                return
             db.execute(
-                "UPDATE flow_custom_steps SET after = ? WHERE scope = ? AND pack = ? AND after = ?",
-                (row[0], scope, pack, f"c{step_id}"),
-            )
-            db.execute(
-                "DELETE FROM flow_custom_steps WHERE scope = ? AND pack = ? AND id = ?",
-                (scope, pack, step_id),
+                "DELETE FROM flow_branches WHERE scope = ? AND pack = ? AND id = ?", (scope, pack, branch_id)
             )
 
 
@@ -159,40 +148,16 @@ def load_mapping(session: MutableMapping[str, Any], pack: str) -> dict[str, str]
     return {k: v for k, v in get_mapping_store().get(scope, pack).items() if k in steps}
 
 
-def load_custom(session: MutableMapping[str, Any], pack: str) -> list[dict[str, str]]:
+def load_branches(session: MutableMapping[str, Any], pack: str) -> list[dict[str, str]]:
     scope = property_scope(session)
-    return get_mapping_store().custom_steps(scope, pack) if scope else []
+    steps = set(FLOW_STEPS.get(pack) or [])
+    rows = get_mapping_store().branches(scope, pack) if scope else []
+    return [r for r in rows if r["at"] in steps and r["pos"] in BRANCH_POS]
 
 
-def resolved_steps(
-    pack: str, mapping: dict[str, str], custom: list[dict[str, str]] | None = None
-) -> list[dict[str, Any]]:
-    """[{step, event, custom, label}] in flow order.
-
-    Pack steps ask GA4 for the mapped event (or their own); user-added steps
-    (key ``c<id>``) are inserted right after the stage they were added to.
-    """
-    base = [{"step": s, "event": mapping.get(s) or s, "custom": False, "label": ""}
-            for s in FLOW_STEPS.get(pack) or []]
-    pending = list(custom or [])
-    known = {"entry"} | {b["step"] for b in base}
-    pending = [c for c in pending if c["after"] in known or c["after"].startswith("c")]
-
-    def after(key: str) -> list[dict[str, Any]]:
-        out: list[dict[str, Any]] = []
-        for c in [c for c in pending if c["after"] == key]:
-            pending.remove(c)
-            out.append({"step": f"c{c['id']}", "event": c["event"], "custom": True, "label": c["label"]})
-            out.extend(after(f"c{c['id']}"))
-        return out
-
-    steps = after("entry")
-    for b in base:
-        steps.append(b)
-        steps.extend(after(b["step"]))
-    for c in pending:  # anchor vanished — keep it at the end rather than lose it
-        steps.append({"step": f"c{c['id']}", "event": c["event"], "custom": True, "label": c["label"]})
-    return steps
+def resolved_steps(pack: str, mapping: dict[str, str]) -> list[dict[str, Any]]:
+    """[{step, event}] — event is what GA4 is asked for (mapped or the pack's own)."""
+    return [{"step": s, "event": mapping.get(s) or s} for s in FLOW_STEPS.get(pack) or []]
 
 
 def apply_mapping(data: dict[str, Any], pack: str, mapping: dict[str, str], *, primary: str) -> dict[str, Any]:

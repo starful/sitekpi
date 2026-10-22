@@ -9,10 +9,11 @@ from fastapi.responses import JSONResponse, RedirectResponse, Response
 
 from sitekpi.cache import TTLCache
 from sitekpi.flow import (
-    MAX_CUSTOM_STEPS,
+    BRANCH_POS,
+    MAX_BRANCHES,
     clean_label,
     get_mapping_store,
-    load_custom,
+    load_branches,
     property_scope,
     resolved_steps,
     sample_flow,
@@ -53,10 +54,12 @@ def live_flow_context(
     request: Request, pack: str, period: str, mapping: dict[str, str], locale: str
 ) -> dict[str, Any] | None:
     info = connection_info(request.session)
-    steps = resolved_steps(pack, mapping, load_custom(request.session, pack))
+    steps = resolved_steps(pack, mapping)
+    branches = load_branches(request.session, pack)
     if not info:
         return None
-    events = [s["event"] for s in steps]
+    events = [s["event"] for s in steps] + [b["event"] for b in branches if b["event"] not in
+                                            {s["event"] for s in steps}]
     key = f"{info['property_id']}|{period}|{pack}|{','.join(events)}"
     flow = _FLOW_CACHE.get(key)
     err = None
@@ -65,7 +68,7 @@ def live_flow_context(
         if flow is not None:
             _FLOW_CACHE.set(key, flow)
     return flow_context(pack=pack, flow=flow, steps=steps, locale=locale, live=True,
-                        event_options=site_events(request), error=err, max_custom=MAX_CUSTOM_STEPS)
+                        event_options=site_events(request), error=err, branches=branches, max_branches=MAX_BRANCHES)
 
 
 @router.post("/flow/mapping")
@@ -95,9 +98,9 @@ async def flow_mapping(request: Request) -> Response:
     return RedirectResponse("/live#flow", status_code=303)
 
 
-@router.post("/flow/custom")
-async def flow_custom(request: Request) -> Response:
-    """Add / change / delete a step of the site's own (max MAX_CUSTOM_STEPS)."""
+@router.post("/flow/branch")
+async def flow_branch(request: Request) -> Response:
+    """分岐: another behaviour at the same stage, above or below it (max MAX_BRANCHES)."""
     form = await request.form()
     loc = get_locale(request.session)
     pack = str(form.get("pack") or "")
@@ -115,20 +118,18 @@ async def flow_custom(request: Request) -> Response:
     if not scope or pack != str(request.session.get("benchmark_pack") or "") or pack not in FLOW_STEPS:
         return done({"ok": False, "error": t("flow.err.live", loc)}, 403)
     store = get_mapping_store()
-    existing = store.custom_steps(scope, pack)
     if action == "delete":
-        store.delete_custom(scope, pack, str(form.get("id") or ""))
+        store.delete_branch(scope, pack, str(form.get("id") or ""))
         return done({"ok": True})
     if not valid_event_name(event):
         return done({"ok": False, "error": t("flow.err.event", loc)}, 400)
     if action == "update":
-        ok = store.update_custom(scope, pack, str(form.get("id") or ""), event, label)
+        ok = store.update_branch(scope, pack, str(form.get("id") or ""), event, label)
         return done({"ok": ok}, 200 if ok else 404)
-    after = str(form.get("after") or "")
-    anchors = {"entry", *FLOW_STEPS[pack], *(f"c{c['id']}" for c in existing)}
-    if after not in anchors:
+    at, pos = str(form.get("at") or ""), str(form.get("pos") or "below")
+    if at not in FLOW_STEPS[pack] or pos not in BRANCH_POS:
         return done({"ok": False, "error": t("flow.err.event", loc)}, 400)
-    new_id = store.add_custom(scope, pack, after, event, label)
+    new_id = store.add_branch(scope, pack, at, pos, event, label)
     if not new_id:
-        return done({"ok": False, "error": t("flow.err.max", loc, n=MAX_CUSTOM_STEPS)}, 400)
+        return done({"ok": False, "error": t("flow.err.max", loc, n=MAX_BRANCHES)}, 400)
     return done({"ok": True, "id": new_id})
