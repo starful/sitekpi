@@ -1164,14 +1164,20 @@ def page_builder(request: Request):
 
 
 def _nav_extras(request: Request) -> dict[str, Any]:
-    info = connection_info(request.session)
-    prop = request.session.get("ga4_property")
+    session = request.session
+    info = connection_info(session)
+    prop = session.get("ga4_property")
+    is_demo = bool(session.get("ga4_demo"))
     connected: dict[str, str] | None = None
-    if info and isinstance(prop, dict) and prop.get("id"):
+    if isinstance(prop, dict) and prop.get("id") and (info or is_demo):
+        name = str(prop.get("name") or f"Property {prop.get('id')}")
+        if is_demo:
+            name = t("nav.demo_name", get_locale(session), name=name)
         connected = {
             "id": str(prop.get("id") or ""),
-            "name": str(prop.get("name") or f"Property {prop.get('id')}"),
-            "email": str(info.get("email") or ""),
+            "name": name,
+            "email": str((info or {}).get("email") or session.get("ga4_email") or ""),
+            "demo": "1" if is_demo else "",
         }
     pack = request.session.get("benchmark_pack")
     benchmark_pack = str(pack) if isinstance(pack, str) and pack in INDUSTRIES else ""
@@ -1230,13 +1236,16 @@ def page_live(request: Request, period: str = Query(default="28d")):
     pack_label = pack_text(
         pack_slug, "label", loc, str(INDUSTRIES[pack_slug]["label"])
     )
-    note = (
-        t("live.note.ok", loc, pack=pack_label)
-        if live
-        else t("live.note.demo", loc, pack=pack_label)
-    )
-    if err and not live:
+    is_demo = bool(extras["connected"].get("demo"))
+    if is_demo:
+        # Demo connect: pack sample site numbers, clearly labelled (business stays —)
+        note = t("live.note.demo_mode", loc, pack=pack_label)
+    elif live:
+        note = t("live.note.ok", loc, pack=pack_label)
+    elif err:
         note = t("live.note.err", loc, pack=pack_label)
+    else:
+        note = t("live.note.demo", loc, pack=pack_label)
     return HTMLResponse(
         render_sample_dense(
             industry=pack_slug,

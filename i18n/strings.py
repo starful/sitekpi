@@ -51,6 +51,11 @@ UI: dict[str, dict[str, str]] = {
         "en": "GA4 connection",
         "ko": "GA4 연결",
     },
+    "nav.demo_name": {
+        "ja": "{name}（デモ）",
+        "en": "{name} (demo)",
+        "ko": "{name} (데모)",
+    },
     "nav.property": {
         "ja": "接続プロパティ",
         "en": "Connected property",
@@ -380,6 +385,11 @@ UI: dict[str, dict[str, str]] = {
         "ja": "GA4 接続（デモ数値フォールバック）· 業界目安: {pack}",
         "en": "GA4 connected (demo numbers fallback) · benchmarks: {pack}",
         "ko": "GA4 연결(데모 수치 폴백) · 업계 기준: {pack}",
+    },
+    "live.note.demo_mode": {
+        "ja": "デモ接続 · 見本数値（実データではありません）· 業界目安: {pack}",
+        "en": "Demo connection · sample numbers (not real data) · benchmarks: {pack}",
+        "ko": "데모 연결 · 샘플 수치(실데이터 아님) · 업계 기준: {pack}",
     },
     "live.note.err": {
         "ja": "GA4 取得失敗 · サンプル数値 · 業界目安: {pack}",
