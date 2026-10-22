@@ -75,15 +75,23 @@
       {% else %}
       <p class="meta">{{ t("connect.pack.pick", loc) }}</p>
       {% endif %}
+      <p class="note">{{ t("connect.pack.flow_hint", loc) }}{% if knows_events %} {{ t("connect.pack.flow_found", loc) }}{% endif %}</p>
       <form method="post" action="/connect/pack">
         {% for group in pack_groups %}
-        <div class="pack-group"><h3>{{ group.label }}</h3><div class="prop-list">
+        <div class="pack-group"><h3>{{ group.label }}</h3><div class="prop-list pack-list">
           {% for p in group.packs %}
-          <label class="prop">
+          <label class="prop pack-opt{{ ' is-rec' if p.recommended else '' }}">
             <input type="radio" name="pack_slug" value="{{ p.slug }}" {% if p.slug == benchmark_pack %}checked{% endif %} required />
-            <span>
-              <strong>{{ p.label }}</strong>
-              <small>{{ p.hint }}</small>
+            <span class="pack-body">
+              <span class="pack-title">
+                <strong>{{ p.label }}</strong>
+                {% if knows_events and p.flow.hits %}<em class="pack-hits">{{ t("connect.pack.hits", loc, n=p.flow.hits, total=p.flow.total) }}</em>{% endif %}
+                {% if p.recommended %}<em class="pack-rec">{{ t("connect.pack.rec", loc) }}</em>{% endif %}
+              </span>
+              <span class="mini-flow" aria-label="{{ t('flow.title', loc) }}">
+                <span class="mf-step is-entry">{{ t("flow.entry", loc) }}</span>
+                {% for s in p.flow.steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step{{ ' is-found' if s.found else (' is-missing' if s.found is false else '') }}" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
+              </span>
             </span>
           </label>
           {% endfor %}

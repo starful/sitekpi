@@ -84,7 +84,7 @@ def flow_context(
         ch_sum = sum(ch_users.values()) or 1
         reach = _pct(users, entry)
         stages.append({
-            "key": s["step"], "label": step_label(s["step"], loc), "event": ev, "step": s["step"],
+            "key": s["step"], "label": step_label(s["step"], loc, pack), "event": ev, "step": s["step"],
             "mapped": ev != s["step"], "users": users, "missing": users <= 0,
             "users_fmt": {"all": _int(users), **{cid: _int(v) for cid, v in ch_users.items()}},
             "reach_pct": reach or 0.0,

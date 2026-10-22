@@ -90,3 +90,28 @@ code { font-size: 0.85em; }
 .dev summary::before { content: "▸ "; }
 .dev[open] summary::before { content: "▾ "; }
 .dev-body { padding: 0 0 14px; }
+
+/* 業界パック: pick by 行動フロー */
+.pack-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 8px; }
+.pack-opt { align-items: flex-start; }
+.pack-opt input { margin-top: 3px; }
+.pack-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.pack-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pack-title strong { display: inline; }
+.pack-hits, .pack-rec {
+  font-style: normal; font-size: 0.68rem; font-weight: 800; border-radius: 999px; padding: 1px 8px;
+}
+.pack-hits { background: #f1f5f9; color: #475569; }
+.pack-rec { background: #dcfce7; color: #166534; }
+.pack-opt.is-rec { border-color: #86efac; }
+.mini-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 2px; }
+.mf-step {
+  font-size: 0.72rem; font-weight: 700; color: #334155; background: #fff;
+  border: 1px solid #dbe3ee; border-radius: 6px; padding: 2px 7px; white-space: nowrap;
+}
+.mf-step.is-entry { background: #eef4ff; border-color: #c9dbfb; color: #1e40af; }
+.mf-step.is-found { background: #ecfdf5; border-color: #86efac; color: #166534; }
+.mf-step.is-found::before { content: "✓ "; }
+.mf-step.is-missing { color: #94a3b8; border-style: dashed; }
+.mf-arrow { color: #94a3b8; font-size: 0.72rem; padding: 0 1px; }
+@media (max-width: 520px) { .pack-list { grid-template-columns: 1fr; } }

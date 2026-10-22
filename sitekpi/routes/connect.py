@@ -76,6 +76,13 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
                 except Exception as exc:  # noqa: BLE001
                     err = t("connect.err.preview", loc, exc=exc)
 
+    site_event_names: set[str] | None = None
+    if connected and selected and not demo:
+        from sitekpi.routes.flow import site_events
+
+        found = site_events(request)
+        site_event_names = {e["name"] for e in found} if found else None
+
     html = render_connect_page(
         configured=configured,
         connected=connected,
@@ -89,6 +96,7 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
         pack_groups=packs_by_category() if (connected and selected) else None,
         benchmark_pack=pack_slug,
         benchmark_pack_label=pack_label,
+        site_events=site_event_names,
         locale=loc,
         rail=nav_rail_context(request, "connect"),
     )

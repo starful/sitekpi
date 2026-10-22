@@ -22,7 +22,7 @@ def test_values_are_autoescaped():
         connected=True, demo=False, email="", properties=[], preview=None,
         selected={"id": "1", "name": "<script>alert(1)</script>", "account": "a&b"},
         error='"><img src=x onerror=alert(1)>', pack_groups=[], benchmark_pack="",
-        benchmark_pack_label="", redirect_uri="", base_url="",
+        benchmark_pack_label="", redirect_uri="", base_url="", knows_events=False,
     )
     assert "<script>alert(1)</script>" not in html
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html

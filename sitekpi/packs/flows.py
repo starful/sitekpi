@@ -97,6 +97,14 @@ STEP_LABELS: dict[str, dict[str, str]] = {
 }
 
 
-def step_label(event: str, locale: str) -> str:
-    labels = STEP_LABELS.get(event) or {}
+# Same event name, different wording in a given industry.
+PACK_STEP_LABELS: dict[tuple[str, str], dict[str, str]] = {
+    ("finance", "apply_start"): {"ja": "申込を開始", "en": "Started application", "ko": "신청 시작"},
+    ("parttime", "job_view"): {"ja": "求人を見た", "en": "Viewed shift job", "ko": "알바 공고 열람"},
+    ("marketplace", "view_item"): {"ja": "出品を見た", "en": "Viewed listing", "ko": "상품 열람"},
+}
+
+
+def step_label(event: str, locale: str, pack: str = "") -> str:
+    labels = PACK_STEP_LABELS.get((pack, event)) or STEP_LABELS.get(event) or {}
     return labels.get(locale) or labels.get("ja") or event

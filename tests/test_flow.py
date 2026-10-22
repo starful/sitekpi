@@ -207,3 +207,17 @@ def test_mapping_is_validated(live):
 def test_sample_visitors_cannot_map():
     r = _client().post("/flow/mapping", headers=JSON, data={"pack": "hr", "step": "apply_submit", "event": "x"})
     assert r.status_code == 403
+
+
+def test_connect_page_lets_you_pick_a_pack_by_its_flow(live):
+    c = live()
+    html = c.get("/connect").text
+    soup = _soup(html)
+    hr = soup.select_one("input[name=pack_slug][value=hr]").find_parent("label")
+    steps = [s.get_text() for s in hr.select(".mf-step")]
+    assert steps == ["サイトに来た", "求人を見た", "応募を開始", "応募を送信", "エントリー完了"]
+    # the site records job_view + apply_start → 2/4, and hr is among the closest packs
+    assert [s["title"] for s in hr.select(".mf-step.is-found")] == ["job_view", "apply_start"]
+    assert "記録あり 2/4" in hr.get_text() and "is-rec" in hr["class"]
+    ec = soup.select_one("input[name=pack_slug][value=ec]").find_parent("label")
+    assert "is-rec" not in ec["class"] and len(ec.select(".mf-step.is-missing")) == 4
