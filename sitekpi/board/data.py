@@ -12,7 +12,7 @@ from sitekpi.i18n.metric_l10n import (
     shared_label,
     tmpl,
 )
-from sitekpi.i18n.pack_l10n import pack_biz_rows, pack_notes, pack_text
+from sitekpi.i18n.pack_l10n import pack_biz_rows, pack_text
 from sitekpi.packs import PACK_COPY
 
 CHANNEL_COLORS: dict[str, str] = {
@@ -558,19 +558,6 @@ def build_dense_board(
             row["bench"] = bid
         business.append(row)
 
-    ja_notes = list((ind.get("notes") or {}).get(period) or [])
-    notes = pack_notes(industry, period, loc, ja_notes)
-    next_watch = [
-        (board_tmpl("point_n", loc, n=i + 1), note) for i, note in enumerate(notes[:3])
-    ]
-    if len(next_watch) < 3:
-        next_watch.append(
-            (
-                board_tmpl("biz_unlinked_title", loc),
-                board_tmpl("biz_unlinked_body", loc),
-            )
-        )
-
     return {
         "industry": industry,
         "industry_label": industry_label,
@@ -587,5 +574,4 @@ def build_dense_board(
         "events_missing": events_missing,
         "channels": channels,
         "business": business,
-        "next_watch": next_watch,
     }

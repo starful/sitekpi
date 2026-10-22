@@ -127,6 +127,7 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
     title += " · " + _source_text(spec, loc)
     scale = _viz_scale(low, high, value, unit)
     base: dict[str, Any] = {
+        "key": bench_key,
         "custom": custom,
         "band": band,
         "avg": avg,
@@ -310,6 +311,7 @@ def _bench_block(info: dict[str, Any] | None, locale: str, *, gap_bar: bool = Fa
         "gap": b["gap"],
         "judge": _judge(None if empty else info),
         "custom": bool((info or {}).get("custom")),
+        "key": str((info or {}).get("key") or ""),
         "gapbar": _gap_bar(None if empty else info) if gap_bar else None,
     }
 
@@ -326,6 +328,7 @@ def _bench_cells(info: dict[str, Any] | None) -> dict[str, Any]:
         "gap": info["gap"],
         "judge": _judge(info),
         "custom": bool(info.get("custom")),
+        "key": str(info.get("key") or ""),
     }
 
 
@@ -611,7 +614,7 @@ def _render_sample_dense(
     connected: dict[str, str] | None = None,
     locale: str = "ja",
     board_kind: str = "sample",
-    adjust_href: str = "",
+    bench_sheet: dict[str, Any] | None = None,
 ) -> str:
     loc = normalize_locale(locale)
     if data is None or ind is None or benches_raw is None:
@@ -645,14 +648,8 @@ def _render_sample_dense(
         else f"SiteKPI · {industry_label}{t('sample_title_suffix', loc)}"
     )
 
-    # かんたん: keep the focus KPIs + those with a 目安, max 4 cards
-    simple_ids: list[str] = []
-    for k in sorted(board["summary"], key=lambda k: (not k.get("focus"), not k.get("bench"))):
-        if len(simple_ids) < 4:
-            simple_ids.append(k["id"])
     summary = [
         {
-            "simple": k["id"] in simple_ids,
             "id": k["id"],
             "label": k["label"],
             "value": k["value"],
@@ -736,7 +733,6 @@ def _render_sample_dense(
         period=period,
         focus_line=board.get("focus_line") or "",
         summary=summary,
-        next_watch=board["next_watch"],
         panels=panels,
         channels=channels,
         channels_stack=[c for c in channels if c.get("pct")],
@@ -745,7 +741,7 @@ def _render_sample_dense(
         business_unlinked=bool(business) and not any(b["linked"] for b in business),
         watch=_watch_items(board, loc),
         is_sample=is_sample,
-        adjust_href=adjust_href,
+        bench_sheet=bench_sheet,
         dialogs=[_dialog(item, loc) for item in help_items],
         board_data={
             "close": t("close", loc),

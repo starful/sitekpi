@@ -3,7 +3,6 @@
 {% block title %}{{ page_title }}{% endblock %}
 {% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
 {% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" />{% endblock %}
-{% block head_scripts %}<script src="{{ static_url('js/board-mode.js') }}"></script>{% endblock %}
 {% block main %}
       <header class="top">
         <div>
@@ -11,11 +10,7 @@
           <div class="meta">{{ pack_meta }}</div>
         </div>
         <div class="top-right">
-          {% if adjust_href %}<a class="adjust-link" href="{{ adjust_href }}">{{ t("bench_adjust", loc) }}</a>{% endif %}
-          <div class="mode-toggle" role="group" aria-label="{{ t('mode.aria', loc) }}">
-            <button type="button" class="mode-btn" data-board-mode="simple">{{ t("mode.simple", loc) }}</button>
-            <button type="button" class="mode-btn" data-board-mode="detail">{{ t("mode.detail", loc) }}</button>
-          </div>
+          {% if bench_sheet %}<button type="button" class="adjust-link" data-bench-open="">{{ t("bench_adjust", loc) }}</button>{% endif %}
           <label class="period">
             <span class="sr-only">{{ t("period.label", loc) }}</span>
             <select disabled aria-label="{{ t('period.label', loc) }}">
@@ -26,10 +21,10 @@
         </div>
       </header>
       <div class="content">
-        <div class="focus-banner detail-only" role="status">{{ focus_line }}</div>
+        <div class="focus-banner" role="status">{{ focus_line }}</div>
         <section class="summary" aria-label="{{ t('summary_aria', loc) }}">
           {% for k in summary %}
-          <div class="sum-item{{ ' is-focus' if k.focus else '' }}{{ '' if k.simple else ' simple-hide' }}">
+          <div class="sum-item{{ ' is-focus' if k.focus else '' }}">
             <div class="sum-head">
               {{ m.help_btn(k.id, k.label) }}
               <div class="sum-label" title="{{ k.label }}">{{ k.label }}</div>
@@ -61,23 +56,6 @@
           <p class="watch-none">{{ t("watch.none", loc) }}</p>
           {% endif %}
           {% if is_sample %}<p class="watch-sample">{{ t("watch.sample", loc) }}</p>{% endif %}
-        </section>
-
-        <div class="simple-more simple-only">
-          <button type="button" class="simple-more-btn" data-board-mode="detail">{{ t("mode.show_detail", loc) }}</button>
-        </div>
-
-        <div class="detail-only">
-        <section class="insights" aria-label="{{ t('next_watch', loc) }}">
-          <h2>{{ t("next_watch", loc) }}</h2>
-          <ol>
-            {% for title, body in next_watch %}
-            <li>
-              <strong>{{ title }}</strong>
-              <span>{{ body }}</span>
-            </li>
-            {% endfor %}
-          </ol>
         </section>
 
         {# Reading order: who → where from → depth → convert → evidence → business #}
@@ -261,10 +239,10 @@
             {% endif %}
           </section>
         </div>
-        </div>{# /.detail-only #}
       </div>
 {% endblock %}
 {% block after_shell %}
+  {% if bench_sheet %}{% include "board/bench_sheet.html" %}{% endif %}
   {% for d in dialogs %}{{ m.help_dialog(d) }}{% endfor %}
 {% endblock %}
 {% block scripts %}

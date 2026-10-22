@@ -22,6 +22,7 @@ from sitekpi.routes.nav import nav_context, nav_rail_context
 from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.metrics.help import PERIODS
 from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES
+from sitekpi.views.benchmarks import sheet_context
 from sitekpi.views.board import render_sample_dense
 from sitekpi.views.builder import render_builder
 from sitekpi.views.home import render_home
@@ -177,8 +178,11 @@ def page_live(request: Request, period: str = Query(default="28d")):
             period=period,
             data=data,
             ind=INDUSTRIES[pack_slug],
-            benches_raw=load_effective(request.session, pack_slug, BENCHMARKS[pack_slug], live=True),
-            adjust_href=f"/benchmarks?pack={pack_slug}&board=live",
+            benches_raw=(effective := load_effective(request.session, pack_slug, BENCHMARKS[pack_slug], live=True)),
+            bench_sheet=sheet_context(
+                pack=pack_slug, board="live" if not is_demo else "sample", effective=effective, locale=loc,
+                property_name=str((request.session.get("ga4_property") or {}).get("name") or ""),
+            ),
             property_name=prop or label,
             industry_label=label,
             industry_note=note,
@@ -217,8 +221,10 @@ def page_industry(request: Request, slug: str, period: str = Query(default="28d"
             period=period,
             data=data,
             ind=INDUSTRIES[slug],
-            benches_raw=load_effective(request.session, slug, BENCHMARKS[slug], live=False),
-            adjust_href=f"/benchmarks?pack={slug}&board=sample",
+            benches_raw=(effective := load_effective(request.session, slug, BENCHMARKS[slug], live=False)),
+            bench_sheet=sheet_context(
+                pack=slug, board="sample", effective=effective, locale=get_locale(request.session),
+            ),
             property_name="",
             pack_links=extras["pack_links"],
             pack_groups=extras["pack_groups"],

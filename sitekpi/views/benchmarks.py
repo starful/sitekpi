@@ -1,14 +1,13 @@
-"""目安を調整 page — view model."""
+"""目安の調整 bottom sheet (on the board) — view model."""
 
 from __future__ import annotations
 
 from typing import Any
 
 from sitekpi.board.data import build_dense_board
-from sitekpi.i18n import normalize_locale, t
+from sitekpi.i18n import t
 from sitekpi.i18n.pack_l10n import pack_text
-from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES, packs_by_category
-from sitekpi.templating import render
+from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES
 
 # Benchmarks only used once business data (DB) is linked
 BIZ_KEYS = ("paid_rate", "churn_rate")
@@ -32,59 +31,38 @@ def metric_labels(pack: str, locale: str) -> dict[str, str]:
     return labels
 
 
-def render_benchmarks_page(
+def sheet_context(
     *,
     pack: str,
     board: str,
     effective: dict[str, dict[str, Any]],
     locale: str,
-    rail: dict[str, Any] | None,
     property_name: str = "",
-    flash: str = "",
-    errors: dict[str, str] | None = None,
-    form: dict[str, tuple[str, str]] | None = None,
-) -> str:
-    loc = normalize_locale(locale)
-    labels = metric_labels(pack, loc)
-    errors = errors or {}
-    form = form or {}
+) -> dict[str, Any]:
+    labels = metric_labels(pack, locale)
     groups: dict[str, list[dict[str, Any]]] = {"ga4": [], "biz": []}
     for key, spec in effective.items():
-        low, high = form.get(key, (_fmt(spec["low"]), _fmt(spec["high"])))
+        unit = spec.get("unit", "")
         groups["biz" if key in BIZ_KEYS else "ga4"].append(
             {
                 "key": key,
                 "label": labels.get(key, key),
-                "unit": spec.get("unit", ""),
+                "unit": unit,
                 "higher": bool(spec["higher_is_better"]),
-                "default": f"{_fmt(spec['default_low'])}–{_fmt(spec['default_high'])}{spec.get('unit', '')}",
-                "low": low,
-                "high": high,
+                "default": f"{_fmt(spec['default_low'])}–{_fmt(spec['default_high'])}{unit}",
+                "source": spec.get("source") or {"kind": "provisional", "label": "", "url": ""},
+                "low": _fmt(spec["low"]),
+                "high": _fmt(spec["high"]),
                 "custom": bool(spec.get("custom")),
-                "error": t(errors[key], loc) if key in errors else "",
             }
         )
-    packs = [
-        {
-            "group": t(f"cat.{cid}", loc) if not t(f"cat.{cid}", loc).startswith("cat.") else label,
-            "packs": [{"slug": s, "label": pack_text(s, "label", loc, lab)} for s, lab, _ in items],
-        }
-        for cid, label, items in packs_by_category()
-    ]
-    return render(
-        "benchmarks.html",
-        loc=loc,
-        rail=rail,
-        pack=pack,
-        pack_label=pack_text(pack, "label", loc, str(INDUSTRIES[pack]["label"])),
-        packs=packs,
-        board=board,
-        property_name=property_name,
-        groups=[
-            {"title": t("bench_edit.group_ga4", loc), "rows": groups["ga4"]},
-            {"title": t("bench_edit.group_biz", loc), "rows": groups["biz"]},
+    return {
+        "pack": pack,
+        "board": board,
+        "pack_label": pack_text(pack, "label", locale, str(INDUSTRIES[pack]["label"])),
+        "property_name": property_name,
+        "groups": [
+            {"title": t("bench_edit.group_ga4", locale), "rows": groups["ga4"]},
+            {"title": t("bench_edit.group_biz", locale), "rows": groups["biz"]},
         ],
-        flash=flash,
-        has_errors=bool(errors),
-        back_href="/live" if board == "live" else f"/{pack}",
-    )
+    }

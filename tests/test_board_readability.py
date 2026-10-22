@@ -1,4 +1,4 @@
-"""Beginner-friendly board: かんたん/詳細, 今見るべきこと, fewer visible numbers."""
+"""Readability: 今見るべきこと, judge chips, grouped channels, collapsed 業務KPI."""
 
 from __future__ import annotations
 
@@ -20,24 +20,14 @@ def _soup(client, path):
     return BeautifulSoup(client.get(path).text, "html.parser")
 
 
-def test_mode_toggle_and_early_mode_script(client):
-    s = _soup(client, "/hr")
-    head_scripts = [x.get("src", "") for x in s.head.find_all("script")]
-    assert any("js/board-mode.js" in src for src in head_scripts)
-    assert not any(x.has_attr("defer") for x in s.head.find_all("script") if "board-mode" in x.get("src", ""))
-    modes = [b["data-board-mode"] for b in s.select(".mode-toggle .mode-btn")]
-    assert modes == ["simple", "detail"]
-
-
-def test_simple_mode_keeps_four_summary_cards_and_hides_panels(client):
-    s = _soup(client, "/hr")
-    cards = s.select(".summary .sum-item")
-    shown = [c for c in cards if "simple-hide" not in c["class"]]
-    assert len(cards) == 6 and len(shown) == 4
-    assert all("is-focus" in c["class"] for c in cards if "is-focus" in c["class"] and c in shown)
-    detail = s.select_one(".detail-only #panel-funnel")
-    assert detail is not None, "detail panels must sit inside .detail-only"
-    assert s.select_one(".simple-only .simple-more-btn[data-board-mode=detail]")
+def test_no_simple_mode_and_no_next_points(client):
+    """かんたん mode and 次に見るポイント were removed (user decision)."""
+    html = client.get("/hr").text
+    assert "board-mode" not in html and "mode-toggle" not in html
+    assert "detail-only" not in html and "simple-hide" not in html
+    assert "次に見るポイント" not in html and 'class="insights"' not in html
+    s = BeautifulSoup(html, "html.parser")
+    assert len(s.select(".summary .sum-item")) == 6
 
 
 def test_watch_ranks_metrics_outside_benchmark(client):

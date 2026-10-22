@@ -68,30 +68,68 @@ document.querySelectorAll(".view-btn[data-section]").forEach((btn) => {
   });
 });
 
-/* かんたん / 詳細 */
+
+/* 目安の調整 — bottom sheet */
 (function () {
-  const KEY = "sitekpi.board.mode";
-  const root = document.documentElement;
-  function apply(mode, save) {
-    root.setAttribute("data-board-mode", mode);
-    document.querySelectorAll(".mode-btn[data-board-mode]").forEach((b) => {
-      const on = b.dataset.boardMode === mode;
-      b.classList.toggle("is-on", on);
-      b.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-    if (save) {
-      try { localStorage.setItem(KEY, mode); } catch (e) { /* ignore */ }
+  const sheet = document.getElementById("bench-sheet");
+  if (!sheet) return;
+  const form = sheet.querySelector("[data-bench-form]");
+  const errorBox = sheet.querySelector("[data-bench-error]");
+
+  function open(key) {
+    if (!sheet.open) sheet.showModal();
+    sheet.querySelectorAll(".sheet-row.is-target").forEach((r) => r.classList.remove("is-target"));
+    if (key) {
+      const row = sheet.querySelector('[data-bench-row="' + key + '"]');
+      if (row) {
+        row.classList.add("is-target");
+        row.scrollIntoView({ block: "center" });
+        const input = row.querySelector("input");
+        if (input) { input.focus(); input.select(); }
+      }
     }
   }
-  apply(root.getAttribute("data-board-mode") || "detail", false);
-  document.querySelectorAll("[data-board-mode]").forEach((el) => {
-    if (el === root) return;
-    el.addEventListener("click", () => {
-      apply(el.dataset.boardMode, true);
-      if (el.classList.contains("simple-more-btn")) {
-        const target = document.querySelector(".detail-only");
-        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+  document.querySelectorAll("[data-bench-open]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      open(el.getAttribute("data-bench-open"));
     });
   });
+  sheet.querySelectorAll("[data-bench-close]").forEach((b) => b.addEventListener("click", () => sheet.close()));
+  sheet.addEventListener("click", (e) => { if (e.target === sheet) sheet.close(); });
+
+  function post(url, body) {
+    return fetch(url, { method: "POST", body: body, headers: { Accept: "application/json" }, credentials: "same-origin" });
+  }
+  function showErrors(errors) {
+    sheet.querySelectorAll("[data-bench-row]").forEach((row) => {
+      const msg = errors[row.getAttribute("data-bench-row")];
+      const p = row.querySelector("[data-row-error]");
+      row.classList.toggle("has-error", Boolean(msg));
+      if (p) { p.textContent = msg || ""; p.hidden = !msg; }
+    });
+    if (errorBox) errorBox.hidden = Object.keys(errors).length === 0;
+    const first = sheet.querySelector(".sheet-row.has-error input");
+    if (first) first.focus();
+  }
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const res = await post(form.action, new FormData(form));
+    if (res.ok) { location.reload(); return; }
+    let data = {};
+    try { data = await res.json(); } catch (err) { /* ignore */ }
+    showErrors(data.errors || {});
+  });
+  sheet.querySelectorAll("[data-bench-reset]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const body = new FormData();
+      body.set("pack", form.elements.pack.value);
+      body.set("board", form.elements.board.value);
+      body.set("metric", btn.getAttribute("data-bench-reset") || "");
+      const res = await post("/benchmarks/reset", body);
+      if (res.ok) location.reload();
+    });
+  });
+  if (location.hash === "#bench") open("");
 })();
