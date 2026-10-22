@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import json
 import os
-import time
 from typing import Any
 
 # Optional Google libs — page still works in setup/demo mode without them installed
 try:
+    from google.auth.exceptions import RefreshError, TransportError
     from google.auth.transport.requests import Request as GoogleAuthRequest
     from google.oauth2.credentials import Credentials
     from google_auth_oauthlib.flow import Flow
@@ -19,6 +19,7 @@ except ImportError:  # pragma: no cover
     Flow = None  # type: ignore[misc, assignment]
     Credentials = None  # type: ignore[misc, assignment]
     GoogleAuthRequest = None  # type: ignore[misc, assignment]
+    RefreshError = TransportError = Exception  # type: ignore[misc, assignment]
 
 try:
     from google.analytics.admin_v1beta import AnalyticsAdminServiceClient
@@ -39,24 +40,6 @@ except ImportError:  # pragma: no cover
     BetaAnalyticsDataClient = None  # type: ignore[misc, assignment]
 
 SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"]
-
-# Cookie sessions can drop across Google redirects (localhost vs 127.0.0.1, etc.).
-# Keep PKCE verifiers server-side keyed by OAuth `state` for the MVP.
-_PENDING_OAUTH: dict[str, dict[str, Any]] = {}
-_PENDING_TTL_SEC = 600
-
-
-def pending_put(state: str, code_verifier: str) -> None:
-    now = time.time()
-    expired = [k for k, v in _PENDING_OAUTH.items() if now - float(v.get("ts", 0)) > _PENDING_TTL_SEC]
-    for k in expired:
-        pending_pop(k)
-    _PENDING_OAUTH[state] = {"code_verifier": code_verifier, "ts": now}
-
-
-def pending_pop(state: str) -> dict[str, Any] | None:
-    return _PENDING_OAUTH.pop(state, None)
-
 
 DEMO_PROPERTIES = [
     {
@@ -111,7 +94,16 @@ def creds_from_session(session: dict[str, Any]) -> Any | None:
         return None
     creds = Credentials.from_authorized_user_info(info, SCOPES)
     if creds and creds.expired and creds.refresh_token:
-        creds.refresh(GoogleAuthRequest())
+        try:
+            creds.refresh(GoogleAuthRequest())
+        except RefreshError:
+            # Revoked / expired grant: forget it so /connect can start over
+            # instead of failing on every request.
+            for key in ("ga4_credentials", "ga4_property", "ga4_email"):
+                session.pop(key, None)
+            return None
+        except TransportError:
+            return None  # network hiccup — keep the grant, try again next request
         session["ga4_credentials"] = json.loads(creds.to_json())
     return creds
 

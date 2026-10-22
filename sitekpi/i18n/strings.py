@@ -366,6 +366,21 @@ UI: dict[str, dict[str, str]] = {
         "en": "Missing packages: pip install -r requirements.txt",
         "ko": "패키지 부족: pip install -r requirements.txt",
     },
+    "connect.err.oauth_state": {
+        "ja": "Google 接続を確認できませんでした（期限切れ、または別のブラウザ・別のアドレスから開始された可能性があります）。もう一度「Google で接続」からやり直してください。",
+        "en": "Couldn't verify the Google sign-in (it expired, or was started from a different browser or address). Please start again from “Connect with Google”.",
+        "ko": "Google 연결을 확인하지 못했습니다(만료되었거나 다른 브라우저·주소에서 시작되었을 수 있습니다). 「Google로 연결」부터 다시 시도해 주세요.",
+    },
+    "connect.err.oauth_denied": {
+        "ja": "Google 側で接続がキャンセルされました。必要なら、もう一度「Google で接続」から許可してください。",
+        "en": "The Google connection was cancelled. Start again from “Connect with Google” if you want to allow access.",
+        "ko": "Google에서 연결이 취소되었습니다. 필요하면 「Google로 연결」에서 다시 허용해 주세요.",
+    },
+    "connect.err.token": {
+        "ja": "トークン取得に失敗しました: {exc}",
+        "en": "Failed to obtain a token: {exc}",
+        "ko": "토큰을 가져오지 못했습니다: {exc}",
+    },
     "connect.err.list_props": {
         "ja": "Property 一覧の取得に失敗しました: {exc}",
         "en": "Failed to list Properties: {exc}",

@@ -16,7 +16,9 @@ Finder なら `run.command` をダブルクリック。初回（または .venv 
 ## Checks
 
 ```bash
-.venv/bin/python scripts/smoke_packs.py
+.venv/bin/pip install -r requirements-dev.txt   # 初回のみ
+.venv/bin/python -m pytest                      # tests/（OAuth state 検証など）
+.venv/bin/python scripts/smoke_packs.py         # 全業界パック × 3言語の描画
 ```
 
 ## Structure

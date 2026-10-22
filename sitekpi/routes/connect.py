@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 import os
+import secrets
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -23,8 +25,6 @@ from sitekpi.ga4.oauth import (
     fetch_preview,
     list_properties,
     oauth_configured,
-    pending_pop,
-    pending_put,
     redirect_uri,
 )
 from sitekpi.i18n import get_locale, t
@@ -117,6 +117,13 @@ def connect_google(request: Request):
     if not oauth_configured() or not HAS_GOOGLE_AUTH:
         # User-facing: don't dump .env instructions — fall back to demo flow
         return RedirectResponse("/connect/demo", status_code=302)
+    # The session cookie is per-host: start the flow on the same host Google will
+    # call back to (127.0.0.1 vs localhost), otherwise the state check below fails.
+    canonical = urlsplit(redirect_uri())
+    if canonical.netloc and request.url.netloc != canonical.netloc:
+        return RedirectResponse(
+            f"{canonical.scheme}://{canonical.netloc}/connect/google", status_code=302
+        )
     flow = Flow.from_client_config(client_config(), scopes=SCOPES)
     flow.redirect_uri = redirect_uri()
     # Do not include_granted_scopes — other Google products (GSC etc.) widen the
@@ -125,10 +132,10 @@ def connect_google(request: Request):
         access_type="offline",
         prompt="consent",
     )
-    # PKCE: keep verifier in session AND server memory (keyed by state)
+    # state (CSRF) + PKCE verifier live only in this browser's session; the
+    # callback must come back to the same browser that started the flow.
     request.session["oauth_state"] = state
     request.session["oauth_code_verifier"] = flow.code_verifier
-    pending_put(state, str(flow.code_verifier or ""))
     request.session.pop("ga4_demo", None)
     return RedirectResponse(auth_url, status_code=302)
 
@@ -138,36 +145,27 @@ def connect_callback(request: Request):
     if not HAS_GOOGLE_AUTH:
         return RedirectResponse("/connect", status_code=302)
 
-    # Prefer state from Google callback query — session cookie may be missing
-    state = (
-        request.query_params.get("state")
-        or request.session.get("oauth_state")
-        or ""
-    )
-    pending = pending_pop(state) if state else None
-    code_verifier = (
-        (pending or {}).get("code_verifier")
-        or request.session.get("oauth_code_verifier")
-        or ""
-    )
-    if not state:
-        return _page_from_request(
-            request,
-            error="OAuth state がありません。もう一度「Google で接続」からやり直してください。",
-        )
-    if not code_verifier:
-        return _page_from_request(
-            request,
-            error="OAuth code_verifier がありません。もう一度「Google で接続」からやり直してください。"
-            "（127.0.0.1 と localhost を混ぜないでください）",
-        )
+    loc = get_locale(request.session)
+    # One-shot: whatever happens below, this state/verifier pair is consumed.
+    expected_state = str(request.session.pop("oauth_state", "") or "")
+    code_verifier = str(request.session.pop("oauth_code_verifier", "") or "")
+    returned_state = request.query_params.get("state") or ""
+
+    if not expected_state or not returned_state or not secrets.compare_digest(
+        expected_state, returned_state
+    ):
+        return _page_from_request(request, error=t("connect.err.oauth_state", loc))
+    if request.query_params.get("error"):
+        # e.g. access_denied — user cancelled on Google's consent screen
+        return _page_from_request(request, error=t("connect.err.oauth_denied", loc))
+    if not code_verifier or not request.query_params.get("code"):
+        return _page_from_request(request, error=t("connect.err.oauth_state", loc))
 
     # Rebuild authorization_response on the registered redirect host
-    # (avoids localhost vs 127.0.0.1 mismatch with GOOGLE_REDIRECT_URI)
     q = request.url.query
     auth_response = f"{redirect_uri()}?{q}" if q else redirect_uri()
 
-    flow = Flow.from_client_config(client_config(), scopes=SCOPES, state=state)
+    flow = Flow.from_client_config(client_config(), scopes=SCOPES, state=expected_state)
     flow.redirect_uri = redirect_uri()
     flow.code_verifier = code_verifier
     # If Google still returns extra scopes, don't fail the token exchange
@@ -175,14 +173,12 @@ def connect_callback(request: Request):
     try:
         flow.fetch_token(authorization_response=auth_response)
     except Exception as exc:  # noqa: BLE001
-        return _page_from_request(request, error=f"トークン取得に失敗: {exc}")
+        return _page_from_request(request, error=t("connect.err.token", loc, exc=exc))
 
     creds = flow.credentials
     request.session["ga4_credentials"] = json.loads(creds.to_json())
     request.session.pop("ga4_property", None)
     request.session.pop("ga4_demo", None)
-    request.session.pop("oauth_state", None)
-    request.session.pop("oauth_code_verifier", None)
     request.session["ga4_email"] = ""
     return RedirectResponse("/connect", status_code=302)
 
