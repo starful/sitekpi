@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from ga4_connect import (
+from sitekpi.ga4.oauth import (
     HAS_DATA,
     HAS_GOOGLE_AUTH,
-    _creds_from_session,
+    creds_from_session,
 )
 
 try:
@@ -59,7 +59,7 @@ def discover_event_names(
     cur_start, cur_end = ranges[0], ranges[1]
     property_id = info["property_id"]
     try:
-        creds = _creds_from_session(session)
+        creds = creds_from_session(session)
         if not creds:
             return [], "GA4 認証が無効です。再接続してください。"
         client = BetaAnalyticsDataClient(credentials=creds)
@@ -166,7 +166,7 @@ def fetch_pack_overlay(
     property_id = info["property_id"]
 
     try:
-        creds = _creds_from_session(session)
+        creds = creds_from_session(session)
         if not creds:
             return None, "GA4 認証が無効です。再接続してください。"
         client = BetaAnalyticsDataClient(credentials=creds)
@@ -317,81 +317,11 @@ def fetch_pack_overlay(
         }
         # Persist refreshed token if any
         if session.get("ga4_credentials"):
-            # _creds_from_session may have refreshed
+            # creds_from_session may have refreshed
             pass
         return overlay, None
     except Exception as exc:  # noqa: BLE001
         return None, str(exc)
-
-
-def builder_values_from_overlay(overlay: dict[str, Any]) -> dict[str, str]:
-    """Map GA4 overlay → builder widget id → display value."""
-    ec = overlay.get("event_counts") or {}
-    channels = overlay.get("channels") or []
-    ch_map = {name: pct for name, pct in channels}
-
-    def yen_or_num(n: int) -> str:
-        return f"{n:,}"
-
-    uu = int(overlay.get("uu") or 0)
-    sessions = int(overlay.get("sessions") or 0)
-    pageviews = int(overlay.get("pageviews") or 0)
-    new_users = int(overlay.get("new_users") or 0)
-    ret = int(overlay.get("returning_users") or 0)
-    new_pct = round(100 * new_users / uu, 1) if uu else 0.0
-    ret_pct = round(100 - new_pct, 1)
-    spu = round(sessions / uu, 2) if uu else 0.0
-    ppu = round(pageviews / uu, 1) if uu else 0.0
-    bounce = round(100 - float(overlay.get("engaged_rate") or 0), 1)
-    signups = int(overlay.get("signups") or 0)
-    pay_start = int(overlay.get("pay_start") or 0)
-    stp = round(100 * pay_start / signups, 1) if signups else 0.0
-
-    out: dict[str, str] = {
-        "uu": yen_or_num(uu),
-        "sessions": yen_or_num(sessions),
-        "sessions_per_uu": str(spu),
-        "pageviews": yen_or_num(pageviews),
-        "pages_per_uu": str(ppu),
-        "new_return": f"{new_pct}% / {ret_pct}%",
-        "engaged": f"{overlay.get('engaged_rate')}%",
-        "bounce_rate": f"{bounce}%",
-        "avg_time": str(overlay.get("avg_time") or "0:00"),
-        "pages_session": str(overlay.get("pages_session") or 0),
-        "signups": yen_or_num(signups),
-        "signup_cvr": f"{overlay.get('signup_rate')}%",
-        "pay_start": yen_or_num(pay_start),
-        "signup_to_pay": f"{stp}%",
-        "pay_success": f"{yen_or_num(int(overlay.get('pay_success') or 0))} · {overlay.get('pay_cvr')}%",
-        "ev_sign_up": yen_or_num(int(ec.get("sign_up") or 0)),
-        "ev_login": yen_or_num(int(ec.get("login") or 0)),
-        "ev_view_pricing": yen_or_num(int(ec.get("view_pricing") or 0)),
-        "ev_trial_start": yen_or_num(int(ec.get("trial_start") or 0)),
-        "ev_pay_start": yen_or_num(int(ec.get("pay_start") or 0)),
-        "ev_pay_success": yen_or_num(int(ec.get("pay_success") or 0)),
-        "ch_organic": f"{ch_map.get('Organic Search', ch_map.get('organic search', 0))}%",
-        "ch_direct": f"{ch_map.get('Direct', 0)}%",
-        "ch_paid_search": f"{ch_map.get('Paid Search', 0)}%",
-        "ch_paid_social": f"{ch_map.get('Paid Social', 0)}%",
-        "ch_organic_social": f"{ch_map.get('Organic Social', 0)}%",
-    }
-    # Also map exact channel names present
-    for name, pct in channels:
-        key = {
-            "Organic Search": "ch_organic",
-            "Direct": "ch_direct",
-            "Paid Search": "ch_paid_search",
-            "Paid Social": "ch_paid_social",
-            "Organic Social": "ch_organic_social",
-        }.get(name)
-        if key:
-            out[key] = f"{pct}%"
-    # Dynamic event / channel keys for live palette
-    for name, count in ec.items():
-        out[f"ev_{name}"] = yen_or_num(int(count or 0))
-    for name, pct in channels:
-        out[_channel_widget_id(str(name))] = f"{pct}%"
-    return out
 
 
 def _channel_widget_id(name: str) -> str:
@@ -430,7 +360,7 @@ def fetch_metric_catalog(
     if not info or not HAS_DATA or not HAS_GOOGLE_AUTH:
         return [], None
     try:
-        creds = _creds_from_session(session)
+        creds = creds_from_session(session)
         if not creds:
             return [], "GA4 認証が無効です。再接続してください。"
         client = BetaAnalyticsDataClient(credentials=creds)
@@ -475,7 +405,7 @@ def fetch_metric_values(
     # Build type map from a lightweight re-fetch is expensive; callers pass via catalog
     values: dict[str, str] = {}
     try:
-        creds = _creds_from_session(session)
+        creds = creds_from_session(session)
         if not creds:
             return {}
         client = BetaAnalyticsDataClient(credentials=creds)
@@ -522,7 +452,7 @@ def build_live_builder_widgets(
     Business sample widgets kept with — values.
     Returns (widgets, property_name, error).
     """
-    from builder import WIDGETS  # local import avoids cycle at module load
+    from sitekpi.views.builder import WIDGETS  # local import avoids cycle at module load
 
     info = connection_info(session)
     if not info:
@@ -615,7 +545,7 @@ def build_live_builder_widgets(
     # Traffic channels from a light overlay-style report
     channel_widgets: list[dict[str, Any]] = []
     try:
-        creds = _creds_from_session(session)
+        creds = creds_from_session(session)
         if creds and HAS_DATA:
             client = BetaAnalyticsDataClient(credentials=creds)
             ranges = PERIOD_RANGE.get(period) or PERIOD_RANGE["28d"]

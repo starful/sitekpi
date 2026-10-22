@@ -6,10 +6,10 @@ import math
 from html import escape
 from typing import Any
 
-from branding import brand_head_links, brand_logo_css, brand_logo_html
-from dense_packs import build_dense_board
-from i18n import html_lang, normalize_locale, t
-from i18n.pack_l10n import pack_text
+from sitekpi.views.branding import brand_head_links, brand_logo_css, brand_logo_html
+from sitekpi.board.data import build_dense_board
+from sitekpi.i18n import html_lang, normalize_locale, t
+from sitekpi.i18n.pack_l10n import pack_text
 
 
 def _help(
@@ -826,7 +826,7 @@ def _rail_nav_html(
         )
 
     if pack_groups is None:
-        from packs import packs_by_category
+        from sitekpi.packs import packs_by_category
 
         pack_groups = packs_by_category()
     elif not pack_groups and pack_links:
@@ -944,13 +944,13 @@ def render_sample_dense(
 
     # Prefer caller-supplied pack data (route) — avoid importing main on every request
     if data is None or ind is None or benches_raw is None:
-        from packs import BENCHMARKS, DEMO, INDUSTRIES
+        from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES
 
         ind = ind or INDUSTRIES[industry]
         data = data or DEMO[industry][period]
         benches_raw = benches_raw or BENCHMARKS[industry]
     if pack_groups is None and pack_links is None:
-        from packs import pack_links as _pack_links, packs_by_category
+        from sitekpi.packs import pack_links as _pack_links, packs_by_category
 
         pack_links = _pack_links()
         pack_groups = packs_by_category()

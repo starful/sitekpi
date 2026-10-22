@@ -1,6 +1,6 @@
 """Industry sample packs — single source for meta, DEMO, benchmarks, board copy."""
 
-from packs.registry import (
+from sitekpi.packs.registry import (
     BENCHMARKS,
     DEMO,
     EVENT_DESC,

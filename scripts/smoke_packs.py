@@ -16,12 +16,12 @@ if str(ROOT) not in sys.path:
 
 
 def main() -> int:
-    from dense_packs import build_dense_board
-    from i18n.pack_l10n import PACK_L10N
-    from packs import BENCHMARKS, DEMO, INDUSTRIES
-    from packs.catalog import CATEGORIES
-    from packs.registry import PACK_MODULES
-    from sample_dense import _rail_nav_html, render_sample_dense
+    from sitekpi.board.data import build_dense_board
+    from sitekpi.i18n.pack_l10n import PACK_L10N
+    from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES
+    from sitekpi.packs.catalog import CATEGORIES
+    from sitekpi.packs.registry import PACK_MODULES
+    from sitekpi.views.board import _rail_nav_html, render_sample_dense
 
     errors: list[str] = []
 
@@ -94,13 +94,13 @@ def main() -> int:
                 errors.append(f"render {slug}/{locale}: missing pack-cat nav")
 
     # Soft reminder: rail CSS still duplicated (do not fail until extracted)
-    sample_css = (ROOT / "sample_dense.py").read_text(encoding="utf-8")
-    settings_css = (ROOT / "settings_page.py").read_text(encoding="utf-8")
+    sample_css = (ROOT / "sitekpi/views/board.py").read_text(encoding="utf-8")
+    settings_css = (ROOT / "sitekpi/views/settings.py").read_text(encoding="utf-8")
     marker = ".rail .pack-cat summary"
     if marker in sample_css and marker in settings_css:
         print(
             "note: rail pack-cat CSS is still duplicated in "
-            "sample_dense.py and settings_page.py — keep them in sync "
+            "sitekpi/views/board.py and sitekpi/views/settings.py — keep them in sync "
             "or extract a shared helper."
         )
 

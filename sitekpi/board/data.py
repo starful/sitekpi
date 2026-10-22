@@ -4,16 +4,16 @@ from __future__ import annotations
 
 from typing import Any
 
-from i18n import normalize_locale
-from i18n.metric_l10n import (
+from sitekpi.i18n import normalize_locale
+from sitekpi.i18n.metric_l10n import (
     board_tmpl,
     help_dict,
     shared_help,
     shared_label,
     tmpl,
 )
-from i18n.pack_l10n import pack_biz_rows, pack_notes, pack_text
-from packs import PACK_COPY
+from sitekpi.i18n.pack_l10n import pack_biz_rows, pack_notes, pack_text
+from sitekpi.packs import PACK_COPY
 
 CHANNEL_COLORS: dict[str, str] = {
     "Organic Search": "#2f6fed",
@@ -64,14 +64,6 @@ def _mmss_to_seconds(raw: Any) -> float | None:
     if len(nums) == 3:
         return float(nums[0] * 3600 + nums[1] * 60 + nums[2])
     return None
-
-
-def _fmt_delta_pt(v: float) -> tuple[str, str]:
-    sign = "+" if v > 0 else ""
-    # Unicode minus for display consistency
-    body = f"{sign}{v:.1f}pt".replace("+-", "−").replace("-", "−")
-    tone = "up" if v >= 0 else "down"
-    return body, tone
 
 
 def _benches_for_sample(raw: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -488,7 +480,7 @@ def build_dense_board(
             }
         )
 
-    from i18n.metric_l10n import HELP_TMPL
+    from sitekpi.i18n.metric_l10n import HELP_TMPL
 
     def _flat(key: str) -> str:
         row = HELP_TMPL.get(key) or {}

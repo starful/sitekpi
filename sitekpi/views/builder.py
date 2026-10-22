@@ -6,8 +6,8 @@ import json
 from html import escape
 from typing import Any
 
-from branding import brand_head_links, brand_logo_css, brand_logo_html
-from i18n import html_lang, normalize_locale, t
+from sitekpi.views.branding import brand_head_links, brand_logo_css, brand_logo_html
+from sitekpi.i18n import html_lang, normalize_locale, t
 
 # Sample values are demo-only; real wiring comes later.
 WIDGETS: list[dict[str, Any]] = [

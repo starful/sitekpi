@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from html import escape
 
-from branding import brand_head_links, brand_logo_css, brand_logo_html
-from i18n import html_lang, locale_options, normalize_locale, t
-from sample_dense import _rail_nav_html
+from sitekpi.views.branding import brand_head_links, brand_logo_css, brand_logo_html
+from sitekpi.i18n import html_lang, locale_options, normalize_locale, t
+from sitekpi.views.board import _rail_nav_html
 
 
 def render_settings_page(

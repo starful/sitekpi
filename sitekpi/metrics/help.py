@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
 
 PERIODS: dict[str, str] = {'7d': '直近7日', '28d': '直近28日'}
 

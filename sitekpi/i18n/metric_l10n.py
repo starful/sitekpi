@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from i18n import normalize_locale
+from sitekpi.i18n import normalize_locale
 
 # Shared spoken labels (audience / engage / summary commons)
 SHARED_LABELS: dict[str, dict[str, str]] = {

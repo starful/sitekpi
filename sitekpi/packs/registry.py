@@ -39,7 +39,7 @@ PACK_MODULES: list[str] = [
 
 
 def _load_pack(slug: str) -> dict[str, Any]:
-    mod = import_module(f"packs.{slug}")
+    mod = import_module(f"sitekpi.packs.{slug}")
     pack = getattr(mod, "PACK")
     if not isinstance(pack, dict):
         raise TypeError(f"packs.{slug}.PACK must be a dict")
@@ -95,7 +95,7 @@ def pack_links() -> list[tuple[str, str, str]]:
 
 def packs_by_category() -> list[tuple[str, str, list[tuple[str, str, str]]]]:
     """Return [(category_id, category_label, [(slug, label, hint), ...]), ...] ordered."""
-    from packs.catalog import CATEGORIES
+    from sitekpi.packs.catalog import CATEGORIES
 
     buckets: dict[str, list[tuple[str, str, str]]] = {}
     for slug, meta in INDUSTRIES.items():

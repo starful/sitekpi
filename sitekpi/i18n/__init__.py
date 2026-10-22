@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, MutableMapping
 
-from i18n.strings import LOCALES, UI
+from sitekpi.i18n.strings import LOCALES, UI
 
 DEFAULT_LOCALE = "ja"
 SESSION_KEY = "locale"
