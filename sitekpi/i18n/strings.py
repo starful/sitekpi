@@ -138,6 +138,80 @@ UI: dict[str, dict[str, str]] = {
     "panel.channels": {"ja": "流入チャネル", "en": "Channels", "ko": "유입 채널"},
     "panel.engage": {"ja": "エンゲージ", "en": "Engagement", "ko": "참여"},
     "panel.funnel": {"ja": "転換ファネル", "en": "Conversion funnel", "ko": "전환 퍼널"},
+    # 判定チップ (vs 業界目安)
+    "judge.up": {"ja": "良好", "en": "Good", "ko": "좋음"},
+    "judge.mid": {"ja": "目安内", "en": "On par", "ko": "보통"},
+    "judge.down": {"ja": "要注意", "en": "Watch", "ko": "주의"},
+    # 業務KPI (unlinked)
+    "biz.collapsed": {
+        "ja": "業務データ未連携（{n}指標）",
+        "en": "Business data not linked ({n} metrics)",
+        "ko": "업무 데이터 미연결({n}개 지표)",
+    },
+    "biz.collapsed_hint": {
+        "ja": "注文・売上・会員など社内DBの数字はまだ接続されていません。GA4 の数字だけで判断できる指標を上に並べています。",
+        "en": "Orders, revenue and members from your own database aren't connected yet. The board above uses GA4 numbers only.",
+        "ko": "주문·매출·회원 등 사내 DB 수치는 아직 연결되지 않았습니다. 위 보드는 GA4 수치만으로 판단합니다.",
+    },
+    "biz.show": {"ja": "対象の指標を見る", "en": "Show these metrics", "ko": "해당 지표 보기"},
+    # 流入チャネル grouping
+    "channels.other": {"ja": "その他（{n}チャネル）", "en": "Others ({n} channels)", "ko": "기타({n}개 채널)"},
+    "channels.other_meaning": {
+        "ja": "上位5チャネル以外をまとめた構成比です: {names}",
+        "en": "Combined share of channels outside the top 5: {names}",
+        "ko": "상위 5개 외 채널을 합친 구성비입니다: {names}",
+    },
+    "channels.other_formula": {
+        "ja": "上記チャネルのセッション構成比の合計",
+        "en": "Sum of the session share of the channels above",
+        "ko": "위 채널들의 세션 구성비 합계",
+    },
+    "channels.other_tip": {
+        "ja": "個別の数字は「詳細」表示の各チャネルではなく GA4 の集客レポートで確認できます。",
+        "en": "See GA4's acquisition report for each of these channels.",
+        "ko": "개별 수치는 GA4 획득 보고서에서 확인할 수 있습니다.",
+    },
+    # かんたん / 詳細
+    "mode.simple": {"ja": "かんたん", "en": "Simple", "ko": "간단히"},
+    "mode.detail": {"ja": "詳細", "en": "Detailed", "ko": "자세히"},
+    "mode.aria": {"ja": "表示モード", "en": "View mode", "ko": "보기 모드"},
+    "mode.show_detail": {
+        "ja": "すべての指標を見る（詳細表示へ）",
+        "en": "See every metric (switch to Detailed)",
+        "ko": "모든 지표 보기(자세히 보기로)",
+    },
+    # 今見るべきこと
+    "watch.title": {"ja": "今見るべきこと", "en": "What to look at now", "ko": "지금 봐야 할 것"},
+    "watch.sub": {
+        "ja": "業界目安から外れている指標を、外れ幅の大きい順に最大3つ",
+        "en": "Up to 3 metrics furthest outside the industry standard",
+        "ko": "업계 기준에서 가장 많이 벗어난 지표 최대 3개",
+    },
+    "watch.bad": {"ja": "{label}が目安より{dir}", "en": "{label} is {dir} than the standard", "ko": "{label}이(가) 기준보다 {dir}"},
+    "watch.good": {"ja": "{label}は目安より良好", "en": "{label} is better than the standard", "ko": "{label}은(는) 기준보다 좋음"},
+    "watch.dir_high": {"ja": "高い", "en": "higher", "ko": "높음"},
+    "watch.dir_low": {"ja": "低い", "en": "lower", "ko": "낮음"},
+    "watch.numbers": {
+        "ja": "いま {value} · 目安 {avg}（{band}）· 差 {gap}",
+        "en": "Now {value} · standard {avg} ({band}) · gap {gap}",
+        "ko": "현재 {value} · 기준 {avg}({band}) · 차이 {gap}",
+    },
+    "watch.tip": {"ja": "見るポイント", "en": "Where to look", "ko": "확인할 점"},
+    "watch.keep": {
+        "ja": "今の打ち手を続けつつ、他の指標を下げていないか確認します。",
+        "en": "Keep what works, and check it isn't pulling other metrics down.",
+        "ko": "지금 방식을 유지하면서 다른 지표를 끌어내리지 않는지 확인합니다.",
+    },
+    "watch.none": {
+        "ja": "業界目安から大きく外れている指標はありません。",
+        "en": "No metric is far outside its industry standard.",
+        "ko": "업계 기준에서 크게 벗어난 지표가 없습니다.",
+    },
+    "watch.sample": {
+        "ja": "見本データでの例です。GA4 を接続すると自分のサイトで判定します。",
+        "en": "Example using sample data. Connect GA4 to judge your own site.",
+        "ko": "샘플 데이터 예시입니다. GA4를 연결하면 내 사이트로 판정합니다.",
+    },
     "panel.events": {"ja": "イベント", "en": "Events", "ko": "이벤트"},
     "events.missing": {"ja": "未計測（0件）:", "en": "Not tracked (0):", "ko": "미측정(0건):"},
     "events.missing_hint": {

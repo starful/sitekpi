@@ -67,3 +67,31 @@ document.querySelectorAll(".view-btn[data-section]").forEach((btn) => {
     setSectionView(btn.dataset.section, btn.dataset.mode);
   });
 });
+
+/* かんたん / 詳細 */
+(function () {
+  const KEY = "sitekpi.board.mode";
+  const root = document.documentElement;
+  function apply(mode, save) {
+    root.setAttribute("data-board-mode", mode);
+    document.querySelectorAll(".mode-btn[data-board-mode]").forEach((b) => {
+      const on = b.dataset.boardMode === mode;
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    if (save) {
+      try { localStorage.setItem(KEY, mode); } catch (e) { /* ignore */ }
+    }
+  }
+  apply(root.getAttribute("data-board-mode") || "detail", false);
+  document.querySelectorAll("[data-board-mode]").forEach((el) => {
+    if (el === root) return;
+    el.addEventListener("click", () => {
+      apply(el.dataset.boardMode, true);
+      if (el.classList.contains("simple-more-btn")) {
+        const target = document.querySelector(".detail-only");
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
+})();

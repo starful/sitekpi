@@ -79,3 +79,9 @@ def test_live_deltas_are_real(live_client):
     assert delta("page_view") == "-10%"
     assert delta("session_start") == "+0%"
     assert delta("scroll") == "—"  # no previous-period data
+
+
+def test_live_board_has_watch_without_sample_note(live_client):
+    html = live_client.get("/live").text
+    assert 'class="watch"' in html
+    assert "watch-sample" not in html

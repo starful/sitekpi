@@ -278,6 +278,12 @@ def _gap_bar(info: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+def _judge(info: dict[str, Any] | None) -> str:
+    """'up' (better than the band) / 'mid' (inside) / 'down' (worse) — '' when no 目安."""
+    tone = str((info or {}).get("tone") or "")
+    return tone if tone in ("up", "mid", "down") else ""
+
+
 def _bench_block(info: dict[str, Any] | None, locale: str, *, gap_bar: bool = False) -> dict[str, Any]:
     """業界目安 + 目安差 slot (always reserved, '—' when there is no standard)."""
     empty = info is None
@@ -289,7 +295,7 @@ def _bench_block(info: dict[str, Any] | None, locale: str, *, gap_bar: bool = Fa
         "band": b.get("band") or "",
         "tone": b["tone"],
         "gap": b["gap"],
-        "arrow": b["arrow"],
+        "judge": _judge(None if empty else info),
         "gapbar": _gap_bar(None if empty else info) if gap_bar else None,
     }
 
@@ -304,7 +310,7 @@ def _bench_cells(info: dict[str, Any] | None) -> dict[str, Any]:
         "band": info.get("band") or "",
         "tone": info["tone"],
         "gap": info["gap"],
-        "arrow": info["arrow"],
+        "judge": _judge(info),
     }
 
 
@@ -313,7 +319,8 @@ def _metric_row(r: dict[str, Any], locale: str) -> dict[str, Any]:
     return {
         "id": r["id"],
         "label": r["label"],
-        "value": r["value"],
+        # "59.6% / 40.4%" may wrap after the slash, never leave "/" alone on a line
+        "value": str(r["value"]).replace(" / ", "\u00a0/ "),
         "focus": bool(r.get("focus")),
         "cells": _bench_cells(info),
         "block": _bench_block(info, locale),
@@ -472,6 +479,81 @@ def _metric_panel(
     }
 
 
+CHANNEL_TOP_N = 5
+OTHER_COLOR = "#94a3b8"
+
+
+def _group_channels(channels: list[dict[str, Any]], locale: str) -> list[dict[str, Any]]:
+    """Top 5 channels by share + one 'その他（n）' row, so beginners scan 6 rows, not 10+."""
+    if len(channels) <= CHANNEL_TOP_N + 1:
+        return channels
+    ranked = sorted(channels, key=lambda c: -int(c.get("pct") or 0))
+    top, rest = ranked[:CHANNEL_TOP_N], ranked[CHANNEL_TOP_N:]
+    names = ", ".join(str(c["name"]) for c in rest)
+    label = t("channels.other", locale, n=len(rest))
+    other = {
+        "id": "ch_others",
+        "name": label,
+        "pct": sum(int(c.get("pct") or 0) for c in rest),
+        "color": OTHER_COLOR,
+        "help": {
+            "title": label,
+            "kind": "traffic",
+            "meaning": t("channels.other_meaning", locale, names=names),
+            "formula": t("channels.other_formula", locale),
+            "tip": t("channels.other_tip", locale),
+        },
+    }
+    return top + [other]
+
+
+# --- 今見るべきこと (rule-based until step 10) -------------------------------
+
+WATCH_MAX = 3
+
+
+def _watch_items(board: dict[str, Any], locale: str) -> list[dict[str, Any]]:
+    """Metrics furthest outside their 業界目安: worse ones first, then better ones."""
+    seen: set[str] = set()
+    scored: list[tuple[int, float, dict[str, Any]]] = []
+    for r in board["summary"] + board["funnel"] + board["engage"] + board["audience"]:
+        key = str(r.get("bench") or "")
+        if not key or key in seen:
+            continue
+        info = _bench_info(r.get("value_num"), key)
+        if not info or info.get("value") is None or info["tone"] not in ("up", "down"):
+            continue
+        seen.add(key)
+        v, low, high = float(info["value"]), float(info["low"]), float(info["high"])
+        outside = (low - v) if v < low else (v - high)
+        severity = outside / max(high - low, 1e-9)
+        bad = info["tone"] == "down"
+        if bad:
+            title = t("watch.bad", locale, label=r["label"],
+                      dir=t("watch.dir_high" if v > high else "watch.dir_low", locale))
+            tip = str((r.get("help") or {}).get("tip") or "")
+        else:
+            title = t("watch.good", locale, label=r["label"])
+            tip = t("watch.keep", locale)
+        scored.append(
+            (
+                0 if bad else 1,
+                -severity,
+                {
+                    "id": r["id"],
+                    "label": r["label"],
+                    "tone": info["tone"],
+                    "title": title,
+                    "numbers": t("watch.numbers", locale, value=r["value"], avg=info["avg"],
+                                 band=info["band"], gap=info["gap"]),
+                    "tip": tip,
+                },
+            )
+        )
+    scored.sort(key=lambda x: (x[0], x[1]))
+    return [item for _, _, item in scored[:WATCH_MAX]]
+
+
 def _dialog(item: dict[str, Any], locale: str) -> dict[str, str]:
     h = item["help"]
     return {
@@ -547,8 +629,14 @@ def _render_sample_dense(
         else f"SiteKPI · {industry_label}{t('sample_title_suffix', loc)}"
     )
 
+    # かんたん: keep the focus KPIs + those with a 目安, max 4 cards
+    simple_ids: list[str] = []
+    for k in sorted(board["summary"], key=lambda k: (not k.get("focus"), not k.get("bench"))):
+        if len(simple_ids) < 4:
+            simple_ids.append(k["id"])
     summary = [
         {
+            "simple": k["id"] in simple_ids,
             "id": k["id"],
             "label": k["label"],
             "value": k["value"],
@@ -613,9 +701,10 @@ def _render_sample_dense(
             }
         )
 
+    channels = _group_channels(board["channels"], loc)
     help_items = (
         board["summary"] + board["funnel"] + board["engage"] + board["audience"]
-        + board["events"] + board["channels"] + board["business"]
+        + board["events"] + channels + board["business"]
     )
 
     return render(
@@ -633,10 +722,13 @@ def _render_sample_dense(
         summary=summary,
         next_watch=board["next_watch"],
         panels=panels,
-        channels=board["channels"],
-        channels_stack=[c for c in board["channels"] if c.get("pct")],
+        channels=channels,
+        channels_stack=[c for c in channels if c.get("pct")],
         events=events,
         business=business,
+        business_unlinked=bool(business) and not any(b["linked"] for b in business),
+        watch=_watch_items(board, loc),
+        is_sample=is_sample,
         dialogs=[_dialog(item, loc) for item in help_items],
         board_data={
             "close": t("close", loc),

@@ -3,6 +3,7 @@
 {% block title %}{{ page_title }}{% endblock %}
 {% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
 {% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" />{% endblock %}
+{% block head_scripts %}<script src="{{ static_url('js/board-mode.js') }}"></script>{% endblock %}
 {% block main %}
       <header class="top">
         <div>
@@ -10,6 +11,10 @@
           <div class="meta">{{ pack_meta }}</div>
         </div>
         <div class="top-right">
+          <div class="mode-toggle" role="group" aria-label="{{ t('mode.aria', loc) }}">
+            <button type="button" class="mode-btn" data-board-mode="simple">{{ t("mode.simple", loc) }}</button>
+            <button type="button" class="mode-btn" data-board-mode="detail">{{ t("mode.detail", loc) }}</button>
+          </div>
           <label class="period">
             <span class="sr-only">{{ t("period.label", loc) }}</span>
             <select disabled aria-label="{{ t('period.label', loc) }}">
@@ -20,10 +25,10 @@
         </div>
       </header>
       <div class="content">
-        <div class="focus-banner" role="status">{{ focus_line }}</div>
+        <div class="focus-banner detail-only" role="status">{{ focus_line }}</div>
         <section class="summary" aria-label="{{ t('summary_aria', loc) }}">
           {% for k in summary %}
-          <div class="sum-item{{ ' is-focus' if k.focus else '' }}">
+          <div class="sum-item{{ ' is-focus' if k.focus else '' }}{{ '' if k.simple else ' simple-hide' }}">
             <div class="sum-head">
               {{ m.help_btn(k.id, k.label) }}
               <div class="sum-label" title="{{ k.label }}">{{ k.label }}</div>
@@ -36,6 +41,32 @@
           {% endfor %}
         </section>
 
+        <section class="watch" aria-label="{{ t('watch.title', loc) }}">
+          <div class="watch-head">
+            <h2>{{ t("watch.title", loc) }}</h2>
+            <span class="sub">{{ t("watch.sub", loc) }}</span>
+          </div>
+          {% if watch %}
+          <ol class="watch-list">
+            {% for w in watch %}
+            <li class="watch-item tone-{{ w.tone }}">
+              <div class="watch-title">{{ m.help_btn(w.id, w.label) }}<strong>{{ w.title }}</strong>{{ m.judge_chip(w.tone) }}</div>
+              <p class="watch-numbers">{{ w.numbers }}</p>
+              <p class="watch-tip"><span>{{ t("watch.tip", loc) }}</span>{{ w.tip }}</p>
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p class="watch-none">{{ t("watch.none", loc) }}</p>
+          {% endif %}
+          {% if is_sample %}<p class="watch-sample">{{ t("watch.sample", loc) }}</p>{% endif %}
+        </section>
+
+        <div class="simple-more simple-only">
+          <button type="button" class="simple-more-btn" data-board-mode="detail">{{ t("mode.show_detail", loc) }}</button>
+        </div>
+
+        <div class="detail-only">
         <section class="insights" aria-label="{{ t('next_watch', loc) }}">
           <h2>{{ t("next_watch", loc) }}</h2>
           <ol>
@@ -184,8 +215,20 @@
                 <h2>{{ t("panel.biz", loc) }}</h2>
                 <span class="sub">{{ t("panel.biz_sub", loc) }}</span>
               </div>
-              {{ m.view_switch("biz", ["list", "card"]) }}
+              {% if not business_unlinked %}{{ m.view_switch("biz", ["list", "card"]) }}{% endif %}
             </div>
+            {% if business_unlinked %}
+            <div class="biz-collapsed">
+              <p class="biz-collapsed-title">{{ t("biz.collapsed", loc, n=business|length) }}</p>
+              <p class="biz-collapsed-hint">{{ t("biz.collapsed_hint", loc) }}</p>
+              <details class="biz-collapsed-list">
+                <summary>{{ t("biz.show", loc) }}</summary>
+                <ul>
+                  {% for b in business %}<li>{{ m.help_btn(b.id, b.label) }}<span>{{ b.label }}</span></li>{% endfor %}
+                </ul>
+              </details>
+            </div>
+            {% else %}
             <div class="panel-body" data-section-body="biz" data-view-mode="list">
               <div class="mode-pane mode-list">
                 {% call m.dense_table() %}
@@ -214,8 +257,10 @@
                 {% endfor %}
               </div>
             </div>
+            {% endif %}
           </section>
         </div>
+        </div>{# /.detail-only #}
       </div>
 {% endblock %}
 {% block after_shell %}
