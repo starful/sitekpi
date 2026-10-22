@@ -1,4 +1,4 @@
-"""目安の調整 bottom sheet (on the board) — view model."""
+"""業界目安 popovers (on the board) — view model."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def metric_labels(pack: str, locale: str) -> dict[str, str]:
     return labels
 
 
-def sheet_context(
+def bench_context(
     *,
     pack: str,
     board: str,

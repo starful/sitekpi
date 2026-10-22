@@ -10,7 +10,7 @@
           <div class="meta">{{ pack_meta }}</div>
         </div>
         <div class="top-right">
-          {% if bench_sheet %}<button type="button" class="adjust-link" data-bench-open="">{{ t("bench_adjust", loc) }}</button>{% endif %}
+          {% if bench %}<button type="button" class="adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}
           <label class="period">
             <span class="sr-only">{{ t("period.label", loc) }}</span>
             <select disabled aria-label="{{ t('period.label', loc) }}">
@@ -242,10 +242,12 @@
       </div>
 {% endblock %}
 {% block after_shell %}
-  {% if bench_sheet %}{% include "board/bench_sheet.html" %}{% endif %}
+  {% if bench %}{% include "board/bench_pops.html" %}{% endif %}
+  <div class="pop" id="pop" role="dialog" aria-modal="false" hidden></div>
   {% for d in dialogs %}{{ m.help_dialog(d) }}{% endfor %}
 {% endblock %}
 {% block scripts %}
   <script type="application/json" id="board-data">{{ board_data|tojson }}</script>
+  <script src="{{ static_url('js/popover.js') }}" defer></script>
   <script src="{{ static_url('js/board.js') }}" defer></script>
 {% endblock %}

@@ -1,4 +1,4 @@
-"""自社目安 — save / reset from the board's bottom sheet (JSON for fetch, redirect otherwise)."""
+"""自社目安 — save / reset from the board's popover (JSON for fetch, redirect otherwise)."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def _wants_json(request: Request) -> bool:
 
 @router.get("/benchmarks")
 def benchmarks_legacy(pack: str = Query(default=""), board: str = Query(default="sample")):
-    """The page became a sheet on the board — send old links there."""
+    """The page became a popover on the board — send old links there."""
     if pack not in INDUSTRIES:
         pack = "hr"
     return RedirectResponse(_board_url(pack, board) + "#bench", status_code=302)

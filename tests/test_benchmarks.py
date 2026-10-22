@@ -1,4 +1,4 @@
-"""自社目安 via the board's bottom sheet: edit / validate / reset, scoped per property or browser."""
+"""自社目安 via popovers anchored on the board's values: edit / validate / reset, scoped per property or browser."""
 
 from __future__ import annotations
 
@@ -24,8 +24,17 @@ def _form(pack: str, board: str = "sample", **ranges: tuple[str, str]) -> dict[s
     return data
 
 
-def _sheet(html: str):
-    return BeautifulSoup(html, "html.parser").select_one("dialog#bench-sheet")
+def _pops(html: str):
+    """All benchmark popover templates (per metric + list) as one soup.
+    (bs4 hides <template> text from get_text, so they are re-read as <section>s.)"""
+    soup = BeautifulSoup(html, "html.parser")
+    assert soup.select_one("#pop[hidden]") is not None
+    raw = "".join(str(t) for t in soup.select("template[id^=pop-bench-]"))
+    return BeautifulSoup(raw.replace("<template", "<section").replace("</template>", "</section>"), "html.parser")
+
+
+def _pop(html: str, key: str):
+    return _pops(html).select_one(f"section#pop-bench-{key}")
 
 
 def _funnel_row(html: str, label: str):
@@ -35,17 +44,23 @@ def _funnel_row(html: str, label: str):
     raise AssertionError(label)
 
 
-def test_board_has_sheet_and_every_benchmark_value_opens_it():
+def test_every_benchmark_value_opens_its_own_popover():
     html = _client().get("/hr").text
-    sheet = _sheet(html)
-    assert sheet is not None and sheet.select_one("form[action='/benchmarks']")
-    keys = {li["data-bench-row"] for li in sheet.select("[data-bench-row]")}
+    pops = _pops(html)
+    keys = {t["id"].removeprefix("pop-bench-") for t in pops.select("section")} - {"all"}
     assert keys == set(BENCHMARKS["hr"])
+    for k in keys:
+        form = _pop(html, k).select_one("form[action='/benchmarks'][data-bench-form]")
+        assert form.select_one(f"input[name=low_{k}]") and form.select_one(f"input[name=high_{k}]")
+        assert not form.select(f"input[name^=low_]:not([name=low_{k}])")  # only its own metric
     s = BeautifulSoup(html, "html.parser")
-    openers = {b["data-bench-open"] for b in s.select("button.bench-open")}
+    openers = {b["data-pop-open"].removeprefix("bench-") for b in s.select("button.bench-open")}
     assert openers and openers <= keys
-    assert s.select_one("button.adjust-link[data-bench-open='']")
+    assert s.select_one("button.adjust-link[data-pop-open='bench-all']")
+    rows = {b["data-pop-open"].removeprefix("bench-") for b in _pop(html, "all").select(".pop-row")}
+    assert rows == keys
     assert 'href="/benchmarks"' not in html  # no separate page / rail item
+    assert "bench-sheet" not in html
 
 
 def test_save_applies_to_board_watch_and_tooltip():
@@ -58,9 +73,9 @@ def test_save_applies_to_board_watch_and_tooltip():
     assert "35%" in row.get_text() and "自社" in row.get_text()
     assert "自社目安" in row.select_one("td.bench-cell")["title"]
     assert "開始→完了率が目安より低い" not in html
-    sheet = _sheet(html)
-    assert "is-custom" in sheet.select_one("[data-bench-row=pay_cvr]")["class"]
-    assert sheet.select_one("#low_pay_cvr")["value"] == "30"
+    assert _pop(html, "pay_cvr").select_one("#pop-low-pay_cvr")["value"] == "30"
+    assert _pop(html, "pay_cvr").select_one("[data-bench-reset=pay_cvr]")
+    assert "is-custom" in _pop(html, "all").select_one("[data-pop-open=bench-pay_cvr]")["class"]
 
 
 def test_no_js_post_redirects_back_to_board():
@@ -86,10 +101,10 @@ def test_reset_one_and_all():
     c = _client()
     c.post("/benchmarks", headers=JSON, data=_form("hr", pay_cvr=("30", "40"), engaged_rate=("40", "50")))
     c.post("/benchmarks/reset", headers=JSON, data={"pack": "hr", "board": "sample", "metric": "pay_cvr"})
-    custom = [li["data-bench-row"] for li in _sheet(c.get("/hr").text).select(".sheet-row.is-custom")]
-    assert custom == ["engaged_rate"]
+    custom = [b["data-pop-open"] for b in _pop(c.get("/hr").text, "all").select(".pop-row.is-custom")]
+    assert custom == ["bench-engaged_rate"]
     c.post("/benchmarks/reset", headers=JSON, data={"pack": "hr", "board": "sample", "metric": ""})
-    assert not _sheet(c.get("/hr").text).select(".sheet-row.is-custom")
+    assert not _pop(c.get("/hr").text, "all").select(".pop-row.is-custom")
 
 
 def test_sample_targets_are_per_browser():
@@ -146,16 +161,20 @@ def connected(monkeypatch):
 
 def test_live_targets_are_shared_per_property_and_separate_from_samples(connected):
     a, b = connected(), connected()
-    live_sheet = _sheet(a.get("/live").text)
-    assert "接続中のプロパティ「Shop」" in live_sheet.get_text()
-    assert live_sheet.select_one("input[name=board]")["value"] == "live"
+    live = a.get("/live").text
+    assert "接続中のプロパティ「Shop」" in _pop(live, "all").get_text()
+    assert _pop(live, "engaged_rate").select_one("input[name=board]")["value"] == "live"
     r = a.post("/benchmarks", headers=JSON, data=_form("hr", board="live", engaged_rate=("20", "30")))
     assert r.json()["ok"]
-    assert _sheet(b.get("/live").text).select_one("#low_engaged_rate")["value"] == "20"
-    assert _sheet(a.get("/hr").text).select_one("#low_engaged_rate")["value"] != "20"
+    assert _pop(b.get("/live").text, "engaged_rate").select_one("#pop-low-engaged_rate")["value"] == "20"
+    assert _pop(a.get("/hr").text, "engaged_rate").select_one("#pop-low-engaged_rate")["value"] != "20"
 
 
-def test_default_source_label_is_shown():
-    html = _client().get("/hr").text
-    sheet = _sheet(html)
-    assert "SiteKPI 初期値" in sheet.get_text() or sheet.select("a[href^='http']")
+def test_source_is_a_button_not_a_full_url():
+    html = _client().get("/ec").text
+    cited = _pop(html, "engaged_rate").select_one("a.src-btn")
+    assert cited and cited.get_text(strip=True) == "出典" and cited["href"].startswith("https://")
+    assert cited["target"] == "_blank" and "noopener" in cited["rel"]
+    assert cited["title"]  # publisher name on hover, not printed
+    provisional = [t for t in _pops(html).select("section") if t.select_one(".src-none")]
+    assert provisional and "SiteKPI 初期値" in provisional[0].get_text()

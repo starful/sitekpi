@@ -1,0 +1,78 @@
+{#- 業界目安: one small popover per metric (opened next to the clicked value) + a list for the header button.
+    Rendered as <template>s; static/js/popover.js clones them into #pop. Context: bench -#}
+{% set bc = bench %}
+{% for g in bc.groups %}{% for r in g.rows %}
+<template id="pop-bench-{{ r.key }}">
+  <form method="post" action="/benchmarks" class="pop-form" data-bench-form novalidate>
+    <input type="hidden" name="pack" value="{{ bc.pack }}" />
+    <input type="hidden" name="board" value="{{ bc.board }}" />
+    <div class="pop-head">
+      <div>
+        <strong>{{ r.label }}</strong>
+        <span class="pop-sub">{{ t("bench_custom" if r.custom else "bench", loc) }} · {{ t("bench_edit.higher" if r.higher else "bench_edit.lower", loc) }}</span>
+      </div>
+      <button type="button" class="pop-close" data-pop-close aria-label="{{ t('close', loc) }}">×</button>
+    </div>
+    <div class="pop-inputs">
+      <label class="visually-hidden" for="pop-low-{{ r.key }}">{{ r.label }} {{ t("bench_edit.low", loc) }}</label>
+      <input id="pop-low-{{ r.key }}" name="low_{{ r.key }}" value="{{ r.low }}" inputmode="decimal" autocomplete="off" />
+      <span class="sep">〜</span>
+      <label class="visually-hidden" for="pop-high-{{ r.key }}">{{ r.label }} {{ t("bench_edit.high", loc) }}</label>
+      <input id="pop-high-{{ r.key }}" name="high_{{ r.key }}" value="{{ r.high }}" inputmode="decimal" autocomplete="off" />
+      <span class="unit">{{ r.unit }}</span>
+    </div>
+    <p class="pop-error" data-pop-error hidden></p>
+    <p class="pop-meta">
+      <span>{{ t("bench_edit.col.default", loc) }} {{ r.default }}</span>
+      {% if r.source.kind == "cited" and r.source.url %}
+      <a class="src-btn" href="{{ r.source.url }}" target="_blank" rel="noopener noreferrer" title="{{ r.source.label }}">{{ t("bench_src.button", loc) }}</a>
+      {% else %}
+      <span class="src-none">{{ t("bench_src.default_short", loc) }}</span>
+      {% endif %}
+    </p>
+    <div class="pop-actions">
+      {% if r.custom %}<button type="button" class="link" data-bench-reset="{{ r.key }}">{{ t("bench_edit.reset_one", loc) }}</button>{% endif %}
+      <button type="submit" class="primary">{{ t("bench_edit.save_short", loc) }}</button>
+    </div>
+  </form>
+</template>
+{% endfor %}{% endfor %}
+
+<template id="pop-bench-all">
+  <div class="pop-list">
+    <div class="pop-head">
+      <div>
+        <strong>{{ t("bench_edit.title", loc) }}</strong>
+        <span class="pop-sub">{{ t("bench_edit.scope_live_short" if bc.board == "live" else "bench_edit.scope_sample_short", loc, name=bc.property_name) }}</span>
+      </div>
+      <button type="button" class="pop-close" data-pop-close aria-label="{{ t('close', loc) }}">×</button>
+    </div>
+    <details class="pop-about">
+      <summary>{{ t("bench_edit.what_title", loc) }}</summary>
+      <p>{{ t("bench_edit.what_body", loc) }}</p>
+      <p>{{ t("bench_edit.source_body", loc) }}</p>
+    </details>
+    {% for g in bc.groups %}
+    <p class="pop-group">{{ g.title }}</p>
+    <ul>
+      {% for r in g.rows %}
+      <li>
+        <button type="button" class="pop-row{{ ' is-custom' if r.custom else '' }}" data-pop-open="bench-{{ r.key }}" data-pop-keep-anchor>
+          <span class="pop-row-name">{{ r.label }}</span>
+          <span class="pop-row-range">{{ r.low }}–{{ r.high }}{{ r.unit }}</span>
+          <span class="pop-row-src">{{ t("bench_src.custom", loc) if r.custom else (t("bench_src.cited_short", loc) if r.source.kind == "cited" else t("bench_src.default_short", loc)) }}</span>
+        </button>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endfor %}
+    <div class="pop-actions">
+      <form method="post" action="/benchmarks/reset" data-bench-reset-all>
+        <input type="hidden" name="pack" value="{{ bc.pack }}" />
+        <input type="hidden" name="board" value="{{ bc.board }}" />
+        <input type="hidden" name="metric" value="" />
+        <button type="submit" class="ghost">{{ t("bench_edit.reset_all", loc) }}</button>
+      </form>
+    </div>
+  </div>
+</template>

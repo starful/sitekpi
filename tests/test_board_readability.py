@@ -83,11 +83,12 @@ def test_localized(client, loc, text):
 def test_cited_benchmarks_link_their_source(client):
     html = client.get("/ec").text
     s = BeautifulSoup(html, "html.parser")
-    sheet = s.select_one("dialog#bench-sheet")
-    row = sheet.select_one("[data-bench-row=signup_to_pay]")
-    link = row.select_one("a[href='https://baymard.com/lists/cart-abandonment-rate']")
-    assert link and "70.22%" in link.get_text()
-    assert "SiteKPI 初期値" in sheet.select_one("[data-bench-row=pages_session]").get_text()
+    def pop(key):
+        raw = str(s.select_one(f"template#pop-bench-{key}"))
+        return BeautifulSoup(raw.replace("<template", "<section").replace("</template>", "</section>"), "html.parser")
+    link = pop("signup_to_pay").select_one("a.src-btn[href='https://baymard.com/lists/cart-abandonment-rate']")
+    assert link and "70.22%" in link["title"] and link.get_text(strip=True) == "出典"
+    assert "SiteKPI 初期値" in pop("pages_session").select_one(".src-none").get_text()
     cell = s.select_one("#panel-funnel td.bench-cell[title*='Baymard']")
     assert cell and cell.get_text() == "29.8%" and "±10pt" in cell["title"]
     assert cell["title"].startswith("業界目安帯 19.78–39.78%")

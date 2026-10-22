@@ -16,7 +16,7 @@ sitekpi/
   routes/pages.py          # /, /{slug}, /live, /builder, /settings
   routes/connect.py        # /connect* — OAuth (PKCE), property, 業界パック pick
   routes/nav.py            # rail context (connected property) for every page
-  routes/benchmarks.py     # POST /benchmarks(/reset) — 自社目安 from the board's bottom sheet
+  routes/benchmarks.py     # POST /benchmarks(/reset) — 自社目安 from the board's anchored popovers (static/js/popover.js)
   benchmarks.py            # pack defaults + overrides store (.data/app.sqlite3), scopes, validation
   ga4/oauth.py, ga4/data.py
   board/data.py            # build_dense_board: pack + data → board rows

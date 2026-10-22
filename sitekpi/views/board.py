@@ -622,7 +622,7 @@ def _render_sample_dense(
     connected: dict[str, str] | None = None,
     locale: str = "ja",
     board_kind: str = "sample",
-    bench_sheet: dict[str, Any] | None = None,
+    bench: dict[str, Any] | None = None,
 ) -> str:
     loc = normalize_locale(locale)
     if data is None or ind is None or benches_raw is None:
@@ -749,7 +749,7 @@ def _render_sample_dense(
         business_unlinked=bool(business) and not any(b["linked"] for b in business),
         watch=_watch_items(board, loc),
         is_sample=is_sample,
-        bench_sheet=bench_sheet,
+        bench=bench,
         dialogs=[_dialog(item, loc) for item in help_items],
         board_data={
             "close": t("close", loc),
