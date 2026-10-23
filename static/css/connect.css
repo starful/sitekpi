@@ -359,3 +359,100 @@ button.chip:hover, button.chip.is-selected { border-color: var(--accent); color:
 .tone-up { color: #047857; } .tone-down { color: #b45309; } .tone-ok { color: #475569; }
 button.chip small { font-weight: 800; margin-left: 2px; }
 .sample-group { margin: 22px 0 10px; font-size: 0.9rem; color: var(--muted); }
+
+/* ── サイトの設定 v2: calmer cards, shared start once, groups folded ── */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.setup h2.choice-group { margin: 0 0 8px; }
+.g-icon { flex: none; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; }
+.g-buy { background: #fff7ed; color: #c2410c; }
+.g-contact { background: #eef4ff; color: #1d4ed8; }
+.g-visit { background: #f0fdfa; color: #0f766e; }
+.g-member { background: #f5f3ff; color: #6d28d9; }
+.g-read { background: #fdf2f8; color: #be185d; }
+
+.flow-common {
+  margin: 0 0 18px; padding: 12px 14px; border-radius: 12px; background: #fff; border: 1px dashed #cbd5e1;
+}
+.flow-common p { margin: 0 0 8px; font-size: 0.78rem; font-weight: 800; color: var(--muted); }
+.flow-common p.flow-common-then { margin: 10px 0 0; font-weight: 600; }
+.mf-more { color: #94a3b8; font-weight: 800; font-size: 0.8rem; padding: 0 2px; }
+
+.choice-list { gap: 12px; }
+.flow-closest { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: #f3faf6; border: 1px solid #d1fae5; }
+button.choice.flow-choice { flex-direction: row; align-items: center; gap: 12px; padding: 12px 44px 12px 12px; }
+.choice-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+button.choice.is-rec { border-color: var(--line); }
+button.choice.is-selected { border: 2px solid var(--accent); background: #f5f8ff; padding-top: 11px; padding-bottom: 11px; }
+.choice-check {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--accent); color: #fff; font-size: 0.8rem; font-weight: 800;
+}
+
+.flow-group { border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.flow-group > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-radius: 14px;
+}
+.flow-group > summary::-webkit-details-marker { display: none; }
+.flow-group > summary::after { content: "›"; margin-left: auto; font-size: 1.3rem; color: #94a3b8; transition: transform 0.15s; }
+.flow-group[open] > summary::after { transform: rotate(90deg); }
+.flow-group > summary:hover { background: #f8fafc; }
+.fg-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fg-text strong { font-size: 0.95rem; }
+.fg-text small { font-size: 0.74rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fg-count { flex: none; font-size: 0.72rem; font-weight: 800; color: #475569; background: #f1f5f9; border-radius: 999px; padding: 2px 9px; }
+.fg-list { display: flex; flex-direction: column; gap: 8px; padding: 0 12px 12px; }
+.fg-list button.choice { border-color: #e8edf3; }
+.fg-list button.choice:hover { border-color: var(--accent); }
+
+/* ② industry */
+.setup-context { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.ctx-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px; background: #fff;
+  border: 1px solid var(--line); min-width: 0;
+}
+.ctx-item .g-icon { width: 30px; height: 30px; border-radius: 8px; }
+.ctx-item > span:not(.g-icon) { display: flex; flex-direction: column; min-width: 0; }
+.ctx-item small { font-size: 0.68rem; color: var(--muted); font-weight: 700; }
+.ctx-item strong { font-size: 0.9rem; }
+.ctx-item a { font-size: 0.78rem; font-weight: 700; color: var(--accent); text-decoration: none; margin-left: 4px; }
+.ctx-num strong { font-family: var(--font-num); font-size: 1.05rem; }
+.choice-grid { grid-auto-rows: 1fr; align-items: stretch; }
+button.choice.ind-choice { height: 100%; gap: 6px; padding: 14px 40px 14px 16px; }
+.ind-name { font-size: 1.02rem; }
+.ind-choice .choice-hint { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; }
+.ind-foot { margin-top: auto; padding-top: 8px; border-top: 1px solid #eef2f7; width: 100%; display: flex; flex-direction: column; gap: 3px; }
+.ind-choice .choice-compare { font-size: 0.74rem; color: #64748b; font-weight: 600; }
+.ind-choice .choice-compare b { color: #334155; font-family: var(--font-num); }
+.ind-choice .choice-compare em { font-size: 0.7rem; }
+.ind-choice .choice-meta { font-size: 0.7rem; color: #64748b; }
+.ind-choice.is-selected { padding: 13px 39px 13px 15px; }
+
+.wizard-foot {
+  margin-top: 22px; padding: 12px 0; border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(6px);
+}
+.wizard-foot .btn.ghost { padding: 9px 16px; font-weight: 700; }
+@media (max-width: 560px) {
+  button.choice.flow-choice { padding-right: 36px; gap: 10px; }
+  .g-icon { width: 30px; height: 30px; border-radius: 8px; }
+  .choice-grid { grid-auto-rows: auto; }
+  .flow-closest { padding: 8px; }
+}
+button.choice.flow-choice { justify-content: flex-start; }
+.choice-list, .flow-group, .flow-closest { min-width: 0; }
+.fg-text { flex: 1 1 0; }
+.flow-group > summary::after { margin-left: 0; }
+.choice-body { flex: 1 1 0; }
+button.choice { min-width: 0; }
+main.setup { min-width: 0; width: 100%; }
+.flow-group:not([open]) > .fg-list { display: none; }
+.fg-text small { white-space: normal; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.ind-choice .choice-compare { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; width: 100%; }
+.ind-choice .cc-val { white-space: nowrap; }
+.wizard-foot { background: var(--bg); backdrop-filter: none; }
+button.choice.ind-choice { padding: 14px 30px 14px 16px; }
+.ind-choice.is-selected { padding: 13px 29px 13px 15px; }
+.ind-choice .choice-go { right: 10px; }
+.ind-choice .choice-check { right: 8px; top: 12px; transform: none; }
+.ind-choice .choice-compare > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

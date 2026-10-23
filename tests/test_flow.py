@@ -231,9 +231,12 @@ def test_setup_is_three_short_steps(live):
     soup = _soup(c.get("/setup/flow").text)
     assert soup.select_one("h1").get_text() == "あなたのサイトに近い流れは？"
     first = soup.select("button.choice")[0]
-    assert first["value"] == "recruit" and "あなたのサイトに近い" in first.get_text()
-    assert [s["title"] for s in first.select(".mf-step.is-found")] == [
-        "session_start", "user_engagement", "view_search_results", "view_item", "form_start"]
+    assert first["value"] == "recruit" and first.find_parent("section", class_="flow-closest")
+    # the shared start is drawn once; cards only show what differs
+    assert [s["title"] for s in soup.select(".flow-common .mf-step[title]")] == ["session_start", "user_engagement"]
+    assert [s["title"] for s in first.select(".mf-step.is-found")] == ["view_search_results", "view_item", "form_start"]
+    assert len(first.select(".pack-hits, .pack-rec, .pack-now")) <= 1  # one badge at most
+    assert soup.select("details.flow-group") and not any(d.has_attr("open") for d in soup.select("details.flow-group"))
     names = [b.select_one("strong").get_text() for b in soup.select("button[name=behavior]")]
     assert len(set(names)) == 18 and "ブログ・記事を読んでもらう" in names
     assert c.get("/setup/adjust").headers["location"] == "/setup/flow"  # can't skip ahead
@@ -425,5 +428,8 @@ def test_industry_step_compares_the_site_with_each_industry(live, monkeypatch):
     c = live()
     c.post("/setup/flow", data={"behavior": "recruit"})
     soup = _soup(c.get("/setup/industry").text)
-    assert "48" in soup.select_one(".wizard-head, header, .lead, p").get_text() or "48%" in soup.get_text()
-    assert soup.select(".choice-compare")
+    assert "48.0%" in soup.select_one(".setup-context .ctx-num").get_text()  # your number, once
+    assert "人事・採用" in soup.select_one(".setup-context").get_text() or soup.select_one(".setup-context a[href='/setup/flow']")
+    card = soup.select_one(".choice-grid button")
+    assert "56.2%" in card.select_one(".choice-compare").get_text() and card.select_one(".ind-foot .choice-meta")
+    assert "パック" not in card.get_text()

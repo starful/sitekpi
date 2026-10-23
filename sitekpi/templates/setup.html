@@ -1,11 +1,20 @@
 {% extends "base.html" %}
 {% block title %}SiteKPI · {{ t("setup.title", loc) }}{% endblock %}
 {% block css %}<link rel="stylesheet" href="{{ static_url('css/connect.css') }}" />{% endblock %}
-{% macro mini_flow(steps) -%}
+{% macro mini_flow(steps, entry=true) -%}
 <span class="mini-flow" aria-label="{{ t('flow.title', loc) }}">
-  <span class="mf-step is-entry">{{ t("flow.entry", loc) }}</span>
+  {% if entry %}<span class="mf-step is-entry">{{ t("flow.entry", loc) }}</span>{% else %}<span class="mf-more" aria-hidden="true">…</span>{% endif %}
   {% for s in steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step{{ ' is-found' if s.found else (' is-missing' if s.found is false else '') }}" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
 </span>
+{%- endmacro %}
+{% macro group_icon(g) -%}
+<span class="g-icon g-{{ g }}" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+{%- if g == "buy" %}<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 8H6"/>
+{%- elif g == "contact" %}<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>
+{%- elif g == "visit" %}<rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/>
+{%- elif g == "member" %}<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
+{%- else %}<path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2Zm0 0a2 2 0 0 0 2 2h13"/>{% endif -%}
+</svg></span>
 {%- endmacro %}
 {% block main %}
   {% set order = ["flow", "industry", "adjust"] %}
@@ -24,42 +33,64 @@
     <h1>{{ t("setup.flow.q", loc) }}</h1>
     <p class="lead">{{ t("setup.flow.lead", loc) }}{% if knows_events %} <span class="legend"><i></i>{{ t("connect.pack.flow_found", loc) }}</span>{% endif %}</p>
     {% macro flow_choice(b) -%}
-    <button type="submit" name="behavior" value="{{ b.cat }}" class="choice{{ ' is-rec' if b.recommended else '' }}{{ ' is-selected' if b.selected else '' }}">
-      <span class="choice-top">
-        <strong>{{ b.label }}</strong>
-        {% if b.recommended %}<em class="pack-rec">{{ t("setup.flow.closest", loc) }}</em>{% endif %}
-        {% if knows_events and b.hits %}<em class="pack-hits">{{ t("connect.pack.hits", loc, n=b.hits, total=b.total) }}</em>{% endif %}
-        {% if b.selected %}<em class="pack-now">{{ t("setup.now", loc) }}</em>{% endif %}
+    <button type="submit" name="behavior" value="{{ b.cat }}" class="choice flow-choice{{ ' is-selected' if b.selected else '' }}"{% if b.selected %} aria-current="true"{% endif %}>
+      {{ group_icon(b.group) }}
+      <span class="choice-body">
+        <span class="choice-top">
+          <strong>{{ b.label }}</strong>
+          {% if knows_events and b.hits %}<em class="pack-hits">{{ t("connect.pack.hits", loc, n=b.hits, total=b.total) }}</em>{% endif %}
+        </span>
+        <span class="choice-hint">{{ b.hint }}</span>
+        {{ mini_flow(b.own, entry=false) }}
       </span>
-      <span class="choice-hint">{{ b.hint }}</span>
-      {{ mini_flow(b.steps) }}
-      <span class="choice-go" aria-hidden="true">›</span>
+      {% if b.selected %}<span class="choice-check" title="{{ t('setup.now', loc) }}"><span class="sr-only">{{ t("setup.now", loc) }}</span>✓</span>{% else %}<span class="choice-go" aria-hidden="true">›</span>{% endif %}
     </button>
     {%- endmacro %}
+    {% if options.common %}
+    <div class="flow-common">
+      <p>{{ t("setup.flow.common", loc) }}</p>
+      {{ mini_flow(options.common) }}
+      <p class="flow-common-then">{{ t("setup.flow.then", loc) }} ↓</p>
+    </div>
+    {% endif %}
     <form method="post" action="/setup/flow" class="choice-list">
       {% if options.closest %}
-      <p class="choice-group is-closest">{{ t("setup.flow.closest_group", loc) }}</p>
-      {% for b in options.closest %}{{ flow_choice(b) }}{% endfor %}
+      <section class="flow-closest">
+        <h2 class="choice-group is-closest">{{ t("setup.flow.closest_group", loc) }}</h2>
+        {% for b in options.closest %}{{ flow_choice(b) }}{% endfor %}
+      </section>
       {% endif %}
       {% for g in options.groups %}
-      <p class="choice-group">{{ g.label }}</p>
-      {% for b in g.options %}{{ flow_choice(b) }}{% endfor %}
+      <details class="flow-group"{% if g.open or not options.closest %} open{% endif %}>
+        <summary>
+          {{ group_icon(g.id) }}
+          <span class="fg-text"><strong>{{ g.label }}</strong><small>{% for b in g.options %}{{ b.label }}{{ "・" if not loop.last }}{% endfor %}</small></span>
+          <span class="fg-count">{{ t("setup.flow.n", loc, n=g.options | length) }}</span>
+        </summary>
+        <div class="fg-list">{% for b in g.options %}{{ flow_choice(b) }}{% endfor %}</div>
+      </details>
       {% endfor %}
     </form>
 
     {% elif step == "industry" %}
     <h1>{{ t("setup.industry.q", loc) }}</h1>
-    <p class="lead">{{ t("setup.industry.lead", loc, flow=behavior_label) }}{% if site %} {{ t("setup.industry.your_eng", loc, v=site.engaged_rate | round(1)) }}{% endif %}</p>
+    <p class="lead">{{ t("setup.industry.lead", loc, flow=behavior_label) }}</p>
+    <div class="setup-context">
+      <span class="ctx-item">{{ group_icon(behavior_group) }}<span><small>{{ t("setup.industry.chosen", loc) }}</small><strong>{{ behavior_label }}</strong></span><a href="/setup/flow">{{ t("setup.change", loc) }}</a></span>
+      {% if site and site.engaged_rate is not none %}<span class="ctx-item ctx-num"><span><small>{{ t("setup.industry.you", loc) }}</small><strong>{{ site.engaged_rate | round(1) }}%</strong></span></span>{% endif %}
+    </div>
     <form method="post" action="/setup/industry">
       {% if not industries.main %}<p class="note">{{ t("setup.industry.no_main", loc) }}</p>{% endif %}
       <div class="choice-grid">
         {% for i in industries.main %}
-        <button type="submit" name="industry" value="{{ i.slug }}" class="choice small{{ ' is-selected' if i.selected else '' }}">
-          <span class="choice-top"><strong>{{ i.label }}</strong>{% if i.selected %}<em class="pack-now">{{ t("setup.now", loc) }}</em>{% endif %}</span>
+        <button type="submit" name="industry" value="{{ i.slug }}" class="choice small ind-choice{{ ' is-selected' if i.selected else '' }}"{% if i.selected %} aria-current="true"{% endif %}>
+          <strong class="ind-name">{{ i.label }}</strong>
           <span class="choice-hint">{{ i.about or i.hint }}</span>
-          {% if i.compare %}<span class="choice-compare">{{ t("setup.industry.compare", loc) }} <b class="tone-{{ i.compare.tone }}">{{ i.compare.you }}</b> / {{ t("setup.industry.this", loc) }} {{ i.compare.std }} <em class="tone-{{ i.compare.tone }}">{{ i.compare.diff }}</em></span>{% endif %}
-          <span class="choice-meta">{{ t("setup.industry.cited", loc, n=i.cited) if i.cited else t("setup.industry.default", loc) }}</span>
-          <span class="choice-go" aria-hidden="true">›</span>
+          <span class="ind-foot">
+            {% if i.compare %}<span class="choice-compare"><span>{{ t("setup.industry.std", loc) }}</span><span class="cc-val"><b>{{ i.compare.std }}</b> <em class="tone-{{ i.compare.tone }}" title="{{ t('setup.industry.you', loc) }} {{ i.compare.you }}">{{ i.compare.diff }}</em></span></span>{% endif %}
+            <span class="choice-meta">{{ t("setup.industry.cited", loc, n=i.cited) if i.cited else t("setup.industry.default", loc) }}</span>
+          </span>
+          {% if i.selected %}<span class="choice-check" title="{{ t('setup.now', loc) }}"><span class="sr-only">{{ t("setup.now", loc) }}</span>✓</span>{% else %}<span class="choice-go" aria-hidden="true">›</span>{% endif %}
         </button>
         {% endfor %}
       </div>
@@ -70,13 +101,15 @@
         <p class="more-group">{{ g.label }}</p>
         <div class="chip-row">
           {% for i in g.packs %}
-          <button type="submit" name="industry" value="{{ i.slug }}" class="chip{{ ' is-selected' if i.selected else '' }}" title="{{ i.about }}">{{ i.label }}{% if i.compare %} <small class="tone-{{ i.compare.tone }}">{{ i.compare.diff }}</small>{% endif %}</button>
+          <button type="submit" name="industry" value="{{ i.slug }}" class="chip{{ ' is-selected' if i.selected else '' }}" title="{{ i.about }}">{{ i.label }}</button>
           {% endfor %}
         </div>
         {% endfor %}
       </details>
     </form>
-    <p class="back"><a href="/setup/flow">‹ {{ t("setup.back", loc) }}</a></p>
+    <div class="wizard-foot">
+      <a href="/setup/flow" class="btn ghost">‹ {{ t("setup.back", loc) }}</a>
+    </div>
 
     {% else %}
     <h1>{{ t("setup.adjust.q", loc) }}</h1>
