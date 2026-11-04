@@ -114,6 +114,8 @@ main.glossary {
   .gl-list { grid-template-columns: 1fr; }
 }
 .gl-card:not([open]) .gl-meaning {
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
+  height: calc(1.65em * 3);
 }
 .gl-card summary { min-height: 0; }

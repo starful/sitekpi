@@ -7,8 +7,10 @@ A site / business KPI board for marketing and growth teams: connect GA4 and read
 
 ## Run
 
+Login keeps it up (same idea as Starful HQ): LaunchAgent `com.starful.sitekpi` → http://127.0.0.1:8766. `./kpi-ctl.sh on|off|status|log`. `./run.sh` while that is running only opens the page.
+
 ```bash
-./run.sh          # → http://127.0.0.1:8766
+./run.sh          # → http://127.0.0.1:8766  (or just opens it, if already up)
 ```
 
 On macOS you can double-click `run.command` in Finder. On the first run (or when `.venv` is broken) it rebuilds `.venv` with Python 3.12+, and reinstalls packages only when `requirements.txt` changes.

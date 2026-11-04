@@ -51,6 +51,22 @@ if [ ! -f .env ]; then
 fi
 
 URL="http://$HOST:$PORT"
-echo "✓ SiteKPI → $URL   （止めるときは Ctrl+C）"
-( sleep 2; command -v open >/dev/null 2>&1 && open "$URL/connect" ) >/dev/null 2>&1 &
+# Login LaunchAgent (kpi-ctl.sh) must not open a browser, and must own the port.
+if [ -n "${SITEKPI_LAUNCHD:-}" ]; then
+  pids="$(lsof -nP -iTCP:"$PORT" -sTCP:LISTEN -t 2>/dev/null || true)"
+  if [ -n "${pids}" ]; then
+    kill ${pids} 2>/dev/null || true
+    sleep 1
+  fi
+else
+  if lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+    echo "✓ SiteKPI は起動済み → $URL"
+    command -v open >/dev/null 2>&1 && open "$URL" >/dev/null 2>&1 || true
+    exit 0
+  fi
+  echo "✓ SiteKPI → $URL   （止めるときは Ctrl+C）"
+  ( sleep 2; command -v open >/dev/null 2>&1 && open "$URL" ) >/dev/null 2>&1 &
+fi
+# launchd starts agents with only 256 open files; the glossary alone loads ~130 stickers at once.
+ulimit -n 4096 2>/dev/null || ulimit -n 2048 2>/dev/null || true
 exec "$VENV/bin/python" -m uvicorn main:app --host "$HOST" --port "$PORT" --reload
