@@ -82,7 +82,15 @@ def _page_from_request(request: Request, error: str | None = None) -> HTMLRespon
 
 @router.get("/connect", response_class=HTMLResponse)
 def connect_page(request: Request):
-    return _page_from_request(request)
+    err = request.session.pop("connect_error", None)
+    return _page_from_request(request, error=str(err) if err else None)
+
+
+def _back_to_connect(request: Request, error: str) -> RedirectResponse:
+    """Callback failures: show the message on /connect, never on a page whose URL still
+    carries ?code=/state= (that URL would end up in analytics and browser history)."""
+    request.session["connect_error"] = error
+    return RedirectResponse("/connect", status_code=302)
 
 
 @router.get("/connect/demo")
@@ -139,12 +147,12 @@ def connect_callback(request: Request):
     if not expected_state or not returned_state or not secrets.compare_digest(
         expected_state, returned_state
     ):
-        return _page_from_request(request, error=t("connect.err.oauth_state", loc))
+        return _back_to_connect(request, t("connect.err.oauth_state", loc))
     if request.query_params.get("error"):
         # e.g. access_denied — user cancelled on Google's consent screen
-        return _page_from_request(request, error=t("connect.err.oauth_denied", loc))
+        return _back_to_connect(request, t("connect.err.oauth_denied", loc))
     if not code_verifier or not request.query_params.get("code"):
-        return _page_from_request(request, error=t("connect.err.oauth_state", loc))
+        return _back_to_connect(request, t("connect.err.oauth_state", loc))
 
     # Rebuild authorization_response on the registered redirect host
     q = request.url.query
@@ -156,7 +164,7 @@ def connect_callback(request: Request):
     try:
         flow.fetch_token(authorization_response=auth_response)
     except Exception as exc:  # noqa: BLE001
-        return _page_from_request(request, error=t("connect.err.token", loc, exc=exc))
+        return _back_to_connect(request, t("connect.err.token", loc, exc=exc))
 
     creds = flow.credentials
     request.session["ga4_credentials"] = json.loads(creds.to_json())

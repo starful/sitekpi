@@ -110,13 +110,15 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
   <a href="#journey">사용자 흐름</a>
   <a href="#system">디자인 시스템</a>
   <div class="k">화면</div>
-  <a href="#s01">01 スタート</a>
+  <a href="#s01">01 ホーム（ランディング）</a>
   <a href="#s02">02 GA4 接続</a>
   <a href="#s03">03 ボード</a>
   <a href="#s04">04 指標辞典</a>
   <a href="#s05">05 見本ボード</a>
   <a href="#s06">06 ダッシュボードを作る</a>
   <a href="#s07">07 設定</a>
+  <a href="#s08">08 プライバシーポリシー</a>
+  <a href="#s09">09 利用規約</a>
   <div class="k">제품 규칙</div>
   <a href="#terms">용어</a>
   <a href="#guess">첫 추측 (숫자 먼저)</a>
@@ -125,6 +127,8 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
   <a href="#bench">業界目安과 판정</a>
   <a href="#metrics">지표</a>
   <a href="#states">상태별 화면</a>
+  <div class="k">측정</div>
+  <a href="#analytics">GA4 이벤트 설계</a>
   <div class="k">남은 일</div>
   <a href="#open">정할 것·확인할 것</a>
   <a href="#roadmap">로드맵</a>
@@ -202,13 +206,15 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table>
       <thead><tr><th>번호</th><th>화면</th><th>주소</th><th>역할</th></tr></thead>
       <tbody>
-        <tr><td>01</td><td><a href="#s01" class="jp">スタート</a></td><td><code>/</code></td><td>처음 온 사람이 GA4 접속·데모·견본 중 하나를 고른다</td></tr>
+        <tr><td>01</td><td><a href="#s01" class="jp">ホーム（ランディング）</a></td><td><code>/</code></td><td>검색·소개로 처음 온 사람에게 왜 만들었는지·누구를 위한 것인지·무엇을 할 수 있는지·어떻게 쓰는지를 보여 주고 GA4 접속·데모로 보낸다(SEO 대상)</td></tr>
         <tr><td>02</td><td><a href="#s02" class="jp">GA4 接続</a></td><td><code>/connect</code></td><td>Google 로그인 → 사이트(프로퍼티) 1개 선택 → 바로 보드</td></tr>
         <tr><td>03</td><td><a href="#s03" class="jp">ボード</a></td><td><code>/live</code></td><td>いまの状態 → どこで離れているか → 詳しい数字. 흐름·업종 설정도 여기서</td></tr>
         <tr><td>04</td><td><a href="#s04" class="jp">指標辞典</a></td><td><code>/glossary</code></td><td>지표의 뜻·계산·보는 포인트. 「説明」 팝업과 같은 내용</td></tr>
         <tr><td>05</td><td><a href="#s05" class="jp">見本ボード</a></td><td><code>/samples</code></td><td>접속 전에 목표(사는 것·문의…)별 견본 보드를 미리 본다</td></tr>
         <tr><td>06</td><td><a href="#s06" class="jp">ダッシュボードを作る</a></td><td><code>/builder</code></td><td>목적 템플릿에서 시작해 필요한 지표만 추가</td></tr>
         <tr><td>07</td><td><a href="#s07" class="jp">設定</a></td><td><code>/settings</code></td><td>표시 언어·연결한 사이트</td></tr>
+        <tr><td>08</td><td><a href="#s08" class="jp">プライバシーポリシー</a></td><td><code>/policy</code></td><td>무엇을 모으고·어디에 얼마나 두고·어떻게 지우는지. Google OAuth 심사 필수 페이지</td></tr>
+        <tr><td>09</td><td><a href="#s09" class="jp">利用規約</a></td><td><code>/terms</code></td><td>이용 조건(무료·읽기 전용·業界目安의 성격·면책·금지 사항·준거법)</td></tr>
       </tbody>
     </table>
   </section>
@@ -216,7 +222,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
   <section class="block" id="journey">
     <h2>사용자 흐름</h2>
     <h3 style="margin-top:0">처음 — 연결하고 보드가 열리기까지</h3>
-    <div class="flowline"><b>/ スタート</b><span class="ar">→</span><b>/connect 로그인 · 사이트 선택</b><span class="ar">→</span><b>/live 보드 (흐름·업종은 「仮」)</b><span class="ar">→</span>필요하면 <b>流れを直す</b> · <b>比べる業種</b><span class="ar">→</span><b>保存 / このままでよい</b><br><span class="small">데모: <code>/connect/demo?start=1</code> 한 번에 보드. 견본: <code>/samples</code>에서 목표별로 미리 보기.</span></div>
+    <div class="flowline"><b>/ ホーム</b><span class="ar">→</span><b>/connect 로그인 · 사이트 선택</b><span class="ar">→</span><b>/live 보드 (흐름·업종은 「仮」)</b><span class="ar">→</span>필요하면 <b>流れを直す</b> · <b>比べる業種</b><span class="ar">→</span><b>保存 / このままでよい</b><br><span class="small">데모: <code>/connect/demo?start=1</code> 한 번에 보드. 견본: <code>/samples</code>에서 목표별로 미리 보기.</span></div>
     <h3>매주 — 위에서부터 읽는다</h3>
     <ol class="steps">
       <li><b><i>1</i>숫자</b>いまの状態의 한 문장과 숫자 3개.</li>
@@ -250,14 +256,34 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
   </section>
 
   <section class="block" id="s01">
-    <h2><span class="num">01</span><span class="jp">スタート</span><span class="url">/</span></h2>
-    <ul class="dec">
-      <li>첫 화면의 할 일은 셋: <span class="jp">「GA4 を接続する」「デモで試す」「見本ボードを見る」</span>. 연결하면 설정 없이 바로 보드가 열린다.</li>
-      <li>보드가 무엇을 보여 주는지 3단계(いまの状態 · どこで離れているか · 詳しい数字)로 짧게 소개.</li>
-      <li>이미 연결한 사람은 <code>/</code>로 와도 바로 보드(<code>/live</code>)로.</li>
+    <h2><span class="num">01</span><span class="jp">ホーム（ランディング）</span><span class="url">/</span></h2>
+    <p class="note">공개 페이지(검색 노출 대상). 레일 메뉴 없이 공개용 헤더·푸터를 쓴다. 이미 연결한 사람이 <code>/</code>로 오면 바로 보드(<code>/live</code>)로.</p>
+    <h3>섹션 순서와 역할</h3>
+    <table>
+      <thead><tr><th>섹션</th><th>답하는 질문</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>헤더</td><td>—</td><td>로고 · 앵커(GA4 との違い / できること / 対象 / 見本 / 使い方 / よくある質問) · 언어 · 「デモ」 · 「GA4 を接続」</td></tr>
+        <tr><td>히어로</td><td>무엇인가?</td><td>「GA4 の数字を、5分で「良い・悪い」に。」 + 실제 보드 화면 위에 「いまの状態」 카드를 겹침. 버튼 2개(접속·데모) 아래 ✓ 무료 · 읽기 전용 · 비밀번호를 받지 않음 · 언제든 해제</td></tr>
+        <tr><td>숫자 띠</td><td>얼마나?</td><td>업종 30 · 지표 147+(추가 중, 코드에서 실제 개수) · 사이트 목적 18 · 초기 설정 0분 · 첫 보드까지 5분</td></tr>
+        <tr><td>GA4 との違い</td><td>GA4와 뭐가 다른가?</td><td>왼쪽 GA4 표준 보고서(이미지) vs 오른쪽 SiteKPI 판정 카드. 각 3줄(문제 / 해결)</td></tr>
+        <tr><td>できること</td><td>무엇을 해 주나?</td><td>4블록 좌우 교차: どこで離れているか · 今見るべきこと(業界目安) · 設定なしで始まる(イベント → 目的・業種 추측 그림) · 指標辞典. 각각 실제 화면 캡처 + ✓ 3개</td></tr>
+        <tr><td>こんな人のために</td><td>나에게 맞나?</td><td>1인 운영자 · 리포트 담당자 · 지원 회사. 指標辞典 스티커(움직이는 이미지) <code>device_desktop</code> · <code>form_complete_rate</code> · <code>benchmark</code></td></tr>
+        <tr><td>見本</td><td>내 사이트라면?</td><td>목적 × 업종 카드 6장(작은 흐름 막대) → 見本ボード</td></tr>
+        <tr><td>使い方</td><td>어떻게 시작하나?</td><td>4단계(약 30초 / 10초 / 3분 / 1분), 단계마다 설명 · ✓ 3개 · 오른쪽 작은 화면(허용 항목·사이트 선택·いまの状態·이벤트 다시 고르기)</td></tr>
+        <tr><td>作った人から</td><td>누가 왜?</td><td>개인 사이트와 여러 기업의 GA4 분석에서 같은 질문(좋은가·어디부터)에 같은 3단계로 답해 온 경험 → 그것을 5분에 재현</td></tr>
+        <tr><td>よくある質問</td><td>불안한 점은?</td><td>12개, 2열, 연회색 띠 배경. 무료 · 데이터 저장 · 目安 출처 · 필요한 것 · 그만두기 · 업종 · 업종이 안 맞을 때 · GA4와 숫자 차이 · 여러 사이트 · 이벤트가 적은 사이트 · 공유 · 언어</td></tr>
+        <tr><td>마지막 CTA · 푸터</td><td>—</td><td>남색 띠에 버튼 2개. 푸터: プライバシーポリシー · 利用規約 · 指標辞典 · 見本ボード一覧 · <a href="https://script.google.com/macros/s/AKfycbxpd0eFLhB3AaNW2nSGpGd6AB81ZeEGNcRvd6ntREoG8fD_tjIfdeW63VKMBee7GqEF/exec" target="_blank" rel="noopener">お問い合わせ</a>(Apps Script 폼, 새 창) · ご意見 · Google 상표 문구</td></tr>
+      </tbody>
+    </table>
+    <ul class="dec" style="margin-top:12px">
+      <li><span class="tag">결정</span>참고: AIアナリスト(성과 숫자·실제 결과물 화면) · Databox(단계별 화면) · Plausible(라이브 데모·만든 사람 이야기). 실적이 아직 없으니 <b>숫자 띠는 사실(업종·지표 수)</b>만 쓴다.</li>
+      <li><span class="tag">결정</span>화면 이미지는 데모 보드의 실제 캡처. 보드가 바뀌면 캡처도 다시 찍는다.</li>
+      <li><span class="tag">결정</span>문의는 이메일 공개 대신 SiteKPI 전용 Apps Script 폼. 「ご意見」(👍/👎 한 줄)은 화면 개선용으로 따로 둔다.</li>
+      <li><span class="tag">결정</span>SEO: 페이지별 title·description·canonical·hreflang(ja 기본, en/ko는 <code>?lang=</code>)·OG 이미지·JSON-LD(SoftwareApplication + FAQPage). FAQ 12개 모두 FAQPage에 넣는다.</li>
+      <li><span class="tag">상태</span>캔버스 설계 완료 · 코드는 이전 버전(6섹션) — 「반영해줘」 때 교체. en·ko 문구도 그때 작성.</li>
     </ul>
-    <div class="frame-head"><span>1440 × 900</span><a href="screens/01-start.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
-    <div class="frame" data-w="1440" data-h="900"><div class="frame-bar"><i></i><i></i><i></i><span>/</span></div><div class="frame-box"><iframe src="screens/01-start.dc.html" title="01 スタート" loading="lazy"></iframe></div></div>
+    <div class="frame-head"><span>1440 × 8300 · FAQ는 눌러서 열림</span><a href="screens/01-home.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
+    <div class="frame" data-w="1440" data-h="8300"><div class="frame-bar"><i></i><i></i><i></i><span>/</span></div><div class="frame-box"><iframe src="screens/01-home.dc.html" title="01 ホーム" loading="lazy"></iframe></div></div>
   </section>
 
   <section class="block" id="s02">
@@ -344,6 +370,31 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     </ul>
     <div class="frame-head"><span>1440 × 800</span><a href="screens/07-settings.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
     <div class="frame" data-w="1440" data-h="800"><div class="frame-bar"><i></i><i></i><i></i><span>/settings</span></div><div class="frame-box"><iframe src="screens/07-settings.dc.html" title="07 設定" loading="lazy"></iframe></div></div>
+  </section>
+
+  <section class="block" id="s08">
+    <h2><span class="num">08</span><span class="jp">プライバシーポリシー</span><span class="url">/policy</span></h2>
+    <ul class="dec">
+      <li>15항목 + 맨 위 목차: 운영자 · 적용 범위 · 取得する情報 · 이용 목적 · Google 사용자 데이터 · Cookie와 외부 전송 · 제3자 제공 · 위탁과 해외 이전 · 보존 기간(표) · 안전관리 · 삭제와 연결 해제 · 열람·정정 청구 · 미성년 · 변경 · 문의.</li>
+      <li><b>Google API 심사용</b>: 스코프 <code>analytics.readonly</code>만, 사람이 데이터를 보지 않음, 광고·판매·AI 학습에 쓰지 않음, Limited Use 영어 원문 한 문장을 그대로 둔다.</li>
+      <li><b>일본 법 대응</b>: 전기통신사업법 외부 전송 공표(Google Fonts · Google 인증 화면 · <b>Google 태그 관리자/GA4</b>), 개인정보보호법 해외 이전(미국, us-central1)·보존 기간·열람 청구.</li>
+      <li>실제 동작과 맞춘 것: Cloud Run 접속 로그(IP 등 30일), GA4 측정(<a href="#analytics">GA4 이벤트 설계</a>)과 옵트아웃 링크. 「IP는 저장하지 않는다」는 ご意見에만 해당.</li>
+      <li>문의는 <a href="https://script.google.com/macros/s/AKfycbxpd0eFLhB3AaNW2nSGpGd6AB81ZeEGNcRvd6ntREoG8fD_tjIfdeW63VKMBee7GqEF/exec" target="_blank" rel="noopener">お問い合わせフォーム</a>. 【運営者名】 등 【 】는 운영자가 채운다.</li>
+      <li><span class="tag">상태</span>캔버스 설계 완료. 코드는 이전 6항목판 + GA4 측정 문단(2026-11-05 추가).</li>
+    </ul>
+    <div class="frame-head"><span>1440 × 5500</span><a href="screens/08-policy.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
+    <div class="frame" data-w="1440" data-h="5500"><div class="frame-bar"><i></i><i></i><i></i><span>/policy</span></div><div class="frame-box"><iframe src="screens/08-policy.dc.html" title="08 プライバシーポリシー" loading="lazy"></iframe></div></div>
+  </section>
+
+  <section class="block" id="s09">
+    <h2><span class="num">09</span><span class="jp">利用規約</span><span class="url">/terms</span></h2>
+    <ul class="dec">
+      <li>21조 + 목차: 적용 · 정의 · 서비스 내용 · 이용 개시 · Google 계정과 GA4 권한 · 요금(무료, 유료화는 사전 명시·동의) · 금지 사항 10개 · <b>業界目安과 표시 내용의 성격</b> · 지적재산 · ご意見 · 외부 서비스 · 변경·중단·종료(30일 전 공지) · 이용 정지 · 보증 부인 · 책임 제한(상한 1만 엔) · 반사회적 세력 · 양도 · 분리 가능성 · 규약 변경(민법 548조의4, 7일 전 게시) · 준거법·관할 · 문의.</li>
+      <li>08과 같은 공개 헤더·푸터. 위쪽 탭으로 08 ↔ 09 이동.</li>
+      <li><span class="tag">확인</span>운영자명·관할 법원 미정. 공개 전 전문가 검토 권장.</li>
+    </ul>
+    <div class="frame-head"><span>1440 × 5750</span><a href="screens/09-terms.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
+    <div class="frame" data-w="1440" data-h="5750"><div class="frame-bar"><i></i><i></i><i></i><span>/terms</span></div><div class="frame-box"><iframe src="screens/09-terms.dc.html" title="09 利用規約" loading="lazy"></iframe></div></div>
   </section>
 
   <section class="block" id="terms">
@@ -486,6 +537,92 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     </table>
   </section>
 
+  <section class="block" id="analytics">
+    <h2>GA4 이벤트 설계</h2>
+    <p class="note">SiteKPI <b>자체</b>의 이용 현황을 재는 설계. 목적은 셋: ① 랜딩 → 접속 → 첫 보드까지 어디서 빠지는지 ② 보드에서 무엇을 쓰는지(説明·흐름 고치기·업종) ③ 다시 오는지. GTM 컨테이너 <code>GTM-N957ZQB6</code>.</p>
+
+    <h3>지켜야 할 것 (Google API Limited Use)</h3>
+    <ul class="dec">
+      <li><b>사용자의 GA4 데이터는 한 글자도 보내지 않는다.</b> 속성 ID·이름, 계정 메일, 지표 값, 흐름 편집에서 고른 이벤트 이름, 유입 채널 이름, 자동 추측한 목적·업종 모두 금지. 보내는 값은 <b>SiteKPI가 정한 목록 안의 키</b>(지표·업종·목적·화면·버튼)와 사용자가 직접 고른 설정뿐.</li>
+      <li><code>user_id</code>를 쓰지 않는다. 광고 신호(Google Signals)·광고 링크는 끈다.</li>
+      <li>OAuth 코드가 URL에 남는 페이지를 만들지 않는다: <code>/connect/callback</code>은 성공·실패 모두 <code>/connect</code>로 302(실패 메시지는 세션으로 넘김). <span class="st done">2026-11-05 반영</span></li>
+      <li>개인정보처리방침에 측정 사실·Cookie·옵트아웃을 적는다(<a href="#s08">08</a>). 일본 전기통신사업법 외부 전송 공표 대상.</li>
+    </ul>
+
+    <h3>설치</h3>
+    <table>
+      <thead><tr><th>항목</th><th>내용</th><th>상태</th></tr></thead>
+      <tbody>
+        <tr><td>GTM 태그</td><td>모든 페이지 <code>&lt;head&gt;</code> 맨 앞(<code>base.html</code>). 환경 변수 <code>GTM_ID</code>가 있을 때만 출력 → Cloud Run에만 설정(<code>cloudbuild.yaml</code>), 로컬·테스트는 측정 안 함</td><td><span class="st done">완료</span></td></tr>
+        <tr><td>dataLayer 헬퍼</td><td><code>static/js/track.js</code>: <code>SiteKPITrack(event, params)</code> + <code>data-track="cta_click" data-track-cta="demo"</code> 속성 자동 연결. 모든 이벤트에 <code>screen</code> 자동 첨부</td><td><span class="st todo">미구현</span></td></tr>
+        <tr><td>GTM 컨테이너</td><td>Google 태그(측정 ID) 1개 + GA4 이벤트 태그 1개(트리거: 맞춤 이벤트 정규식, 이벤트 이름 = <code>{{Event}}</code>, 매개변수는 데이터 영역 변수). 향상된 측정: 페이지 조회·스크롤·외부 링크 클릭만 켬, 양식 상호작용·사이트 검색은 끔</td><td><span class="st check">GTM에서 설정</span></td></tr>
+        <tr><td>GA4 속성</td><td>데이터 보관 14개월 · Google 신호 끔 · 내부 트래픽(운영자 IP) 제외 · 맞춤 측정기준 등록(아래)</td><td><span class="st check">GA4에서 설정</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>자동 수집 (GTM · 향상된 측정)</h3>
+    <p class="small" style="margin-top:0"><code>page_view</code> · <code>session_start</code> · <code>first_visit</code> · <code>user_engagement</code> · <code>scroll</code>(90%) · <code>click</code>(외부 링크: 문의 폼·출처 링크·Google 계정 페이지). 페이지 경로의 쿼리는 <code>lang</code> · <code>period</code> · <code>b</code> · <code>i</code>만 남는다(다른 쿼리를 만들지 않는다).</p>
+
+    <h3>맞춤 이벤트</h3>
+    <table>
+      <thead><tr><th>구역</th><th>이벤트</th><th>언제</th><th>매개변수</th><th>주요 이벤트</th></tr></thead>
+      <tbody>
+        <tr><td>공개 페이지</td><td class="ev">cta_click</td><td>헤더·히어로·마지막 CTA·見本 카드의 버튼</td><td><code>cta</code> connect · demo · samples · sample_card<br><code>location</code> header · hero · final · samples · how</td><td></td></tr>
+        <tr><td>공개 페이지</td><td class="ev">faq_open</td><td>FAQ를 펼칠 때</td><td><code>faq_id</code> q01 … q12</td><td></td></tr>
+        <tr><td>공개 페이지</td><td class="ev">lang_change</td><td>언어 전환</td><td><code>language</code> ja · en · ko</td><td></td></tr>
+        <tr><td>공개 페이지</td><td class="ev">contact_click</td><td>「お問い合わせ」(Apps Script 폼) 클릭</td><td><code>location</code> footer · policy · terms</td><td>★</td></tr>
+        <tr><td>접속</td><td class="ev">oauth_start</td><td>「Google でログイン」</td><td><code>location</code> connect · header · hero · final</td><td></td></tr>
+        <tr><td>접속</td><td class="ev">login</td><td>OAuth 성공 후 처음 그려진 페이지(서버가 세션에 표시 → 다음 페이지에서 1번 push)</td><td><code>method</code> google</td><td>★</td></tr>
+        <tr><td>접속</td><td class="ev">oauth_error</td><td>취소·실패로 /connect에 돌아왔을 때</td><td><code>reason</code> denied · state · token</td><td></td></tr>
+        <tr><td>접속</td><td class="ev">property_select</td><td>사이트 1개를 고름</td><td>없음(ID·이름·개수는 보내지 않음)</td><td></td></tr>
+        <tr><td>접속</td><td class="ev">demo_start</td><td>데모 진입(<code>/connect/demo</code>)</td><td><code>location</code></td><td>★</td></tr>
+        <tr><td>접속</td><td class="ev">disconnect</td><td>「切断」</td><td>없음</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">board_view</td><td>보드가 그려질 때</td><td><code>mode</code> live · demo · sample<br><code>period</code> 28d · 7d<br><code>first_in_session</code> true · false</td><td>★ (first_in_session = true)</td></tr>
+        <tr><td>보드</td><td class="ev">board_tab</td><td>탭 이동</td><td><code>tab</code> now · flow · details</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">explain_open</td><td>「説明」 팝업</td><td><code>metric</code> 지표 카탈로그 키(<code>cart_to_view_rate</code> 등)<br><code>location</code> tile · watch · details · drawer</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">period_change</td><td>기간 전환</td><td><code>period</code> 28d · 7d</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">guess_confirm</td><td>안내의 「このままでよい」</td><td>없음</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">flow_edit_start</td><td>「流れを直す」 / 「✎直す」</td><td><code>location</code> notice · flow · nudge</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">flow_save</td><td>흐름 저장</td><td><code>change</code> step · branch · template</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">industry_change</td><td>比べる業種를 사용자가 고름</td><td><code>industry</code> 업종 키 · <code>from_guess</code> true · false</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">benchmark_save</td><td>自社目安 저장</td><td><code>metric</code> 지표 키</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">channel_filter</td><td>流入 필터 칩</td><td>없음(채널 이름은 사용자 데이터라 보내지 않음)</td><td></td></tr>
+        <tr><td>지표 사전</td><td class="ev">search</td><td>검색어 입력이 1초 멈췄을 때</td><td><code>search_term</code> 40자까지</td><td></td></tr>
+        <tr><td>지표 사전</td><td class="ev">glossary_filter</td><td>카테고리 칩</td><td><code>category</code> digital · channel · event · business · view</td><td></td></tr>
+        <tr><td>지표 사전</td><td class="ev">glossary_open</td><td>카드 펼침</td><td><code>metric</code></td><td></td></tr>
+        <tr><td>見本</td><td class="ev">sample_view</td><td>목적·업종 선택</td><td><code>behavior</code> · <code>industry</code> (카탈로그 키)</td><td></td></tr>
+        <tr><td>見本</td><td class="ev">sample_to_board</td><td>「この見本をボードで開く」 · 「自分のサイトで見る」</td><td><code>behavior</code> · <code>industry</code> · <code>cta</code> board · connect</td><td>★</td></tr>
+        <tr><td>ビルダー</td><td class="ev">builder_template</td><td>템플릿 선택</td><td><code>template</code></td><td></td></tr>
+        <tr><td>ビルダー</td><td class="ev">builder_metric_add</td><td>지표 추가</td><td><code>metric</code></td><td></td></tr>
+        <tr><td>공통</td><td class="ev">feedback_open</td><td>「ご意見」 열기</td><td>—</td><td></td></tr>
+        <tr><td>공통</td><td class="ev">feedback_submit</td><td>ご意見 전송 성공</td><td><code>vote</code> up · down · none · <code>has_comment</code> true · false</td><td>★</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">모든 맞춤 이벤트에 <code>screen</code>(home · connect · board · glossary · samples · builder · settings · policy · terms)이 붙는다. 이름은 GA4 권장 이벤트(<code>login</code> · <code>search</code>)를 우선, 나머지는 snake_case 40자 이내.</p>
+
+    <h3>사용자 속성 · 맞춤 측정기준</h3>
+    <table>
+      <thead><tr><th>이름</th><th>범위</th><th>값</th></tr></thead>
+      <tbody>
+        <tr><td class="ev">ui_language</td><td>사용자</td><td>ja · en · ko</td></tr>
+        <tr><td class="ev">connection</td><td>사용자</td><td>none · demo · live (페이지마다 갱신)</td></tr>
+        <tr><td class="ev">screen · cta · location · metric · industry · behavior · period · mode · tab · faq_id · reason · vote · change · category · template</td><td>이벤트</td><td>위 표의 값. GA4 관리 → 맞춤 정의에 등록</td></tr>
+      </tbody>
+    </table>
+
+    <h3>보는 퍼널 (탐색 보고서)</h3>
+    <table>
+      <thead><tr><th>이름</th><th>단계</th><th>보는 것</th></tr></thead>
+      <tbody>
+        <tr><td>획득</td><td><code>page_view</code>(/) → <code>cta_click</code>(connect) → <code>oauth_start</code> → <code>login</code> → <code>property_select</code> → <code>board_view</code>(live, first)</td><td>Google 동의 화면에서 빠지는 비율(→ 안내 문구·심사 상태)</td></tr>
+        <tr><td>데모</td><td><code>demo_start</code> → <code>board_view</code>(demo) → <code>explain_open</code> → <code>oauth_start</code></td><td>데모가 실제 접속으로 이어지는지</td></tr>
+        <tr><td>활성</td><td><code>board_view</code>(live) → <code>explain_open</code> / <code>flow_edit_start</code> / <code>industry_change</code> / <code>guess_confirm</code></td><td>「仮」 추측이 맞는지(guess_confirm 대 industry_change·flow_save 비율)</td></tr>
+        <tr><td>재방문</td><td>첫 <code>login</code> 후 7일·28일 안에 <code>board_view</code>(live)</td><td>주간 습관이 되는지(코호트)</td></tr>
+        <tr><td>콘텐츠</td><td>랜딩 <code>scroll</code> · <code>faq_open</code> · <code>sample_view</code> · <code>glossary_open</code></td><td>어느 섹션·FAQ·지표가 읽히는지 → 랜딩·指標辞典 개선</td></tr>
+      </tbody>
+    </table>
+  </section>
+
   <section class="block" id="open">
     <h2>정할 것·확인할 것</h2>
     <table>
@@ -496,6 +633,10 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>今見るべきこと의 見るポイント를 행동별로</td><td><span class="st todo">미구현</span></td><td>지금은 지표 공통 문구</td></tr>
         <tr><td>향상된 측정 안내 (<code>scroll</code> · <code>click</code> 記録なし)</td><td><span class="st todo">미구현</span></td><td>지금은 「この段を直す」만</td></tr>
         <tr><td>업계 기준 출처(Databox 등)의 상업 이용 조건</td><td><span class="st check">확인 필요</span></td><td>공개 전에 확인</td></tr>
+        <tr><td>개인정보처리방침·이용약관의 【運営者名】 · 【所在地】 · 관할 법원</td><td><span class="st check">확인 필요</span></td><td>운영자가 채움. 문의는 Apps Script 폼으로 결정</td></tr>
+        <tr><td>처리방침의 운영 약속(ご意見 2년 보존 · 삭제 30일 이내 · 2단계 인증 · 종료 30일 전 공지)</td><td><span class="st check">확인 필요</span></td><td>실제로 지킬 수 있는지</td></tr>
+        <tr><td>GTM 컨테이너·GA4 속성 설정</td><td><span class="st check">확인 필요</span></td><td><a href="#analytics">GA4 이벤트 설계</a>의 「설치」 표대로</td></tr>
+        <tr><td>Apps Script 문의 폼 동작</td><td><span class="st check">확인 필요</span></td><td>브라우저에서 제출 시험</td></tr>
         <tr><td>휴대폰 화면</td><td><span class="st hold">보류</span></td><td>깨지지 않을 정도만</td></tr>
         <tr><td>사용자 집계로 만드는 目安</td><td><span class="st hold">보류</span></td><td>—</td></tr>
       </tbody>
@@ -515,6 +656,8 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>근거 보강</td><td>출처 확인일 · 행동별 見るポイント · 향상된 측정 안내</td><td><span class="st todo">다음</span></td></tr>
         <tr><td>실데이터 점검</td><td>실제 GA4 계정으로 전 화면 확인</td><td><span class="st done">완료</span></td></tr>
         <tr><td>공개 준비</td><td>sitekpi.net · Cloud Run · Firestore 저장 · 개인정보처리방침/이용약관 · 「ご意見」 버튼 · 연결 해제 시 토큰 무효화</td><td><span class="st done">완료</span></td></tr>
+        <tr><td>랜딩·법적 페이지 재설계</td><td>01 ホーム(10섹션) · 08 · 09 캔버스 설계 → 코드(ja/en/ko)</td><td><span class="st todo">다음</span></td></tr>
+        <tr><td>측정</td><td>GTM 태그 설치(완료) → <code>track.js</code>와 맞춤 이벤트 → 퍼널 보고서</td><td><span class="st todo">다음</span></td></tr>
         <tr><td>공개 · OAuth 심사</td><td>배포 → 도메인 연결 → 동의 화면 「프로덕션」 → 심사 신청(그동안 100명까지 베타)</td><td><span class="st todo">다음</span></td></tr>
         <tr><td>보드 저장 · 주간 메일</td><td>선택</td><td><span class="st hold">나중</span></td></tr>
         <tr><td>휴대폰 · 사용자 집계</td><td>—</td><td><span class="st hold">보류</span></td></tr>
@@ -527,6 +670,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table class="log">
       <thead><tr><th>날짜</th><th>내용</th></tr></thead>
       <tbody>
+        <tr><td>2026-11-05</td><td>01을 「スタート」에서 랜딩(10섹션)으로 재설계, 08 プライバシーポリシー · 09 利用規約 추가(분량 약 3~6배). 문의는 Apps Script 폼. GTM 태그(<code>GTM_ID</code>) 설치, GA4 이벤트 설계 추가, OAuth 콜백 실패도 <code>/connect</code>로 302.</td></tr>
         <tr><td>2026-11-04</td><td>공개 준비: Cloud Run(sitekpi.net) 배포 파일, Firestore 저장, 개인정보처리방침·이용약관, 「ご意見」 버튼.</td></tr>
         <tr><td>2026-11-04</td><td>기획(규칙·결정)을 디자인 캔버스 메모에서 이 HTML로 옮김. 캔버스는 화면 설계만 남기고 메모 삭제. 구글 드라이브의 이전 기획서 2개 삭제(휴지통).</td></tr>
         <tr><td>2026-11-03</td><td>03: 기간 전환, 단 드로어의 「保存」, 편집 모드 인원을 보드 흐름과 맞춤.</td></tr>

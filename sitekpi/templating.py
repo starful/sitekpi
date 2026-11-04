@@ -9,6 +9,8 @@
 from __future__ import annotations
 
 import hashlib
+import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +46,15 @@ def static_url(path: str) -> str:
     return f"/static/{path}?v={hit[1]}"
 
 
+_GTM_ID = re.compile(r"GTM-[A-Z0-9]{4,12}")
+
+
+def gtm_id() -> str:
+    """Google Tag Manager container from env GTM_ID (set on Cloud Run only, so local runs send nothing)."""
+    value = (os.getenv("GTM_ID") or "").strip().upper()
+    return value if _GTM_ID.fullmatch(value) else ""
+
+
 def _nl2br(text: Any) -> Markup:
     return Markup("<br>").join(escape(line) for line in str(text).split("\n"))
 
@@ -60,7 +71,7 @@ env = Environment(
     lstrip_blocks=True,
     auto_reload=True,
 )
-env.globals.update(t=t, html_lang=html_lang, static_url=static_url, brand_name=BRAND_NAME)
+env.globals.update(t=t, html_lang=html_lang, static_url=static_url, brand_name=BRAND_NAME, gtm_id=gtm_id)
 env.filters["nl2br"] = _nl2br
 env.filters["num"] = _num
 

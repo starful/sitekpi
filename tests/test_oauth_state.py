@@ -41,6 +41,13 @@ def _client() -> TestClient:
     return TestClient(app, base_url=BASE, follow_redirects=False)
 
 
+def _error_page(client: TestClient, url: str):
+    """Failures go back to /connect (the callback URL with code/state never renders a page)."""
+    r = client.get(url)
+    assert r.status_code == 302 and r.headers["location"] == "/connect"
+    return client.get("/connect")
+
+
 def _start(client: TestClient) -> str:
     r = client.get("/connect/google")
     assert r.status_code == 302
@@ -65,7 +72,7 @@ def test_callback_from_another_browser_is_rejected(fake_token_exchange):
     attacker = _client()
     state = _start(attacker)
     victim = _client()  # no oauth_state in this session
-    r = victim.get(f"/connect/callback?state={state}&code=attackers-code")
+    r = _error_page(victim, f"/connect/callback?state={state}&code=attackers-code")
     assert r.status_code == 200
     assert "Google 接続を確認できませんでした" in r.text
     assert fake_token_exchange == []
@@ -74,7 +81,7 @@ def test_callback_from_another_browser_is_rejected(fake_token_exchange):
 def test_mismatched_state_is_rejected(fake_token_exchange):
     c = _client()
     _start(c)
-    r = c.get("/connect/callback?state=forged&code=abc")
+    r = _error_page(c, "/connect/callback?state=forged&code=abc")
     assert "Google 接続を確認できませんでした" in r.text
     assert fake_token_exchange == []
 
@@ -83,7 +90,7 @@ def test_state_is_single_use(fake_token_exchange):
     c = _client()
     state = _start(c)
     c.get(f"/connect/callback?state={state}&code=abc")
-    r = c.get(f"/connect/callback?state={state}&code=abc")
+    r = _error_page(c, f"/connect/callback?state={state}&code=abc")
     assert "Google 接続を確認できませんでした" in r.text
     assert len(fake_token_exchange) == 1
 
@@ -91,7 +98,7 @@ def test_state_is_single_use(fake_token_exchange):
 def test_missing_state_is_rejected(fake_token_exchange):
     c = _client()
     _start(c)
-    r = c.get("/connect/callback?code=abc")
+    r = _error_page(c, "/connect/callback?code=abc")
     assert "Google 接続を確認できませんでした" in r.text
     assert fake_token_exchange == []
 
@@ -99,7 +106,7 @@ def test_missing_state_is_rejected(fake_token_exchange):
 def test_user_cancel_on_google(fake_token_exchange):
     c = _client()
     state = _start(c)
-    r = c.get(f"/connect/callback?state={state}&error=access_denied")
+    r = _error_page(c, f"/connect/callback?state={state}&error=access_denied")
     assert "キャンセルされました" in r.text
     assert fake_token_exchange == []
 

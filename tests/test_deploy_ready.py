@@ -155,3 +155,15 @@ def test_robots_and_sitemap(client):
     assert r.status_code == 200 and "Disallow: /live" in r.text and "Sitemap:" in r.text
     x = client.get("/sitemap.xml")
     assert x.status_code == 200 and x.text.count("<url>") == 9 and "/policy?lang=en" in x.text
+
+
+def test_gtm_only_when_configured(client, monkeypatch):
+    monkeypatch.delenv("GTM_ID", raising=False)
+    assert "googletagmanager.com" not in client.get("/").text
+    monkeypatch.setenv("GTM_ID", "GTM-N957ZQB6")
+    for path in ("/", "/policy", "/glossary"):
+        assert "gtm.js?id=GTM-N957ZQB6" in client.get(path).text, path
+    monkeypatch.setenv("GTM_ID", "GTM-x\"><script>")  # not a container id → nothing rendered
+    assert "googletagmanager.com" not in client.get("/").text
+    en = client.get("/policy?lang=en").text
+    assert "Google Analytics 4" in en and "never send" in en
