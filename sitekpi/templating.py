@@ -22,20 +22,24 @@ ROOT = Path(__file__).resolve().parents[1]
 STATIC_DIR = ROOT / "static"
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 
-_hash_cache: dict[str, tuple[float, str]] = {}
+_hash_cache: dict[str, tuple[tuple[int, int], str]] = {}
 
 
 def static_url(path: str) -> str:
     """URL for a file under /static with a content-hash cache buster."""
     file = STATIC_DIR / path
     try:
-        mtime = file.stat().st_mtime
+        st = file.stat()
     except FileNotFoundError:
         return f"/static/{path}"
+    stamp = (st.st_mtime_ns, st.st_size)
     hit = _hash_cache.get(path)
-    if not hit or hit[0] != mtime:
-        digest = hashlib.sha256(file.read_bytes()).hexdigest()[:12]
-        hit = (mtime, digest)
+    if not hit or hit[0] != stamp:
+        # Content + write time: a file rewritten in place always gets a new URL, so a browser
+        # that cached a half-written copy (responses are immutable for a year) never reuses it.
+        h = hashlib.sha256(file.read_bytes())
+        h.update(f"{st.st_mtime_ns}:{st.st_size}".encode())
+        hit = (stamp, h.hexdigest()[:12])
         _hash_cache[path] = hit
     return f"/static/{path}?v={hit[1]}"
 
