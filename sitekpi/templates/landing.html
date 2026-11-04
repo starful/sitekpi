@@ -1,0 +1,68 @@
+{% extends "public.html" %}
+{% block content %}
+<main class="lp">
+  <section class="lp-hero">
+    <div class="lp-hero-text">
+      <p class="lp-kicker">{{ c.hero_kicker }}</p>
+      <h1>{{ c.hero_title }}</h1>
+      <p class="lp-lead">{{ c.hero_lead }}</p>
+      <div class="lp-actions">
+        <a class="lp-cta" href="/connect">{{ c.cta_connect }}</a>
+        <a class="lp-ghost" href="/connect/demo?start=1">{{ c.cta_demo }}</a>
+        <a class="lp-link" href="/samples">{{ c.cta_sample }} →</a>
+      </div>
+      <p class="lp-note"><span aria-hidden="true">🔒</span> {{ c.hero_note }}</p>
+    </div>
+    <figure class="lp-shot">
+      <img src="{{ static_url('img/board-hero.webp') }}" width="1360" height="860" alt="{{ c.hero_alt }}" fetchpriority="high" />
+    </figure>
+  </section>
+
+  <section class="lp-sec" id="why" aria-labelledby="why-t">
+    <h2 id="why-t">{{ c.why_title }}</h2>
+    <p class="lp-sec-lead">{{ c.why_lead }}</p>
+    <div class="lp-grid3">
+      {% for k, v in c.why_points %}<div class="lp-card lp-card-q"><h3>{{ k }}</h3><p>{{ v }}</p></div>{% endfor %}
+    </div>
+    <p class="lp-answer">{{ c.why_answer }}</p>
+  </section>
+
+  <section class="lp-sec" id="who" aria-labelledby="who-t">
+    <h2 id="who-t">{{ c.who_title }}</h2>
+    <div class="lp-grid3">
+      {% for k, v in c.who %}<div class="lp-card"><span class="lp-num">{{ loop.index }}</span><h3>{{ k }}</h3><p>{{ v }}</p></div>{% endfor %}
+    </div>
+  </section>
+
+  <section class="lp-sec" id="features" aria-labelledby="features-t">
+    <h2 id="features-t">{{ c.features_title }}</h2>
+    <div class="lp-grid3">
+      {% for k, v in features %}<div class="lp-card lp-card-f"><h3>{{ k }}</h3><p>{{ v }}</p></div>{% endfor %}
+    </div>
+  </section>
+
+  <section class="lp-sec" id="how" aria-labelledby="how-t">
+    <h2 id="how-t">{{ c.how_title }}</h2>
+    <ol class="lp-steps">
+      {% for k, v in c.how %}<li><span class="lp-step">{{ loop.index }}</span><div><h3>{{ k }}</h3><p>{{ v }}</p></div></li>{% endfor %}
+    </ol>
+    <p class="lp-sec-lead"><a href="/connect/demo?start=1">{{ c.how_demo }} →</a></p>
+  </section>
+
+  <section class="lp-sec" id="faq" aria-labelledby="faq-t">
+    <h2 id="faq-t">{{ c.faq_title }}</h2>
+    <div class="lp-faq">
+      {% for qq, a in c.faq %}<details><summary>{{ qq }}</summary><p>{{ a }}</p></details>{% endfor %}
+    </div>
+  </section>
+
+  <section class="lp-final">
+    <h2>{{ c.final_title }}</h2>
+    <p>{{ c.final_lead }}</p>
+    <div class="lp-actions lp-actions-c">
+      <a class="lp-cta" href="/connect">{{ c.cta_connect }}</a>
+      <a class="lp-ghost" href="/connect/demo?start=1">{{ c.cta_demo }}</a>
+    </div>
+  </section>
+</main>
+{% endblock %}

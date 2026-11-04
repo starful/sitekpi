@@ -1,29 +1,42 @@
-"""/policy and /terms (ja/en/ko). ?lang= overrides the UI language (e.g. /policy?lang=en for reviewers)."""
+"""/policy and /terms (ja/en/ko) on the public layout. ?lang= picks the language (e.g. /policy?lang=en)."""
 
 from __future__ import annotations
 
 import os
 
 from fastapi import APIRouter, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 
 from sitekpi.i18n import get_locale, normalize_locale, t
-from sitekpi.routes.nav import nav_rail_context
+from sitekpi.i18n.landing_l10n import LANDING
 from sitekpi.templating import render
+from sitekpi.views.seo import seo_context
 
 router = APIRouter()
+
+_DESC = {
+    "policy": {
+        "ja": "SiteKPI が集める情報（GA4 は読み取りのみ）、使い方、保存するもの、削除の方法。",
+        "en": "What SiteKPI collects (read-only GA4 access), how it is used, what is stored and how to remove it.",
+        "ko": "SiteKPI가 수집하는 정보(GA4는 읽기 전용), 이용 방법, 저장하는 것, 삭제 방법.",
+    },
+    "terms": {
+        "ja": "SiteKPI の利用規約。無料・現状のまま提供、業界目安は参考値、禁止事項など。",
+        "en": "SiteKPI terms of use: free and provided as is, benchmarks are references, acceptable use.",
+        "ko": "SiteKPI 이용약관. 무료·현 상태 제공, 업계 기준은 참고값, 금지 사항 등.",
+    },
+}
 
 
 def _page(request: Request, kind: str, lang: str) -> HTMLResponse:
     loc = normalize_locale(lang) if lang else get_locale(request.session)
+    title = f"{t(f'legal.{kind}', loc)} | SiteKPI"
     return HTMLResponse(render(
         "legal.html",
-        loc=loc,
-        rail=nav_rail_context(request, kind),
-        title=t(f"legal.{kind}", loc),
+        loc=loc, c=LANDING[loc], page=kind, path=f"/{kind}", lq="" if loc == "ja" else f"?lang={loc}",
         body=f"legal/{kind}_{loc}.html",
         contact=(os.getenv("CONTACT_EMAIL") or "").strip(),
-        kind=kind,
+        seo=seo_context(path=f"/{kind}", loc=loc, title=title, description=_DESC[kind][loc]),
     ))
 
 
@@ -35,3 +48,31 @@ def policy(request: Request, lang: str = Query(default="")):
 @router.get("/terms", response_class=HTMLResponse)
 def terms(request: Request, lang: str = Query(default="")):
     return _page(request, "terms", lang)
+
+
+@router.get("/robots.txt", include_in_schema=False)
+def robots() -> PlainTextResponse:
+    from sitekpi.views.seo import base_url
+
+    return PlainTextResponse(
+        "User-agent: *\n"
+        "Allow: /$\nAllow: /policy\nAllow: /terms\nAllow: /static/\n"
+        "Disallow: /live\nDisallow: /connect\nDisallow: /setup\nDisallow: /builder\n"
+        "Disallow: /feedback\nDisallow: /settings\n"
+        f"\nSitemap: {base_url()}/sitemap.xml\n"
+    )
+
+
+@router.get("/sitemap.xml", include_in_schema=False)
+def sitemap() -> Response:
+    from sitekpi.views.seo import LANGS, lang_url
+
+    urls = []
+    for path in ("/", "/policy", "/terms"):
+        links = "".join(f'<xhtml:link rel="alternate" hreflang="{lg}" href="{lang_url(path, lg)}"/>' for lg in LANGS)
+        for lg in LANGS:
+            urls.append(f"<url><loc>{lang_url(path, lg)}</loc>{links}</url>")
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'
+           + "".join(urls) + "</urlset>")
+    return Response(xml, media_type="application/xml")

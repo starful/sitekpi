@@ -48,12 +48,15 @@ Period = Literal["7d", "28d"]
 
 
 @router.get("/", response_class=HTMLResponse)
-def index(request: Request):
-    """Start: connected → the board; otherwise one screen with connect / demo / sample."""
+def index(request: Request, lang: str = Query(default="")):
+    """Connected → the board. Otherwise the public landing page (?lang=ja|en|ko for SEO links)."""
+    from sitekpi.i18n import normalize_locale
+    from sitekpi.views.landing import render_landing
+
     if nav_context(request)["connected"]:
         return RedirectResponse("/live", status_code=302)
-    return HTMLResponse(render_home(locale=get_locale(request.session),
-                                    rail=nav_rail_context(request, "home")))
+    loc = normalize_locale(lang) if lang else get_locale(request.session)
+    return HTMLResponse(render_landing(locale=loc))
 
 
 # Short-lived per-process cache so switching periods does not re-hit GA4 every

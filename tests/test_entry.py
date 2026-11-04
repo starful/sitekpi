@@ -33,13 +33,26 @@ def test_demo_guess_follows_the_demo_property():
     assert guess_behavior(None, "Demo Media") == ("content", "demo")
 
 
-def test_start_page_offers_connect_demo_sample(client):
-    html = client.get("/").text
-    s = BeautifulSoup(html, "html.parser")
-    hrefs = [a["href"] for a in s.select(".home-actions a")]
-    assert hrefs == ["/connect", "/connect/demo?start=1", "/ec"]
-    assert len(s.select(".home-steps li")) == 3
-    assert s.select_one('aside.rail')  # same menu as every page
+def test_landing_page_purpose_audience_features_how_and_seo(client):
+    import json
+
+    s = BeautifulSoup(client.get("/").text, "html.parser")
+    hrefs = [a["href"] for a in s.select(".lp-hero .lp-actions a")]
+    assert hrefs == ["/connect", "/connect/demo?start=1", "/samples"]
+    for sec in ("why", "who", "features", "how", "faq"):
+        assert s.select_one(f"section#{sec} h2"), sec
+    assert len(s.select("#features .lp-card")) == 6 and "{" not in s.select_one("#features").get_text()
+    assert s.select_one('meta[name="description"]')["content"]
+    assert s.select_one('link[rel="canonical"]')["href"].endswith("/")
+    assert {a["hreflang"] for a in s.select('link[rel="alternate"]')} == {"ja", "en", "ko", "x-default"}
+    kinds = {json.loads(x.string)["@type"] for x in s.select('script[type="application/ld+json"]')}
+    assert kinds == {"SoftwareApplication", "FAQPage"}
+    assert not s.select_one('meta[name="robots"]')  # public page is indexable
+    assert s.select_one('footer a[href="/policy"]') and s.select_one('footer a[href="/terms"]')
+    en = BeautifulSoup(client.get("/?lang=en").text, "html.parser")
+    assert en.html["lang"].startswith("en") and "?lang=en" in en.select_one('link[rel="canonical"]')["href"]
+    # app pages stay out of search results
+    assert BeautifulSoup(client.get("/glossary").text, "html.parser").select_one('meta[name="robots"]')
 
 
 def test_demo_is_one_click_to_a_board_with_a_guess_notice(client):

@@ -1,0 +1,35 @@
+{#- Public pages (landing, policy, terms): header + content + footer, no app rail. Context: loc, c (landing copy), page -#}
+{% extends "base.html" %}
+{% block title %}{{ seo.title if seo is defined and seo else 'SiteKPI' }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/landing.css') }}" /><link rel="stylesheet" href="{{ static_url('css/feedback.css') }}" />{% block page_css %}{% endblock %}{% endblock %}
+{% block page %}
+<header class="pub-top">
+  <a class="pub-logo" href="/{{ lq }}" aria-label="SiteKPI"><img src="/static/favicon.svg" width="30" height="30" alt="" /><span>Site<b>KPI</b></span></a>
+  <nav class="pub-nav" aria-label="SiteKPI">
+    {% for id in ("why", "who", "features", "how", "faq") %}<a href="/{{ lq }}#{{ id }}">{{ c.nav[id] }}</a>{% endfor %}
+  </nav>
+  <div class="pub-right">
+    <div class="pub-langs" aria-label="Language">
+      {% for code, label in [("ja", "日本語"), ("en", "EN"), ("ko", "한국어")] %}<a href="{{ path }}{{ '' if code == 'ja' else '?lang=' ~ code }}"{% if code == loc %} aria-current="true"{% endif %} hreflang="{{ code }}">{{ label }}</a>{% endfor %}
+    </div>
+    <a class="pub-login" href="/connect">{{ c.login }}</a>
+  </div>
+</header>
+{% block content %}{% endblock %}
+<footer class="pub-foot">
+  <div class="pub-foot-in">
+    <a class="pub-logo" href="/{{ lq }}"><img src="/static/favicon.svg" width="24" height="24" alt="" /><span>Site<b>KPI</b></span></a>
+    <nav aria-label="Legal">
+      <a href="/policy{{ lq }}">{{ t("legal.policy", loc) }}</a>
+      <a href="/terms{{ lq }}">{{ t("legal.terms", loc) }}</a>
+      <a href="/glossary">{{ t("nav.glossary", loc) }}</a>
+      <a href="/samples">{{ t("nav.samples_all", loc) }}</a>
+      <button type="button" class="pub-fb" data-feedback-open>{{ c.feedback }}</button>
+    </nav>
+    <p class="pub-note">{{ c.footer_note }}</p>
+    <p class="pub-copy">© 2026 SiteKPI</p>
+  </div>
+</footer>
+{% include "partials/feedback.html" %}
+<script src="{{ static_url('js/feedback.js') }}" defer></script>
+{% endblock %}

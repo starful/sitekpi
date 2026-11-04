@@ -148,3 +148,10 @@ def test_disconnect_revokes_at_google(client, monkeypatch):
     client.get("/connect/demo")  # demo: nothing to revoke
     client.post("/connect/disconnect")
     assert seen == []
+
+
+def test_robots_and_sitemap(client):
+    r = client.get("/robots.txt")
+    assert r.status_code == 200 and "Disallow: /live" in r.text and "Sitemap:" in r.text
+    x = client.get("/sitemap.xml")
+    assert x.status_code == 200 and x.text.count("<url>") == 9 and "/policy?lang=en" in x.text

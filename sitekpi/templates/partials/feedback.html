@@ -1,5 +1,5 @@
 {#- 「ご意見」 dialog (rail button [data-feedback-open]) → POST /feedback (static/js/feedback.js) -#}
-<dialog class="fb" id="feedback" aria-labelledby="fb-title" data-screen="{{ rail.active if rail is defined and rail else '' }}">
+<dialog class="fb" id="feedback" aria-labelledby="fb-title" data-screen="{{ rail.active if (rail is defined and rail) else (page if page is defined else '') }}">
   <form method="dialog" class="fb-form" data-feedback-form>
     <div class="fb-head">
       <h2 id="fb-title">{{ t("fb.title", loc) }}</h2>

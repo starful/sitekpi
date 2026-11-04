@@ -5,6 +5,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}{{ brand_name }}{% endblock %}</title>
+{%- if seo is defined and seo %}
+  <meta name="description" content="{{ seo.description }}" />
+  <link rel="canonical" href="{{ seo.canonical }}" />
+  {% for a in seo.alternates %}<link rel="alternate" hreflang="{{ a.hreflang }}" href="{{ a.href }}" />
+  {% endfor %}<meta property="og:type" content="website" />
+  <meta property="og:site_name" content="SiteKPI" />
+  <meta property="og:title" content="{{ seo.title }}" />
+  <meta property="og:description" content="{{ seo.description }}" />
+  <meta property="og:url" content="{{ seo.canonical }}" />
+  <meta property="og:image" content="{{ seo.image }}" />
+  <meta property="og:locale" content="{{ seo.og_locale }}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  {% for j in seo.jsonld %}<script type="application/ld+json">{{ j }}</script>
+  {% endfor %}
+{%- else %}
+  <meta name="robots" content="noindex" />
+{%- endif %}
 {% include "partials/head_icons.html" %}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
