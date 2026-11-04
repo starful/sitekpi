@@ -134,3 +134,15 @@ def test_live_extras_reads_ga4_reports(monkeypatch):
     assert x["cur"]["events_per_session"] == 7.5 and x["cur"]["dau_mau"] == round(100 * 50 / 900, 1)
     assert x["has_revenue"] and x["cur"]["tx"] == 20
     assert [d["id"] for d in x["devices"]] == ["mobile", "desktop"] and x["devices"][0]["conv_users"] == 6
+
+
+def test_glossary_stickers_use_opaque_urls(client):
+    """Blockers drop images named like analytics (pageviews.gif): stickers load from /stk/<hash>."""
+    s = _soup(client.get("/glossary").text)
+    imgs = s.select(".gl-sticker")
+    assert imgs and all(i["src"].startswith("/stk/") for i in imgs)
+    pv = s.select_one("#pageviews .gl-sticker")["src"]
+    assert "page" not in pv
+    r = client.get(pv)
+    assert r.status_code == 200 and r.headers["content-type"] == "image/gif"
+    assert client.get("/stk/0000000000000000.gif").status_code == 404

@@ -28,6 +28,7 @@ from sitekpi.routes.flow import router as flow_router  # noqa: E402
 from sitekpi.routes.setup import router as setup_router  # noqa: E402
 from sitekpi.routes.pages import router as pages_router  # noqa: E402
 from sitekpi.static_files import CachedStaticFiles  # noqa: E402
+from sitekpi.stickers import router as stickers_router  # noqa: E402
 from sitekpi.session import (  # noqa: E402
     ServerSessionMiddleware,
     SQLiteSessionStore,
@@ -55,5 +56,6 @@ app.include_router(connect_router)
 app.include_router(benchmarks_router)
 app.include_router(flow_router)
 app.include_router(setup_router)
+app.include_router(stickers_router)
 # pages last: it owns the catch-all /{slug}
 app.include_router(pages_router)
