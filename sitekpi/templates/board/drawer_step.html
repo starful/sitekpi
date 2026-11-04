@@ -1,0 +1,29 @@
+{#- The step being edited: right-top drawer (same frame as the 比べる業種 drawer) -#}
+<aside class="drawer" id="drawer-step" role="dialog" aria-labelledby="drawer-step-title" data-drawer="step" hidden>
+  <div class="drawer-head">
+    <div>
+      <h2 id="drawer-step-title" data-edit-title></h2>
+      <p class="drawer-lead">{{ t("bx.editing_note", loc) }}</p>
+    </div>
+    <button type="button" class="drawer-x" data-drawer-close aria-label="{{ t('close', loc) }}">×</button>
+  </div>
+  <label class="sx-field">{{ t("setupx.name", loc) }}
+    <input type="text" maxlength="40" data-label />
+  </label>
+  <div class="sx-field">
+    <span>{{ t("setupx.pick_event", loc) }}</span>
+    <div class="sx-events drawer-events" data-events></div>
+  </div>
+  <label class="sx-field sx-other">{{ t("setupx.other_event", loc) }}
+    <input type="text" maxlength="40" pattern="[A-Za-z0-9_]+" data-event-input />
+  </label>
+  <div class="drawer-row">
+    <button type="button" class="sx-danger" data-remove>{{ t("bx.remove_step", loc) }}</button>
+    <span class="drawer-lead">{{ t("bx.last_note", loc) }}</span>
+  </div>
+  {#- the drawer covers the 編集中 bar, so it can save too -#}
+  <div class="drawer-actions">
+    <button type="button" class="drawer-secondary" data-drawer-close>{{ t("bx.step_ok", loc) }}</button>
+    <button type="submit" class="drawer-primary" form="edit-form">{{ t("bx.save", loc) }}</button>
+  </div>
+</aside>

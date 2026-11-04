@@ -1,0 +1,50 @@
+{#- 詳しい数字: every category stacked (one per block). Inline in board.html, or the /live/details fragment.
+    Context: details (views/board.py _details_view) -#}
+{% import "board/_macros.html" as m with context %}
+<nav class="dnav" aria-label="{{ t('detail.title', loc) }}">
+  {% for g in details.groups %}<a href="#g-{{ g.id }}" class="dnav-chip">{{ g.title }}{% if g.warn %}<span class="dnav-warn">{{ g.warn }}</span>{% endif %}</a>{% endfor %}
+</nav>
+<div class="dgroups" data-warn="{{ details.warn }}">
+  {% for g in details.groups %}
+  <div class="dgroup" id="g-{{ g.id }}">
+    <div class="dgroup-head">
+      <h3>{{ g.title }}</h3>
+      {% if g.rows %}<span class="dgroup-n">{{ g.count }}</span>{% endif %}
+      {% if g.warn %}<span class="judge judge-down">{{ t("detail.warn_n", loc, n=g.warn) }}</span>{% endif %}
+      {% if g.collapsed %}<button type="button" class="dgroup-toggle" data-dgroup-toggle aria-expanded="false" aria-controls="dt-{{ g.id }}" data-open="{{ t('detail.open', loc, n=g.count) }}" data-close="{{ t('detail.close', loc) }}">{{ t("detail.open", loc, n=g.count) }}</button>{% endif %}
+    </div>
+    {% if g.note %}
+    <p class="dgroup-note">{{ g.note }}</p>
+    {% else %}
+    {% if g.collapsed %}<p class="dgroup-summary" data-dgroup-summary>{{ g.summary }}</p>{% endif %}
+    <div class="dtable" id="dt-{{ g.id }}" role="table" aria-label="{{ g.title }}"{% if g.collapsed %} hidden{% endif %}>
+      <div class="dt-row dt-head" role="row">
+        <span role="columnheader">{{ t("col.metric", loc) }}</span>
+        <span role="columnheader" class="num">{{ g.value_head }}</span>
+        <span role="columnheader" class="ctr">{{ t("detail.trend", loc) }}</span>
+        <span role="columnheader" class="num">{{ t("col.prev", loc) }}</span>
+        <span role="columnheader" class="num">{{ t("detail.bench_gap", loc) }}</span>
+        <span role="columnheader" class="num">{{ t("detail.judge", loc) }}</span>
+      </div>
+      {% for r in g.rows %}
+      <div class="dt-row{{ ' is-focus' if r.focus else '' }}" role="row">
+        <span class="dt-name" role="rowheader">
+          {% if r.code %}<code class="row-name">{{ r.label }}</code>{% else %}<span class="row-name">{{ r.label }}</span>{% endif %}
+          {% if r.help %}{{ m.help_btn(r.id, r.label) }}{% endif %}
+          {% if r.focus %}{{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}
+          {% if r.sub %}<small class="dt-sub{{ ' is-warn' if r.sub_warn else '' }}">{{ r.sub }}</small>{% endif %}
+        </span>
+        <span class="num dt-value" role="cell">{{ r.value }}</span>
+        <span class="ctr" role="cell">{% if r.spark %}<svg class="spark tone-{{ r.spark.tone }}" width="76" height="26" viewBox="0 0 76 26" aria-hidden="true"><polyline points="{{ r.spark.points }}" /><circle cx="{{ r.spark.x }}" cy="{{ r.spark.y }}" r="2.5" /></svg>{% else %}<span class="muted">—</span>{% endif %}</span>
+        <span class="num prev-cell tone-{{ r.delta_tone }}" role="cell">{{ r.delta }}</span>
+        <span class="num dt-bench" role="cell">{% if r.bench.kind == "judge" %}{{ m.bench_value(r.bench) }}<small class="bench-gap tone-{{ r.bench.tone }}">{{ r.bench.gap }}</small>{% else %}<span class="muted">—</span>{% endif %}</span>
+        <span class="num judge-cell" role="cell">{{ m.judge_cell(r.bench) }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% if g.missing %}<p class="ev-missing" title="{{ t('events.missing_hint', loc) }}"><span class="ev-missing-k">{{ t("events.missing", loc) }}</span> {% for n in g.missing %}<code>{{ n }}</code>{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% for d in details.dialogs %}{{ m.help_dialog(d) }}{% endfor %}

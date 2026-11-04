@@ -1,0 +1,53 @@
+{#- 見本ボードの右側: the board's いまの状態 + 行動フロー for one goal × industry -#}
+<div class="sp-card sp-card-head">
+  <div class="sp-title-row">
+    <div>
+      <span class="sample-tag">{{ t("sample_tag", loc) }}</span>
+      <h2>{{ cur.label }} × {{ cur.ind_label }}</h2>
+      <span class="sp-hint">{{ cur.hint }}</span>
+    </div>
+    <a class="sp-btn sp-btn-primary" href="{{ cur.open_href }}">{{ t("samplesx.open", loc) }}</a>
+  </div>
+  <div class="sp-inds">
+    <span class="sp-k">{{ t("samplesx.ind_k", loc) }}</span>
+    {% for i in cur.inds %}
+    <a class="sp-ind{{ ' is-on' if i.selected else '' }}" href="{{ i.href }}" data-ind{% if i.selected %} aria-current="true"{% endif %}>{{ i.label }}</a>
+    {% else %}
+    <span class="sp-muted">{{ t("samplesx.all_ind_note", loc) }}</span>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="sp-card">
+  <span class="sp-k sp-k-up">{{ t("verdict.title", loc) }}</span>
+  <p class="sp-verdict">{{ cur.verdict.short or cur.verdict.text }}</p>
+  <div class="sp-tiles">
+    {% for k in cur.verdict.tiles %}
+    <div class="sp-tile{{ ' is-issue' if k.issue else '' }}">
+      <span class="sp-tile-label">{% if k.tag %}<span class="tile-tag">{{ k.tag }}</span> {% endif %}{{ k.label }}</span>
+      <span class="sp-tile-value">{{ k.value }}</span>
+      <span class="sp-tile-prev tone-{{ k.prev.tone }}">{{ k.prev.word }}{% if k.prev.text %} {{ k.prev.text }}{% endif %}</span>
+      {% if k.bench.kind == "judge" and k.bench.judge %}<span class="judge judge-{{ k.bench.judge }}">{{ t("judge." ~ k.bench.judge, loc) }}</span>
+      {% elif k.bench.kind == "none" %}<span class="judge judge-none">{{ t("bench_none", loc) }}</span>
+      {% else %}<span class="judge judge-na-chip">{{ t("verdict.bench_na", loc) }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="sp-card">
+  <span class="sp-k sp-k-up">{{ t("where.title", loc) }}</span>
+  <div class="sp-scroll">
+    <ol class="sp-bars">
+      {% for s in cur.bars %}
+      <li class="{{ 'is-worst' if s.worst else '' }}{{ ' is-last' if s.last else '' }}">
+        <div class="sp-bar"><i style="height: {{ s.height }}%"></i></div>
+        <span class="sp-bar-label">{{ s.label }}</span>
+        <span class="sp-bar-users">{{ s.users }}{% if t("samplesx.people", loc) %} <small>{{ t("samplesx.people", loc) }}</small>{% endif %}</span>
+        <span class="sp-bar-go">{{ t("samplesx.go", loc, go=s.go) if s.go else t("samplesx.entry", loc) }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+  <p class="sp-muted">{{ t("samplesx.note", loc) }}</p>
+</div>

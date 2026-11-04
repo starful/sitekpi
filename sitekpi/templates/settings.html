@@ -1,24 +1,46 @@
 {% extends "base.html" %}
 {% block title %}SiteKPI · {{ t("settings.title", loc) }}{% endblock %}
-{% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
 {% block css %}<link rel="stylesheet" href="{{ static_url('css/settings.css') }}" />{% endblock %}
 {% block main %}
-      <header class="top"><h1>{{ t("settings.title", loc) }}</h1></header>
-      <div class="content">
-        {% if saved %}<p class="saved" role="status">{{ t("settings.saved", loc) }}</p>{% endif %}
-        <div class="card">
-          <p class="lead">{{ t("settings.lead", loc) }}</p>
-          <form method="post" action="/settings">
-            <label class="field" for="locale">{{ t("settings.language", loc) }}</label>
-            <select id="locale" name="locale">
-              {% for code, label in locales %}<option value="{{ code }}"{% if code == loc %} selected{% endif %}>{{ label }}</option>{% endfor %}
-            </select>
-            <p class="hint">{{ t("settings.language_help", loc) }}</p>
-            <div class="actions">
-              <button type="submit" class="primary">{{ t("settings.save", loc) }}</button>
-              <a class="back" href="{{ back_href }}">{{ t("settings.back", loc) }}</a>
-            </div>
-          </form>
-        </div>
+  <main class="st">
+    <h1>{{ t("settings.title", loc) }}</h1>
+
+    <section class="st-card" aria-labelledby="st-lang">
+      <div>
+        <h2 id="st-lang">{{ t("settings.language", loc) }}</h2>
+        <p class="st-help">{{ t("settings.language_help", loc) }}</p>
       </div>
+      <form method="post" action="/settings" class="st-form">
+        <div class="st-langs" role="radiogroup" aria-labelledby="st-lang">
+          {% for l in locales %}
+          <label class="st-lang">
+            <input type="radio" name="locale" value="{{ l.code }}"{% if l.code == loc %} checked{% endif %} />
+            <span><b>{{ l.label }}</b><small>{{ l.sample }}</small></span>
+          </label>
+          {% endfor %}
+        </div>
+        <div class="st-actions">
+          <button type="submit" class="st-primary">{{ t("settings.save", loc) }}</button>
+          {% if saved %}<span class="st-saved" role="status">{{ t("settings.saved", loc) }}</span>{% endif %}
+          <a class="st-back" href="{{ back_href }}">{{ t("settings.back_board", loc) if site else t("settings.back", loc) }}</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="st-card" aria-labelledby="st-site">
+      <h2 id="st-site">{{ t("settings.site", loc) }}</h2>
+      <div class="st-site">
+        {% if site %}
+        <span><b>{{ site.name }}</b>{% if site.sub %}<small>{{ site.sub }}</small>{% endif %}</span>
+        <span class="st-site-links">
+          <a class="st-ghost" href="/live?edit=1#flow">{{ t("settings.site_setup", loc) }}</a>
+          <a class="st-ghost" href="/connect">{{ t("settings.site_conn", loc) }}</a>
+        </span>
+        {% else %}
+        <span class="st-help">{{ t("settings.site_none", loc) }}</span>
+        <a class="st-ghost" href="/connect">{{ t("settings.site_connect", loc) }}</a>
+        {% endif %}
+      </div>
+    </section>
+  </main>
 {% endblock %}

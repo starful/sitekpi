@@ -4,10 +4,10 @@
 {% block main %}
   {% set step = 3 if (connected and selected) else (2 if connected else 1) %}
   <main class="connect">
-    <h1>{{ t("connect.title", loc) }}</h1>
+    <h1>{{ t("connect.title_x", loc) }}</h1>
     <p class="lead">{{ t("connect.lead", loc) }}</p>
     <ol class="stepper" aria-label="{{ t('connect.title', loc) }}">
-      {% for n, key in [(1, "connect.step1"), (2, "connect.step2"), (3, "setup.title")] %}
+      {% for n, key in [(1, "connect.step1"), (2, "connect.step2"), (3, "connect.step3_board")] %}
       <li class="{{ 'is-done' if n < step or (n == 3 and ready) else ('is-current' if n == step else '') }}"{% if n == step %} aria-current="step"{% endif %}>
         <span class="num">{{ '✓' if n < step or (n == 3 and ready) else n }}</span><span class="txt">{{ t(key, loc) }}</span>
       </li>
@@ -17,14 +17,19 @@
 
     {% if not connected %}
     {# ① Google #}
-    <section class="card hero">
-      <h2>{{ t("connect.hero.title", loc) }}</h2>
-      <p class="meta">{{ t("connect.hero.meta", loc) }}</p>
-      <div class="actions">
-        <a class="btn primary" href="{{ '/connect/google' if oauth_ready else '/connect/demo' }}">{{ t("connect.btn.google", loc) }}</a>
-        <a class="btn ghost" href="/connect/demo">{{ t("connect.btn.demo", loc) }}</a>
+    <section class="card hero cx-hero">
+      <div class="cx-login">
+        <h2>{{ t("connect.hero.title", loc) }}</h2>
+        <p class="meta">{{ t("connect.hero.meta", loc) }}</p>
+        <a class="btn primary cx-big" href="{{ '/connect/google' if oauth_ready else '/connect/demo' }}">{{ t("connect.btn.google", loc) }}</a>
+        <a class="cx-demo" href="/connect/demo?start=1">{{ t("connect.btn.demo_x", loc) }}</a>
+        {% if not oauth_ready %}<p class="hint">{{ t("connect.hint.demo_oauth", loc) }}</p>{% endif %}
       </div>
-      {% if not oauth_ready %}<p class="hint">{{ t("connect.hint.demo_oauth", loc) }}</p>{% endif %}
+      <ul class="cx-safe">
+        {% for k in ("connect.safe1", "connect.safe2", "connect.safe3") %}
+        <li><span aria-hidden="true">✓</span><span>{{ t(k, loc)|safe }}</span></li>
+        {% endfor %}
+      </ul>
     </section>
 
     {% elif not selected %}
@@ -43,12 +48,15 @@
           </label>
           {% endfor %}
         </div>
-        <button type="submit" class="primary">{{ t("connect.use_property", loc) }}</button>
+        <div class="cx-pick-foot">
+          <button type="submit" class="primary cx-big">{{ t("connect.use_property", loc) }}</button>
+        </div>
+        <p class="meta cx-note">{{ t("connect.flow_note", loc) }}</p>
       </form>
       {% else %}
       <p class="note">{{ t("connect.no_property_meta", loc) }}</p>
       {% endif %}
-      <form method="post" action="/connect/disconnect" class="row"><button type="submit" class="ghost small">{{ t("connect.disconnect", loc) }}</button></form>
+      <form method="post" action="/connect/disconnect" class="row"><button type="submit" class="ghost small">{{ t("connect.other_account", loc) }}</button></form>
     </section>
 
     {% else %}
@@ -78,7 +86,7 @@
         {% endfor %}
       </dl>
       {% endif %}
-      {% if not ready %}<a class="btn primary" href="/setup">{{ t("setup.start", loc) }}</a>{% endif %}
+      {% if not ready %}<a class="btn primary" href="/live?edit=1#flow">{{ t("setup.start", loc) }}</a>{% endif %}
     </section>
     {% endif %}
 

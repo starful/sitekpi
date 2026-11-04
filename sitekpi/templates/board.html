@@ -2,256 +2,177 @@
 {% import "board/_macros.html" as m with context %}
 {% block title %}{{ page_title }}{% endblock %}
 {% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
-{% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" />{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" /><link rel="stylesheet" href="{{ static_url('css/helpcard.css') }}" />{% if editor %}<link rel="stylesheet" href="{{ static_url('css/setup.css') }}" />{% endif %}{% endblock %}
 {% block main %}
+      {#- 上のバー: follows the scroll. Site · 比べる業種 · 期間 · page menu -#}
       <header class="top">
-        <div>
+        <div class="top-l">
           <h1>{{ industry_label }}</h1>
-          <div class="meta">{{ pack_meta }}{% if is_sample %} · <a class="switch-link" href="/samples">{{ t("samples.switch", loc) }}</a>{% endif %}</div>
+          <div class="meta">
+            <span>{{ meta_short or pack_meta }}</span>
+            {% if is_sample %}<a class="switch-link" href="/samples">{{ t("samples.switch", loc) }}</a>{% endif %}
+          </div>
         </div>
         <div class="top-right">
-          {% if bench %}<button type="button" class="adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}
-          <label class="period">
-            <span class="sr-only">{{ t("period.label", loc) }}</span>
-            <select disabled aria-label="{{ t('period.label', loc) }}">
-              <option{% if period == "28d" %} selected{% endif %}>{{ t("period.28d", loc) }}</option>
-              <option{% if period == "7d" %} selected{% endif %}>{{ t("period.7d", loc) }}</option>
-            </select>
-          </label>
+          {#- 比べる業種 · 期間 only; 目安を調整 lives at the bottom of the 業種 drawer (sample boards keep it here) -#}
+          {% if industry_drawer %}<button type="button" class="ind-chip" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false"><span class="ind-k">{{ t("bx.ind_k", loc) }}</span><b>{{ ind_name or t("bx.ind_none", loc) }}</b><span class="ind-caret" aria-hidden="true">▾</span></button>{% endif %}
+          {% if bench and not industry_drawer %}<button type="button" class="adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}
+          {#- 期間: reloads this board for the chosen period (?period=) -#}
+          <form method="get" class="period" data-period>
+            <label>
+              <span class="sr-only">{{ t("period.label", loc) }}</span>
+              <select name="period" aria-label="{{ t('period.label', loc) }}">
+                <option value="28d"{% if period == "28d" %} selected{% endif %}>{{ t("period.28d", loc) }}</option>
+                <option value="7d"{% if period == "7d" %} selected{% endif %}>{{ t("period.7d", loc) }}</option>
+              </select>
+            </label>
+            <noscript><button type="submit">OK</button></noscript>
+          </form>
         </div>
+        <nav class="page-nav" aria-label="{{ t('bx.page_nav', loc) }}">
+          <a href="#s-l0" data-nav="s-l0">{{ t("verdict.title", loc) }}</a>
+          <a href="#flow" data-nav="flow">{{ t("where.title", loc) }}</a>
+          <a href="#s-l2" data-nav="s-l2">{{ t("detail.title", loc) }}<span class="nav-warn" data-nav-warn{% if not (details and details.warn) %} hidden{% endif %}>{{ t("detail.warn_n", loc, n=(details.warn if details else 0)) }}</span></a>
+        </nav>
+        {% if industry_drawer %}{% include "board/drawer_industry.html" %}{% endif %}
+        {% if editor %}{% include "board/drawer_step.html" %}{% endif %}
       </header>
       <div class="content">
-        <div class="focus-banner" role="status">{{ focus_line }}</div>
-        <section class="summary" aria-label="{{ t('summary_aria', loc) }}">
-          {% for k in summary %}
-          <div class="sum-item{{ ' is-focus' if k.focus else '' }}">
-            <div class="sum-head">
-              {{ m.help_btn(k.id, k.label) }}
-              <div class="sum-label" title="{{ k.label }}">{{ k.label }}</div>
-              {% if k.focus %}{{ m.focus_tag(t("focus", loc)) }}{% endif %}
-            </div>
-            <div class="sum-value">{{ k.value }}</div>
-            <div class="sum-delta tone-{{ k.tone }}">{{ k.delta }} <span class="vs">{{ t("vs_prev", loc) }}</span></div>
-            {{ m.bench_block(k.block) }}
+        {% if notice %}
+        <div class="notice" role="status">
+          <p>{{ notice.text }}</p>
+          <div class="notice-actions">
+            {% if notice.get("flow") %}
+            <span class="notice-item"><span class="notice-k">{{ t("notice.k_flow", loc) }}</span><b>{{ notice.flow }}</b>
+              {% if editor %}<button type="button" class="notice-btn" data-edit-open><span aria-hidden="true">✎</span>{{ t("notice.fix", loc) }}</button>
+              {% else %}<a class="notice-btn" href="/live?edit=1#flow"><span aria-hidden="true">✎</span>{{ t("notice.fix", loc) }}</a>{% endif %}</span>
+            <span class="notice-item"><span class="notice-k">{{ t("bx.ind_k", loc) }}</span><b>{{ notice.ind }}</b>
+              {% if industry_drawer %}<button type="button" class="notice-btn" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false">{{ t("notice.change", loc) }}<span aria-hidden="true" class="caret">▾</span></button>
+              {% else %}<a class="notice-btn" href="/live?industry=1">{{ t("notice.change", loc) }}<span aria-hidden="true" class="caret">▾</span></a>{% endif %}</span>
+            {% elif editor %}<button type="button" class="notice-fit" data-edit-open>{{ t("notice.fit", loc) }}</button>
+            {% else %}<a class="notice-fit" href="/live?edit=1#flow">{{ t("notice.fit", loc) }}</a>{% endif %}
+            <form method="post" action="/setup/keep"><button type="submit" class="notice-keep">{{ t("notice.keep", loc) }}</button></form>
           </div>
-          {% endfor %}
-        </section>
+        </div>
+        {% endif %}
 
-        <section class="watch" aria-label="{{ t('watch.title', loc) }}">
-          <div class="watch-head">
-            <h2>{{ t("watch.title", loc) }}</h2>
-            <span class="sub">{{ t("watch.sub", loc) }}</span>
-          </div>
-          {% if watch %}
-          <ol class="watch-list">
-            {% for w in watch %}
-            <li class="watch-item tone-{{ w.tone }}">
-              <div class="watch-title">{{ m.help_btn(w.id, w.label) }}<strong>{{ w.title }}</strong>{{ m.judge_chip(w.tone) }}</div>
-              <p class="watch-numbers">{{ w.numbers }}</p>
-              {% if w.trend %}<p class="watch-trend"><span>{{ t("trend.k", loc) }}</span><b class="tone-{{ w.trend.tone }}">{{ w.trend.text }}</b> {{ w.trend.word }}</p>{% endif %}
-              <p class="watch-tip"><span>{{ t("watch.tip", loc) }}</span>{{ w.tip }}</p>
-            </li>
+        {# L0 — いまの状態: 一言 + three numbers. Everything else is in 「説明」 #}
+        <section class="verdict" id="s-l0" aria-labelledby="verdict-title">
+          <h2 id="verdict-title" class="kicker">{{ t("verdict.title", loc) }}{% if is_sample %} <span class="sample-tag">{{ t("sample_tag", loc) }}</span>{% endif %}</h2>
+          <p class="verdict-text">{{ verdict.short or verdict.text }}</p>
+          <div class="tiles">
+            {% for k in verdict.tiles %}
+            <article class="tile{{ ' is-issue' if k.issue else '' }}">
+              <div class="tile-head">
+                {% if k.tag %}<span class="tile-tag">{{ k.tag }}</span>{% endif %}
+                <span class="tile-label">{{ k.label }}</span>
+                {{ m.pop_btn("tile-" ~ loop.index, k.label) }}
+              </div>
+              <div class="tile-value">{{ k.value }}</div>
+              <div class="tile-chips">
+                <span class="tile-prev tone-{{ k.prev.tone }}">{{ t("bx.prev", loc, d=k.prev.text) if k.prev.text else t("bx.prev_none", loc) }}</span>
+                {% if k.bench.kind == "na" %}<span class="judge judge-na-chip">{{ t("verdict.bench_na", loc) }}</span>{% else %}{{ m.judge_cell(k.bench) }}{% endif %}
+              </div>
+            </article>
             {% endfor %}
-          </ol>
-          {% else %}
-          <p class="watch-none">{{ t("watch.none", loc) }}</p>
-          {% endif %}
-          {% if is_sample %}<p class="watch-sample">{{ t("watch.sample", loc) }}</p>{% endif %}
+          </div>
         </section>
 
-        {% if flow %}{% include "board/flow.html" %}{% endif %}
-
-        {# Reading order: who → where from → depth → convert → evidence → business #}
-        <div class="grid-2">
-          {{ m.metric_panel(panels.audience) }}
-          <section class="panel" id="panel-channels">
-            <div class="panel-head">
-              <div class="panel-head-left">
-                <h2>{{ t("panel.channels", loc) }}</h2>
-                <span class="sub">{{ t("panel.channels_sub", loc) }}</span>
-              </div>
-              {{ m.view_switch("channels", ["list", "card", "bar", "stack"]) }}
+        {# L1 — どこで離れているか: flow + one line + 今見るべきこと + 流入別. Details in 「説明」 #}
+        {% set f = flow %}
+        <section class="where{{ ' flow' if f else '' }}"{% if f %} id="flow" data-ch="all"{% endif %} aria-labelledby="where-title"{% if editor %} data-editable{% endif %}>
+          {% if editor %}{% include "board/edit_bar.html" %}{% endif %}
+          <div class="where-head">
+            <div class="where-title">
+              <h2 id="where-title">{{ t("where.title", loc) }}{% if f and f.sample %} <span class="sample-tag">{{ t("sample_tag", loc) }}</span>{% endif %}</h2>
+              {% if f %}{{ m.pop_btn("flow-help", t("where.title", loc)) }}{% endif %}
+              {% if editor %}<button type="button" class="where-edit" data-edit-open><span aria-hidden="true">✎</span>{{ t("bx.edit", loc) }}</button>
+              {% elif not is_sample %}<a class="where-edit" href="/live?edit=1#flow"><span aria-hidden="true">✎</span>{{ t("bx.edit", loc) }}</a>{% endif %}
             </div>
-            <div class="panel-body" data-section-body="channels" data-view-mode="list">
-              <div class="mode-pane mode-list">
-                {% for c in channels %}
-                <div class="chan">
-                  <div class="chan-meta">{{ m.help_btn(c.id, c.name) }}<span class="row-name">{{ c.name }}</span><strong>{{ c.pct }}%</strong></div>
-                  <div class="chan-bar"><i style="width:{{ c.pct }}%;background:{{ c.color }}"></i></div>
-                </div>
+            <div class="where-tools">
+              {% if f and f.channels %}
+              <div class="flow-chs" role="group" aria-label="{{ t('flow.by_channel', loc) }}">
+                <button type="button" class="flow-ch is-on" data-flow-ch="all" aria-pressed="true">{{ t("flow.all", loc) }}</button>
+                {% for c in f.channels %}
+                <button type="button" class="flow-ch" data-flow-ch="{{ c.id }}" aria-pressed="false"><i style="background:{{ c.color }}"></i>{{ c.name }}</button>
                 {% endfor %}
-              </div>
-              <div class="mode-pane mode-card">
-                {% for c in channels %}
-                <article class="metric-card">
-                  <div class="metric-card-head">{{ m.help_btn(c.id, c.name) }}<span class="metric-card-name">{{ c.name }}</span></div>
-                  <div class="metric-card-value">{{ c.pct }}%</div>
-                  <div class="chan-bar"><i style="width:{{ c.pct }}%;background:{{ c.color }}"></i></div>
-                </article>
-                {% endfor %}
-              </div>
-              <div class="mode-pane mode-bar">
-                {% for c in channels %}
-                <div class="bar-row">
-                  <div class="bar-meta">{{ m.help_btn(c.id, c.name) }}<span class="compact-name">{{ c.name }}</span><span class="compact-value">{{ c.pct }}%</span></div>
-                  <div class="rank-bar"><i style="width:{{ c.pct }}%;background:{{ c.color }}"></i></div>
-                </div>
-                {% endfor %}
-              </div>
-              <div class="mode-pane mode-stack">
-                {% if channels_stack %}
-                <div class="chan-stack" role="img" aria-label="{{ t('panel.channels', loc) }}">
-                  {%- for c in channels_stack %}<i class="chan-stack-seg" style="width:{{ c.pct }}%;background:{{ c.color }}" title="{{ c.name }} {{ c.pct }}%"></i>{% endfor -%}
-                </div>
-                {% endif %}
-                {% for c in channels %}
-                <div class="chan">
-                  <div class="chan-meta">{{ m.help_btn(c.id, c.name) }}<span class="row-name">{{ c.name }}</span><strong>{{ c.pct }}%</strong></div>
-                </div>
-                {% endfor %}
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <div class="grid-2">
-          {{ m.metric_panel(panels.engage) }}
-          {{ m.metric_panel(panels.funnel) }}
-        </div>
-
-        <div class="grid-2">
-          <section class="panel" id="panel-events">
-            <div class="panel-head">
-              <div class="panel-head-left">
-                <h2>{{ t("panel.events", loc) }}</h2>
-                <span class="sub" data-count-sub="events">{{ events.sub_closed }}</span>
-              </div>
-              {{ m.view_switch("events", ["list", "card", "bar"]) }}
-            </div>
-            <div class="panel-body" data-section-body="events" data-view-mode="bar">
-              {% if not events.rows %}<p class="ev-empty">{{ t("events.empty", loc) }}</p>{% endif %}
-              <div class="mode-pane mode-list">
-                <table class="dense">
-                  <thead>
-                    <tr>
-                      <th class="help-col">{{ t("col.help", loc) }}</th>
-                      <th>{{ t("col.event", loc) }}</th>
-                      <th style="text-align:right">{{ t("col.count", loc) }}</th>
-                      <th style="text-align:right">{{ t("col.delta", loc) }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for e in events.rows %}
-                    <tr{% if e.cls %} class="{{ e.cls }}"{% endif %}>
-                      <td class="help-cell">{{ m.help_btn(e.id, e.name) }}</td>
-                      <td class="name-cell"><code>{{ e.name }}</code>{% if e.alias %}<span class="ev-alias" title="{{ t('event.alias', loc, name=e.alias) }}">← {{ e.alias }}</span>{% endif %}{% if e.focus %} {{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}</td>
-                      <td class="num">{{ e.count|num }}</td>
-                      <td class="num muted">{{ e.delta }}</td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              <div class="mode-pane mode-card">
-                {% for e in events.rows %}
-                <article class="metric-card{{ ' ' ~ e.cls if e.cls else '' }}">
-                  <div class="metric-card-head">
-                    {{ m.help_btn(e.id, e.name) }}
-                    <code class="metric-card-name">{{ e.name }}</code>{% if e.alias %}<span class="ev-alias" title="{{ t('event.alias', loc, name=e.alias) }}">← {{ e.alias }}</span>{% endif %}
-                    {% if e.focus %}{{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}
-                  </div>
-                  <div class="metric-card-value">{{ e.count|num }}</div>
-                  <div class="metric-card-delta">{{ e.delta }}</div>
-                </article>
-                {% endfor %}
-              </div>
-              <div class="mode-pane mode-bar">
-                {% for e in events.rows %}
-                <div class="bar-row{{ ' ' ~ e.cls if e.cls else '' }}">
-                  <div class="bar-meta">
-                    {{ m.help_btn(e.id, e.name) }}
-                    <code class="compact-name">{{ e.name }}</code>{% if e.alias %}<span class="ev-alias" title="{{ t('event.alias', loc, name=e.alias) }}">← {{ e.alias }}</span>{% endif %}
-                    {% if e.focus %}{{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}
-                    <span class="compact-value">{{ e.count|num }}</span>
-                  </div>
-                  <div class="rank-bar"><i style="width:{{ e.bar_pct }}%"></i></div>
-                </div>
-                {% endfor %}
-              </div>
-            </div>
-            <div class="panel-foot">
-              {% if events.more_n %}
-              <div class="more-wrap" data-more-wrap="events">
-                <div class="more-fade" aria-hidden="true"></div>
-                <button type="button" class="more-chip" data-more="events">{{ t("more_n", loc, n=events.more_n) }}</button>
               </div>
               {% endif %}
-              {% if events.missing %}
-              <p class="ev-missing" title="{{ t('events.missing_hint', loc) }}"><span class="ev-missing-k">{{ t("events.missing", loc) }}</span> {% for n in events.missing %}<code>{{ n }}</code>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+            </div>
+          </div>
+          {% if worst %}<p class="where-worst">{{ t("bx.worst", loc, a=worst.from, b=worst.to, drop=worst.drop) }}</p>{% endif %}
+          {% if f %}<div data-flow-view>{% include "board/flow.html" %}</div>{% endif %}
+          {% if editor %}<div class="edit-track" data-edit-track hidden><div class="sx-scroll"><ol class="sx-flow" data-flow></ol></div><p class="sx-cover" data-cover></p></div>{% endif %}
+
+          <div class="where-grid{{ ' is-single' if not (f and f.ch_rows) else '' }}">
+            <div class="watch" aria-label="{{ t('watch.title', loc) }}">
+              <h3>{{ t("watch.title", loc) }}</h3>
+              {% if watch %}
+              <ol class="watch-list">
+                {% for w in watch %}
+                <li class="watch-item tone-{{ w.tone }}">
+                  <strong class="watch-name">{{ w.label }}</strong>
+                  <span class="watch-value">{{ w.value }}</span>
+                  <span class="watch-bench">{{ t("bx.watch_bench", loc, avg=w.avg) }}</span>
+                  {{ m.judge_chip(w.tone) }}
+                  {{ m.pop_btn("watch-" ~ loop.index, w.label) }}
+                </li>
+                {% endfor %}
+              </ol>
+              {% else %}
+              <p class="watch-none">{{ t("watch.none", loc) }}</p>
+              {% endif %}
+              {#- far outside one band, or several 要注意 at once → the 比べる業種 may be wrong -#}
+              {% if industry_drawer and watch and (watch | selectattr("far") | list or watch | selectattr("tone", "equalto", "down") | list | length >= 2) %}
+              <div class="watch-ind">
+                <span>{{ t("watch.ind_nudge", loc, ind=ind_name or t("bx.ind_none", loc)) }}</span>
+                <button type="button" class="nudge-btn" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false">{{ t("watch.ind_change", loc) }}<span aria-hidden="true" class="caret">▾</span></button>
+              </div>
               {% endif %}
             </div>
-          </section>
-          <section class="panel" id="panel-biz">
-            <div class="panel-head">
-              <div class="panel-head-left">
-                <h2>{{ t("panel.biz", loc) }}</h2>
-                <span class="sub">{{ t("panel.biz_sub", loc) }}</span>
-              </div>
-              {% if not business_unlinked %}{{ m.view_switch("biz", ["list", "card"]) }}{% endif %}
-            </div>
-            {% if business_unlinked %}
-            <div class="biz-collapsed">
-              <p class="biz-collapsed-title">{{ t("biz.collapsed", loc, n=business|length) }}</p>
-              <p class="biz-collapsed-hint">{{ t("biz.collapsed_hint", loc) }}</p>
-              <details class="biz-collapsed-list">
-                <summary>{{ t("biz.show", loc) }}</summary>
-                <ul>
-                  {% for b in business %}<li>{{ m.help_btn(b.id, b.label) }}<span>{{ b.label }}</span></li>{% endfor %}
-                </ul>
-              </details>
-            </div>
-            {% else %}
-            <div class="panel-body" data-section-body="biz" data-view-mode="list">
-              <div class="mode-pane mode-list">
-                {% call m.dense_table() %}
-                {% for b in business %}
-                <tr>
-                  <td class="help-cell">{{ m.help_btn(b.id, b.label) }}</td>
-                  <td class="name-cell"><span class="row-name">{{ b.label }}</span>
-                    <span class="biz-status {{ 'is-linked' if b.linked else 'is-unlinked' }}">{{ t("biz.linked" if b.linked else "biz.unlinked", loc) }}</span></td>
-                  <td class="num na">{{ b.value }}</td>
-                  {{ m.bench_cells(b.cells) }}
-                </tr>
+            {% if f and f.ch_rows %}
+            <div class="flow-chtable">
+              <div class="flow-chtitle"><h3>{{ t("flow.ch_title", loc, step=f.last_label) }}</h3>{{ m.pop_btn("ch-help", t("flow.ch_title", loc, step=f.last_label)) }}</div>
+              <ul>
+                {% for r in f.ch_rows %}
+                <li data-ch-row="{{ r.id }}">
+                  <span class="flow-chname"><i style="background:{{ r.color }}"></i>{{ r.name }}</span>
+                  <span class="flow-chrate"><b>{{ r.rate_fmt }}</b>{% if r.best %}<em class="tag-best">{{ t("flow.ch_best", loc) }}</em>{% elif r.low %}<em class="tag-low">{{ t("flow.ch_low", loc) }}</em>{% endif %}</span>
+                </li>
                 {% endfor %}
-                {% endcall %}
-              </div>
-              <div class="mode-pane mode-card">
-                {% for b in business %}
-                <article class="metric-card">
-                  <div class="metric-card-head">
-                    {{ m.help_btn(b.id, b.label) }}
-                    <span class="metric-card-name">{{ b.label }}</span>
-                    <span class="biz-status {{ 'is-linked' if b.linked else 'is-unlinked' }}">{{ t("biz.linked" if b.linked else "biz.unlinked", loc) }}</span>
-                  </div>
-                  <div class="metric-card-value na">{{ b.value }}</div>
-                  {{ m.bench_block(b.block) }}
-                </article>
-                {% endfor %}
-              </div>
+              </ul>
             </div>
             {% endif %}
-          </section>
-        </div>
+          </div>
+        </section>
+
+        {# L2 — 詳しい数字: every category stacked; loaded after the page when GA4 is slow #}
+        <section class="detail" id="s-l2" aria-labelledby="detail-title">
+          <div class="detail-head">
+            <h2 id="detail-title">{{ t("detail.title", loc) }}</h2>
+            <span class="sub">{{ t("detail.hint", loc) }}</span>
+          </div>
+          <div class="details" data-details{% if details_src %} data-src="{{ details_src }}" aria-busy="true"{% endif %}>
+            {% if details %}{% include "board/details.html" %}
+            {% else %}
+            <p class="details-loading">{{ t("detail.loading", loc) }}</p>
+            <div class="skeleton" aria-hidden="true">{% for _ in range(6) %}<i></i>{% endfor %}</div>
+            {% endif %}
+          </div>
+        </section>
       </div>
 {% endblock %}
 {% block after_shell %}
   {% if bench %}{% include "board/bench_pops.html" %}{% endif %}
   {% if flow %}{% include "board/flow_pops.html" %}{% endif %}
+  {% include "board/info_pops.html" %}
   <div class="pop" id="pop" role="dialog" aria-modal="false" hidden></div>
   {% for d in dialogs %}{{ m.help_dialog(d) }}{% endfor %}
 {% endblock %}
 {% block scripts %}
   <script type="application/json" id="board-data">{{ board_data|tojson }}</script>
+  {% if editor %}<script type="application/json" id="setup-data">{{ editor.data|tojson }}</script>{% endif %}
   <script src="{{ static_url('js/popover.js') }}" defer></script>
   <script src="{{ static_url('js/board.js') }}" defer></script>
+  {% if editor or industry_drawer %}<script src="{{ static_url('js/board_edit.js') }}" defer></script>{% endif %}
 {% endblock %}

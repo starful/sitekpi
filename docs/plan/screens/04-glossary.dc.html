@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>指標辞典 B</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&amp;family=IBM+Plex+Sans+JP:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+button{font-family:inherit}
+.card:hover{border-color:#9db8ea}
+</style>
+</helmet>
+<div style="font-family: 'IBM Plex Sans JP', 'Noto Sans JP', system-ui, sans-serif; color: #152033; background: #f4f6fa; min-height: 1400px; display: flex; flex-wrap: wrap; align-items: stretch">
+
+  <nav aria-label="メニュー" style="flex: 0 1 248px; min-width: 220px; box-sizing: border-box; background: #ffffff; border-right: 1px solid #e5eaf1; padding: 20px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 14px">
+    <a href="01-start.dc.html" style="text-decoration: none; color: #152033; font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; padding: 0 8px 18px">Site<span style="color: #2f6fed">KPI</span></a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 6px 10px 4px">マイサイト</div>
+    <a href="03-board.dc.html" style="text-decoration: none; color: #152033; padding: 9px 10px; font-weight: 700">Demo Shop JP（デモ）</a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">ツール</div>
+    <a href="06-builder.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">ダッシュボードを作る</a>
+    <a href="#top" style="text-decoration: none; color: #1d4ed8; background: #eef4ff; padding: 8px 10px; border-radius: 8px; font-weight: 700">指標辞典</a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">見本</div>
+    <a href="05-samples.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">見本ボード一覧</a>
+    <div style="flex-grow: 1; min-height: 24px"></div>
+    <a href="07-settings.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 12px 10px 8px; border-top: 1px solid #e5eaf1; font-weight: 600">設定</a>
+  </nav>
+
+  <main id="top" style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 40px clamp(16px, 3vw, 44px) 64px; display: flex; flex-direction: column; gap: 22px">
+    <div>
+      <h1 style="margin: 0; font-size: 28px; font-weight: 700">指標辞典</h1>
+      <p style="margin: 6px 0 0; font-size: 14px; line-height: 1.7; color: #5b6676">ボードの「説明」と同じ言葉です。カードを開くと 計算 と 見るポイント が出ます。</p>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+      <label style="flex: 1 1 320px; max-width: 480px; display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid #e5eaf1; border-radius: 12px; padding: 0 14px; min-height: 46px">
+        <span aria-hidden="true" style="color: #8792a2; font-size: 15px">⌕</span>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0)">指標を探す</span>
+        <input type="search" value="{{query}}" onChange="{{onSearch}}" placeholder="指標名・ID（例: CVR, purchase）" style="flex: 1; border: 0; outline: none; font: inherit; font-size: 14px; color: #152033; background: transparent; min-height: 44px">
+      </label>
+      <div role="tablist" aria-label="種類" style="display: flex; flex-wrap: wrap; gap: 6px">
+        <sc-for list="{{kinds}}" as="k" hint-placeholder-count="6">
+          <button type="button" role="tab" aria-selected="{{k.selected}}" onClick="{{k.pick}}" style="{{k.style}}">{{k.label}}<span style="margin-left: 6px; font-size: 11px; opacity: 0.7">{{k.count}}</span></button>
+        </sc-for>
+      </div>
+    </div>
+
+    <sc-for list="{{sections}}" as="sec" hint-placeholder-count="3">
+      <section style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap">
+          <span style="{{sec.dot}}" aria-hidden="true"></span>
+          <h2 style="margin: 0; font-size: 18px; font-weight: 700">{{sec.title}}</h2>
+          <span style="font-size: 12px; font-weight: 700; color: #8792a2">{{sec.count}}</span>
+          <span style="flex-basis: 100%; font-size: 13px; color: #5b6676; padding-left: 18px">{{sec.desc}}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; align-items: start">
+          <sc-for list="{{sec.items}}" as="c" hint-placeholder-count="6">
+            <article style="{{c.wrap}}">
+              <button type="button" class="card" onClick="{{c.toggle}}" aria-expanded="{{c.expanded}}" style="{{c.btn}}">
+                <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+                  <span style="{{c.kindStyle}}">{{c.kindLabel}}</span>
+                  <span aria-hidden="true" style="{{c.caret}}"></span>
+                </span>
+                <b style="font-size: 17px; line-height: 1.35; text-align: left">{{c.title}}</b>
+                <code style="align-self: flex-start; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #475569; background: #f1f5f9; border-radius: 4px; padding: 1px 6px">{{c.id}}</code>
+                <span style="font-size: 13px; line-height: 1.65; color: #334155; text-align: left">{{c.meaning}}</span>
+              </button>
+              <sc-if value="{{c.open}}" hint-placeholder-val="{{ false }}">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; padding: 0 18px 18px">
+                  <div style="display: flex; flex-direction: column; gap: 6px">
+                    <span style="font-size: 11px; font-weight: 800; color: #5b6676">計算</span>
+                    <span style="font-family: ui-monospace, Menlo, monospace; font-size: 13px; background: #f8fafc; border: 1px solid #e5eaf1; border-radius: 10px; padding: 10px 12px; line-height: 1.6">{{c.formula}}</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px; background: #f3f7fe; border-radius: 12px; padding: 12px 14px">
+                    <span style="font-size: 11px; font-weight: 800; color: #1d4ed8">見るポイント</span>
+                    <span style="font-size: 14px; line-height: 1.7">{{c.tip}}</span>
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+                    <span style="{{c.benchStyle}}">{{c.bench}}</span>
+                    <a href="03-board.dc.html" style="font-size: 13px; font-weight: 700; text-decoration: none">ボードで見る →</a>
+                  </div>
+                </div>
+              </sc-if>
+            </article>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+    <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+      <p style="margin: 0; padding: 28px 16px; font-size: 14px; color: #5b6676; text-align: center; background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px">「{{query}}」に合う指標はありません。言葉を短くしてみてください。</p>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { kind: 'all', open: 'engaged', query: '' };
+  }
+  renderVals() {
+    var self = this, st = this.state;
+    var T = [
+      ['uu', 'digital', 'UU（ユニークユーザー）', '選んだ期間にサイトを開いた「ブラウザ」の数です。', 'GA4: activeUsers（期間）', 'UUが増えても登録や売上が伸びないときは、「来ただけで動かない」状態です。流入チャネルや最初の画面を疑います。', false],
+      ['sessions', 'digital', 'セッション', '訪問の回数です。1回サイトを開いて見る流れを1セッションと数えます。', 'GA4: sessions（期間合計）', 'UUよりセッションが大きいほど、同じ人が何度も来ています。', false],
+      ['engaged', 'digital', 'エンゲージメント率', '「ただ開いてすぐ閉じた」ではなく、ある程度見た訪問の割合です。', 'エンゲージのあったセッション ÷ 全セッション × 100（GA4: engagementRate）', '低いときは、流入の質（期待と違う）か、最初の画面が分かりにくい可能性が高いです。', true],
+      ['pages_session', 'digital', 'セッションあたりページ数', '1回の訪問で、平均何ページ見たかです。', 'PV ÷ セッション（GA4: screenPageViewsPerSession）', 'メディアでは高いほど回遊が良いことが多いです。高すぎると迷っている可能性もあります。', false],
+      ['signup_cvr', 'digital', '登録CVR', '訪れたブラウザのうち、主転換（登録など）まで進んだ割合です。', '主転換数 ÷ UU × 100', 'UUが増えてCVRが下がる週は、安い流入が増えたか、導線が弱くなったサインです。', true],
+      ['purchase_cvr', 'digital', '購入CVR', '訪れた人のうち購入まで進んだ割合です（EC）。', 'purchase ÷ UU × 100', 'カート追加率・チェックアウト率とセットでボトルネックを特定します。', true],
+      ['ch_organic_search', 'traffic', 'Organic Search', 'Google などの検索結果（広告以外）から来た訪問です。', 'sessionDefaultChannelGroup = Organic Search', '安定した獲得源になりやすいです。急減は検索順位や需要の変化を疑います。', false],
+      ['ch_paid_search', 'traffic', 'Paid Search', '検索広告から来た訪問です。', 'sessionDefaultChannelGroup = Paid Search', 'CVRとクリック単価をセットで見ます。', false],
+      ['ch_paid_social', 'traffic', 'Paid Social', 'SNS広告からの流入です。', 'sessionDefaultChannelGroup = Paid Social', 'リーチは取りやすい一方、CVRが低くなりがちです。クリエイティブとLPの一致を見ます。', false],
+      ['ev_purchase', 'event', 'purchase', '購入が完了したときのイベントです。', 'GA4 推奨: purchase', 'ECの主転換。業務の注文件数と突き合わせます。', false],
+      ['ev_add_to_cart', 'event', 'add_to_cart', 'カートに追加したときのイベントです。', 'GA4 推奨: add_to_cart', '購入ファネルの中間指標です。', false],
+      ['ev_form_submit', 'event', 'form_submit', 'フォームを送信したときのイベントです。', 'GA4 推奨/拡張: form_submit', 'form_start との差が離脱ポイントです。', false],
+      ['mrr', 'business', 'MRR', '月次経常収益（Monthly Recurring Revenue）です。', '業務DB: 有効な定期課金の月額合計', '新規・解約・拡大に分解すると改善点がはっきりします。', false],
+      ['churn_rate', 'business', '解約率', 'いまの会員規模に対して、期間中にどれだけ解約したかの目安です。', '退会数 ÷ 会員数（DB）× 100', '件数だけ見ると会員が多いほど大きく見えるので、率もセットで見ます。', true],
+      ['benchmark', 'meta', '業界目安と判定', 'この業界で「だいたいこのあたり」という目安帯です。', '出典の値 ± 帯（SiteKPI の設定）', '最終判断は目安と、自社の前期の2つの物差しをセットで見ます。', false]
+    ];
+    var K = {
+      digital: ['デジタルKPI', '#2f6fed', '#eaf1ff', '#1d4ed8', 49, 'GA4 が自動で記録する数字。「人」ではなく、だいたい同じブラウザ単位で数えます。'],
+      traffic: ['流入', '#0ea5e9', '#e0f2fe', '#0369a1', 12, 'どこから来たか。GA4 のチャネル分類の名前のまま表示します。'],
+      event: ['イベント', '#8b5cf6', '#f3effe', '#6d28d9', 35, 'サイトで起きた行動の記録。ID はサイトのイベント名そのままです。'],
+      business: ['業務KPI', '#0f766e', '#e6f6f2', '#0f766e', 20, '注文・売上・会員など、社内データベースの数字。GA4 にはありません。'],
+      meta: ['見方', '#64748b', '#f1f3f5', '#475569', 6, 'ボードの読み方（業界目安・前期比・判定）の説明です。']
+    };
+    var order = ['digital', 'traffic', 'event', 'business', 'meta'];
+    var kinds = [['all', 'すべて', 122]].concat(order.map(function (k) { return [k, K[k][0], K[k][4]]; })).map(function (k) {
+      var on = st.kind === k[0];
+      return {
+        label: k[1], count: String(k[2]), selected: on ? 'true' : 'false',
+        pick: function () { self.setState({ kind: k[0] }); },
+        style: 'font: inherit; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 0 14px; min-height: 40px; cursor: pointer; border: 1px solid ' + (on ? '#1e293b' : '#e5eaf1') + '; background: ' + (on ? '#1e293b' : '#ffffff') + '; color: ' + (on ? '#ffffff' : '#334155')
+      };
+    });
+    var q = (st.query || '').toLowerCase();
+    var sections = order.filter(function (k) { return st.kind === 'all' || st.kind === k; }).map(function (k) {
+      var items = T.filter(function (t) {
+        return t[1] === k && (!q || (t[0] + ' ' + t[2] + ' ' + t[3]).toLowerCase().indexOf(q) >= 0);
+      }).map(function (t) {
+        var open = st.open === t[0];
+        return {
+          id: t[0], title: t[2], meaning: t[3], formula: t[4], tip: t[5], open: open, expanded: open ? 'true' : 'false',
+          kindLabel: K[k][0], kindStyle: 'font-size: 11px; font-weight: 800; border-radius: 999px; padding: 2px 8px; background: ' + K[k][2] + '; color: ' + K[k][3],
+          toggle: function () { self.setState({ open: open ? null : t[0] }); },
+          wrap: 'background: #ffffff; border-radius: 14px; border: 1px solid ' + (open ? '#9db8ea' : '#e5eaf1') + '; overflow: hidden; ' + (open ? 'grid-column: 1 / -1' : ''),
+          btn: 'font: inherit; color: inherit; width: 100%; border: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; text-align: left; min-height: 150px',
+          caret: 'width: 8px; height: 8px; border-right: 2px solid #8792a2; border-bottom: 2px solid #8792a2; transform: rotate(' + (open ? '-135' : '45') + 'deg)',
+          bench: t[6] ? '業界目安あり · ボードで判定' : '業界目安なし（件数・構成など）',
+          benchStyle: 'display: inline-flex; align-items: center; min-height: 32px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 700; ' + (t[6] ? 'background: #e8eefc; color: #1e40af' : 'background: #f1f3f5; color: #5b6676')
+        };
+      });
+      return {
+        title: K[k][0], count: '見本 ' + items.length + ' / ' + K[k][4], desc: K[k][5], items: items,
+        dot: 'width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: ' + K[k][1]
+      };
+    }).filter(function (s) { return s.items.length; });
+    return {
+      query: st.query,
+      onSearch: function (e) { self.setState({ query: e.target.value }); },
+      kinds: kinds, sections: sections, empty: sections.length === 0
+    };
+  }
+}
+</script>
+</body>
+</html>

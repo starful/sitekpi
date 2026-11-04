@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ボード /live</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&amp;family=IBM+Plex+Sans+JP:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+button{font-family:inherit}
+.drow:hover{background:#f8fafc}
+.tab:hover{color:#152033}
+.navlink:hover{background:#f3f6fa}
+</style>
+</helmet>
+<div style="font-family: 'IBM Plex Sans JP', 'Noto Sans JP', system-ui, sans-serif; color: #152033; background: #f4f6fa; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch">
+
+  <nav aria-label="メニュー" style="flex: 0 1 248px; min-width: 220px; box-sizing: border-box; position: sticky; top: 0; height: 100vh; align-self: flex-start; background: #ffffff; border-right: 1px solid #e5eaf1; padding: 20px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 14px">
+    <a href="01-start.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #152033; font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; padding: 0 8px 18px">
+      <span aria-hidden="true" style="width: 30px; height: 30px; border: 2.5px solid #152033; border-radius: 6px; box-sizing: border-box; display: flex; align-items: flex-end; gap: 3px; padding: 4px 5px">
+        <span style="width: 4px; height: 6px; background: #2f6fed"></span><span style="width: 4px; height: 10px; background: #2f6fed"></span><span style="width: 4px; height: 14px; background: #2f6fed"></span>
+      </span>
+      <span>Site<span style="color: #2f6fed">KPI</span></span>
+    </a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 6px 10px 4px">マイサイト</div>
+    <a href="#top" class="navlink" style="text-decoration: none; color: #1d4ed8; background: #eef4ff; border-radius: 8px; padding: 9px 10px; font-weight: 700; display: flex; gap: 8px; align-items: flex-start">
+      <span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #16a34a; margin-top: 6px; flex: none"></span>
+      <span>Demo Shop JP（デモ）<span style="display: block; font-size: 11px; font-weight: 600; color: #5b6676">買う × EC・小売</span></span>
+    </a>
+    <a href="#s-l1" onClick="{{edit.on}}" class="navlink" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px 8px 26px; border-radius: 8px; font-weight: 600">サイトの設定</a>
+    <a href="02-connect.dc.html" class="navlink" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px 8px 26px; border-radius: 8px; font-weight: 600">接続・切断</a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">ツール</div>
+    <a href="06-builder.dc.html" class="navlink" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; border-radius: 8px; font-weight: 600">ダッシュボードを作る</a>
+    <a href="04-glossary.dc.html" class="navlink" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; border-radius: 8px; font-weight: 600">指標辞典</a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">見本</div>
+    <a href="05-samples.dc.html" class="navlink" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; border-radius: 8px; font-weight: 600">見本ボード一覧</a>
+    <div style="flex-grow: 1; min-height: 24px"></div>
+    <a href="07-settings.dc.html" class="navlink" style="text-decoration: none; color: #3d4a5c; padding: 12px 10px 8px; border-top: 1px solid #e5eaf1; font-weight: 600">設定</a>
+  </nav>
+
+  <div id="top" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <header style="position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,0.97); border-bottom: 1px solid #e5eaf1; box-shadow: 0 4px 14px rgba(21,32,51,0.05); padding: 10px 28px 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px">
+      <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+        <h1 style="margin: 0; font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-size: 18px; font-weight: 800">Demo Shop JP（デモ）</h1>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; font-weight: 600; color: #5b6676">デモ · 買う</div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+        <button type="button" onClick="{{ind.toggle}}" aria-expanded="{{ind.expanded}}" aria-haspopup="dialog" style="{{ind.chipStyle}}"><span style="font-weight: 600; color: #5b6676">比べる業種</span><b style="font-weight: 800; color: #1d4ed8">{{ind.current}}</b><span aria-hidden="true" style="color: #1d4ed8; font-size: 11px">▾</span></button>
+        <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700">
+          <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0)">期間</span>
+          <select style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 10px; border-radius: 8px; border: 1px solid #e5eaf1; background: #ffffff; color: #152033; min-height: 40px">
+            <option>直近28日</option>
+            <option>直近7日</option>
+          </select>
+        </label>
+      </div>
+      <nav aria-label="このページの中" style="flex-basis: 100%; display: flex; gap: 4px; overflow-x: auto">
+        <sc-for list="{{pageNav}}" as="n" hint-placeholder-count="3">
+          <a href="{{n.href}}" onClick="{{n.pick}}" aria-current="{{n.current}}" style="{{n.style}}">{{n.label}}<span style="{{n.badgeStyle}}">{{n.badge}}</span></a>
+        </sc-for>
+      </nav>
+      <sc-if value="{{ind.open}}" hint-placeholder-val="{{ true }}">
+        <aside role="dialog" aria-labelledby="ind-title" style="position: absolute; top: calc(100% + 8px); right: 20px; width: 440px; max-height: 820px; overflow-y: auto; background: #ffffff; border: 1px solid #d5dce6; border-radius: 16px; box-shadow: 0 20px 48px rgba(21, 32, 51, 0.18); padding: 20px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px">
+            <div>
+              <h2 id="ind-title" style="margin: 0; font-size: 17px; font-weight: 800">どの業種と比べますか？</h2>
+              <p style="margin: 4px 0 0; font-size: 12px; color: #5b6676">変わるのは「業界目安」だけ。流れはそのままです。</p>
+            </div>
+            <button type="button" onClick="{{ind.close}}" aria-label="閉じる" style="width: 32px; height: 32px; flex: none; border: 1px solid #e5eaf1; border-radius: 8px; background: #ffffff; color: #5b6676; cursor: pointer">×</button>
+          </div>
+          <div role="radiogroup" aria-label="業種" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+            <sc-for list="{{ind.cards}}" as="c" hint-placeholder-count="6">
+              <button type="button" role="radio" aria-checked="{{c.checked}}" onClick="{{c.pick}}" style="{{c.style}}"><b style="font-size: 13px">{{c.label}}</b><span style="font-size: 11px; color: #5b6676; line-height: 1.45">{{c.about}}</span></button>
+            </sc-for>
+          </div>
+          <a href="#" style="font-size: 12px; font-weight: 700; text-decoration: none">▸ ほかの業種から選ぶ（26）</a>
+          <div style="border-top: 1px solid #eef1f5; padding-top: 12px; display: flex; flex-direction: column; gap: 4px">
+            <b style="font-size: 13px">「{{ind.preview}}」と比べると</b>
+            <sc-for list="{{ind.rows}}" as="r" hint-placeholder-count="4">
+              <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f4f8">
+                <span style="font-size: 13px; font-weight: 700">{{r.label}}<span style="display: block; font-size: 11px; font-weight: 600; color: #5b6676">あなた {{r.you}} · 目安 {{r.bench}}</span></span>
+                <span style="{{r.gapStyle}}">{{r.gap}}</span>
+                <span style="{{r.chipStyle}}">{{r.chip}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{ind.apply}}" style="font: inherit; font-size: 14px; font-weight: 800; border: 0; border-radius: 10px; min-height: 46px; background: {{accent}}; color: #ffffff; cursor: pointer">この業種で比べる</button>
+          <div style="border-top: 1px solid #eef1f5; padding-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap"><span style="font-size: 12px; color: #5b6676">目安の幅を自分の数字に合わせる<span style="display: block; font-size: 11px; color: #94a3b8">押すとこの画面を閉じ、上の「比べる業種」の下に開きます</span></span><button type="button" onClick="{{ind.close}}" style="font: inherit; font-size: 13px; font-weight: 800; color: #1d4ed8; background: #ffffff; border: 1.5px solid #2f6fed; border-radius: 8px; min-height: 34px; padding: 0 12px; cursor: pointer">目安を細かく調整 →</button></div>
+        </aside>
+      </sc-if>
+      <sc-if value="{{edit.drawer}}" hint-placeholder-val="{{ true }}">
+        <aside role="dialog" aria-labelledby="step-title" style="position: absolute; top: calc(100% + 8px); right: 20px; width: 440px; max-height: 820px; overflow-y: auto; background: #ffffff; border: 1px solid #d5dce6; border-radius: 16px; box-shadow: 0 20px 48px rgba(21, 32, 51, 0.18); padding: 20px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+            <div><h2 id="step-title" style="margin: 0; font-size: 17px; font-weight: 800">{{edit.title}}</h2><p style="margin: 4px 0 0; font-size: 12px; color: #5b6676">保存するまでボードは変わりません。</p></div>
+            <button type="button" onClick="{{edit.closeDrawer}}" aria-label="閉じる" style="width: 32px; height: 32px; border: 1px solid #e5eaf1; border-radius: 8px; background: #ffffff; color: #5b6676; cursor: pointer">×</button>
+          </div>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: #5b6676">ボードでの名前
+            <input type="text" value="{{edit.label}}" style="font: inherit; font-size: 14px; font-weight: 700; color: #152033; padding: 9px 12px; border: 1px solid #e5eaf1; border-radius: 10px">
+          </label>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 700; color: #5b6676">数える GA4 イベント（あなたのサイトの記録・多い順）</span>
+            <sc-for list="{{edit.events}}" as="e" hint-placeholder-count="8">
+              <button type="button" style="{{e.style}}"><code style="font-family: ui-monospace, Menlo, monospace; font-size: 12px; font-weight: 700">{{e.name}}</code><span style="font-size: 12px; color: #5b6676; font-variant-numeric: tabular-nums">{{e.count}}</span></button>
+            </sc-for>
+            <a href="#" style="font-size: 12px; font-weight: 700; text-decoration: none">すべてのイベントを見る（40）</a>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eef1f5; padding-top: 12px">
+            <button type="button" style="font: inherit; font-size: 12px; font-weight: 700; border: 0; background: none; color: #b91c1c; cursor: pointer; padding: 0">この段を消す</button>
+            <span style="font-size: 11px; color: #5b6676">最後の段が主転換になります</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid #eef1f5; padding-top: 12px"><button type="button" onClick="{{edit.closeDrawer}}" style="font: inherit; font-size: 14px; font-weight: 800; border: 1.5px solid #2f6fed; border-radius: 10px; min-height: 46px; background: #ffffff; color: #1d4ed8; cursor: pointer">この段にする</button><button type="button" onClick="{{edit.off}}" style="font: inherit; font-size: 14px; font-weight: 800; border: 0; border-radius: 10px; min-height: 46px; background: {{accent}}; color: #ffffff; cursor: pointer">保存</button></div>
+        </aside>
+      </sc-if>
+    </header>
+
+    <main style="padding: 22px 28px 64px; display: flex; flex-direction: column; gap: 18px; max-width: 1480px; box-sizing: border-box">
+
+      <sc-if value="{{showNotice}}" hint-placeholder-val="{{ true }}">
+        <div role="status" style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 12px; background: #eef4ff; border: 1px solid #c9dbfb">
+          <p style="margin: 0; font-size: 14px; font-weight: 700; color: #1e3a8a">まず数字を出すため、2つを仮で決めました。合っていなければ、ここから直せます。</p>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px">
+            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; border-radius: 10px; background: #ffffff; border: 1px solid #c9dbfb"><span style="font-size: 12px; font-weight: 600; color: #5b6676">流れ</span><b style="font-size: 14px">買う</b><button type="button" onClick="{{edit.on}}" style="font: inherit; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 12px; border-radius: 8px; border: 1.5px solid #2f6fed; background: #ffffff; color: #1d4ed8; font-size: 13px; font-weight: 800; cursor: pointer"><span aria-hidden="true">✎</span>直す</button></span>
+            <span style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; border-radius: 10px; background: #ffffff; border: 1px solid #c9dbfb"><span style="font-size: 12px; font-weight: 600; color: #5b6676">比べる業種</span><b style="font-size: 14px">EC・小売</b><button type="button" onClick="{{ind.openIt}}" style="font: inherit; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 12px; border-radius: 8px; border: 1.5px solid #2f6fed; background: #ffffff; color: #1d4ed8; font-size: 13px; font-weight: 800; cursor: pointer">変える<span aria-hidden="true" style="font-size: 11px">▾</span></button></span>
+            <button type="button" onClick="{{dismiss}}" style="margin-left: auto; font: inherit; font-size: 13px; font-weight: 700; padding: 0 14px; min-height: 36px; border-radius: 8px; border: 0; background: transparent; color: #1d4ed8; cursor: pointer">このままでよい</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <section id="s-l0" aria-labelledby="l0" style="scroll-margin-top: 120px; background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px; padding: 22px 24px">
+        <h2 id="l0" style="margin: 0; font-size: 12px; font-weight: 800; color: #5b6676; letter-spacing: 0.06em">いまの状態</h2>
+        <p style="margin: 6px 0 18px; font-size: 22px; line-height: 1.5; font-weight: 800">購入は増えています。いちばんの課題は <span style="color: #b45309">カート→購入率</span>（目安の半分）。</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px">
+          <sc-for list="{{tiles}}" as="k" hint-placeholder-count="3">
+            <article style="{{k.box}}">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                <sc-if value="{{k.hasTag}}" hint-placeholder-val="{{ true }}"><span style="{{k.tagStyle}}">{{k.tag}}</span></sc-if>
+                <span style="font-size: 14px; font-weight: 700">{{k.label}}</span>
+                <span style="margin-left: auto"><button type="button" onClick="{{k.p.toggle}}" aria-expanded="{{k.p.expanded}}" style="{{k.p.btn}}">説明</button></span>
+              </div>
+              <div style="font-family: 'DM Sans', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1">{{k.value}}</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+                <span style="{{k.prevStyle}}">{{k.prev}}</span>
+                <span style="{{k.chipStyle}}">{{k.chip}}</span>
+              </div>
+              <sc-if value="{{k.p.open}}" hint-placeholder-val="{{ false }}">
+                  <div role="dialog" aria-label="{{k.p.title}}" style="position: absolute; z-index: 6; top: 46px; right: 12px; width: min(360px, calc(100% - 24px)); background: #ffffff; border: 1px solid #9db8ea; border-radius: 14px; box-shadow: 0 16px 40px rgba(21, 32, 51, 0.16); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; text-align: left">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><b style="font-size: 14px">{{k.p.title}}</b><button type="button" onClick="{{k.p.close}}" aria-label="閉じる" style="width: 28px; height: 28px; flex: none; border: 1px solid #e5eaf1; border-radius: 8px; background: #ffffff; color: #5b6676; cursor: pointer">×</button></div>
+                    <sc-for list="{{k.p.more}}" as="m" hint-placeholder-count="3"><p style="margin: 0; font-size: 13px; line-height: 1.65; color: #334155"><span style="font-weight: 800; color: #5b6676; margin-right: 6px">{{m.k}}</span>{{m.v}}</p></sc-for>
+                    <div style="display: flex; flex-wrap: wrap; gap: 14px"><a href="04-glossary.dc.html" style="font-size: 12px; font-weight: 700; text-decoration: none">指標辞典で開く →</a><sc-if value="{{k.p.hasBench}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ind.openIt}}" style="font: inherit; border: 0; background: none; padding: 0; cursor: pointer; font-size: 12px; font-weight: 700; color: #1d4ed8">比べる業種を変える →</button></sc-if></div>
+                  </div>
+                </sc-if>
+            </article>
+          </sc-for>
+        </div>
+      </section>
+
+      <section id="s-l1" aria-labelledby="l1" style="{{edit.section}}">
+        <sc-if value="{{edit.active}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: -6px -8px 16px; padding: 10px 14px; border-radius: 12px; background: #eef4ff">
+            <span style="font-size: 12px; font-weight: 800; color: #ffffff; background: #2f6fed; border-radius: 999px; padding: 3px 10px">編集中</span>
+            <span style="font-size: 13px; font-weight: 600; color: #1e3a8a">保存するまでボードは変わりません</span>
+            <label style="margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #5b6676">ひな形から始める
+              <select style="font: inherit; font-size: 13px; font-weight: 700; color: #152033; padding: 6px 10px; border: 1px solid #c9dbfb; border-radius: 8px; background: #ffffff; min-height: 36px"><option>買う</option><option>問い合わせる</option><option>予約する</option><option>会員になって使い続ける</option></select>
+            </label>
+            <button type="button" onClick="{{edit.off}}" style="font: inherit; font-size: 13px; font-weight: 700; border: 1px solid #c9dbfb; background: #ffffff; color: #1d4ed8; border-radius: 8px; min-height: 36px; padding: 0 12px; cursor: pointer">元に戻す</button>
+            <button type="button" onClick="{{edit.off}}" style="font: inherit; font-size: 13px; font-weight: 800; border: 0; background: {{accent}}; color: #ffffff; border-radius: 8px; min-height: 36px; padding: 0 16px; cursor: pointer">保存</button>
+          </div>
+        </sc-if>
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; position: relative">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <h2 id="l1" style="margin: 0; font-size: 18px; font-weight: 800">どこで離れているか</h2>
+            <button type="button" onClick="{{flowPop.toggle}}" aria-expanded="{{flowPop.expanded}}" style="{{flowPop.btn}}">説明</button>
+            <button type="button" onClick="{{edit.on}}" style="font: inherit; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 1.5px solid #2f6fed; border-radius: 10px; background: #ffffff; box-shadow: 0 1px 3px rgba(47,111,237,0.15); cursor: pointer; color: #1d4ed8; font-size: 13px; font-weight: 800"><span aria-hidden="true">✎</span>流れを直す</button>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+            <sc-for list="{{channels}}" as="c" hint-placeholder-count="6">
+              <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="{{c.style}}"><span style="{{c.dot}}" aria-hidden="true"></span>{{c.name}}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{flowPop.open}}" hint-placeholder-val="{{ false }}">
+                  <div role="dialog" aria-label="{{flowPop.title}}" style="position: absolute; z-index: 6; top: 46px; left: 0; width: min(360px, calc(100% - 24px)); background: #ffffff; border: 1px solid #9db8ea; border-radius: 14px; box-shadow: 0 16px 40px rgba(21, 32, 51, 0.16); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; text-align: left">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><b style="font-size: 14px">{{flowPop.title}}</b><button type="button" onClick="{{flowPop.close}}" aria-label="閉じる" style="width: 28px; height: 28px; flex: none; border: 1px solid #e5eaf1; border-radius: 8px; background: #ffffff; color: #5b6676; cursor: pointer">×</button></div>
+                    <sc-for list="{{flowPop.more}}" as="m" hint-placeholder-count="3"><p style="margin: 0; font-size: 13px; line-height: 1.65; color: #334155"><span style="font-weight: 800; color: #5b6676; margin-right: 6px">{{m.k}}</span>{{m.v}}</p></sc-for>
+                    <a href="04-glossary.dc.html" style="font-size: 12px; font-weight: 700; text-decoration: none">指標辞典で開く →</a>
+                  </div>
+                </sc-if>
+        </div>
+        <p style="margin: 12px 0 0; font-size: 16px; font-weight: 800; color: #92400e">一番の離脱：商品を見た → カートに追加（68.1% が離れる）</p>
+
+        <div style="overflow-x: auto; margin-top: 14px">
+          <ol style="list-style: none; margin: 0; padding: 0 0 4px; display: flex; align-items: flex-start; min-width: 960px">
+            <sc-for list="{{steps}}" as="s" hint-placeholder-count="7">
+              <li style="display: flex; align-items: flex-start; flex: 1 1 0; min-width: 0">
+                <div onClick="{{s.select}}" style="{{s.box}}">
+                  <sc-if value="{{s.canRemove}}" hint-placeholder-val="{{ false }}"><span aria-label="この段を消す" style="position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 1px solid #e5eaf1; color: #8792a2; font-size: 12px; display: flex; align-items: center; justify-content: center">×</span></sc-if>
+                  <div style="height: 72px; display: flex; align-items: flex-end; background: #f1f4f8; border-radius: 8px; overflow: hidden; margin-bottom: 6px">
+                    <div style="{{s.bar}}"></div>
+                  </div>
+                  <span style="font-size: 13px; font-weight: 700; line-height: 1.3; min-height: 34px">{{s.label}}</span>
+                  <sc-if value="{{edit.active}}" hint-placeholder-val="{{ true }}"><code style="align-self: flex-start; font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: #475569; background: #f1f5f9; border-radius: 4px; padding: 1px 5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{s.event}}</code></sc-if>
+                  <strong style="{{s.usersStyle}}">{{s.users}}</strong>
+                  <sc-if value="{{s.nudge}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px; padding: 8px; border-radius: 8px; background: #fff7ed; border: 1px solid #fed7aa">
+                      <span style="font-size: 11px; font-weight: 700; color: #9a3412; line-height: 1.45">サイトのイベント名が違うかも</span>
+                      <button type="button" onClick="{{s.fix}}" style="align-self: flex-start; font: inherit; font-size: 12px; font-weight: 800; color: #1d4ed8; background: #ffffff; border: 1.5px solid #2f6fed; border-radius: 8px; min-height: 28px; padding: 0 8px; cursor: pointer">✎ この段を直す</button>
+                    </span>
+                  </sc-if>
+                </div>
+                <sc-if value="{{s.hasLink}}" hint-placeholder-val="{{ true }}">
+                  <div style="{{s.linkStyle}}">
+                    <span aria-hidden="true" style="{{s.arrow}}"></span>
+                    <b style="{{s.goStyle}}">{{s.go}}</b>
+                    <sc-if value="{{edit.active}}" hint-placeholder-val="{{ true }}"><button type="button" aria-label="ここに段を足す" style="margin-top: 6px; width: 26px; height: 26px; border-radius: 50%; border: 1.5px dashed #2f6fed; background: #ffffff; color: #1d4ed8; font-size: 14px; cursor: pointer">＋</button></sc-if>
+                  </div>
+                </sc-if>
+              </li>
+            </sc-for>
+          </ol>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 22px; margin-top: 18px; padding-top: 18px; border-top: 1px solid #e5eaf1">
+          <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 800">今見るべきこと</h3>
+            <ol style="list-style: none; margin: 0; padding: 0; display: grid; gap: 8px">
+              <sc-for list="{{watch}}" as="w" hint-placeholder-count="3">
+                <li style="position: relative; border: 1px solid #f3d9b5; background: #fffaf3; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+                  <strong style="flex: 1 1 180px; font-size: 14px; color: #92400e">{{w.title}}</strong>
+                  <span style="font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums">{{w.value}}</span>
+                  <span style="font-size: 12px; color: #5b6676; font-variant-numeric: tabular-nums">目安 {{w.bench}}</span>
+                  <button type="button" onClick="{{w.p.toggle}}" aria-expanded="{{w.p.expanded}}" style="{{w.p.btn}}">説明</button>
+                  <sc-if value="{{w.p.open}}" hint-placeholder-val="{{ false }}">
+                  <div role="dialog" aria-label="{{w.p.title}}" style="position: absolute; z-index: 6; top: 46px; right: 12px; width: min(360px, calc(100% - 24px)); background: #ffffff; border: 1px solid #9db8ea; border-radius: 14px; box-shadow: 0 16px 40px rgba(21, 32, 51, 0.16); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; text-align: left">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><b style="font-size: 14px">{{w.p.title}}</b><button type="button" onClick="{{w.p.close}}" aria-label="閉じる" style="width: 28px; height: 28px; flex: none; border: 1px solid #e5eaf1; border-radius: 8px; background: #ffffff; color: #5b6676; cursor: pointer">×</button></div>
+                    <sc-for list="{{w.p.more}}" as="m" hint-placeholder-count="3"><p style="margin: 0; font-size: 13px; line-height: 1.65; color: #334155"><span style="font-weight: 800; color: #5b6676; margin-right: 6px">{{m.k}}</span>{{m.v}}</p></sc-for>
+                    <div style="display: flex; flex-wrap: wrap; gap: 14px"><a href="04-glossary.dc.html" style="font-size: 12px; font-weight: 700; text-decoration: none">指標辞典で開く →</a><sc-if value="{{w.p.hasBench}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ind.openIt}}" style="font: inherit; border: 0; background: none; padding: 0; cursor: pointer; font-size: 12px; font-weight: 700; color: #1d4ed8">比べる業種を変える →</button></sc-if></div>
+                  </div>
+                </sc-if>
+                </li>
+              </sc-for>
+            </ol>
+            <p style="margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-radius: 10px; background: #f8fafc; border: 1px dashed #c9dbfb; font-size: 13px; color: #334155">
+              <span>目安とかなり違う？ 比べる業種（<b>EC・小売</b>）が合っているか確かめましょう</span>
+              <button type="button" onClick="{{ind.openIt}}" style="font: inherit; display: inline-flex; align-items: center; gap: 4px; min-height: 30px; padding: 0 10px; border-radius: 8px; border: 1.5px solid #2f6fed; background: #ffffff; color: #1d4ed8; font-size: 12px; font-weight: 800; cursor: pointer">業種を変える<span aria-hidden="true" style="font-size: 10px">▾</span></button>
+            </p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0; position: relative">
+            <div style="display: flex; align-items: center; gap: 10px"><h3 style="margin: 0; font-size: 15px; font-weight: 800">流入別 購入率</h3><button type="button" onClick="{{chanPop.toggle}}" aria-expanded="{{chanPop.expanded}}" style="{{chanPop.btn}}">説明</button></div>
+            <sc-if value="{{chanPop.open}}" hint-placeholder-val="{{ false }}">
+                  <div role="dialog" aria-label="{{chanPop.title}}" style="position: absolute; z-index: 6; top: 32px; left: 0; width: min(360px, calc(100% - 24px)); background: #ffffff; border: 1px solid #9db8ea; border-radius: 14px; box-shadow: 0 16px 40px rgba(21, 32, 51, 0.16); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; text-align: left">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><b style="font-size: 14px">{{chanPop.title}}</b><button type="button" onClick="{{chanPop.close}}" aria-label="閉じる" style="width: 28px; height: 28px; flex: none; border: 1px solid #e5eaf1; border-radius: 8px; background: #ffffff; color: #5b6676; cursor: pointer">×</button></div>
+                    <sc-for list="{{chanPop.more}}" as="m" hint-placeholder-count="3"><p style="margin: 0; font-size: 13px; line-height: 1.65; color: #334155"><span style="font-weight: 800; color: #5b6676; margin-right: 6px">{{m.k}}</span>{{m.v}}</p></sc-for>
+                    <a href="04-glossary.dc.html" style="font-size: 12px; font-weight: 700; text-decoration: none">指標辞典で開く →</a>
+                  </div>
+                </sc-if>
+            <ul style="list-style: none; margin: 0; padding: 0; border: 1px solid #eef1f5; border-radius: 12px; overflow: hidden">
+              <sc-for list="{{chanRows}}" as="r" hint-placeholder-count="5">
+                <li style="{{r.row}}">
+                  <span style="{{r.dot}}" aria-hidden="true"></span>
+                  <span style="flex-grow: 1; min-width: 0; font-size: 14px; font-weight: 700">{{r.name}}</span>
+                  <b style="font-family: 'DM Sans', sans-serif; font-size: 16px; font-variant-numeric: tabular-nums">{{r.rate}}</b>
+                  <span style="{{r.tagStyle}}">{{r.tag}}</span>
+                </li>
+              </sc-for>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="s-l2" aria-labelledby="l2" style="scroll-margin-top: 120px; background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px; padding: 22px 24px 8px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px">
+          <h2 id="l2" style="margin: 0; font-size: 18px; font-weight: 800">詳しい数字</h2>
+          <span style="font-size: 13px; color: #5b6676">ぜんぶ並んでいます。指標名の横の「説明」で 指標辞典と同じ説明 が出ます</span>
+        </div>
+        <nav aria-label="詳しい数字の目次" style="position: sticky; top: 106px; z-index: 2; background: rgba(255,255,255,0.96); display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 0; margin-top: 6px; border-bottom: 1px solid #e5eaf1">
+          <sc-for list="{{groups}}" as="g" hint-placeholder-count="6">
+            <a href="{{g.href}}" onClick="{{g.pick}}" aria-current="{{g.current}}" style="{{g.chipStyle}}">{{g.title}}<span style="{{g.warnStyle}}">{{g.warn}}</span></a>
+          </sc-for>
+        </nav>
+        <div style="display: flex; flex-direction: column; gap: 28px; padding: 10px 0 16px">
+          <sc-for list="{{groups}}" as="g" hint-placeholder-count="6">
+            <div id="{{g.id}}" style="{{g.wrap}}">
+              <div style="display: flex; align-items: center; gap: 10px; padding: 8px 4px 12px">
+                <h3 style="margin: 0; font-size: 17px; font-weight: 800">{{g.title}}</h3>
+                <span style="font-size: 12px; font-weight: 700; color: #8792a2">{{g.count}}</span>
+                <span style="{{g.warnBadge}}">{{g.warnText}}</span>
+                <sc-if value="{{g.collapsible}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{g.toggleOpen}}" aria-expanded="{{g.expanded}}" style="margin-left: auto; font: inherit; font-size: 12px; font-weight: 700; border: 1px solid #d5dce6; background: #ffffff; color: #1d4ed8; border-radius: 8px; min-height: 30px; padding: 0 12px; cursor: pointer">{{g.openLabel}}</button></sc-if>
+              </div>
+              <sc-if value="{{g.closed}}" hint-placeholder-val="{{ false }}">
+                <p style="margin: 0 0 10px; padding: 10px 14px; background: #f8fafc; border-radius: 10px; font-size: 13px; font-weight: 600; color: #475569; font-variant-numeric: tabular-nums">{{g.summary}}</p>
+              </sc-if>
+              <sc-if value="{{g.folded}}" hint-placeholder-val="{{ false }}">
+                <p style="margin: 0 0 10px; padding: 12px 14px; background: #f8fafc; border: 1px dashed #d5dce6; border-radius: 10px; font-size: 13px; line-height: 1.6; color: #5b6676">{{g.foldNote}}</p>
+              </sc-if>
+              <sc-if value="{{g.table}}" hint-placeholder-val="{{ true }}">
+                <div style="display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 14fr) minmax(0, 11fr) minmax(0, 12fr) minmax(0, 16fr) minmax(0, 13fr); gap: 16px; padding: 8px 16px; border-bottom: 1px solid #e5eaf1; font-size: 12px; font-weight: 700; color: #5b6676">
+                  <span>指標</span><span style="text-align: right">{{g.valueHead}}</span><span style="text-align: center">8週の推移</span><span style="text-align: right">前期比</span><span style="text-align: right">業界目安・差</span><span style="text-align: right">判定</span>
+                </div>
+                <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="6">
+                  <div style="{{r.wrap}}">
+                    <div class="drow" style="display: grid; grid-template-columns: minmax(0, 34fr) minmax(0, 14fr) minmax(0, 11fr) minmax(0, 12fr) minmax(0, 16fr) minmax(0, 13fr); gap: 16px; align-items: center; min-height: 60px; padding: 8px 16px">
+                      <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0">
+                        <span style="{{r.nameStyle}}">{{r.name}}</span>
+                        <button type="button" onClick="{{r.toggle}}" aria-haspopup="dialog" aria-expanded="{{r.expanded}}" aria-label="{{r.helpLabel}}" style="{{r.helpStyle}}">説明</button>
+                        <sc-if value="{{r.primary}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 999px; background: #eaf1ff; color: #1d4ed8; white-space: nowrap">主転換</span></sc-if>
+                        <sc-if value="{{r.hasSub}}" hint-placeholder-val="{{ false }}"><span style="{{r.subStyle}}">{{r.sub}}</span></sc-if>
+                      </span>
+                      <span style="text-align: right; font-family: 'DM Sans', sans-serif; font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums">{{r.value}}</span>
+                      <span style="display: flex; justify-content: center"><svg width="76" height="26" viewBox="0 0 76 26" aria-hidden="true" style="overflow: visible"><polyline points="{{r.spark}}" fill="none" stroke="{{r.sparkColor}}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline><circle cx="72" cy="{{r.sparkEnd}}" r="2.5" fill="{{r.sparkColor}}"></circle></svg></span>
+                      <span style="{{r.prevStyle}}">{{r.prev}}</span>
+                      <span style="text-align: right; font-variant-numeric: tabular-nums; line-height: 1.25"><span style="display: block; font-size: 14px; font-weight: 700; color: #334155">{{r.bench}}</span><span style="{{r.gapStyle}}">{{r.gap}}</span></span>
+                      <span style="text-align: right"><span style="{{r.chipStyle}}">{{r.chip}}</span></span>
+                    </div>
+                    <sc-if value="{{r.open}}" hint-placeholder-val="{{ false }}">
+                      <div role="dialog" aria-label="{{r.name}}" style="position: absolute; z-index: 5; top: 52px; left: 16px; width: min(640px, calc(100% - 32px)); background: #ffffff; border: 1px solid #9db8ea; border-radius: 14px; box-shadow: 0 16px 40px rgba(21, 32, 51, 0.16); overflow: hidden">
+                        <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 18px">
+                          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+                            <span style="{{r.kindStyle}}">{{r.kindLabel}}</span>
+                            <button type="button" onClick="{{r.close}}" aria-label="閉じる" style="width: 32px; height: 32px; flex: none; border: 1px solid #e5eaf1; border-radius: 8px; background: #ffffff; color: #5b6676; cursor: pointer; font-size: 15px">×</button>
+                          </div>
+                          <b style="font-size: 17px; line-height: 1.35">{{r.name}}</b>
+                          <code style="align-self: flex-start; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #475569; background: #f1f5f9; border-radius: 4px; padding: 1px 6px">{{r.helpId}}</code>
+                          <span style="font-size: 13px; line-height: 1.65; color: #334155">{{r.meaning}}</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; padding: 0 18px 18px">
+                          <div style="display: flex; flex-direction: column; gap: 6px">
+                            <span style="font-size: 11px; font-weight: 800; color: #5b6676">計算</span>
+                            <span style="font-family: ui-monospace, Menlo, monospace; font-size: 13px; background: #f8fafc; border: 1px solid #e5eaf1; border-radius: 10px; padding: 10px 12px; line-height: 1.6">{{r.formula}}</span>
+                          </div>
+                          <div style="display: flex; flex-direction: column; gap: 6px; background: #f3f7fe; border-radius: 12px; padding: 12px 14px">
+                            <span style="font-size: 11px; font-weight: 800; color: #1d4ed8">見るポイント</span>
+                            <span style="font-size: 14px; line-height: 1.7">{{r.tip}}</span>
+                          </div>
+                          <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+                            <span style="{{r.benchTagStyle}}">{{r.benchTag}}</span>
+                            <a href="04-glossary.dc.html" style="font-size: 13px; font-weight: 700; text-decoration: none">指標辞典で開く →</a>
+                          </div>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2f6fed","options":["#2f6fed","#0f766e","#7c3aed","#152033"]},"$preview":{"width":1440,"height":4600}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { openGroups: {}, edit: false, editSel: 0, ind: 'ec', indOpen: false, page: 'l0', sec: 'funnel', open: null, pop: null, channel: 'all', notice: true };
+  }
+  chip(kind) {
+    var b = 'display: inline-block; font-size: 11px; font-weight: 800; line-height: 1.5; border-radius: 999px; padding: 2px 9px; white-space: nowrap; ';
+    if (kind === '要注意') return b + 'background: #fde7c7; color: #92400e';
+    if (kind === '良好') return b + 'background: #e6f6f2; color: #0f766e';
+    if (kind === '目安内') return b + 'background: #e8eefc; color: #1e40af';
+    if (kind === '基準なし' || kind === '比べない') return b + 'background: #f1f3f5; color: #5b6676; font-weight: 600';
+    return 'font-size: 14px; font-weight: 600; color: #8792a2';
+  }
+  pop(id, title, more, hasBench) {
+    var self = this, open = this.state.pop === id;
+    return {
+      hasBench: !!hasBench, open: open, expanded: open ? 'true' : 'false', title: title,
+      more: more.map(function (m) { return { k: m[0], v: m[1] }; }),
+      toggle: function () { self.setState({ pop: open ? null : id }); },
+      close: function () { self.setState({ pop: null }); },
+      btn: 'font: inherit; font-size: 11px; font-weight: 700; padding: 3px 9px; min-height: 26px; border-radius: 6px; cursor: pointer; border: 1px solid ' + (open ? '#2f6fed' : '#d5dce6') + '; background: ' + (open ? '#eef4ff' : '#ffffff') + '; color: ' + (open ? '#1d4ed8' : '#5b6676')
+    };
+  }
+  tone(t) {
+    return t === 'up' ? '#0f766e' : t === 'down' ? '#b45309' : '#475569';
+  }
+  renderVals() {
+    var self = this, st = this.state;
+    var accent = this.props.accent ?? '#2f6fed';
+    var tileBox = 'border: 1px solid #e5eaf1; border-radius: 14px; padding: 16px 18px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; min-width: 0; background: #ffffff';
+    var tileBox = 'position: relative; border: 1px solid #e5eaf1; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; background: #ffffff';
+    var tag = function (c, bg) { return 'font-size: 11px; font-weight: 800; color: ' + c + '; background: ' + bg + '; border-radius: 999px; padding: 2px 8px'; };
+    var prev = function (c) { return 'font-size: 14px; font-weight: 800; color: ' + c; };
+    var tiles = [
+      { tag: '主転換', hasTag: true, tagStyle: tag('#1d4ed8', '#eaf1ff'), label: '購入完了', value: '1,580', prev: '前期 +4.2%', prevStyle: prev('#0f766e'), chip: '比べない', chipStyle: this.chip('比べない'), box: tileBox,
+        p: this.pop('tile1', '購入完了', [['前期', '1,516 → 1,580（+4.2%）'], ['業界', '件数はサイトの規模で変わるため、業界目安とは比べません'], ['意味', 'purchase を記録した件数です']]) },
+      { tag: '', hasTag: false, tagStyle: '', label: '購入CVR', value: '2.3%', prev: '前期 ±0.0pt', prevStyle: prev('#475569'), chip: '目安内', chipStyle: this.chip('目安内'), box: tileBox,
+        p: this.pop('tile2', '購入CVR', [['業界目安', '2.9%（範囲 1.9–3.9%）· 差 -0.6pt'], ['出典', 'EC・小売の公開データ'], ['意味', '来た人のうち購入まで進んだ割合です']], true) },
+      { tag: '一番の課題', hasTag: true, tagStyle: tag('#92400e', '#fde7c7'), label: 'カート→購入率', value: '14.6%', prev: '前期 −0.9pt', prevStyle: prev('#b45309'), chip: '要注意', chipStyle: this.chip('要注意'), box: tileBox.replace('#e5eaf1', '#f3d9b5').replace('background: #ffffff', 'background: #fffaf3'),
+        p: this.pop('tile3', 'カート→購入率', [['業界目安', '29.8%（範囲 19.8–39.8%）· 差 -15.2pt'], ['なぜ課題', '業界目安からいちばん離れている指標です'], ['見るポイント', '送料・決済方法・会員登録の強制など、購入手続きの手前を確認します']], true) }
+    ];
+    var flowPop = this.pop('flow', 'どこで離れているか', [['読み方', '来た人が、どの段まで進んだかです。矢印の % は「前の段から次へ進んだ割合」'], ['イベント', 'session_start → user_engagement → view_item → add_to_cart → begin_checkout → purchase'], ['数字', 'デモ接続の見本です。GA4 を接続すると、あなたのサイトの人数になります']]);
+    var chanPop = this.pop('chan', '流入別 購入率', [['計算', 'その流入から来た人のうち「購入」まで進んだ割合'], ['来た人', 'Organic Search 17,125 · Paid Search 13,015 · Paid Social 10,275 · Direct 7,535 · その他 20,550'], ['低い・高い', '全体（2.3%）の半分以下・1.5倍以上に印をつけます']]);
+
+    var chDefs = [
+      { id: 'all', name: '全体', color: '' },
+      { id: 'os', name: 'Organic Search', color: '#2f6fed' },
+      { id: 'ps', name: 'Paid Search', color: '#0ea5e9' },
+      { id: 'pso', name: 'Paid Social', color: '#8b5cf6' },
+      { id: 'dir', name: 'Direct', color: '#64748b' },
+      { id: 'oth', name: 'その他（6）', color: '#cbd5e1' }
+    ];
+    var channels = chDefs.map(function (c) {
+      var on = st.channel === c.id;
+      return {
+        name: c.name, pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ channel: c.id }); },
+        dot: c.color ? 'width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: ' + c.color : 'display: none',
+        style: 'display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 0 11px; min-height: 32px; cursor: pointer; border: 1px solid ' + (on ? '#1e293b' : '#e5eaf1') + '; background: ' + (on ? '#1e293b' : '#ffffff') + '; color: ' + (on ? '#ffffff' : '#334155')
+      };
+    });
+
+    var raw = [
+      ['サイトに来た', '—', 68500, null], ['サイトを開いた', 'session_start', 67815, 99.0], ['しっかり見た（10秒以上）', 'user_engagement', 36853, 54.3],
+      ['商品を見た', 'view_item', 33904, 92.0], ['カートに追加', 'add_to_cart', 10800, 31.9], ['購入手続きへ', 'begin_checkout', 0, null], ['購入', 'purchase', 1580, null]
+    ];
+    var editing = st.edit;
+    var steps = raw.map(function (r, i) {
+      var sel = editing && st.editSel === i;
+      var next = i < raw.length - 1 ? raw[i + 1][3] : null;
+      var worst = i === 3;
+      var pct = r[2] / 68500 * 100;
+      var missing = i > 0 && r[2] === 0;
+      var col = i === 0 ? '#bcd0f7' : (i === raw.length - 1 ? '#1d4ed8' : '#93b4f5');
+      return {
+        label: r[0], event: r[1], users: missing ? '記録なし' : r[2].toLocaleString('ja-JP'), reach: pct.toFixed(1) + '%',
+        usersStyle: missing ? 'font-size: 13px; font-weight: 800; color: #8792a2' : "font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums",
+        nudge: missing && !editing,
+        fix: function () { self.setState({ edit: true, editSel: i, indOpen: false, page: 'l1' }); },
+        bar: 'width: 100%; height: ' + Math.max(pct, 3).toFixed(1) + '%; background: ' + col + '; border-radius: 6px 6px 0 0',
+        hasLink: i < raw.length - 1, worst: worst, go: next === null ? '—' : next.toFixed(1) + '%', drop: next === null ? '' : (100 - next).toFixed(1) + '%',
+        select: function () { if (editing && i > 0) self.setState({ editSel: i, indOpen: false }); },
+        canRemove: editing && i > 0,
+        box: 'position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 6px; border-radius: 10px; ' + (editing && i > 0 ? 'cursor: pointer; border: 1.5px solid ' + (sel ? '#2f6fed' : '#e5eaf1') + '; background: ' + (sel ? '#f3f7fe' : '#ffffff') : 'border: 1.5px solid transparent'),
+        goStyle: 'font-size: 13px; font-variant-numeric: tabular-nums; color: ' + (worst ? '#b45309' : '#0f172a'),
+        linkStyle: 'flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 30px; font-size: 11px; color: #5b6676; text-align: center',
+        arrow: 'display: block; width: 52px; height: 2px; background: ' + (worst ? '#d97706' : '#cbd5e1') + '; margin-bottom: 6px',
+        dropStyle: worst ? 'color: #92400e; font-weight: 800' : ''
+      };
+    });
+
+    var watch = [
+      { title: 'カート→購入率', value: '14.6%', bench: '29.8%', p: this.pop('w1', 'カート→購入率が目安より低い', [['差', '-15.2pt（目安の範囲 19.8–39.8%）'], ['自社の前期', '−0.9pt（悪化）'], ['見るポイント', 'カートに入れても買わない人が多い。送料・決済方法・会員登録の強制など、購入手続きの手前を確認']], true) },
+      { title: 'エンゲージ率', value: '53.8%', bench: '63.9%', p: this.pop('w2', 'エンゲージ率が目安より低い', [['差', '-10.1pt（目安の範囲 56.4–71.4%）'], ['自社の前期', '−1.4pt（悪化）'], ['見るポイント', '流入の質（期待と違う）か、最初の画面が分かりにくい可能性が高いです']], true) },
+      { title: 'すぐ離脱に近い率', value: '46.2%', bench: '36.1%', p: this.pop('w3', 'すぐ離脱に近い率が目安より高い', [['差', '+10.1pt（目安の範囲 28.6–43.6%）'], ['自社の前期', '+1.4pt（悪化）'], ['見るポイント', '「来てすぐ帰った」訪問が多い。LPや記事の冒頭・読み込みを疑います']], true) }
+    ];
+
+    var chanRows = chDefs.slice(1).map(function (c, i) {
+      var d = [['17,125', '2.3%', ''], ['13,015', '3.0%', ''], ['10,275', '0.92%', '低い'], ['7,535', '3.4%', '高い'], ['20,550', '2.2%', '']][i];
+      var sel = st.channel === c.id;
+      return {
+        name: c.name, entry: d[0], rate: d[1], tag: d[2],
+        tagStyle: d[2] === '低い' ? 'font-size: 11px; font-weight: 800; border-radius: 999px; padding: 2px 8px; color: #92400e; background: #fde7c7' : (d[2] === '高い' ? 'font-size: 11px; font-weight: 800; border-radius: 999px; padding: 2px 8px; color: #0f766e; background: #e6f6f2' : 'display: none'),
+        dot: 'width: 9px; height: 9px; border-radius: 50%; flex: none; background: ' + c.color,
+        row: 'display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid #eef1f5; background: ' + (sel ? '#eef4ff' : '#ffffff')
+      };
+    });
+
+    var data = {
+      revenue: [
+        { id: 'rev', name: '売上（GA4）', value: '¥10,238,400', prev: '+6.1%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '購入イベントに付いた金額の合計（purchaseRevenue）。業務の売上と少しずれるのは普通です。' },
+        { id: 'tx', name: '購入件数', value: '1,580', prev: '+4.2%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '購入（transactions）の件数。' },
+        { id: 'aov', name: '平均購入金額', value: '¥6,480', prev: '+1.8%', t: 'up', chip: '基準なし', bench: '基準なし', gap: '—', gt: 'na', meaning: '1回の購入あたりの金額（客単価）。' },
+        { id: 'item', name: '商品売上', value: '¥9,640,000', prev: '+5.4%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '商品ごとの売上の合計（送料・税を除く）。' }
+      ],
+      device: [
+        { id: 'mob', name: 'モバイル', sub: '62,830 セッション · CVR 1.4%（PC の半分以下）', subWarn: true, value: '68%', prev: '+1.0pt', t: 'mid', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'スマホからの訪問。CVR が PC の半分以下なら、スマホの購入手続きを疑います。' },
+        { id: 'pc', name: 'PC', sub: '26,800 セッション · CVR 3.4%', value: '29%', prev: '−0.8pt', t: 'mid', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'パソコンからの訪問。' },
+        { id: 'tab', name: 'タブレット', sub: '2,770 セッション · CVR 2.0%', value: '3%', prev: '−0.2pt', t: 'mid', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'タブレットからの訪問。' }
+      ],
+      funnel: [
+        { id: 'cvr', help: 'purchase_cvr', formula: 'purchase ÷ UU × 100', tip: 'カート追加率・チェックアウト率とセットでボトルネックを特定します。', name: '購入CVR', primary: true, value: '2.3%', prev: '+0.0pt', t: 'mid', chip: '目安内', bench: '2.9%', gap: '-0.6pt', gt: 'mid', meaning: '来た人のうち購入した人の割合。' },
+        { id: 'cart', name: 'カート→購入率', value: '14.6%', prev: '−0.9pt', t: 'down', chip: '要注意', bench: '29.8%', gap: '-15.2pt', gt: 'down', meaning: 'カートに入れた人のうち購入まで進んだ人の割合。' },
+        { id: 'chk', name: '決済開始→購入率', value: '43.6%', prev: '−2.6pt', t: 'down', chip: '基準なし', bench: '基準なし', gap: '—', gt: 'na', meaning: '購入手続きを始めた人のうち完了した人の割合。' },
+        { id: 'bc', name: 'チェックアウト開始', value: '3,620', prev: '+10.5%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'begin_checkout を記録した人数。' },
+        { id: 'atc', name: 'カート追加', value: '10,800', prev: '+10.7%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'add_to_cart を記録した人数。' },
+        { id: 'pur', name: '購入完了', primary: true, value: '1,580', prev: '+4.2%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'purchase を記録した件数。' },
+        { id: 'key', name: 'キーイベント数', value: '1,580', prev: '+4.2%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'GA4 で「キーイベント」に指定した行動の合計。' },
+        { id: 'scvr', name: 'セッションCVR', value: '1.7%', prev: '−0.1pt', t: 'down', chip: '基準なし', bench: '基準なし', gap: '—', gt: 'na', meaning: '訪問（セッション）のうち購入があった割合。' }
+      ],
+      engage: [
+        { id: 'eng', help: 'engaged', formula: 'エンゲージのあったセッション ÷ 全セッション × 100（GA4: engagementRate）', tip: '低いときは、流入の質（期待と違う）か、最初の画面が分かりにくい可能性が高いです。', name: 'エンゲージ率', value: '53.8%', prev: '−1.4pt', t: 'down', chip: '要注意', bench: '63.9%', gap: '-10.1pt', gt: 'down', meaning: '「ただ開いてすぐ閉じた」ではなく、ある程度見た訪問の割合です。' },
+        { id: 'bnc', name: 'すぐ離脱に近い率', value: '46.2%', prev: '+1.4pt', t: 'down', chip: '要注意', bench: '36.1%', gap: '+10.1pt', gt: 'down', meaning: 'エンゲージしなかった訪問の割合。' },
+        { id: 'pps', name: 'ページ / セッション', value: '3.5', prev: '−0.8%', t: 'down', chip: '基準なし', bench: '基準なし', gap: '—', gt: 'na', meaning: '1回の訪問で見たページ数の平均。' },
+        { id: 'pvu', name: 'PV / UU', value: '4.7', prev: '−3.2%', t: 'down', chip: '基準なし', bench: '基準なし', gap: '—', gt: 'na', meaning: '1人あたりの表示ページ数。' },
+        { id: 'pv', name: 'PV', value: '323,400', prev: '+5.7%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'ページが表示された回数。' },
+        { id: 'avg', name: '平均エンゲージ時間', value: '2:02', prev: '+6.1%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '画面が前面に出ていた時間の平均。' },
+        { id: 'ast', name: '平均セッション時間', value: '2:47', prev: '+3.4%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '1回の訪問の長さの平均。' },
+        { id: 'eps', name: 'イベント / セッション', value: '7.6', prev: '+1.3%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '1回の訪問で記録された行動の数の平均。' },
+        { id: 'scr', name: 'スクロールした人', value: '21,900', prev: '+2.1%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'ページの 90% まで読み進めた人数（scroll）。' },
+        { id: 'dl', name: 'ファイルダウンロード', value: '820', prev: '−4.7%', t: 'down', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'PDF などをダウンロードした回数（file_download）。' }
+      ],
+      channels: [
+        { id: 'c1', name: 'Organic Search', sub: '23,100 セッション · CVR 2.3%', value: '25%', prev: '—', t: 'na', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '検索結果の通常枠から来たセッション。' },
+        { id: 'c2', name: 'Paid Search', sub: '17,560 セッション · CVR 3.0%', value: '19%', prev: '—', t: 'na', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '検索広告から来たセッション。' },
+        { id: 'c3', name: 'Paid Social', sub: '13,860 セッション · CVR 0.92%（低い）', subWarn: true, value: '15%', prev: '—', t: 'na', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'SNS 広告から来たセッション。' },
+        { id: 'c4', name: 'Direct', sub: '10,160 セッション · CVR 3.4%', value: '11%', prev: '—', t: 'na', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'URL 直接入力・ブックマークなど。' },
+        { id: 'c5', name: 'Organic Social', sub: '7,390 セッション · CVR 1.6%', value: '8%', prev: '—', t: 'na', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'SNS の通常投稿から来たセッション。' },
+        { id: 'c6', name: 'その他（5チャネル）', sub: '20,330 セッション · CVR 2.2%', value: '22%', prev: '—', t: 'na', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'Email・Referral など。' }
+      ],
+      audience: [
+        { id: 'uu', name: '期間 UU', value: '68,500', prev: '+9.2%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '期間中にサイトを開いたブラウザの数。' },
+        { id: 'ses', name: 'セッション', value: '92,400', prev: '+7.6%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '訪問の回数。' },
+        { id: 'nr', name: '新規 / 再訪', value: '61.5 / 38.5%', prev: '−0.4pt', t: 'mid', chip: '基準なし', bench: '基準なし', gap: '—', gt: 'na', meaning: '初めて来た人と、また来た人の割合。' },
+        { id: 'spu', name: 'セッション / UU', value: '1.35', prev: '−1.5%', t: 'down', chip: '基準なし', bench: '基準なし', gap: '—', gt: 'na', meaning: '1人あたりの訪問回数。' },
+        { id: 'new', name: '新規ユーザー', value: '42,130', prev: '+10.8%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '期間中に初めて来たブラウザの数。' },
+        { id: 'ret', name: '再訪ユーザー', value: '26,370', prev: '+6.9%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '前にも来たことがあるブラウザの数。' },
+        { id: 'dau', name: 'DAU', sub: 'WAU 17,400 · MAU 61,200', value: '2,980', prev: '+5.2%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '1日に来た人数の平均。WAU は7日、MAU は28日。' },
+        { id: 'dm', name: 'DAU / MAU', value: '4.9%', prev: '+0.2pt', t: 'up', chip: '基準なし', bench: '基準なし', gap: '—', gt: 'na', meaning: '月に来る人のうち、毎日来る人の割合。高いほど習慣になっています。' }
+      ],
+      events: [
+        { id: 'e1', name: 'session_start', code: true, value: '67,815', prev: '+7.1%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'サイトを開いた（自動収集）。' },
+        { id: 'e2', name: 'user_engagement', code: true, value: '36,853', prev: '+5.0%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '10秒以上前面に表示（自動収集）。' },
+        { id: 'e3', name: 'view_item', code: true, value: '36,800', prev: '+8.3%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '商品詳細を見た（推奨イベント）。' },
+        { id: 'e4', name: 'add_to_cart', code: true, value: '10,800', prev: '+10.7%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: 'カートに追加（推奨イベント）。' },
+        { id: 'e5', name: 'begin_checkout', code: true, value: '3,620', prev: '+10.5%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '購入手続きを開始（推奨イベント）。' },
+        { id: 'e6', name: 'purchase', code: true, primary: true, value: '1,580', prev: '+4.2%', t: 'up', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '購入完了（推奨イベント）。' }
+      ],
+      biz: [
+        { id: 'b1', name: '業務データ未連携（6指標）', value: '—', prev: '—', t: 'na', chip: '—', bench: '—', gap: '—', gt: 'na', meaning: '注文・売上・会員など社内DBの数字はまだ接続されていません。GA4 の数字だけで判断できる指標を上に並べています。' }
+      ]
+    };
+    var groupDefs = [['funnel', '転換ファネル'], ['revenue', '売上'], ['engage', 'エンゲージ'], ['channels', '流入チャネル'], ['device', 'デバイス'], ['audience', 'オーディエンス'], ['events', 'イベント'], ['biz', '業務KPI']];
+    var KIND = { funnel: ['デジタル', '#eaf1ff', '#1d4ed8'], revenue: ['デジタル', '#eaf1ff', '#1d4ed8'], engage: ['デジタル', '#eaf1ff', '#1d4ed8'], audience: ['デジタル', '#eaf1ff', '#1d4ed8'], device: ['デジタル', '#eaf1ff', '#1d4ed8'], channels: ['流入', '#e0f2fe', '#0369a1'], events: ['イベント', '#f3effe', '#6d28d9'], biz: ['業務', '#e6f6f2', '#0f766e'] };
+    var spark = function (id, t) {
+      var h = 0; for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 9973;
+      var slope = t === 'up' ? -1.4 : (t === 'down' ? 1.4 : 0), ys = [];
+      for (var k = 0; k < 8; k++) { h = (h * 17 + 7) % 101; ys.push(13 - slope * 3.5 + slope * k + (h % 7 - 3) * 1.1); }
+      return ys.map(function (y) { return Math.max(2, Math.min(24, y)); });
+    };
+    var groups = groupDefs.map(function (gd) {
+      var list = data[gd[0]];
+      var folded = gd[0] === 'biz';
+      var collapsible = gd[0] === 'audience' || gd[0] === 'events';
+      var opened = !collapsible || !!(st.openGroups || {})[gd[0]];
+      var warn = list.filter(function (r) { return r.chip === '要注意'; }).length;
+      var cur = st.sec === gd[0];
+      return {
+        id: 'g-' + gd[0], href: '#g-' + gd[0], title: gd[1], current: cur ? 'true' : 'false',
+        pick: function () { self.setState({ sec: gd[0] }); },
+        count: folded ? '未連携' : String(list.length),
+        warn: warn ? String(warn) : '', warnText: warn ? '要注意 ' + warn : '',
+        warnStyle: warn ? 'margin-left: 6px; font-size: 11px; font-weight: 800; min-width: 18px; padding: 0 5px; border-radius: 999px; background: #fde7c7; color: #92400e' : 'display: none',
+        warnBadge: warn ? 'font-size: 11px; font-weight: 800; border-radius: 999px; padding: 2px 8px; background: #fde7c7; color: #92400e' : 'display: none',
+        chipStyle: 'display: inline-flex; align-items: center; min-height: 34px; padding: 0 12px; border-radius: 999px; text-decoration: none; font-size: 13px; font-weight: 700; border: 1px solid ' + (cur ? '#1e293b' : '#e5eaf1') + '; background: ' + (cur ? '#1e293b' : '#ffffff') + '; color: ' + (cur ? '#ffffff' : '#334155'),
+        wrap: 'min-width: 0; scroll-margin-top: 180px; border: 1px solid #eef1f5; border-radius: 14px; padding: 6px 8px 4px',
+        folded: folded, table: !folded && opened,
+        collapsible: collapsible, closed: collapsible && !opened, expanded: opened ? 'true' : 'false',
+        openLabel: opened ? '閉じる' : '開く（' + list.length + '）',
+        summary: list.slice(0, 3).map(function (r) { return r.name + ' ' + r.value; }).join(' · ') + ' …',
+        toggleOpen: function () { var o = Object.assign({}, st.openGroups || {}); o[gd[0]] = !opened; self.setState({ openGroups: o }); },
+        foldNote: '注文・売上・会員など社内DBの数字（6指標）はまだつながっていません。連携すると、ここに同じ形で並びます。',
+        valueHead: gd[0] === 'events' ? '件数' : ((gd[0] === 'channels' || gd[0] === 'device') ? '構成比' : '値'),
+        rows: list.map(function (r) {
+          var open = st.open === r.id;
+          var hasBench = r.bench !== '—' && r.bench !== '基準なし';
+          var ys = spark(r.id, r.t);
+          return {
+            name: r.name, value: r.value, prev: r.prev, chip: r.chip, primary: !!r.primary,
+            bench: r.bench, gap: hasBench ? r.gap : '', hasBench: hasBench, meaning: r.meaning,
+            sub: r.sub || '', hasSub: !!r.sub,
+            subStyle: 'flex-basis: 100%; font-size: 12px; font-weight: ' + (r.subWarn ? '800' : '600') + '; color: ' + (r.subWarn ? '#92400e' : '#5b6676'),
+            spark: ys.map(function (y, k) { return (2 + k * 10) + ',' + y.toFixed(1); }).join(' '),
+            sparkEnd: ys[7].toFixed(1),
+            sparkColor: r.t === 'up' ? '#0f766e' : (r.t === 'down' ? '#b45309' : '#94a3b8'),
+            open: open, expanded: open ? 'true' : 'false',
+            toggle: function () { self.setState({ open: open ? null : r.id }); },
+            close: function () { self.setState({ open: null }); },
+            groupTitle: gd[1], helpLabel: r.name + ' の説明',
+            helpId: r.help || r.id, kindLabel: KIND[gd[0]][0], kindStyle: 'align-self: flex-start; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 2px 8px; background: ' + KIND[gd[0]][1] + '; color: ' + KIND[gd[0]][2],
+            formula: r.formula || 'GA4 の値をそのまま表示（指標辞典と同じ式）',
+            tip: r.tip || '前期比と 8週の推移 をセットで見ます。1週だけの上下より、続いている向きを優先します。',
+            benchTag: hasBench ? '業界目安あり · ボードで判定' : '業界目安なし（件数・構成など）',
+            benchTagStyle: 'display: inline-flex; align-items: center; min-height: 32px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 700; ' + (hasBench ? 'background: #e8eefc; color: #1e40af' : 'background: #f1f3f5; color: #5b6676'),
+            helpStyle: 'font: inherit; font-size: 11px; font-weight: 700; padding: 1px 8px; min-height: 24px; border-radius: 6px; cursor: pointer; border: 1px solid ' + (open ? '#2f6fed' : '#d5dce6') + '; background: ' + (open ? '#eef4ff' : '#ffffff') + '; color: ' + (open ? '#1d4ed8' : '#5b6676'),
+            nameStyle: r.code ? 'font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; background: #f1f5f9; padding: 3px 8px; border-radius: 4px' : 'font-size: 16px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap',
+            prevStyle: 'text-align: right; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: ' + (r.t === 'na' ? '#8792a2' : self.tone(r.t)),
+            chipStyle: self.chip(r.chip),
+            gapStyle: 'display: block; font-size: 12px; font-weight: 800; color: ' + (r.gt === 'na' ? '#8792a2' : self.tone(r.gt)),
+            wrap: 'position: relative; border-bottom: 1px solid #eef1f5; background: ' + (r.primary ? '#f6f9ff' : 'transparent')
+          };
+        })
+      };
+    });
+
+    return {
+      accent: accent,
+      showNotice: st.notice,
+      dismiss: function () { self.setState({ notice: false }); },
+      ind: (function () {
+        var I = {
+          ec: ['EC・小売', 'カートに入れても半分以上が買わずに離れる', [['購入CVR', '2.3%', '2.9%', '-0.6pt', '目安内'], ['エンゲージ率', '53.8%', '63.9%', '-10.1pt', '要注意'], ['すぐ離脱に近い率', '46.2%', '36.1%', '+10.1pt', '要注意'], ['カート→購入率', '14.6%', '29.8%', '-15.2pt', '要注意']]],
+          mp: ['マーケットプレイス', 'サイト内検索が多く、出品の比較が中心', [['購入CVR', '2.3%', '2.0%', '+0.3pt', '目安内'], ['エンゲージ率', '53.8%', '58.1%', '-4.3pt', '目安内'], ['すぐ離脱に近い率', '46.2%', '41.9%', '+4.3pt', '目安内'], ['カート→購入率', '14.6%', '24.0%', '-9.4pt', '要注意']]],
+          d2c: ['D2C・定期便', '広告・SNS 流入が多く、定期購入が鍵', [['購入CVR', '2.3%', '2.6%', '-0.3pt', '目安内'], ['エンゲージ率', '53.8%', '55.2%', '-1.4pt', '目安内'], ['すぐ離脱に近い率', '46.2%', '44.8%', '+1.4pt', '目安内'], ['カート→購入率', '14.6%', '27.5%', '-12.9pt', '要注意']]],
+          app: ['アパレル・ファッション', 'スマホ比率が高く、閲覧は多いが購入率は低め', [['購入CVR', '2.3%', '1.6%', '+0.7pt', '良好'], ['エンゲージ率', '53.8%', '57.0%', '-3.2pt', '目安内'], ['すぐ離脱に近い率', '46.2%', '43.0%', '+3.2pt', '目安内'], ['カート→購入率', '14.6%', '22.1%', '-7.5pt', '要注意']]],
+          food: ['食品・飲料EC', 'リピート購入が多く、購入率は高め', [['購入CVR', '2.3%', '4.9%', '-2.6pt', '要注意'], ['エンゲージ率', '53.8%', '53.7%', '+0.1pt', '目安内'], ['すぐ離脱に近い率', '46.2%', '39.4%', '+6.8pt', '目安内'], ['カート→購入率', '14.6%', '29.8%', '-15.2pt', '要注意']]],
+          furn: ['家具・インテリアEC', '高単価で検討期間が長く、購入率は低め', [['購入CVR', '2.3%', '1.2%', '+1.1pt', '良好'], ['エンゲージ率', '53.8%', '60.4%', '-6.6pt', '目安内'], ['すぐ離脱に近い率', '46.2%', '39.6%', '+6.6pt', '目安内'], ['カート→購入率', '14.6%', '18.3%', '-3.7pt', '目安内']]]
+        };
+        var cur = I[st.ind];
+        return {
+          open: st.indOpen, expanded: st.indOpen ? 'true' : 'false', current: I.ec[0], preview: cur[0],
+          toggle: function () { self.setState({ indOpen: !st.indOpen, editSel: 0 }); },
+          openIt: function () { self.setState({ indOpen: true, pop: null, editSel: 0 }); },
+          close: function () { self.setState({ indOpen: false }); },
+          apply: function () { self.setState({ indOpen: false }); },
+          chipStyle: 'font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border-radius: 10px; cursor: pointer; color: #152033; box-shadow: 0 1px 3px rgba(47,111,237,0.15); border: 1.5px solid ' + (st.indOpen ? '#1d4ed8' : '#2f6fed') + '; background: ' + (st.indOpen ? '#eef4ff' : '#ffffff'),
+          cards: Object.keys(I).map(function (k) {
+            var on = st.ind === k;
+            return { label: I[k][0], about: I[k][1], checked: on ? 'true' : 'false', pick: function () { self.setState({ ind: k }); },
+              style: 'font: inherit; color: inherit; text-align: left; display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 10px; cursor: pointer; border: 1.5px solid ' + (on ? accent : '#e5eaf1') + '; background: ' + (on ? '#f3f7fe' : '#ffffff') };
+          }),
+          rows: cur[2].map(function (r) {
+            var t = r[4] === '要注意' ? 'down' : (r[4] === '良好' ? 'up' : 'mid');
+            return { label: r[0], you: r[1], bench: r[2], gap: r[3], chip: r[4], chipStyle: self.chip(r[4]),
+              gapStyle: 'font-family: \'DM Sans\', sans-serif; font-size: 14px; font-weight: 800; color: ' + self.tone(t) };
+          })
+        };
+      })(),
+      edit: {
+        active: editing, drawer: editing && st.editSel > 0,
+        on: function () { self.setState({ edit: true, editSel: 0, page: 'l1', indOpen: false }); },
+        off: function () { self.setState({ edit: false, editSel: 0 }); },
+        closeDrawer: function () { self.setState({ editSel: 0 }); },
+        title: (st.editSel + '段目を直す') + (st.editSel === raw.length - 1 ? '（主転換）' : ''),
+        label: raw[st.editSel] ? raw[st.editSel][0] : '',
+        section: 'scroll-margin-top: 120px; position: relative; background: #ffffff; border-radius: 16px; padding: 22px 24px; ' + (editing ? 'border: 2px solid #2f6fed; box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.12)' : 'border: 1px solid #e5eaf1'),
+        events: [['session_start', '67,815'], ['user_engagement', '36,853'], ['view_item_list', '52,400'], ['view_item', '36,800'], ['add_to_cart', '10,800'], ['begin_checkout', '3,620'], ['add_to_wishlist', '4,240'], ['purchase', '1,580']].map(function (e) {
+          var on = raw[st.editSel] && raw[st.editSel][1] === e[0];
+          return { name: e[0], count: e[1], style: 'font: inherit; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px; min-height: 38px; border-radius: 10px; cursor: pointer; text-align: left; border: 1px solid ' + (on ? '#2f6fed' : '#e5eaf1') + '; background: ' + (on ? '#f3f7fe' : '#ffffff') + '; color: #152033' };
+        })
+      },
+      pageNav: [['l0', 'いまの状態', ''], ['l1', 'どこで離れているか', ''], ['l2', '詳しい数字', '要注意 4']].map(function (n) {
+        var on = st.page === n[0];
+        return {
+          href: '#s-' + n[0], label: n[1], badge: n[2], current: on ? 'true' : 'false',
+          pick: function () { self.setState({ page: n[0] }); },
+          style: 'display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; font-size: 14px; font-weight: ' + (on ? '800' : '600') + '; color: ' + (on ? '#152033' : '#5b6676') + '; padding: 10px 14px 11px; border-bottom: 2px solid ' + (on ? accent : 'transparent'),
+          badgeStyle: n[2] ? 'font-size: 11px; font-weight: 800; border-radius: 999px; padding: 1px 7px; background: #fde7c7; color: #92400e' : 'display: none'
+        };
+      }),
+      tiles: tiles, flowPop: flowPop, chanPop: chanPop, channels: channels, steps: steps, watch: watch, chanRows: chanRows,
+      groups: groups
+    };
+  }
+}
+</script>
+</body>
+</html>

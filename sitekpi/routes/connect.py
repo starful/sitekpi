@@ -86,10 +86,13 @@ def connect_page(request: Request):
 
 
 @router.get("/connect/demo")
-def connect_demo(request: Request):
+def connect_demo(request: Request, start: int = 0):
     request.session.clear()
     request.session["ga4_demo"] = True
     request.session["ga4_email"] = "demo@kpistarter.local"
+    if start:  # 「デモで試す」 from the start page: one click to a board
+        request.session["ga4_property"] = DEMO_PROPERTIES[0]
+        return RedirectResponse("/live", status_code=302)
     # leave property unset → show picker
     return RedirectResponse("/connect", status_code=302)
 
@@ -184,8 +187,8 @@ def select_property(request: Request, property_id: str = Form(...)):
     if not chosen:
         return _page_from_request(request, error="選択した Property が見つかりません。")
     session["ga4_property"] = chosen
-    # next: サイトの設定 (flow → industry → adjust), unless it is already done
-    return RedirectResponse("/live" if is_ready(selection(session)) else "/setup", status_code=302)
+    # Numbers first: straight to the board (it guesses the flow if none is chosen yet)
+    return RedirectResponse("/live", status_code=302)
 
 
 @router.post("/connect/property/change")

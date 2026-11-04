@@ -38,10 +38,16 @@ def _pop(html: str, key: str):
 
 
 def _funnel_row(html: str, label: str):
-    for tr in BeautifulSoup(html, "html.parser").select("#panel-funnel tr"):
-        if label in tr.get_text():
-            return tr
+    """One metric of 転換ファネル (詳しい数字): value · 8週 · 前期比 · 業界目安・差 · 判定."""
+    for row in BeautifulSoup(html, "html.parser").select("#g-funnel .dt-row:not(.dt-head)"):
+        if label in row.select_one(".row-name").get_text():
+            return row
     raise AssertionError(label)
+
+
+def _bench_k(row) -> str:
+    """自社目安 (the user's own target, purple) or 業界目安."""
+    return "自社目安" if row.select_one(".bench-v.is-custom") else "業界目安"
 
 
 def test_every_benchmark_value_opens_its_own_popover():
@@ -70,8 +76,8 @@ def test_save_applies_to_board_watch_and_tooltip():
         k for k in sorted(BENCHMARKS["hr"]) if k != "pay_cvr"]}
     html = c.get("/hr").text
     row = _funnel_row(html, "開始→完了率")
-    assert "35%" in row.get_text() and "自社" in row.get_text()
-    assert "自社目安" in row.select_one("td.bench-cell")["title"]
+    assert "35%" in row.get_text() and _bench_k(row) == "自社目安"
+    assert "自社目安" in row.select_one(".dt-bench .bench-v")["title"]
     assert "開始→完了率が目安より低い" not in html
     assert _pop(html, "pay_cvr").select_one("#pop-low-pay_cvr")["value"] == "30"
     assert _pop(html, "pay_cvr").select_one("[data-bench-reset=pay_cvr]")
@@ -94,7 +100,7 @@ def test_validation_returns_errors_and_saves_nothing():
         "bounce_rate": "数字を入れてください",
         "signup_rate": "0〜100 の範囲で入れてください",
     }
-    assert "自社" not in str(_funnel_row(c.get("/hr").text, "応募CVR"))
+    assert _bench_k(_funnel_row(c.get("/hr").text, "応募CVR")) == "業界目安"
 
 
 def test_reset_one_and_all():
@@ -110,8 +116,8 @@ def test_reset_one_and_all():
 def test_sample_targets_are_per_browser():
     a, b = _client(), _client()
     a.post("/benchmarks", headers=JSON, data=_form("hr", pay_cvr=("30", "40")))
-    assert "自社" in _funnel_row(a.get("/hr").text, "開始→完了率").get_text()
-    assert "自社" not in _funnel_row(b.get("/hr").text, "開始→完了率").get_text()
+    assert _bench_k(_funnel_row(a.get("/hr").text, "開始→完了率")) == "自社目安"
+    assert _bench_k(_funnel_row(b.get("/hr").text, "開始→完了率")) == "業界目安"
 
 
 def test_viewing_samples_does_not_create_sessions():

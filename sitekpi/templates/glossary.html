@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}SiteKPI · {{ title }}{% endblock %}
+{% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/glossary.css') }}" /><link rel="stylesheet" href="{{ static_url('css/helpcard.css') }}" />{% endblock %}
+{% block main %}
+  {% import "partials/help_card.html" as hc with context %}
+  <main class="glossary">
+    <header class="gl-head">
+      <h1>{{ title }}</h1>
+      <p class="gl-lead">{{ lead }}</p>
+    </header>
+    <div class="gl-toolbar">
+      <label class="gl-search">
+        <span class="gl-search-ico" aria-hidden="true">⌕</span>
+        <span class="sr-only">{{ search_ph }}</span>
+        <input type="search" id="gl-q" placeholder="{{ search_ph }}" autocomplete="off" />
+      </label>
+      <nav class="gl-kinds" aria-label="{{ filter_label }}">
+        <button type="button" class="gl-kind is-on" data-kind="" aria-pressed="true">{{ filter_all }}<span class="gl-kind-n">{{ total }}</span></button>
+        {% for g in groups %}
+        <button type="button" class="gl-kind" data-kind="{{ g.id }}" aria-pressed="false">{{ g.short }}<span class="gl-kind-n">{{ g.count }}</span></button>
+        {% endfor %}
+      </nav>
+    </div>
+
+    {% for g in groups %}
+    <section class="gl-group" data-group="{{ g.id }}" aria-labelledby="gl-h-{{ g.id }}">
+      <div class="gl-group-head">
+        <span class="gl-dot kind-{{ g.id }}" aria-hidden="true"></span>
+        <h2 id="gl-h-{{ g.id }}">{{ g.label }}</h2>
+        <span class="gl-count">{{ g.count }}</span>
+        <p class="gl-group-desc">{{ g.desc }}</p>
+      </div>
+      <div class="gl-list">
+        {% for it in g.entries %}
+        <details class="gl-card kind-{{ g.id }}" id="{{ it.id }}" data-id="{{ it.id }}">
+          <summary>
+            <span class="gl-card-top">
+              {{ hc.chip(g.id, g.short) }}
+              <span class="gl-caret" aria-hidden="true"></span>
+            </span>
+            <span class="gl-card-main">
+              <span class="gl-card-text">
+                <b class="gl-title">{{ it.title }}</b>
+                <code class="gl-id">{{ it.id }}</code>
+              </span>
+              {% if it.sticker %}
+              <img class="gl-sticker" src="{{ it.sticker.url }}"{% if it.sticker.still_url %} data-still="{{ it.sticker.still_url }}"{% endif %} alt="" width="56" height="56" loading="lazy" decoding="async" />
+              {% endif %}
+            </span>
+            <span class="gl-meaning">{{ it.meaning }}</span>
+          </summary>
+          {{ hc.body(it.formula, it.tip, none if it.kind == "meta" else it.bench, "" if it.kind == "meta" else "/live", to_board) }}
+        </details>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+    <p class="gl-empty" id="gl-empty" hidden>{{ search_empty }}</p>
+  </main>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var q = document.getElementById("gl-q");
+  var empty = document.getElementById("gl-empty");
+  var kind = "";
+  var kindBtns = document.querySelectorAll(".gl-kind");
+  var cards = document.querySelectorAll(".gl-card");
+
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll(".gl-sticker[data-still]").forEach(function (img) {
+      img.setAttribute("src", img.getAttribute("data-still"));
+    });
+  }
+
+  /* one card open at a time; the open card takes the whole row */
+  cards.forEach(function (card) {
+    card.addEventListener("toggle", function () {
+      if (!card.open) return;
+      cards.forEach(function (c) { if (c !== card && c.open) c.open = false; });
+    });
+  });
+  function openFromHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    var card = id && document.getElementById(id);
+    if (card && card.classList.contains("gl-card")) {
+      card.open = true;
+      card.scrollIntoView({ block: "center" });
+    }
+  }
+  window.addEventListener("hashchange", openFromHash);
+  openFromHash();
+
+  function apply() {
+    var needle = (q && q.value || "").trim().toLowerCase();
+    var any = false;
+    document.querySelectorAll(".gl-group").forEach(function (sec) {
+      var kindOk = !kind || kind === sec.getAttribute("data-group");
+      var groupHit = false;
+      sec.querySelectorAll(".gl-card").forEach(function (card) {
+        var hit = kindOk && (!needle || (card.textContent || "").toLowerCase().indexOf(needle) >= 0);
+        card.hidden = !hit;
+        if (hit) groupHit = true;
+      });
+      sec.hidden = !groupHit;
+      if (groupHit) any = true;
+    });
+    if (empty) empty.hidden = any;
+  }
+  kindBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      kind = btn.getAttribute("data-kind") || "";
+      kindBtns.forEach(function (b) {
+        var on = b === btn;
+        b.classList.toggle("is-on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      apply();
+    });
+  });
+  if (q) q.addEventListener("input", apply);
+})();
+</script>
+{% endblock %}

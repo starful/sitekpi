@@ -1,0 +1,146 @@
+/* はじめての5分 — one calm scene, three numbers */
+:root {
+  --ink: #1c2430;
+  --muted: #6b7788;
+  --line: #e6eaf0;
+  --accent: #2f6fed;
+  --bg: #f6f8fc;
+  --card: #fff;
+  --up: #0f766e;
+  --up-bg: #e6f6f2;
+  --down: #b45309;
+  --down-bg: #fdf0e3;
+  --rail-w: 268px;
+  --font-ui: "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
+}
+.main { min-width: 0; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; color: var(--ink);
+  font-family: "Noto Sans JP", "DM Sans", sans-serif;
+  background: var(--bg);
+}
+main.beginner {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 32px 20px 56px;
+}
+.beg-badge {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #0f766e;
+  background: #e7f7f3;
+  border: 1px solid #b7e5d8;
+  border-radius: 999px;
+}
+.beginner h1 {
+  margin: 0 0 8px;
+  font-family: "DM Sans", "Noto Sans JP", sans-serif;
+  font-size: 1.75rem;
+  color: #152033;
+  letter-spacing: -0.02em;
+}
+.beg-lead {
+  margin: 0 0 6px;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 0.98rem;
+}
+.beg-meta {
+  margin: 0 0 28px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.beg-metrics {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.beg-metric {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 12px;
+  padding: 18px 18px 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.beg-name {
+  grid-column: 1;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #334155;
+}
+.beg-value {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-family: "DM Sans", "Noto Sans JP", sans-serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #152033;
+  line-height: 1;
+}
+.beg-line {
+  grid-column: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.beg-metric.tone-down .beg-line { color: var(--down); }
+.beg-metric.tone-up .beg-line { color: var(--up); }
+.beg-metric.tone-ok .beg-line { color: var(--muted); }
+.beg-tip {
+  margin: 0 0 28px;
+  padding: 14px 16px;
+  background: #eef4ff;
+  border: 1px solid #d5e3fb;
+  border-radius: 12px;
+  color: #1e3a5f;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.beg-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+}
+.beg-cta {
+  display: block;
+  text-align: center;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.98rem;
+}
+.beg-cta:hover { filter: brightness(1.05); }
+.beg-more {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+.beg-more:hover { color: var(--accent); }
+.beg-note {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+@media (max-width: 420px) {
+  .beg-value { font-size: 1.55rem; }
+}

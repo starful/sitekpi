@@ -456,3 +456,17 @@ button.choice.ind-choice { padding: 14px 30px 14px 16px; }
 .ind-choice .choice-go { right: 10px; }
 .ind-choice .choice-check { right: 8px; top: 12px; transform: none; }
 .ind-choice .choice-compare > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* GA4 をつなぐ: login + reassurance side by side */
+.cx-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; padding: 28px; }
+.cx-login { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.cx-login h2, .cx-login .meta { margin: 0; }
+.cx-big { min-height: 48px; padding: 0 22px; font-size: 0.95rem; font-weight: 800; border-radius: 12px; display: inline-flex; align-items: center; }
+.cx-demo { font-size: 0.875rem; font-weight: 700; text-decoration: none; color: #1d4ed8; }
+.cx-demo:hover { text-decoration: underline; }
+.cx-safe { list-style: none; margin: 0; padding: 18px 20px; background: #f8fafc; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; font-size: 0.8125rem; line-height: 1.6; color: #334155; }
+.cx-safe li { display: flex; gap: 10px; }
+.cx-safe li > span:first-child { color: #0f766e; font-weight: 800; }
+.cx-pick-foot { display: flex; justify-content: flex-end; border-top: 1px solid #eef1f5; padding-top: 16px; }
+.cx-note { margin: 10px 0 0; font-size: 0.75rem; }
+.prop { min-height: 60px; }

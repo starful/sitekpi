@@ -1,34 +1,33 @@
 {% extends "base.html" %}
 {% block title %}SiteKPI · {{ t("samples.title", loc) }}{% endblock %}
-{% block css %}<link rel="stylesheet" href="{{ static_url('css/connect.css') }}" />{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/samples.css') }}" />{% endblock %}
 {% block main %}
-  <main class="connect samples">
-    <h1>{{ t("samples.title", loc) }}</h1>
-    <p class="lead">{{ t("samples.lead", loc) }}</p>
-    {% for g in groups %}
-    <h2 class="sample-group">{{ g.label }}</h2>
-    <div class="sample-list">
-      {% for b in g.behaviors %}
-      <section class="card sample-beh">
-        <div class="sample-head">
-          <div>
-            <h2>{{ b.label }}</h2>
-            <p class="meta">{{ b.hint }}</p>
-          </div>
-        </div>
-        <span class="mini-flow" aria-label="{{ t('flow.title', loc) }}">
-          <span class="mf-step is-entry">{{ t("flow.entry", loc) }}</span>
-          {% for s in b.steps %}<span class="mf-arrow" aria-hidden="true">→</span><span class="mf-step" title="{{ s.event }}">{{ s.label }}</span>{% endfor %}
-        </span>
-        <div class="sample-inds">
-          <a class="ind-link is-flow" href="/{{ b.slug }}">{{ t("samples.flow_sample", loc) }}<span aria-hidden="true">›</span></a>
-          {% for i in b.industries %}
-          <a class="ind-link" href="/{{ i.slug }}">{{ i.label }}{% if i.cited %}<em class="pack-cited" title="{{ t('connect.pack.cited', loc, n=i.cited) }}">{{ i.cited }}</em>{% endif %}<span aria-hidden="true">›</span></a>
+  <main class="sp">
+    <div class="sp-head">
+      <div>
+        <h1>{{ t("samples.title", loc) }}</h1>
+        <p class="sp-lead">{{ t("samples.lead", loc) }}</p>
+      </div>
+      <a class="sp-btn sp-btn-ghost" href="/connect">{{ t("samplesx.connect", loc) }}</a>
+    </div>
+    <div class="sp-split">
+      <nav class="sp-goals" aria-label="{{ t('samplesx.goals', loc) }}">
+        {% for g in groups %}
+        <div class="sp-goal-group">
+          <div class="sp-goal-k">{{ g.label }}</div>
+          {% for b in g.goals %}
+          <a class="sp-goal{{ ' is-on' if b.selected else '' }}" href="{{ b.href }}" data-goal{% if b.selected %} aria-current="true"{% endif %}>
+            <span class="sp-goal-name">{{ b.label }}</span>
+            <span class="sp-goal-n">{{ b.count }}</span>
+          </a>
           {% endfor %}
         </div>
+        {% endfor %}
+      </nav>
+      <section class="sp-preview" aria-label="{{ t('samplesx.preview', loc) }}" aria-live="polite" data-preview>
+        {% include "samples/_preview.html" %}
       </section>
-      {% endfor %}
     </div>
-    {% endfor %}
   </main>
 {% endblock %}
+{% block scripts %}<script src="{{ static_url('js/samples.js') }}" defer></script>{% endblock %}

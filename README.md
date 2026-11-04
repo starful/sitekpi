@@ -1,6 +1,9 @@
 # SiteKPI
 
-マーケティング・グロース向けのサイト / 業務 KPI ボード。GA4 接続 + 業界パック（業界目安つき）。
+A site / business KPI board for marketing and growth teams: connect GA4 and read your numbers against the previous period and industry benchmarks (業界目安). UI languages: Japanese (default), English, Korean.
+
+- Product plan (goals, screens, rules, roadmap): [docs/plan/index.html](docs/plan/index.html)
+- Developer spec (structure, routes, data flow, storage): [docs/SPEC.md](docs/SPEC.md)
 
 ## Run
 
@@ -8,52 +11,55 @@
 ./run.sh          # → http://127.0.0.1:8766
 ```
 
-Finder なら `run.command` をダブルクリック。初回（または .venv が壊れているとき）は Python 3.12+ で
-.venv を作り直し、requirements.txt が変わったときだけパッケージを入れ直します。
-`.env` は `.env.example` をコピーして GOOGLE_CLIENT_ID / SECRET / SESSION_SECRET を設定
-（デモ接続だけなら不要）。ポート変更は `PORT=9000 ./run.sh`。
+On macOS you can double-click `run.command` in Finder. On the first run (or when `.venv` is broken) it rebuilds `.venv` with Python 3.12+, and reinstalls packages only when `requirements.txt` changes.
+Copy `.env.example` to `.env` and set `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `SESSION_SECRET` (not needed for the demo connection only). Change the port with `PORT=9000 ./run.sh`.
 
 ## Checks
 
 ```bash
-.venv/bin/pip install -r requirements-dev.txt   # 初回のみ
-.venv/bin/python -m pytest                      # tests/（OAuth state 検証など）
-.venv/bin/python scripts/smoke_packs.py         # 全業界パック × 3言語の描画
+.venv/bin/pip install -r requirements-dev.txt   # first time only
+.venv/bin/python -m pytest                      # tests/ (OAuth state checks, board, flow, …)
+.venv/bin/python scripts/smoke_packs.py         # render every industry pack × 3 languages
 ```
 
 ## Sessions / deploy notes
 
-- セッションはサーバー側（`.data/sessions.sqlite3`、暗号化）。Cookie にはランダムな ID のみ。
-- 自社目安と行動フローのイベント割り当ては `.data/app.sqlite3`（`APP_DB_PATH` で変更可）。GA4 プロパティ単位（自社目安の見本はブラウザ単位）。
-- 1台のサーバーなら `--workers N` で複数プロセス可（SQLite を共有）。
-- 複数台（Cloud Run の複数インスタンス等）にする場合は、`sitekpi/session.py` のストアを
-  共有ストア（Redis / Firestore / Cloud SQL など）に差し替える。
-- 本番（https）では `SESSION_SECRET` 必須。未設定・例の値のままだと起動しない。
+- Sessions are server-side (`.data/sessions.sqlite3`, encrypted). The cookie holds only a random id.
+- Custom benchmarks (自社目安) and flow event mappings live in `.data/app.sqlite3` (override with `APP_DB_PATH`), per GA4 property (custom benchmarks on sample boards are per browser).
+- On a single server you can run several processes with `--workers N` (they share SQLite).
+- For multiple instances (e.g. Cloud Run with more than one instance), replace the store in `sitekpi/session.py` with a shared one (Redis / Firestore / Cloud SQL, …).
+- In production (https) `SESSION_SECRET` is required; the app refuses to start when it is unset or still the example value.
 
 ## Structure
 
 ```
-main.py              エントリ（uvicorn main:app）
+main.py              entry point (uvicorn main:app)
 sitekpi/
-  app.py             FastAPI 本体・セッション・gzip・ルーター登録
-  session.py         サーバー側セッション（暗号化 SQLite）
-  cache.py           プロセス内 TTL キャッシュ
-  benchmarks.py      業界目安（初期値＋自社目安）
-  flow.py            行動フロー（イベント割り当て・カスタムの流れ・分岐・見本フロー）
-  selection.py       ライブボードの「訪問者の行動 × 業種」
-  routes/            pages.py（ボード・ビルダー・設定）/ connect.py（GA4 接続）/ benchmarks.py / flow.py / nav.py
-  ga4/               oauth.py（認証）/ data.py（GA4 Data API）
-  board/data.py      ボードの行データ生成
-  views/             テンプレートに渡すデータ（HTML は書かない）
-  templating.py      Jinja2（自動エスケープ・t()・static_url()）
-  templates/         base.html と各ページ、partials/、board/_macros.html
-  packs/             業界パック（1ファイル1業界）・sources.py（出典）・flows.py（行動フローの段）・behaviors.py（行動タイプ → 業種）
-  i18n/  metrics/    文言（ja/en/ko）・説明テキスト
-static/              css/・js/・vendor/（Sortable 同梱）・アイコン
-brand/               ロゴ案（配信しない素材）
-scripts/             smoke_packs.py など
+  app.py             FastAPI app, sessions, gzip, routers
+  session.py         server-side sessions (encrypted SQLite)
+  cache.py           in-process TTL cache
+  benchmarks.py      industry benchmarks (pack defaults + custom overrides)
+  flow.py            visitor flow (event mappings, custom flows, branches, sample flow)
+  selection.py       the live board's "visitor behaviour × industry"
+  routes/            pages.py (board, builder, settings) / connect.py (GA4) / setup.py / benchmarks.py / flow.py / nav.py
+  ga4/               oauth.py (auth) / data.py (GA4 Data API)
+  board/             data.py (board rows) / extras.py (8-week trends, devices, revenue) / prev.py
+  views/             view models for templates (no HTML in Python)
+  templating.py      Jinja2 (autoescape, t(), static_url())
+  templates/         base.html, pages, partials/, board/
+  packs/             industry packs (one file per industry), sources.py (citations), flows.py (flow steps), behaviors.py (behaviours → industries)
+  i18n/  metrics/    UI strings (ja/en/ko) and metric help texts
+static/              css/, js/, vendor/ (Sortable bundled), icons
+docs/                plan/ (product plan + screen designs), SPEC.md
+brand/               logo drafts (not served)
+scripts/             smoke_packs.py, …
 ```
 
-静的ファイルは `static_url()` で `?v=<内容ハッシュ>` 付きになり、1年キャッシュされる（中身が変われば URL も変わる）。
+Static files get `?v=<content hash>` through `static_url()` and are cached for a year (the URL changes when the content does).
 
-業界パックの追加方法は [sitekpi/packs/README.md](sitekpi/packs/README.md) を参照。
+To add an industry pack, see [sitekpi/packs/README.md](sitekpi/packs/README.md).
+
+## Repository conventions
+
+- File and folder names are English (ASCII) only.
+- README files are written in English.

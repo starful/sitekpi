@@ -1,0 +1,23 @@
+{#- 編集モード of 「どこで離れているか」 (replaces the old /setup page). Context: editor (views/setup.flow_editor_context) -#}
+<div class="edit-bar" data-edit-bar hidden>
+  <span class="edit-badge">{{ t("bx.editing", loc) }}</span>
+  <span class="edit-note">{{ t("bx.editing_note", loc) }}</span>
+  <label class="edit-tpl">{{ t("setupx.template", loc) }}
+    <select data-template>
+      {% for g in editor.groups %}
+      <optgroup label="{{ g.label }}">
+        {% for it in g.opts %}<option value="{{ it.id }}"{% if it.selected %} selected{% endif %}>{{ it.label }}</option>{% endfor %}
+      </optgroup>
+      {% endfor %}
+    </select>
+  </label>
+  <form method="post" action="/setup" class="edit-actions" id="edit-form" data-form>
+    <input type="hidden" name="behavior" value="{{ editor.data.behavior }}" data-behavior />
+    <input type="hidden" name="period" value="{{ period }}" />
+    <div data-hidden hidden></div>
+    <button type="button" class="edit-cancel" data-reset data-edit-close>{{ t("bx.cancel", loc) }}</button>
+    <button type="submit" class="edit-save">{{ t("bx.save", loc) }}</button>
+  </form>
+  {% if editor.error %}<p class="edit-error" role="alert" data-edit-error>{{ editor.error }}</p>{% endif %}
+  {% if editor.is_demo %}<p class="edit-demo">{{ t("setupx.demo_note", loc) }}</p>{% endif %}
+</div>

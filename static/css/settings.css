@@ -1,40 +1,42 @@
-/* Settings page */
+/* 設定: language cards + connected site. Tokens follow board.css */
 :root {
-  --ink: #152033; --muted: #6b7788; --line: #e5eaf1; --bg: #f4f6fa;
-  --panel: #ffffff; --accent: #2f6fed;
+  --ink: #152033; --muted: #5b6676; --line: #e5eaf1; --bg: #f4f6fa;
+  --accent: #2f6fed; --accent-ink: #1d4ed8; --up: #0f766e;
   --font-ui: "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
   --font-num: "DM Sans", "IBM Plex Sans JP", sans-serif;
   --rail-w: 268px;
 }
 * { box-sizing: border-box; }
-body {
-  margin: 0; min-height: 100vh; color: var(--ink);
-  font-family: var(--font-ui); background: var(--bg);
-}
+body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font-ui); background: var(--bg); }
 .main { min-width: 0; }
-.top {
-  padding: 18px 24px 8px; background: #fff; border-bottom: 1px solid var(--line);
+.st { padding: 40px clamp(16px, 3vw, 44px) 64px; display: flex; flex-direction: column; gap: 18px; max-width: 820px; }
+.st h1 { margin: 0; font-size: 1.75rem; font-weight: 700; }
+.st h2 { margin: 0; font-size: 1rem; font-weight: 800; }
+.st-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+.st-help { margin: 4px 0 0; font-size: 0.8125rem; line-height: 1.7; color: var(--muted); }
+.st-form { display: flex; flex-direction: column; gap: 14px; }
+.st-langs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.st-lang {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; cursor: pointer; min-height: 64px;
+  border: 1.5px solid var(--line); background: #fff;
 }
-.top h1 { margin: 0; font-size: 1.35rem; font-weight: 800; }
-.content { padding: 24px; max-width: 520px; }
-.card {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-  padding: 20px; box-shadow: 0 6px 18px rgba(21,32,51,0.04);
+.st-lang:hover { border-color: #9db8ea; }
+.st-lang:has(input:checked) { border-color: var(--accent); background: #f3f7fe; }
+.st-lang input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); flex: none; }
+.st-lang b { font-size: 0.9375rem; }
+.st-lang small, .st-site small { display: block; font-size: 0.75rem; color: var(--muted); }
+.st-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.st-primary {
+  font: inherit; font-size: 0.875rem; font-weight: 800; border: 0; border-radius: 10px; min-height: 44px; padding: 0 20px;
+  background: var(--accent); color: #fff; cursor: pointer;
 }
-.lead { margin: 0 0 16px; color: var(--muted); line-height: 1.6; font-size: 0.92rem; }
-label.field { display: block; font-weight: 700; font-size: 0.88rem; margin-bottom: 6px; }
-select {
-  width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line);
-  font: inherit; background: #fff;
+.st-primary:hover { background: var(--accent-ink); }
+.st-saved { font-size: 0.8125rem; font-weight: 700; color: var(--up); }
+.st-back { margin-left: auto; font-size: 0.8125rem; font-weight: 700; color: var(--accent-ink); text-decoration: none; }
+.st-site { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 0.875rem; }
+.st-site-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.st-ghost {
+  display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 1px solid #cbd5e1; border-radius: 10px;
+  font-size: 0.8125rem; font-weight: 700; text-decoration: none; color: var(--accent-ink); background: #fff;
 }
-.hint { margin: 8px 0 0; font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
-.actions { display: flex; gap: 10px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
-button.primary {
-  border: 0; background: var(--accent); color: #fff; font-weight: 700;
-  padding: 10px 16px; border-radius: 8px; cursor: pointer; font: inherit;
-}
-a.back { color: var(--accent); font-weight: 700; text-decoration: none; font-size: 0.88rem; }
-.saved {
-  margin: 0 0 14px; padding: 10px 12px; border-radius: 8px;
-  background: #ecfdf5; color: #0f766e; font-weight: 700; font-size: 0.88rem;
-}
+.st-ghost:hover { background: #f3f7fe; }

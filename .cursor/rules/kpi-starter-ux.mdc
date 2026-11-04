@@ -1,5 +1,5 @@
 ---
-description: KPI Starter UX — beginner-friendly, dense info, clear hierarchy (marketing/growth)
+description: KPI Starter UX — verdict first, then where, then detail; one board for beginners and intermediates (marketing/growth)
 alwaysApply: true
 ---
 
@@ -15,39 +15,37 @@ These decisions are **locked** for the current product. Prefer growing packs/met
 
 1. **One product story** — Marketing/growth site + business KPIs. Not eng-productivity / Findy framing.
 2. **One dense board for all packs** — Same layout for every industry; only DEMO numbers, event vocabulary, 業界目安, and pack copy change.
-3. **Narrative board order** — Summary → オーディエンス → 流入チャネル → エンゲージ → 転換ファネル → イベント → 業務KPI → next-to-watch.
+3. **Board order = depth of the question, not user level (2026-11 redesign)** — one page, top → bottom: **L0 いまの状態** (one-sentence verdict + 3 tiles: 主転換の件数 · 主転換率 · 一番の課題, each with 前期 and 業界 in words) → **L1 どこで離れているか** (行動フロー as a compact funnel + 今見るべきこと + 流入別) → **L2 詳しい数字** (tabs: 転換ファネル · エンゲージ · 流入チャネル · オーディエンス · イベント · 業務KPI). Beginners stop at L0–L1; intermediates go down to L2. No beginner/advanced mode switch.
 4. **Display language** — In-app **設定** stores session `locale` (`ja` / `en` / `ko`). Translates **UI chrome** (nav, table headers, 説明, panels) **and pack-owned spoken labels** (指標名, 業界パック名, 説明 body, next-watch). GA event ids (`apply_complete`) and channel group names (`Organic Search`) stay as-is — never as chips under summary values or in the 重点 banner.
 5. **Data honesty** — Sample packs ≠ live. Live = GA4 numbers + chosen pack’s 目安/labels only. Unlinked 業務 = `—`. Always show period / property / pack identity.
-6. **Nav IA** — Top-level: サンプルパック · 接続済み · アプリ. Inside samples: funnel-type categories, collapsible (default closed except current pack’s category), scrollable rail.
-7b. **今見るべきこと** — Right after the summary: up to 3 metrics furthest outside their 業界目安 (worse first, then better), each with value · 目安 · 差 and a tip. Never fill it with filler when nothing is off — say so. (かんたん/詳細 mode and 次に見るポイント were tried and removed — do not bring them back without asking.)
-7d. **Two yardsticks** — every rate/count shows both 業界目安 (目安差 + judge chip) and 自社の前期比 (real previous period: GA4 prev range on /live, deterministic `board/prev.py` for samples; pt for rates, % for counts; colour by better/worse, never invented — “—” when unknown). 今見るべきこと adds 「自社の前期 … 前期より改善/悪化」.
-7c. **行動フロー** — Right after 今見るべきこと: サイトに来た → the pack's 3–4 behaviour steps (`packs/flows.py`) as linked nodes, each with users, 来た人の %, and 次へ / 離脱 % on the arrow; the biggest drop is marked; 全体/channel switch (top 4 + その他) and 流入別 reach to the last measured step. Live counts are GA4 users; untracked steps say 未計測 and clicking a step maps the site's own event name (per property, also aliases イベント and 主転換). Samples are labelled 見本 and can't be mapped. Live boards can put up to 3 other behaviours (別の行動) above or below a step (＋ above/below the box; event + optional name; shows users and % from the previous step; edit/delete in its popover; stored per property). They never change the main path or its conversion. The flow stacks vertically when narrow. /connect only signs in and picks the property; then **サイトの設定** (/setup) asks three short questions, one per screen: ① あなたのサイトに近い流れは？ (18 behaviours in 5 groups — 買ってもらう / 問い合わせ・申し込み / 予約・来店 / 会員・利用 / 読む・見る — each with one distinguishing line; up to 3 matching the property's GA4 events shown first under あなたのサイトに近い流れ, `packs/behaviors.py`) → ② 業種は？ (the flow's industries as big choices, others folded; each card explains the industry and shows one number — the site's engagement rate vs this industry's cited standard; decides the 業界目安 via `selection.compose_benchmarks`: site-wide metrics and 主転換CVR always from the chosen industry, funnel rates only when computed the same way) → ③ 自分のサイトに合わせる (each step shows ✓ recorded n件 / ⚠ not in GA4; pick the event from a list, rename, add / remove / reorder, max 6, last = 主転換; 完了してボードを見る). Afterwards /connect shows a summary with 変更 links. Keep it this simple: one decision per screen, never a long all-in-one form. Industries are only added when a published benchmark exists (`packs/derived.py` + `packs/sources.py`).
-7c. **Fewer numbers, same rules** — 帯 (band range) lives in the tooltip / 説明 only; 目安差 always carries a judge chip (良好 / 目安内 / 要注意). 流入チャネル shows top 5 + 「その他（n）」. 業務KPI collapses to one line while every row is unlinked.
-7. **Connect path** — Property → pick 業界パック (`benchmark_pack`) → `/live` uses that pack for 業界目安 only.
+6. **Nav IA** — Top-level groups: **マイサイト** · **ツール** · **見本**, plus **設定** at the bottom. No pack search, no long pack tree.
+   - マイサイト: `/live` (when connected) · `/setup` (サイトの設定) · `/connect` (接続・切断), or a GA4 connect CTA when unconnected
+   - ツール: `/builder` · `/glossary`
+   - 見本: `/samples` (見本ボード一覧) + the sample currently being viewed (indent only). **Do not** put `/beginner` or `/first` in the rail — `/beginner` may stay as a direct URL; `/first` now only redirects to `/live` (the board's いまの状態 is the first scene)
+7c. **行動フロー** — In L1 (after いまの状態, next to 今見るべきこと): サイトに来た → the pack's behaviour steps (`packs/flows.py`) as linked nodes, each with users, 来た人の %, and 次へ / 離脱 % on the arrow; the biggest drop is marked; 全体/channel switch (top 4 + その他) and 流入別 reach to the last measured step. Live counts are GA4 users; untracked steps say 未計測 and clicking a step maps the site's own event name (per property, also aliases イベント and 主転換). Samples are labelled 見本 and can't be mapped. Live boards can put up to 3 other behaviours (別の行動) above or below a step (＋ above/below the box; event + optional name; shows users and % from the previous step; edit/delete in its popover; stored per property). They never change the main path or its conversion. The flow is one row of columns (vertical bar = 来た人の %, scrolls sideways when tight) and stacks vertically only on phones (container < 700px).
+  **Entry (numbers-first, 2026-11):** `/` (connect · デモで試す · 見本) → `/connect` (sign-in + property) → **`/live` at once**. If no flow is chosen yet, `/live` guesses the behaviour from the site's GA4 events (`selection.guess_behavior`: purchase > sign_up > form_submit > video_complete > click, then how many of the flow's steps the site records; nothing → ブログ) and the industry via `default_industry`, and shows a 仮 notice (「サイトに合わせる」→ `/setup`, 「このままでよい」→ POST `/setup/keep`). Demo: `/connect/demo?start=1` is one click to a board. **サイトの設定** has no pages: the board's 「どこで離れているか」 has an 編集モード (`/live?edit=1`, board/edit_bar.html + board_edit.js; click a step → right-top drawer) and the top bar has a 「比べる業種」 drawer (`/live?industry=1`). `/setup*` GETs redirect there; POST errors come back as a session flash. **Rules:** the screen shows numbers · verdicts · one line; supplementary text goes into 「説明」 popovers. Only two overlay kinds: 説明 popover / 指標辞典 card dialog, and the right-top drawer. 詳しい数字 is every category stacked (no tabs) with 8週の推移, from `board/extras.py`; live boards load it from `/live/details`. Industry: the drawer; 業界目安 only when a published benchmark exists (`packs/derived.py` + `packs/sources.py`). Never put a wizard before the first numbers. One decision per setup screen.
+  7b. **今見るべきこと** — In L1 beside 流入別: up to 3 metrics furthest outside their 業界目安 (worse first, then better), each with value · 目安 · 差, 自社の前期 and a tip. Never fill it with filler when nothing is off — say so. The worst one is also L0's 一番の課題 tile; with none, that tile is the flow's biggest drop. (かんたん/詳細 mode and 次に見るポイント were tried and removed — do not bring them back without asking.)
+  7d. **Two yardsticks** — every rate/count carries both 業界目安 and 自社の前期比 (real previous period: GA4 prev range on /live, deterministic `board/prev.py` for samples; pt for rates, % for counts; colour by better/worse, never invented — “—” when unknown). L0 says both in words (前期より改善 / 目安内 …) with the numbers small; L2 rows show 前期比 + one judge chip and open for 業界目安 · 目安差.
+7e. **Fewer numbers, same rules** — One number + one judge chip per row; 業界目安 · 目安差 · 意味 · 説明 open with the row (帯 only in the tooltip / popover). 流入チャネル shows top 5 + 「その他（n）」. イベント shows 10 + 「ほか n 件」. 業務KPI collapses to one line while every row is unlinked.
+7. **Connect path** — Property → `/live` always (guess + 仮 notice when nothing is chosen). Live board uses GA4 numbers + selection’s behaviour (flow/labels) × industry (業界目安). Do not copy sample DEMO business numbers into `/live`.
 
 ## Core
 
 1. **Metric names are the shared language** — Primary on-screen label = what the team says out loud (`登録CVR`, `Organic Search`, `申込完了`). Do not replace them with long paraphrase titles. Raw GA event ids are secondary vocabulary for 説明 / イベント rows, not summary decoration.
-2. **Explanations via「説明」popup** — Keep the row clean (name + value). Place `説明` **before** the metric/event name so help affordances align in one column. Detailed Japanese help (意味 / 計算式 / 見るポイント) opens from that button (not `?`). Put GA event id, formula detail, and beginner glosses **inside 説明** — do not bury the screen in one-line glosses or summary `code` chips. No per-row category chips (主転換/利用 etc.) — primary conversion is board config, not a row tag.
+2. **Explanations via「説明」** — Keep the row clean (name + value + 前期比 + judge). 「説明」 opens 意味 / 計算式 / 見るポイント (not `?`); in L2 it sits in the opened row (「説明を開く」), in L0 tiles and 今見るべきこと it sits beside the name. Put GA event id, formula detail, and beginner glosses **inside 説明** — do not bury the screen in one-line glosses or summary `code` chips. Only the 主転換 tag may sit on a row; no other per-row category chips.
 3. **Maximize useful information** — Prefer dense tables/lists over sparse decorative cards. Cards only when they aid scanning or interaction.
-4. **Summaries pop** — Top band: few key KPIs, large numbers, 前期比, and 業界目安/目安差 where applicable. Do not cram tables, tips, or event-id chips into the summary band. 重点 banner uses Japanese labels (`主転換: 申込完了`), not raw event ids.
+4. **L0 pops** — One sentence a beginner can repeat to a boss, then three big numbers with 前期 / 業界 in words. Do not cram tables, tips, or event-id chips into L0. No separate 重点 banner (the sentence replaces it).
 
 ## Structure & copy
 
-5. **One purpose per screen/section** — Summary → detail (tables) → “next to watch” / actions. Do not break this order or mix purposes in one block.
-5b. **Detail section order tells a story** — On the site KPI board, panel order is narrative (L→R, top→bottom): **オーディエンス → 流入チャネル → エンゲージ → 転換ファネル → イベント → 業務KPI** (who → where from → depth → convert → evidence → business reality). Do not reshuffle panels arbitrarily.
+5. **One purpose per section** — いまの状態 (is it OK?) → どこで離れているか (where does it leak?) → 詳しい数字 (why / evidence). Do not break this order or mix purposes in one block.
+5b. **Tab order tells a story** — 転換ファネル → エンゲージ → 流入チャネル → オーディエンス → イベント → 業務KPI (convert → depth → where from → who → evidence → business reality). The last opened tab is remembered per browser; `#panel-<id>` opens a tab.
 5c. **One dense board for all industry packs** — `/{slug}` uses the same `/sample` layout; only DEMO numbers, event names, 業界目安 bands, and pack copy (CVR label etc.) change. Do not maintain a separate card UI per industry. New industries = new `sitekpi/packs/{slug}.py` + registry entry.
-5d. **Nav categories stay separate** — Sidebar groups: **サンプルパック** (industry demos) · **接続済み** (GA4 live `/live`) · **アプリ** (builder/connect). Never mix sample packs into the connected-property list.
-5e. **サンプルパック内カテゴリ** — Inside サンプルパック, group packs by funnel type (`会員・継続` / `コンテンツ` / `採用` / `問い合わせ・リード` / `コマース` / `教育・申込` / `予約`) using each pack’s `category`. Collapsible `<details>`; default **closed** except the category that contains the current pack. Keep pack name + hint as the click target. Rail nav must scroll. Do not flatten dozens of packs into one undifferentiated list.
-5f. **接続時に業界パック選択 → 目安のみ適用** — On GA4 connect (after Property), user picks one 業界パック. Session stores `benchmark_pack`. `/live` uses **GA4 live numbers** + that pack’s **BENCHMARKS / PACK_COPY labels only**. Never copy sample DEMO revenue・会員・業務数字 into the live board. Meta must show `業界目安: {pack label}`. If pack not chosen, send user back to `/connect` to pick one.
+5d. **Nav categories stay separate** — Sidebar groups: **マイサイト** (live / setup / connect) · **ツール** (builder / glossary) · **見本** (samples gallery + current sample). Never mix sample packs into the connected-property list; never put `/beginner` or `/first` in the rail.
+5e. **見本ボード** — `/samples` lists behaviours → industries; viewing a sample shows that pack indented under 見本. Dense board layout is shared; only DEMO / labels / 目安 change per pack.
+5f. **接続後は行動 × 業種 → 目安のみ適用** — After property + setup, session stores behaviour + industry. `/live` uses **GA4 live numbers** + behaviour flow/labels + industry **BENCHMARKS only**. Never copy sample DEMO revenue・会員・業務数字 into the live board. Meta must show the selection / 業界目安. If setup incomplete while connected, send to `/first` (not back to property pick alone).
 6. **UI language** — Product chrome follows session locale (default Japanese). Primary metric vocabulary stays the spoken industry terms (JP pack copy for now). GA event/channel ids appear where that id *is* the catalog name (イベント表) or inside 説明 — not competing with spoken labels in the summary.
-7. **Discoverability** — When catalogs are large: search, “値ありだけ”, collapsible groups. Settled per-section view modes (no ゲージ):
-   - オーディエンス / エンゲージ: リスト · カード · バー · 比較 · トレンド (default リスト)
-   - 流入チャネル: リスト · カード · バー · スタック (default スタック)
-   - 転換ファネル: リスト · カード · 比較 (default リスト)
-   - イベント: リスト · カード · バー (default バー)
-   - 業務KPI: リスト · カード (default リスト)
-   比較 = GA4 dual bars (今期 vs 前期, or vs 業界目安). トレンド = solid/dashed line. Metric バー = period columns. Persist in localStorage. Rows/cards in a section share equal height. No コンパクト / 目安差 mode (目安差 stays in table/summary). Sample-pack sidebar uses category `<details>`.
+7. **Discoverability** — When catalogs are large: search, “値ありだけ”, collapsible groups. The board has **no per-section view modes** any more (リスト/カード/バー/比較/トレンド were removed in the 2026-11 redesign): each L2 tab is one table (指標 · 値 · 前期比 · 判定) whose rows open. 流入チャネル adds one stacked bar above its table; イベント shows a small share bar under each count. 指標辞典 `/glossary` cards keep equal height **and aligned internal rows** (title · 意味 · 計算 · 見る) — prefer CSS subgrid over ragged wrap. Sample-pack sidebar uses category `<details>`. Optional **metric stickers** (cute mascot loops): add `static/stickers/{HELP_id}.gif` (+ optional `.png` still); glossary shows them when present, no sticker = layout unchanged; language-agnostic; grow one metric at a time — do not require a full set.
 
 ## Data honesty
 
@@ -55,15 +53,17 @@ These decisions are **locked** for the current product. Prefer growing packs/met
 9. **Business KPIs unlinked = explicit** — Show `—` + 業務DB (or equivalent). Do not fill with fake numbers when connected.
 10. **Period, property & industry pack visible** — Always show which Property, date range, and (for samples) which **業界パック** the numbers belong to. Prefer **vertical industry names with a domain hint** (`人事・採用`, `建設・住宅`, `会員・サブスク`, …) over jargon-only labels (`B2C`, bare `人事`). On sample boards: **h1 / `<title>` = pack name**; meta line = role + property + period (e.g. `業界パック見本 · 採用 Demo JP · 直近28日`). On `/live`: meta includes `業界目安: {pack}`. Sample-pack nav may show a one-line funnel hint under the name (`求人〜応募`). Never leave the board looking like anonymous live data when it is pack sample.
 11. **業界目安 (industry standard) is mandatory — and honest** — For every comparable rate/ratio KPI where a pack standard exists, always show the 業界目安 and 目安差. Cited values come from `packs/sources.py` (link + segment + value, band rule labelled 'SiteKPI の設定'); cited figures that only exist for all industries are marked 「出典・全業種」 (orange) with a note; everything else shows 「基準なし」 (grey, never judged, empty 自社目安 inputs) and its popover explains why there is no standard — never invent a number. Users set 自社目安 in a small popover anchored at the clicked 業界目安 value (or the 目安を調整 list; source shown as a 「出典」 button, never a raw URL; per GA4 property for /live, per browser for samples); the board then labels it 自社目安 / 自社 and judges with it.
-12. **Show gap vs 業界目安** — Next to (or under) the current value, always show the difference from the industry standard (e.g. `目安差 +0.3pt`) followed by a judge chip (良好 / 目安内 / 要注意). The chip is the beginner cue; the number stays — never replace it.
-13. **Same chrome whether 目安 exists or not** — In a shared band/table/card grid, always reserve the 業界目安 + 目安差 slots. If a metric has no pack standard (counts, unlinked, etc.), show `—` in those slots — do not omit the rows/columns so some cards look taller or denser than siblings.
-14. **Wide-layout tables** — Dense KPI tables use full width with `table-layout: fixed` so columns share space evenly (説明 fixed, 指標 slightly wider, numeric cols share the rest). Do not leave a dead empty spacer column, and do not let only 業界目安/目安差 stretch.
+12. **Show the verdict, keep the gap one tap away** — Every comparable row shows a judge chip (良好 / 目安内 / 要注意; 基準なし opens why); 目安差 (e.g. `+0.3pt`) and the 業界目安 value are in L0 tiles and in the opened L2 row. The chip is the beginner cue; the number stays — never replace it.
+13. **Same chrome whether 目安 exists or not** — Every L2 row has the same four cells (指標 · 値 · 前期比 · 判定) and the same opened part; with no standard the 判定 cell is 「基準なし」 (opens why) or `—` (counts / unlinked). Never drop the cell so some rows look different.
+14. **Wide-layout tables** — L2 tables use full width with `table-layout: fixed` (指標 ~46%, the three numeric cells share the rest) and scroll sideways inside their box on phones. Do not leave a dead spacer column.
 
 ## Still open (decide when needed; do not invent a new product direction)
 
 - How far `/live` should **propose pack event→GA4 event mapping** beyond 目安 + labels (user override likely).
 - Fine-tuning of column proportions on ultra-wide screens.
-- Real daily series for `/live` Trend/period-bar (until then those modes stay **sample-only** with 見本系列 note).
+- Real daily series for `/live` (a trend line could come back inside an opened L2 row, not as a view mode).
+- A whole-board channel filter (today the channel switch changes the 行動フロー and 流入別 only).
+- Fixed first-number set per behaviour (today: 主転換 · 主転換率 · 一番の課題 for every behaviour).
 
 ## Settled polish (keep)
 
@@ -80,13 +80,16 @@ These decisions are **locked** for the current product. Prefer growing packs/met
 - Per-row category chips that dilute the metric name
 - Long inline explanations that compete with the metric name
 - Mixing Findy/dev-productivity framing into product copy
-- Stuffing the hero/summary with secondary metrics or tips
-- KPI rows/cards with current value only — missing 業界目安 and/or 目安差
+- Stuffing L0 with secondary metrics or tips
+- Putting a setup wizard (or an empty step editor) before the first numbers
+- Showing every section open at the same weight (that was the old board: 60+ numbers before a verdict)
+- KPI rows with value only — no judge chip, or no way to open 業界目安 / 目安差
 - Treating 前期比 alone as enough context (前期比 ≠ 業界目安)
 - Mixing sample DEMO business numbers into `/live`
 - Flattening all sample packs into one long nav list with no categories
 - Leaving the sample-pack rail unscrolled / all categories forced open
+- Dense card grids (指標辞典) where sibling cards only match outer height but title/意味/計算/見る rows rag differently across the row
 
-13. **Menu** — マイサイト (property + 行動 × 業種 → /live, 行動・業種の設定 → /connect; or GA4 を接続), ツール (ダッシュボードを作る), 見本 (見本ボード一覧 → /samples, plus the sample being viewed), 設定 at the bottom. No pack search, no long pack tree in the menu.
+13. **Menu** — マイサイト (`/live` when connected, `/setup`, `/connect` or GA4 CTA), ツール (`/builder`, `/glossary`), 見本 (`/samples` + current sample indent only — **no** `/beginner`), 設定 at the bottom. No pack search, no long pack tree. `/first` is post-connect only (not a rail item).
 
-14. **Flows start with GA4 basics** — every flow is サイトに来た (sessions + 流入元 by channel) → session_start (サイトを開いた) → user_engagement (しっかり見た（10秒以上）), worldwide. Behaviour flows have 5–6 steps by default and use GA4's automatically collected / enhanced-measurement / recommended events (user_engagement, scroll, click, view_search_results, file_download, form_start, form_submit, view_item, add_to_cart, begin_checkout, purchase, sign_up, login) so most sites already record them; the board's 主転換 and rates follow the behaviour's own events (`packs/behaviors.py` → board). Industry-specific events stay in industry packs and are reached through ③ 自分のサイトに合わせる or the board's mapping.
+14. **Flows start with GA4 basics** — every flow is サイトに来た (sessions + 流入元 by channel) → session_start (サイトを開いた) → user_engagement (しっかり見た（10秒以上）), worldwide. Behaviour flows have 5–6 steps by default and use GA4's automatically collected / enhanced-measurement / recommended events (user_engagement, scroll, click, view_search_results, file_download, form_start, form_submit, view_item, add_to_cart, begin_checkout, purchase, sign_up, login) so most sites already record them; the board's 主転換 and rates follow the behaviour's own events (`packs/behaviors.py` → board). Industry-specific events stay in industry packs and are reached through the flow editor (`/setup`) or the board's mapping.

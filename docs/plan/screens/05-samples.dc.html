@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>見本ボード一覧 B</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&amp;family=IBM+Plex+Sans+JP:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+button{font-family:inherit}
+.goal:hover{background:#f8fafc}
+.indc:hover{border-color:#9db8ea}
+</style>
+</helmet>
+<div style="font-family: 'IBM Plex Sans JP', 'Noto Sans JP', system-ui, sans-serif; color: #152033; background: #f4f6fa; min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch">
+
+  <nav aria-label="メニュー" style="flex: 0 1 248px; min-width: 220px; box-sizing: border-box; background: #ffffff; border-right: 1px solid #e5eaf1; padding: 20px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 14px">
+    <a href="01-start.dc.html" style="text-decoration: none; color: #152033; font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; padding: 0 8px 18px">Site<span style="color: #2f6fed">KPI</span></a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 6px 10px 4px">マイサイト</div>
+    <a href="02-connect.dc.html" style="text-decoration: none; color: #1d4ed8; border: 1px dashed #9db8ea; background: #f3f7fe; border-radius: 8px; padding: 9px 10px; font-weight: 700; text-align: center">＋ GA4 を接続</a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">ツール</div>
+    <a href="06-builder.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">ダッシュボードを作る</a>
+    <a href="04-glossary.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">指標辞典</a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">見本</div>
+    <a href="#top" style="text-decoration: none; color: #1d4ed8; background: #eef4ff; padding: 8px 10px; border-radius: 8px; font-weight: 700">見本ボード一覧</a>
+    <div style="flex-grow: 1; min-height: 24px"></div>
+    <a href="07-settings.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 12px 10px 8px; border-top: 1px solid #e5eaf1; font-weight: 600">設定</a>
+  </nav>
+
+  <main id="top" style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px clamp(16px, 3vw, 40px) 48px; display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px">
+      <div>
+        <h1 style="margin: 0; font-size: 26px; font-weight: 700">見本ボード</h1>
+        <p style="margin: 6px 0 0; font-size: 14px; line-height: 1.7; color: #5b6676">左でサイトのゴールを選ぶと、右にそのボードの見本が出ます。</p>
+      </div>
+      <a href="02-connect.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 12px; background: #ffffff; border: 1px solid #c9dbfb; color: #1d4ed8; font-weight: 800; font-size: 14px; text-decoration: none">自分のサイトで見る（GA4 接続）</a>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+      <div role="radiogroup" aria-label="サイトのゴール" style="flex: 1 1 280px; max-width: 340px; background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px; padding: 8px 0; max-height: 860px; overflow-y: auto">
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="5">
+          <div style="padding: 8px 0 4px">
+            <div style="font-size: 11px; font-weight: 800; color: #5b6676; padding: 4px 16px">{{g.name}}</div>
+            <sc-for list="{{g.items}}" as="b" hint-placeholder-count="3">
+              <button type="button" role="radio" class="goal" aria-checked="{{b.checked}}" onClick="{{b.pick}}" style="{{b.style}}">
+                <span style="font-size: 14px; font-weight: 700">{{b.label}}</span>
+                <span style="font-size: 11px; color: #5b6676">{{b.count}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+
+      <section aria-label="見本のプレビュー" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+        <div style="background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px">
+            <div>
+              <span style="font-size: 11px; font-weight: 800; color: #92400e; background: #fef3c7; border-radius: 999px; padding: 2px 8px">見本</span>
+              <h2 style="margin: 6px 0 2px; font-size: 22px; font-weight: 700">{{cur.label}} × {{cur.ind}}</h2>
+              <span style="font-size: 13px; color: #5b6676">{{cur.hint}}</span>
+            </div>
+            <a href="03-board.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 12px; background: {{accent}}; color: #ffffff; font-weight: 800; font-size: 14px; text-decoration: none">この見本をボードで開く</a>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+            <span style="font-size: 11px; font-weight: 700; color: #5b6676; margin-right: 4px">比べる業種</span>
+            <sc-for list="{{inds}}" as="i" hint-placeholder-count="4">
+              <button type="button" class="indc" onClick="{{i.pick}}" aria-pressed="{{i.pressed}}" style="{{i.style}}">{{i.label}}</button>
+            </sc-for>
+            <sc-if value="{{noInd}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #5b6676">業種を問わず使えます（全業種の目安）</span></sc-if>
+          </div>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px">
+          <span style="font-size: 12px; font-weight: 800; color: #5b6676; letter-spacing: 0.06em">いまの状態</span>
+          <p style="margin: 0; font-size: 18px; line-height: 1.6; font-weight: 700">{{cur.verdict}}</p>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+            <sc-for list="{{tiles}}" as="t" hint-placeholder-count="3">
+              <div style="{{t.box}}">
+                <span style="font-size: 12px; font-weight: 700; color: #475569">{{t.label}}</span>
+                <span style="font-family: 'DM Sans', sans-serif; font-size: 26px; font-weight: 800">{{t.value}}</span>
+                <span style="{{t.chipStyle}}">{{t.chip}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px">
+          <span style="font-size: 12px; font-weight: 800; color: #5b6676; letter-spacing: 0.06em">どこで離れているか</span>
+          <div style="overflow-x: auto">
+            <ol style="list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; min-width: 720px; align-items: flex-end">
+              <sc-for list="{{bars}}" as="s" hint-placeholder-count="6">
+                <li style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                  <div style="height: 80px; display: flex; align-items: flex-end; background: #f1f4f8; border-radius: 8px; overflow: hidden"><div style="{{s.bar}}"></div></div>
+                  <span style="font-size: 12px; font-weight: 700; line-height: 1.3; min-height: 32px">{{s.label}}</span>
+                  <span style="font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 800">{{s.users}}</span>
+                  <span style="{{s.goStyle}}">{{s.go}}</span>
+                </li>
+              </sc-for>
+            </ol>
+          </div>
+          <p style="margin: 0; font-size: 12px; color: #5b6676">見本の数字です。GA4 をつなぐと、あなたのサイトの人数で同じ形のボードになります。</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2f6fed","options":["#2f6fed","#0f766e","#7c3aed","#152033"]},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { goal: 'commerce', ind: 0 };
+  }
+  renderVals() {
+    var self = this, st = this.state;
+    var accent = this.props.accent ?? '#2f6fed';
+    var G = [['buy', '買ってもらう'], ['contact', '問い合わせ・申し込み'], ['visit', '予約・来店'], ['member', '会員・利用'], ['read', '読む・見る']];
+    var D = [
+      ['commerce', 'buy', '買う', '商品を見て、カートに入れて、購入', ['商品を見た', 'カートに追加', '購入手続きへ', '購入'], ['EC・小売', 'マーケットプレイス', 'D2C・定期便', 'アパレル・ファッション', '食品・飲料EC', '家具・インテリアEC'], '購入CVR', '購入完了'],
+      ['comparison', 'buy', '比較して送客する', '比較・口コミサイト: 探して、見て、販売先へ', ['サイト内を検索', '出品を見た', '販売先へ移動'], ['マーケットプレイス', 'EC・小売', '金融・保険', '旅行・宿泊', '不動産・物件'], '送客CVR', '送客クリック'],
+      ['donation', 'buy', '寄付してもらう', '活動を知って、寄付フォームを完了', ['最後までスクロール', '寄付フォームを開始', '寄付を完了'], ['自治体・公共', 'コミュニティ・アプリ', '教育・スクール'], '寄付CVR', '寄付完了'],
+      ['lead', 'contact', '問い合わせる', '読んで、資料を見て、フォームを送信', ['最後までスクロール', '資料をダウンロード', 'フォーム入力を開始', '問い合わせを送信'], ['建設・住宅', 'B2B・リード', '不動産・物件', '製造業・BtoB製品', 'IT・システム開発', '士業・法律事務所', 'リフォーム・設備工事', '自動車・ディーラー'], '問い合わせCVR', '問い合わせ'],
+      ['doc_request', 'contact', '資料請求してもらう', '製品を見て、資料請求フォームを送信', ['製品・サービスを見た', '資料請求を開始', '資料請求を送信'], ['B2B・リード', '製造業・BtoB製品', 'IT・システム開発', '建設・住宅'], '資料請求CVR', '資料請求'],
+      ['quote', 'contact', '見積もりを依頼してもらう', '事例や料金を見て、見積もりフォームを送信', ['事例・料金を見た', '見積もり依頼を開始', '見積もり依頼を送信'], ['建設・住宅', 'リフォーム・設備工事', '製造業・BtoB製品'], '見積もりCVR', '見積もり依頼'],
+      ['call_line', 'contact', '電話・LINEで問い合わせてもらう', '内容を見て、電話・LINE のボタンをタップ', ['最後までスクロール', 'サービス内容を見た', '電話・LINE をタップ'], ['リフォーム・設備工事', '士業・法律事務所', '医療・クリニック', '美容・サロン'], 'タップ率', '電話・LINE'],
+      ['education', 'contact', '申し込む', '内容を読んで、資料を見て、申込フォームを完了', ['最後までスクロール', '資料をダウンロード', '申込を開始', '申込を送信'], ['教育・スクール', '金融・保険', '自治体・公共'], '申込CVR', '申込'],
+      ['recruit', 'contact', '応募する', '求人を探して、見て、応募フォームを送信', ['求人を検索', '求人を見た', '応募を開始', '応募を送信'], ['人事・採用', 'アルバイト・シフト', '人材紹介・エージェント'], '応募CVR', '応募完了'],
+      ['booking', 'visit', '予約する', 'メニューや料金を見て、予約フォームを送信', ['メニュー・プランを見た', '予約を開始', '予約を送信'], ['医療・クリニック', '美容・サロン', '旅行・宿泊', '飲食・店舗'], '予約CVR', '予約'],
+      ['store_visit', 'visit', '来店予約してもらう', '店舗を見て、地図を開いて、来店予約', ['店舗・メニューを見た', '地図・経路を開いた', '来店予約を開始', '来店予約を送信'], ['飲食・店舗', '美容・サロン', '医療・クリニック'], '来店予約CVR', '来店予約'],
+      ['membership', 'member', '会員になって使い続ける', '登録して、ログインして、有料へ', ['会員登録', 'ログイン', '購入手続きへ', '購入'], ['会員・サブスク', 'SaaS・B2B', 'コミュニティ・アプリ'], '登録CVR', '新規会員登録'],
+      ['free_trial', 'member', '無料トライアルを始めてもらう', '料金を見て、トライアル登録、ログインして使う', ['料金・プランを見た', 'トライアル登録', 'ログイン'], ['SaaS・B2B', '会員・サブスク', '教育・スクール'], 'トライアルCVR', 'トライアル登録'],
+      ['app_download', 'member', 'アプリをダウンロードしてもらう', 'アプリを知って、ストアへ移動', ['最後までスクロール', 'アプリ紹介を見た', 'ストアへ移動'], ['会員・サブスク', 'コミュニティ・アプリ', 'クリエイター・UGC'], 'ストア移動率', 'ストアへ移動'],
+      ['members_only', 'member', '会員限定コンテンツで登録してもらう', '限定記事の入口を見て、登録・ログイン', ['限定記事の入口を見た', '会員登録', 'ログイン'], ['ニュース・購読', 'メディア・コンテンツ', '会員・サブスク'], '登録CVR', '会員登録'],
+      ['content', 'read', '読んで登録・購読する', '記事を読んで、会員登録・購読へ', ['最後までスクロール', '外部リンクをクリック', '登録・購読'], ['メディア・コンテンツ', 'ニュース・購読', 'クリエイター・UGC'], '登録CVR', '登録・購読'],
+      ['blog', 'read', 'ブログ・記事を読んでもらう', '記事を読んで、ほかの記事やリンクへ進む', ['最後までスクロール', 'サイト内を検索', '外部リンクをクリック'], [], 'クリック率', 'リンククリック'],
+      ['video', 'read', '動画を見てもらう', '動画を再生して、最後まで見る', ['動画を再生', '動画を途中まで見た', '動画を最後まで見た'], ['メディア・コンテンツ', 'クリエイター・UGC', '教育・スクール'], '完了率', '動画を最後まで見た']
+    ];
+    var groups = G.map(function (g) {
+      return {
+        name: g[1],
+        items: D.filter(function (d) { return d[1] === g[0]; }).map(function (d) {
+          var on = st.goal === d[0];
+          return {
+            label: d[2], count: d[5].length ? d[5].length + '業種' : '全業種', checked: on ? 'true' : 'false',
+            pick: function () { self.setState({ goal: d[0], ind: 0 }); },
+            style: 'font: inherit; color: inherit; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 16px; border: 0; cursor: pointer; text-align: left; min-height: 44px; background: ' + (on ? '#eef4ff' : 'transparent') + '; box-shadow: ' + (on ? 'inset 3px 0 0 ' + accent : 'none')
+          };
+        })
+      };
+    });
+    var d = D.filter(function (x) { return x[0] === st.goal; })[0];
+    var indName = d[5].length ? d[5][Math.min(st.ind, d[5].length - 1)] : '全業種';
+    var inds = d[5].slice(0, 6).map(function (x, i) {
+      var on = i === st.ind;
+      return {
+        label: x, pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ ind: i }); },
+        style: 'font: inherit; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 0 12px; min-height: 32px; cursor: pointer; border: 1px solid ' + (on ? accent : '#e5eaf1') + '; background: ' + (on ? '#eef4ff' : '#ffffff') + '; color: ' + (on ? '#1d4ed8' : '#334155')
+      };
+    });
+    var steps = ['サイトに来た', 'サイトを開いた', 'しっかり見た'].concat(d[4]);
+    var ratio = [1, 0.99, 0.55, 0.62, 0.34, 0.4, 0.46, 0.5];
+    var n = 68500, worstI = -1, worst = 0, users = [];
+    steps.forEach(function (s, i) { n = Math.round(n * ratio[i]); users.push(n); });
+    var bars = steps.map(function (s, i) {
+      var go = i === 0 ? null : users[i] / users[i - 1] * 100;
+      if (go !== null && 100 - go > worst) { worst = 100 - go; worstI = i; }
+      return { label: s, u: users[i], go: go };
+    }).map(function (b, i) {
+      var pct = b.u / users[0] * 100;
+      return {
+        label: b.label, users: b.u.toLocaleString('ja-JP') + ' 人',
+        go: b.go === null ? '入口' : '前から ' + b.go.toFixed(1) + '%',
+        goStyle: 'font-size: 11px; ' + (i === worstI ? 'font-weight: 800; color: #92400e' : 'color: #5b6676'),
+        bar: 'width: 100%; height: ' + Math.max(pct, 3).toFixed(1) + '%; background: ' + (i === steps.length - 1 ? '#1d4ed8' : (i === worstI ? '#f59e0b' : '#93b4f5')) + '; border-radius: 6px 6px 0 0'
+      };
+    });
+    var last = users[users.length - 1];
+    var cvr = (last / users[0] * 100).toFixed(1) + '%';
+    var chip = function (k) {
+      var b = 'align-self: flex-start; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 2px 9px; ';
+      if (k === '要注意') return b + 'background: #fde7c7; color: #92400e';
+      if (k === '目安内') return b + 'background: #e8eefc; color: #1e40af';
+      return b + 'background: #f1f3f5; color: #5b6676; font-weight: 600';
+    };
+    var box = 'border: 1px solid #e5eaf1; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px';
+    var worstLabel = steps[worstI - 1] + ' → ' + steps[worstI];
+    var tiles = [
+      { label: d[7], value: last.toLocaleString('ja-JP'), chip: '比べない', chipStyle: chip('比べない'), box: box },
+      { label: d[6], value: cvr, chip: '目安内', chipStyle: chip('目安内'), box: box },
+      { label: '一番の離脱', value: worst.toFixed(1) + '%', chip: '要注意', chipStyle: chip('要注意'), box: 'border: 1px solid #f3d9b5; background: #fffaf3; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px' }
+    ];
+    return {
+      accent: accent, groups: groups, inds: inds, noInd: d[5].length === 0, tiles: tiles, bars: bars,
+      cur: {
+        label: d[2], hint: d[3], ind: indName,
+        verdict: d[7] + 'は前期より増えました。' + d[6] + 'は業界目安（' + indName + '）の範囲内です。いちばん多く離れるのは「' + worstLabel + '」です。'
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

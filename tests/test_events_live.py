@@ -46,16 +46,22 @@ def live_client(monkeypatch):
 
 
 def _events_panel(html: str) -> str:
-    return html.split('id="panel-events"', 1)[1].split('id="panel-biz"', 1)[0]
+    return html.split('id="g-events"', 1)[1].split('id="g-biz"', 1)[0]
+
+
+def _details(c) -> str:
+    """Live boards load 詳しい数字 after the page (board.js) from /live/details."""
+    page = c.get("/live").text
+    assert 'data-src="/live/details?period=28d"' in page
+    return c.get("/live/details").text
 
 
 def _list_rows(panel: str) -> list[str]:
-    tbody = panel.split("<tbody>", 1)[1].split("</tbody>", 1)[0]
-    return re.findall(r'<td class="name-cell"><code>([^<]+)</code>', tbody)
+    return re.findall(r'<code class="row-name">([^<]+)</code>', panel)
 
 
 def test_only_recorded_events_are_rows(live_client):
-    panel = _events_panel(live_client.get("/live").text)
+    panel = _events_panel(_details(live_client))
     rows = _list_rows(panel)
     assert "sign_up" not in rows and "pay_start" not in rows
     # the flow's events first (session_start opens every flow), then the site's own, then GA4 auto ones
@@ -63,18 +69,17 @@ def test_only_recorded_events_are_rows(live_client):
 
 
 def test_zero_hit_pack_events_listed_as_not_tracked(live_client):
-    panel = _events_panel(live_client.get("/live").text)
+    panel = _events_panel(_details(live_client))
     foot = panel.split('class="ev-missing"', 1)[1]
     assert "<code>sign_up</code>" in foot and "<code>pay_start</code>" in foot
     assert "未計測" in foot
 
 
 def test_live_deltas_are_real(live_client):
-    panel = _events_panel(live_client.get("/live").text)
-    tbody = panel.split("<tbody>", 1)[1]
+    panel = _events_panel(_details(live_client))
     def delta(name):
-        row = tbody.split(f"<code>{name}</code>", 1)[1].split("</tr>", 1)[0]
-        return re.findall(r'<td class="num muted">([^<]*)</td>', row)[0]
+        row = panel.split(f'<code class="row-name">{name}</code>', 1)[1].split('class="dt-row', 1)[0]
+        return re.findall(r'class="num prev-cell[^"]*" role="cell">([^<]*)<', row)[0]
     assert delta("contact_submit") == "+20%"
     assert delta("page_view") == "-10%"
     assert delta("session_start") == "+0%"

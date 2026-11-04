@@ -7,7 +7,6 @@ styles in static/css/board.css, behaviour in static/js/board.js.
 
 from __future__ import annotations
 
-import math
 from contextvars import ContextVar
 from typing import Any
 
@@ -35,7 +34,7 @@ KINDS = {
 _ACTIVE_BENCH: ContextVar[dict[str, dict[str, Any]]] = ContextVar("_ACTIVE_BENCH", default={})
 _ACTIVE_LOCALE: ContextVar[str] = ContextVar("_ACTIVE_LOCALE", default="ja")
 
-EVENT_PREVIEW = 6
+EVENT_PREVIEW = 10
 _UNLINKED = (None, "", "—", "–")
 
 
@@ -65,37 +64,6 @@ def _fmt_gap(gap: float, gap_unit: str) -> str:
     if abs(gap) >= 1:
         return f"{sign}{gap:.1f}"
     return f"{sign}{gap:.2f}"
-
-
-def _viz_scale(
-    low: float, high: float, value: float | None, unit: str
-) -> dict[str, float | None]:
-    """Map bench band + value onto 0–100% track positions."""
-    span = max(high - low, 1e-9)
-    if unit == "%":
-        smin, smax = 0.0, 100.0
-        if value is not None:
-            smin = min(smin, float(value), low)
-            smax = max(smax, float(value), high)
-    else:
-        pad = span * 0.75
-        smin, smax = low - pad, high + pad
-        if value is not None:
-            smin = min(smin, float(value))
-            smax = max(smax, float(value))
-    if smax <= smin:
-        smax = smin + 1.0
-
-    def pct(x: float) -> float:
-        return max(0.0, min(100.0, 100.0 * (x - smin) / (smax - smin)))
-
-    mid = (low + high) / 2
-    return {
-        "p_low": pct(low),
-        "p_high": pct(high),
-        "p_mid": pct(mid),
-        "p_val": pct(float(value)) if value is not None else None,
-    }
 
 
 def _source_text(spec: dict[str, Any], locale: str) -> str:
@@ -136,12 +104,10 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
            else "bench_title_blend" if kind == "blend" else "bench_title")
     title = t(key, loc, band=band, avg=avg)
     title += " · " + _source_text(spec, loc)
-    scale = _viz_scale(low, high, value, unit)
     # 基準なし: no published figure and no target of the user's own → nothing to compare with
     none = not custom and kind not in ("cited", "blend")
     if none:
         avg, band, title = t("bench_none", loc), "", t("bench_none_title", loc)
-        scale = {k: None for k in scale}
     base: dict[str, Any] = {
         "key": bench_key,
         "none": none,
@@ -153,7 +119,6 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
         "high": high,
         "mid": mid,
         "unit": unit,
-        **scale,
     }
     if value is None or none:
         return {
@@ -179,134 +144,7 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
     }
 
 
-def _empty_bench(locale: str) -> dict[str, Any]:
-    return {
-        "band": "",
-        "avg": "—",
-        "gap": "—",
-        "tone": "na",
-        "arrow": "",
-        "title": t("bench_empty", locale),
-        "p_low": None,
-        "p_high": None,
-        "p_mid": None,
-        "p_val": None,
-    }
-
-
-def _prior_from_delta(value: float | None, delta: str | None) -> float | None:
-    """Estimate prior-period value from a delta string (GA4-style compare)."""
-    if value is None or not delta:
-        return None
-    raw = (
-        str(delta)
-        .replace("−", "-")
-        .replace("＋", "+")
-        .replace(",", "")
-        .strip()
-    )
-    if not raw or raw == "—":
-        return None
-    try:
-        if raw.endswith("%"):
-            pct = float(raw[:-1])
-            denom = 1.0 + pct / 100.0
-            return value / denom if abs(denom) > 1e-9 else None
-        if raw.endswith("pt"):
-            pts = float(raw[:-2])
-            return value - pts
-        return value - float(raw)
-    except ValueError:
-        return None
-
-
-def _row_value_num(r: dict[str, Any]) -> float | None:
-    cur = r.get("value_num")
-    if isinstance(cur, (int, float)):
-        return float(cur)
-    raw_v = r.get("value")
-    if isinstance(raw_v, (int, float)):
-        return float(raw_v)
-    if not isinstance(raw_v, str):
-        return None
-    s = raw_v.strip()
-    if ":" in s and s.count(":") <= 2:
-        parts = s.split(":")
-        try:
-            nums = [int(p) for p in parts]
-        except ValueError:
-            return None
-        if len(nums) == 2:
-            return float(nums[0] * 60 + nums[1])
-        if len(nums) == 3:
-            return float(nums[0] * 3600 + nums[1] * 60 + nums[2])
-    try:
-        return float(s.replace(",", "").replace("%", "").strip())
-    except ValueError:
-        return None
-
-
-def _seed_u32(text: str) -> int:
-    h = 2166136261
-    for ch in text:
-        h ^= ord(ch)
-        h = (h * 16777619) & 0xFFFFFFFF
-    return h or 1
-
-
-def _synthetic_series(
-    end: float,
-    *,
-    prior: float | None = None,
-    mid: float | None = None,
-    seed: str = "",
-    n: int = 8,
-) -> tuple[list[float], list[float] | None]:
-    """Demo period series (sample packs): solid ends at current, dashed = prior/目安."""
-    h = _seed_u32(seed)
-    start = prior if prior is not None else end * (0.86 + (h % 12) / 100.0)
-    amp = max(abs(end) * 0.05, abs(end - start) * 0.25, 0.08)
-    cur: list[float] = []
-    for i in range(n):
-        t = i / max(n - 1, 1)
-        # W-shaped wobble that flattens into the final value (GA4-like)
-        phase = (i * 1.7 + (h % 9)) * 0.9
-        wobble = math.sin(phase) * amp * (0.35 + 0.65 * (1 - t))
-        if i == n - 1:
-            cur.append(float(end))
-        elif i >= n - 2:
-            cur.append(float(end) + wobble * 0.15)
-        else:
-            cur.append(float(start + (end - start) * (t**0.85) + wobble))
-    cmp: list[float] | None
-    if prior is not None:
-        p0 = prior * (0.92 + (h % 5) / 100.0)
-        cmp = [float(p0 + (prior - p0) * (i / max(n - 1, 1))) for i in range(n)]
-    elif mid is not None:
-        cmp = [float(mid)] * n
-    else:
-        cmp = None
-    return cur, cmp
-
-
 # --- view models (what the templates render) -----------------------------
-
-
-def _gap_bar(info: dict[str, Any] | None) -> dict[str, Any]:
-    """Summary mini bar: fill between 目安 mid and current value."""
-    if not info or info.get("p_mid") is None or info.get("p_val") is None:
-        return {"empty": True}
-    a = float(info["p_mid"])
-    b = float(info["p_val"])
-    left, width = (a, b - a) if b >= a else (b, a - b)
-    return {
-        "empty": False,
-        "title": str(info.get("title") or ""),
-        "tone": str(info.get("tone") or "na"),
-        "fill_style": f"left:{left:.2f}%;width:{max(width, 1.2):.2f}%",
-        "mid_style": f"left:{a:.2f}%",
-        "val_style": f"left:{b:.2f}%",
-    }
 
 
 def _judge(info: dict[str, Any] | None) -> str:
@@ -315,39 +153,36 @@ def _judge(info: dict[str, Any] | None) -> str:
     return tone if tone in ("up", "mid", "down") else ""
 
 
-def _bench_block(info: dict[str, Any] | None, locale: str, *, gap_bar: bool = False) -> dict[str, Any]:
-    """業界目安 + 目安差 slot (always reserved, '—' when there is no standard)."""
-    empty = info is None
-    b = info or _empty_bench(locale)
-    return {
-        "empty": empty,
-        "title": t("bench_empty", locale) if empty else b["title"],
-        "avg": b["avg"],
-        "band": b.get("band") or "",
-        "tone": b["tone"],
-        "gap": b["gap"],
-        "judge": _judge(None if empty else info),
-        "custom": bool((info or {}).get("custom")),
-        "none": bool((info or {}).get("none")),
-        "key": str((info or {}).get("key") or ""),
-        "gapbar": _gap_bar(None if empty else info) if gap_bar else None,
-    }
+def _first_line(text: str) -> str:
+    """One short sentence of 意味 for the opened row (full text stays in 説明)."""
+    text = str(text or "").strip()
+    for sep in ("\n", "。", ". "):
+        if sep in text:
+            head = text.split(sep, 1)[0].strip()
+            return head + ("。" if sep == "。" else "." if sep == ". " else "")
+    return text
 
 
-def _bench_cells(info: dict[str, Any] | None) -> dict[str, Any]:
+def _bench_view(info: dict[str, Any] | None) -> dict[str, Any]:
+    """業界目安 for one metric: the judge chip in the row, the numbers when the row opens.
+
+    kind: "judge" (a cited / blended / own target → 良好・目安内・要注意),
+          "none"  (基準なし — a popover says why), "na" (counts etc.: nothing to compare)."""
     if not info:
-        return {"empty": True}
+        return {"kind": "na", "key": "", "avg": "—", "gap": "—", "tone": "na", "title": "", "band": "",
+                "judge": "", "custom": False, "none": False}
+    none = bool(info.get("none"))
     return {
-        "empty": False,
-        "title": info["title"],
-        "avg": info["avg"],
-        "band": info.get("band") or "",
-        "tone": info["tone"],
-        "gap": info["gap"],
-        "judge": _judge(info),
-        "custom": bool(info.get("custom")),
-        "none": bool(info.get("none")),
+        "kind": "none" if none else "judge",
         "key": str(info.get("key") or ""),
+        "avg": info["avg"],
+        "gap": info["gap"],
+        "tone": info["tone"],
+        "title": info["title"],
+        "band": info.get("band") or "",
+        "judge": "" if none else _judge(info),
+        "custom": bool(info.get("custom")),
+        "none": none,
     }
 
 
@@ -359,162 +194,10 @@ def _metric_row(r: dict[str, Any], locale: str) -> dict[str, Any]:
         # "59.6% / 40.4%" may wrap after the slash, never leave "/" alone on a line
         "value": str(r["value"]).replace(" / ", "\u00a0/ "),
         "focus": bool(r.get("focus")),
-        "cells": _bench_cells(info),
-        "block": _bench_block(info, locale),
+        "bench": _bench_view(info),
         "delta": str(r.get("delta") or "—"),
         "delta_tone": str(r.get("tone") or "na"),
-    }
-
-
-def _compare_plot(
-    *, current: float | None, compare: float | None, cur_label: str, cmp_label: str, unit: str = ""
-) -> dict[str, Any]:
-    """GA4-like dual horizontal bars: current vs prior (or vs 目安)."""
-    vals = [v for v in (current, compare) if v is not None]
-    peak = max((abs(v) for v in vals), default=1.0) or 1.0
-    if unit == "%" and peak <= 120:
-        peak = 100.0
-
-    def bar(v: float | None, cls: str, label: str) -> dict[str, str]:
-        if v is None:
-            return {"label": label, "cls": cls, "style": "width:0", "shown": "—"}
-        w = max(2.0, min(100.0, 100.0 * abs(v) / peak))
-        if unit:
-            shown = _fmt_num(v, unit)
-        elif abs(v - round(v)) < 1e-9:
-            shown = f"{int(round(v)):,}"
-        else:
-            shown = f"{v:g}"
-        return {"label": label, "cls": cls, "style": f"width:{w:.1f}%", "shown": shown}
-
-    return {
-        "kind": "compare",
-        "empty": not vals,
-        "bars": [bar(current, "is-cur", cur_label), bar(compare, "is-cmp", cmp_label)],
-    }
-
-
-def _trend_plot(current: list[float] | None, compare: list[float] | None = None) -> dict[str, Any]:
-    """GA4-style mini line chart: solid current, dashed prior/目安."""
-    if not current:
-        return {"kind": "trend", "empty": True}
-    w, h, pad = 140.0, 40.0, 3.0
-    vals = list(current) + list(compare or [])
-    ymin, ymax = min(vals), max(vals)
-    if abs(ymax - ymin) < 1e-9:
-        ymin -= 1.0
-        ymax += 1.0
-    span = ymax - ymin
-    ymin -= span * 0.08
-    ymax += span * 0.08
-
-    def pt(i: int, v: float, length: int) -> str:
-        x = pad + (i / max(length - 1, 1)) * (w - 2 * pad)
-        y = h - pad - ((v - ymin) / (ymax - ymin)) * (h - 2 * pad)
-        return f"{x:.2f},{y:.2f}"
-
-    return {
-        "kind": "trend",
-        "empty": False,
-        "grid": [{"x1": f"{pad}", "x2": f"{w - pad}", "y": f"{y:.1f}"} for y in (pad + 2, h / 2, h - pad - 2)],
-        "cmp": (
-            " ".join(pt(i, v, len(compare)) for i, v in enumerate(compare))
-            if compare and len(compare) >= 2
-            else ""
-        ),
-        "cur": " ".join(pt(i, v, len(current)) for i, v in enumerate(current)),
-    }
-
-
-def _bars_plot(series: list[float] | None) -> dict[str, Any]:
-    """Mini vertical bars for period points (GA4 exploration-like)."""
-    if not series:
-        return {"kind": "bars", "empty": True}
-    peak = max(abs(v) for v in series) or 1.0
-    floor = min(series)
-    base = min(0.0, floor) if floor < 0 else 0.0
-    span = peak - base or 1.0
-    bars = []
-    for i, v in enumerate(series):
-        ht = max(8.0, 100.0 * (v - base) / span)
-        bars.append({"cls": "is-last" if i == len(series) - 1 else "", "style": f"height:{ht:.1f}%"})
-    return {"kind": "bars", "empty": False, "bars": bars}
-
-
-def _viz_meta(r: dict[str, Any], info: dict[str, Any] | None, *, prefer_delta: bool = False) -> dict[str, str]:
-    if prefer_delta and r.get("delta"):
-        return {"kind": "delta", "text": str(r["delta"])}
-    if info and info.get("gap") and info["gap"] != "—":
-        text = info["gap"] + (" " + info["arrow"] if info.get("arrow") else "")
-        return {"kind": "gap", "tone": info["tone"], "text": text}
-    if r.get("delta"):
-        return {"kind": "delta", "text": str(r["delta"])}
-    return {"kind": "na"}
-
-
-def _viz_rows(rows: list[dict[str, Any]], *, locale: str, mode: str) -> list[dict[str, Any]]:
-    """Rows for the compare / trend / bar view modes."""
-    out: list[dict[str, Any]] = []
-    for r in rows:
-        label = str(r.get("label") or r.get("name") or "")
-        cur = _row_value_num(r)
-        bench_val = r.get("value_num") if r.get("value_num") is not None else cur
-        info = _bench_info(bench_val if r.get("bench") else None, r.get("bench"))
-        prior = r.get("prev_num") if r.get("prev_num") is not None else _prior_from_delta(cur, r.get("delta"))
-        mid = float(info["mid"]) if info and info.get("mid") is not None and not info.get("none") else None
-        unit = str((info or {}).get("unit") or "")
-        seed = str(r.get("id") or label)
-        if mode == "compare":
-            if prior is not None:
-                cmp_val, cmp_label = prior, t("compare.prior", locale)
-            elif mid is not None and cur is not None:
-                cmp_val, cmp_label = mid, t("compare.bench", locale)
-            else:
-                cmp_val, cmp_label = None, t("compare.prior", locale)
-            plot = _compare_plot(
-                current=cur, compare=cmp_val,
-                cur_label=t("compare.current", locale), cmp_label=cmp_label, unit=unit,
-            )
-        elif mode == "trend":
-            if cur is None:
-                plot = _trend_plot(None)
-            else:
-                series, cmp_s = _synthetic_series(cur, prior=prior, mid=mid, seed=seed)
-                plot = _trend_plot(series, cmp_s)
-        else:  # "bar"
-            if cur is None:
-                plot = _bars_plot(None)
-            else:
-                series, _ = _synthetic_series(cur, prior=prior, mid=mid, seed=seed)
-                plot = _bars_plot(series)
-        out.append(
-            {
-                "id": str(r["id"]),
-                "label": label,
-                "value": str(r.get("value") or ""),
-                "focus": bool(r.get("focus")),
-                "plot": plot,
-                "meta": _viz_meta(r, info, prefer_delta=True),
-            }
-        )
-    return out
-
-
-def _metric_panel(
-    pid: str, title: str, rows: list[dict[str, Any]], *, modes: list[str], locale: str, sample: bool
-) -> dict[str, Any]:
-    extra: list[dict[str, Any]] = []
-    if sample and "trend" in modes:
-        extra.append({"mode": "bar", "note": True, "rows": _viz_rows(rows, locale=locale, mode="bar")})
-        extra.append({"mode": "trend", "note": True, "rows": _viz_rows(rows, locale=locale, mode="trend")})
-    extra.append({"mode": "compare", "note": False, "rows": _viz_rows(rows, locale=locale, mode="compare")})
-    return {
-        "id": pid,
-        "title": title,
-        "sub": t("count_n", locale, n=len(rows)),
-        "modes": modes,
-        "rows": [_metric_row(r, locale) for r in rows],
-        "extra": extra,
+        "meaning": _first_line((r.get("help") or {}).get("meaning") or ""),
     }
 
 
@@ -590,17 +273,120 @@ def _watch_items(board: dict[str, Any], locale: str) -> list[dict[str, Any]]:
                 {
                     "id": r["id"],
                     "label": r["label"],
+                    "value": r["value"],
+                    "value_num": r.get("value_num"),
+                    "bench_key": key,
+                    "delta": str(r.get("delta") or "—"),
+                    "delta_tone": str(r.get("tone") or "na"),
                     "tone": info["tone"],
                     "title": title,
+                    "avg": info["avg"],
                     "numbers": t("watch.numbers", locale, value=r["value"], avg=info["avg"],
                                  band=info["band"], gap=info["gap"]),
                     "trend": _trend(r, locale),
                     "tip": tip,
+                    # far outside the band (more than its own width) → maybe the wrong 比べる業種
+                    "far": severity >= 1.0,
                 },
             )
         )
     scored.sort(key=lambda x: (x[0], x[1]))
     return [item for _, _, item in scored[:WATCH_MAX]]
+
+
+# --- いまの状態 (L0): one sentence + three numbers ---------------------------
+
+
+def _prev_view(delta: str, tone: str, locale: str) -> dict[str, str]:
+    """自社の前期比 in words (改善 / 悪化 / 横ばい) with the number beside it."""
+    delta = str(delta or "—")
+    if delta == "—":
+        return {"word": t("verdict.prev_none", locale), "text": "", "tone": "na"}
+    word = {"up": "trend.better", "down": "trend.worse"}.get(tone, "trend.flat")
+    return {"word": t(word, locale), "text": delta, "tone": tone if tone in ("up", "down") else "mid"}
+
+
+def _tile(*, label: str, tag: str, value: str, delta: str, tone: str,
+          info: dict[str, Any] | None, locale: str, note: str = "", help_id: str = "",
+          issue: bool = False) -> dict[str, Any]:
+    return {
+        "label": label, "tag": tag, "value": value, "help_id": help_id, "issue": issue,
+        "prev": _prev_view(delta, tone, locale),
+        "bench": _bench_view(info),
+        "note": note,
+    }
+
+
+def _worst_link(flow: dict[str, Any] | None) -> dict[str, Any] | None:
+    for st in (flow or {}).get("stages") or []:
+        link = st.get("link")
+        if link and link.get("worst"):
+            return link
+    return None
+
+
+def _verdict(board: dict[str, Any], watch: list[dict[str, Any]],
+             flow: dict[str, Any] | None, locale: str) -> dict[str, Any]:
+    """L0: 主転換の件数 · 主転換率 · 一番の課題 — each with 前期 and 業界 in words."""
+    by_id = {r["id"]: r for r in board["summary"]}
+    lines: list[str] = []
+    short: list[str] = []
+    tiles: list[dict[str, Any]] = []
+
+    count = by_id.get("primary")
+    if count:
+        delta, tone = str(count.get("delta") or "—"), str(count.get("tone") or "na")
+        key = ("verdict.count_na" if delta == "—"
+               else {"up": "verdict.count_up", "down": "verdict.count_down"}.get(tone, "verdict.count_flat"))
+        lines.append(t(key, locale, label=count["label"], value=count["value"], delta=delta))
+        short.append(t("bx." + key.split(".", 1)[1], locale, label=count["label"], value=count["value"]))
+        tiles.append(_tile(label=count["label"], tag=t("primary_tag", locale), value=count["value"],
+                           delta=delta, tone=tone, info=None, locale=locale, help_id=count["id"],
+                           note=t("verdict.count_note", locale)))
+
+    rate = by_id.get("signup_cvr")
+    if rate:
+        info = _bench_info(rate.get("value_num"), rate.get("bench"))
+        view = _bench_view(info)
+        key = (f"verdict.rate_{view['judge']}" if view["kind"] == "judge" and view["judge"]
+               else "verdict.rate_none")
+        lines.append(t(key, locale, label=rate["label"], value=rate["value"], avg=view["avg"]))
+        tiles.append(_tile(label=rate["label"], tag="", value=rate["value"],
+                           delta=str(rate.get("delta") or "—"), tone=str(rate.get("tone") or "na"),
+                           info=info, locale=locale, help_id=rate["id"]))
+
+    # 一番の課題: the worst metric outside its 目安 — not the rate already shown in tile 2
+    rate_key = str((rate or {}).get("bench") or "")
+    bad = next((w for w in watch if w["tone"] == "down" and w["bench_key"] != rate_key), None)
+    link = _worst_link(flow)
+    if bad:
+        info = _bench_info(bad.get("value_num"), bad["bench_key"])
+        lines.append(t("verdict.issue_bench", locale, label=bad["label"], value=bad["value"],
+                       avg=(info or {}).get("avg", "—")))
+        short.append(t("bx.issue", locale, label=bad["label"], value=bad["value"], avg=(info or {}).get("avg", "—")))
+        tiles.append(_tile(label=bad["label"], tag=t("verdict.issue_k", locale), value=bad["value"],
+                           delta=bad["delta"], tone=bad["delta_tone"], info=info, locale=locale,
+                           help_id=bad["id"], issue=True))
+    elif link and link.get("drop_num") is not None:
+        lines.append(t("verdict.issue_flow", locale, a=link["from"], b=link["to"], drop=link["drop"]))
+        short.append(t("bx.issue_flow", locale, a=link["from"], b=link["to"], drop=link["drop"]))
+        tiles.append(_tile(label=t("verdict.link", locale, a=link["from"], b=link["to"]),
+                           tag=t("verdict.issue_k", locale), value=link["go"]["all"],
+                           delta="—", tone="na", info=None, locale=locale, issue=True,
+                           note=t("verdict.issue_flow_note", locale, drop=link["drop"])))
+    else:
+        lines.append(t("verdict.issue_none", locale))
+        short.append(t("bx.issue_none", locale))
+        eng = by_id.get("engaged")
+        if eng:
+            tiles.append(_tile(label=eng["label"], tag="", value=eng["value"],
+                               delta=str(eng.get("delta") or "—"), tone=str(eng.get("tone") or "na"),
+                               info=_bench_info(eng.get("value_num"), eng.get("bench")),
+                               locale=locale, help_id=eng["id"]))
+    joiner = "" if locale == "ja" else " "
+    sep = t("bx.sep", locale)
+    return {"text": joiner.join(lines), "short": (short[0] + sep + short[1]) if len(short) > 1 else "".join(short),
+            "tiles": tiles}
 
 
 def _dialog(item: dict[str, Any], locale: str) -> dict[str, str]:
@@ -648,6 +434,15 @@ def _render_sample_dense(
     bench: dict[str, Any] | None = None,
     flow: dict[str, Any] | None = None,
     prev: dict[str, Any] | None = None,
+    notice: dict[str, str] | None = None,
+    extras: dict[str, Any] | None = None,
+    details_src: str = "",
+    fragment: bool = False,
+    editor: dict[str, Any] | None = None,
+    industry_drawer: dict[str, Any] | None = None,
+    ind_name: str = "",
+    meta_short: str = "",
+    auto_open: str = "",
 ) -> str:
     loc = normalize_locale(locale)
     if data is None or ind is None or benches_raw is None:
@@ -682,79 +477,22 @@ def _render_sample_dense(
         else f"SiteKPI · {industry_label}{t('sample_title_suffix', loc)}"
     )
 
-    summary = [
-        {
-            "id": k["id"],
-            "label": k["label"],
-            "value": k["value"],
-            "delta": k["delta"],
-            "tone": k["tone"],
-            "focus": bool(k.get("focus")),
-            "block": _bench_block(_bench_info(k.get("value_num"), k.get("bench")), loc, gap_bar=True),
-        }
-        for k in board["summary"]
-    ]
+    # 詳しい数字 (L2): inline, or loaded after the page by board.js (details_src) when GA4 is slow
+    details = None if details_src else _details_view(board, extras, flow, loc)
+    if fragment:
+        return render("board/details.html", loc=loc, details=details)
 
-    trend_modes = ["list", "card", "bar", "compare", "trend"] if is_sample else ["list", "card", "compare"]
-    panels = {
-        "audience": _metric_panel("audience", t("panel.audience", loc), board["audience"],
-                                  modes=trend_modes, locale=loc, sample=is_sample),
-        "engage": _metric_panel("engage", t("panel.engage", loc), board["engage"],
-                                modes=trend_modes, locale=loc, sample=is_sample),
-        "funnel": _metric_panel("funnel", t("panel.funnel", loc), board["funnel"],
-                                modes=["list", "card", "compare"], locale=loc, sample=is_sample),
-    }
-
-    events_src = board["events"]
-    event_max = max((e["count"] for e in events_src), default=1) or 1
-    event_rows = []
-    for i, e in enumerate(events_src):
-        cls = " ".join(
-            c for c in ("is-more" if i >= EVENT_PREVIEW else "", "is-focus" if e.get("focus") else "") if c
-        )
-        event_rows.append(
-            {
-                "id": e["id"],
-                "name": e["name"],
-                "alias": e.get("alias", ""),
-                "count": e["count"],
-                "delta": e["delta"],
-                "focus": bool(e.get("focus")),
-                "cls": cls,
-                "bar_pct": max(2, round(100 * e["count"] / event_max)),
-            }
-        )
-    more_n = max(0, len(events_src) - EVENT_PREVIEW)
-    sub_open = t("count_n", loc, n=len(events_src))
-    sub_closed = t("count_more", loc, shown=EVENT_PREVIEW, more=more_n) if more_n else sub_open
-    events = {
-        "rows": event_rows,
-        "more_n": more_n,
-        "missing": board.get("events_missing") or [],
-        "sub_closed": sub_closed,
-    }
-
-    business = []
-    for b in board["business"]:
-        linked = b.get("value") not in _UNLINKED
-        info = _bench_info(b.get("value_num"), b.get("bench")) if linked else None
-        business.append(
-            {
-                "id": b["id"],
-                "label": b["label"],
-                "value": b["value"],
-                "linked": linked,
-                "cells": _bench_cells(info),
-                "block": _bench_block(info, loc),
-            }
-        )
-
-    channels = _group_channels(board["channels"], loc)
-    help_items = (
-        board["summary"] + board["funnel"] + board["engage"] + board["audience"]
-        + board["events"] + channels + board["business"]
-    )
-
+    watch = _watch_items(board, loc)
+    help_items = board["summary"] + board["funnel"] + board["engage"] + board["audience"]
+    seen: set[str] = set()
+    dialogs = []
+    for r in help_items:
+        if r["id"] in seen or not r.get("help"):
+            continue
+        seen.add(r["id"])
+        dialogs.append(_dialog_v3({"id": r["id"], "label": r["label"], "help": r["help"], "gl": _gl_key(r["id"]),
+                                   "bench": _bench_view(_bench_info(r.get("value_num"), r.get("bench")))}, loc))
+    worst = _worst_link(flow)
     return render(
         "board.html",
         loc=loc,
@@ -766,24 +504,327 @@ def _render_sample_dense(
         industry_label=industry_label,
         pack_meta=f"{industry_note} · {prop} · {period_label}",
         period=period,
-        focus_line=board.get("focus_line") or "",
-        summary=summary,
-        panels=panels,
-        channels=channels,
-        channels_stack=[c for c in channels if c.get("pct")],
-        events=events,
-        business=business,
-        business_unlinked=bool(business) and not any(b["linked"] for b in business),
-        watch=_watch_items(board, loc),
+        verdict=_verdict(board, watch, flow, loc),
+        watch=watch,
+        worst=worst,
+        details=details,
+        details_src=details_src,
+        editor=editor,
+        industry_drawer=industry_drawer,
+        ind_name=ind_name,
+        meta_short=meta_short,
         is_sample=is_sample,
+        notice=notice,
         bench=bench,
         flow=flow,
-        dialogs=[_dialog(item, loc) for item in help_items],
+        dialogs=dialogs,
         board_data={
             "close": t("close", loc),
-            "more_tpl": t("more_n", loc, n="__N__"),
-            "event_sub_open": sub_open,
-            "event_sub_closed": sub_closed,
-            "modes": {"engage": trend_modes, "audience": trend_modes},
+            "details_src": details_src,
+            "auto_open": auto_open if (editor or industry_drawer) else "",
+            "open_tpl": t("detail.open", loc, n="__N__"),
+            "close_label": t("detail.close", loc),
+            "load_error": t("detail.load_error", loc),
+            "retry": t("detail.retry", loc),
         },
     )
+
+
+def verdict_scene(*, industry: str, data: dict[str, Any], benches_raw: dict[str, dict[str, Any]],
+                  flow: dict[str, Any] | None, locale: str, prev: dict[str, Any] | None = None) -> dict[str, Any]:
+    """The board's いまの状態 (sentence + 3 tiles) without the page — used by the 見本ボード preview."""
+    from sitekpi.packs import INDUSTRIES
+
+    loc = normalize_locale(locale)
+    token = _ACTIVE_BENCH.set({})
+    loc_token = _ACTIVE_LOCALE.set(loc)
+    try:
+        board = build_dense_board(industry=industry, period="28d", ind=INDUSTRIES[industry], data=data,
+                                  benches_raw=benches_raw, locale=loc, prev=prev)
+        _ACTIVE_BENCH.set(board["benches"])
+        return _verdict(board, _watch_items(board, loc), flow, loc)
+    finally:
+        _ACTIVE_LOCALE.reset(loc_token)
+        _ACTIVE_BENCH.reset(token)
+
+
+# --- 詳しい数字 (L2) v3: every category stacked, 8週の推移, extras ----------------
+
+# board row id → 指標辞典 key (the 説明 card links to the same entry)
+_GL = {
+    "signup_cvr": "signup_cvr", "funnel_cvr": "signup_cvr", "uu": "uu", "aud_uu": "uu",
+    "sessions": "sessions", "aud_sessions": "sessions", "engaged": "engaged", "engage_rate_row": "engaged",
+    "bounce_like": "bounce_rate", "pages_session": "pages_session", "pv_uu": "pages_per_uu",
+    "pv": "pageviews", "avg_time": "avg_time", "new_return": "new_return", "sessions_per_uu": "sessions_per_uu",
+    "pay_start": "pay_start", "funnel_rate_a": "signup_to_pay",
+}
+SPARK_W, SPARK_H = 76, 26
+_COLLAPSED = ("audience", "events")
+
+
+def _gl_key(row_id: str, name: str = "") -> str:
+    from sitekpi.metrics.help import HELP, resolve_id
+
+    for cand in (_GL.get(row_id, ""), row_id, resolve_id(name) if name else ""):
+        if cand and resolve_id(cand) in HELP:
+            return resolve_id(cand)
+    return ""
+
+
+def _spark(points: list[float] | None, tone: str) -> dict[str, str] | None:
+    """SVG polyline points for a 76×26 sparkline (oldest left). None when there is no series."""
+    vals = [float(v) for v in (points or []) if v is not None]
+    if len(vals) < 2 or not any(vals):
+        return None
+    lo, hi = min(vals), max(vals)
+    span = hi - lo or 1.0
+    step = (SPARK_W - 4) / (len(vals) - 1)
+    pts = [(2 + i * step, SPARK_H - 3 - (v - lo) / span * (SPARK_H - 6) if hi != lo else SPARK_H / 2)
+           for i, v in enumerate(vals)]
+    return {"points": " ".join(f"{x:.1f},{y:.1f}" for x, y in pts),
+            "x": f"{pts[-1][0]:.1f}", "y": f"{pts[-1][1]:.1f}",
+            "tone": tone if tone in ("up", "down") else "flat"}
+
+
+def _ratio(a: list[float] | None, b: list[float] | None, scale: float = 100.0) -> list[float] | None:
+    if not a or not b:
+        return None
+    return [(x / y * scale) if y else 0.0 for x, y in zip(a, b)]
+
+
+def _delta_pct(cur: float | None, prev: float | None) -> tuple[str, str]:
+    if cur is None or not prev:
+        return "—", "na"
+    d = (cur - prev) / prev * 100
+    return f"{d:+.1f}%", ("up" if d > 0.05 else "down" if d < -0.05 else "flat")
+
+
+def _delta_pt(cur: float | None, prev: float | None, *, hib: bool = True) -> tuple[str, str]:
+    if cur is None or prev is None:
+        return "—", "na"
+    d = cur - prev
+    good = d > 0.05 if hib else d < -0.05
+    bad = d < -0.05 if hib else d > 0.05
+    return f"{d:+.1f}pt", ("up" if good else "down" if bad else "flat")
+
+
+def _fmt_mmss(seconds: float | None) -> str:
+    if seconds is None:
+        return "—"
+    s = int(round(seconds))
+    return f"{s // 60}:{s % 60:02d}"
+
+
+def _yen(n: float | None, loc: str) -> str:
+    if n is None:
+        return "—"
+    return f"¥{n:,.0f}"
+
+
+def _d_row(*, rid: str, label: str, value: str, delta: str = "—", tone: str = "na", info: Any = None,
+           spark: list[float] | None = None, sub: str = "", sub_warn: bool = False, focus: bool = False,
+           code: bool = False, gl: str = "", help: dict[str, Any] | None = None) -> dict[str, Any]:
+    return {
+        "id": rid, "label": label, "value": str(value).replace(" / ", " / "),
+        "delta": delta or "—", "delta_tone": tone or "na",
+        "bench": _bench_view(info), "spark": _spark(spark, tone), "sub": sub, "sub_warn": sub_warn,
+        "focus": focus, "code": code, "gl": gl, "help": help,
+    }
+
+
+def _from_board(r: dict[str, Any], spark: list[float] | None = None) -> dict[str, Any]:
+    info = _bench_info(r.get("value_num"), r.get("bench"))
+    return _d_row(rid=r["id"], label=r["label"], value=r["value"], delta=str(r.get("delta") or "—"),
+                  tone=str(r.get("tone") or "na"), info=info, spark=spark, focus=bool(r.get("focus")),
+                  gl=_gl_key(r["id"]), help=r.get("help"))
+
+
+def _help_of(key: str, loc: str) -> dict[str, Any] | None:
+    from sitekpi.metrics.help import get_help
+
+    h = get_help(key, loc)
+    return {k: h.get(k, "") for k in ("kind", "title", "meaning", "formula", "tip")} if h else None
+
+
+def _details_view(board: dict[str, Any], extras: dict[str, Any] | None, flow: dict[str, Any] | None,
+                  loc: str) -> dict[str, Any]:
+    """L2 groups (stacked, one category per block) + the 説明 cards they open."""
+    x = extras or {}
+    W: dict[str, list[float]] = x.get("weeks") or {}
+    cur: dict[str, Any] = x.get("cur") or {}
+    prv: dict[str, Any] = x.get("prev") or {}
+    by_id = {r["id"]: r for r in board["summary"] + board["funnel"] + board["engage"] + board["audience"]}
+    primary_ev = next((e["name"] for e in board["events"] if e.get("focus")), "")
+    w_primary = W.get("ev:" + primary_ev) if primary_ev else None
+    eng = W.get("engaged")
+    series = {
+        "signup_cvr": _ratio(w_primary, W.get("uu")), "funnel_cvr": _ratio(w_primary, W.get("uu")),
+        "primary": w_primary, "funnel_primary": w_primary,
+        "engage_rate_row": eng, "bounce_like": [100 - v for v in eng] if eng else None,
+        "pages_session": _ratio(W.get("pv"), W.get("sessions"), 1.0), "pv_uu": _ratio(W.get("pv"), W.get("uu"), 1.0),
+        "pv": W.get("pv"), "new_return": _ratio(W.get("new_users"), W.get("uu")),
+        "sessions_per_uu": _ratio(W.get("sessions"), W.get("uu"), 1.0),
+        "aud_uu": W.get("uu"), "aud_sessions": W.get("sessions"),
+    }
+    groups: list[dict[str, Any]] = []
+
+    def group(gid: str, rows: list[dict[str, Any]], *, head: str = "", note: str = "",
+              missing: list[str] | None = None) -> None:
+        if not rows and not note:
+            return
+        warn = sum(1 for r in rows if r["bench"].get("judge") == "down")
+        groups.append({
+            "id": gid, "title": t(f"panel.{gid}", loc), "rows": rows, "count": len(rows), "warn": warn,
+            "value_head": head or t("col.value", loc), "note": note, "missing": missing or [],
+            "collapsed": gid in _COLLAPSED and not warn,
+            "summary": " · ".join(f"{r['label']} {r['value']}" for r in rows[:3]) + (" …" if len(rows) > 3 else ""),
+        })
+
+    # 転換ファネル (+ キーイベント · セッションCVR)
+    funnel = [_from_board(r, series.get(r["id"])) for r in board["funnel"]]
+    if cur.get("key_events") is not None:
+        d, tn = _delta_pct(cur.get("key_events"), prv.get("key_events"))
+        funnel.append(_d_row(rid="x_key_events", label=_help_of("key_events", loc)["title"],
+                             value=f"{int(cur['key_events']):,}", delta=d, tone=tn, gl="key_events",
+                             help=_help_of("key_events", loc)))
+    p_row = by_id.get("primary")
+    ses = by_id.get("aud_sessions")
+    if p_row and ses and p_row.get("value_num") and ses.get("value_num"):
+        v = float(p_row["value_num"]) / float(ses["value_num"]) * 100
+        funnel.append(_d_row(rid="x_session_cvr", label=_help_of("session_cvr", loc)["title"], value=f"{v:.1f}%",
+                             spark=_ratio(w_primary, W.get("sessions")), gl="session_cvr",
+                             help=_help_of("session_cvr", loc)))
+    group("funnel", funnel)
+
+    # 売上 (only when the site records purchases)
+    if x.get("has_revenue"):
+        rev = []
+        for rid, key, fmt, wk in (("x_revenue", "purchase_revenue", "yen", "revenue"),
+                                  ("x_tx", "transactions", "int", "tx"),
+                                  ("x_aov", "average_purchase_revenue", "yen", None),
+                                  ("x_item", "item_revenue", "yen", None)):
+            ck = {"x_revenue": "revenue", "x_tx": "tx", "x_aov": "aov", "x_item": "item_revenue"}[rid]
+            if cur.get(ck) is None:
+                continue
+            d, tn = _delta_pct(cur.get(ck), prv.get(ck))
+            val = _yen(cur[ck], loc) if fmt == "yen" else f"{int(cur[ck]):,}"
+            h = _help_of(key, loc)
+            rev.append(_d_row(rid=rid, label=h["title"], value=val, delta=d, tone=tn,
+                              spark=W.get(wk) if wk else None, gl=key, help=h))
+        group("revenue", rev)
+
+    # エンゲージ (+ 平均セッション時間 · イベント/セッション · スクロール · ダウンロード)
+    engage = [_from_board(r, series.get(r["id"])) for r in board["engage"]]
+    extra_engage = [
+        ("x_avg_session", "avg_session_duration", "avg_session", lambda v: _fmt_mmss(v), "avg_session"),
+        ("x_eps", "events_per_session", "events_per_session", lambda v: f"{v:.1f}", None),
+        ("x_scrolled", "scrolled_users", "scrolled", lambda v: f"{int(v):,}", "ev:scroll"),
+    ]
+    for rid, key, ck, fmt, wk in extra_engage:
+        if cur.get(ck) is None:
+            continue
+        d, tn = _delta_pct(cur.get(ck), prv.get(ck))
+        h = _help_of(key, loc)
+        engage.append(_d_row(rid=rid, label=h["title"], value=fmt(cur[ck]), delta=d, tone=tn,
+                             spark=W.get(wk) if wk else None, gl=key, help=h))
+    dl = next((e for e in board["events"] if e["name"] == "file_download"), None)
+    if dl:
+        h = _help_of("ev_file_download", loc)
+        engage.append(_d_row(rid="x_downloads", label=t("detail.downloads", loc), value=f"{dl['count']:,}",
+                             delta=dl["delta"], tone="up" if str(dl["delta"]).startswith("+") else "down"
+                             if str(dl["delta"]).startswith("-") else "na",
+                             spark=W.get("ev:file_download"), gl="ev_file_download", help=h))
+    group("engage", engage)
+
+    # 流入チャネル (+ セッション数 · CVR under each name)
+    ch_rows = {str(r.get("name")): r for r in ((flow or {}).get("ch_rows") or [])}
+    total_sessions = float((by_id.get("aud_sessions") or {}).get("value_num") or 0)
+    chans = []
+    for c in _group_channels(board["channels"], loc):
+        fr = ch_rows.get(str(c["name"]))
+        sub_parts = []
+        if total_sessions and c.get("pct"):
+            sub_parts.append(t("detail.sessions_n", loc, n=f"{round(total_sessions * c['pct'] / 100):,}"))
+        if fr:
+            sub_parts.append(f"CVR {fr.get('rate_fmt')}" + (f"（{t('flow.ch_low', loc)}）" if fr.get("low") else ""))
+        chans.append(_d_row(rid=c["id"], label=c["name"], value=f"{c['pct']}%", sub=" · ".join(sub_parts),
+                            sub_warn=bool(fr and fr.get("low")), gl=_gl_key(c["id"], c["name"]), help=c.get("help")))
+    group("channels", chans, head=t("detail.share", loc))
+
+    # デバイス
+    devs = x.get("devices") or []
+    if devs:
+        tot = sum(d["sessions"] for d in devs) or 1
+        ptot = sum(d.get("prev_sessions") or 0 for d in devs) or 0
+        cvr = {d["id"]: (d["conv_users"] / d["users"] * 100 if d.get("users") else None) for d in devs}
+        desk = cvr.get("desktop")
+        drows = []
+        for d in devs:
+            share = d["sessions"] / tot * 100
+            pshare = (d.get("prev_sessions") or 0) / ptot * 100 if ptot else None
+            delta, tone = _delta_pt(share, pshare)
+            c = cvr.get(d["id"])
+            low = bool(d["id"] == "mobile" and c is not None and desk and c < desk / 2)
+            sub = t("detail.sessions_n", loc, n=f"{d['sessions']:,}") + (f" · CVR {c:.1f}%" if c is not None else "")
+            if low:
+                sub += t("detail.mobile_low", loc)
+            h = _help_of("device_" + d["id"], loc)
+            drows.append(_d_row(rid="x_dev_" + d["id"], label=h["title"], value=f"{share:.0f}%", delta=delta,
+                                tone="na" if delta == "—" else "flat", sub=sub, sub_warn=low,
+                                gl="device_" + d["id"], help=h))
+        group("device", drows, head=t("detail.share", loc))
+
+    # オーディエンス (+ 新規 · 再訪 · DAU · DAU/MAU)
+    audience = [_from_board(r, series.get(r["id"])) for r in board["audience"]]
+    nu = by_id.get("new_return")
+    uu_row = by_id.get("aud_uu")
+    if nu and uu_row and uu_row.get("value_num"):
+        uu_v = float(uu_row["value_num"])
+        new_v = round(uu_v * float(nu.get("value_num") or 0) / 100)
+        for rid, key, v, wk in (("x_new", "new_users", new_v, W.get("new_users")),
+                                ("x_ret", "returning_users", uu_v - new_v,
+                                 [a - b for a, b in zip(W.get("uu") or [], W.get("new_users") or [])] or None)):
+            h = _help_of(key, loc)
+            audience.append(_d_row(rid=rid, label=h["title"], value=f"{int(v):,}", spark=wk, gl=key, help=h))
+    if cur.get("dau") is not None:
+        h = _help_of("dau", loc)
+        audience.append(_d_row(rid="x_dau", label="DAU", value=f"{int(cur['dau']):,}",
+                               sub=f"WAU {int(cur.get('wau') or 0):,} · MAU {int(cur.get('mau') or 0):,}",
+                               gl="dau", help=h))
+        h = _help_of("dau_mau", loc)
+        d, tn = _delta_pt(cur.get("dau_mau"), prv.get("dau_mau"))
+        audience.append(_d_row(rid="x_dau_mau", label=h["title"], value=f"{cur['dau_mau']:.1f}%", delta=d, tone=tn,
+                               gl="dau_mau", help=h))
+    group("audience", audience)
+
+    # イベント
+    evs = []
+    for e in board["events"]:
+        dl_ = str(e["delta"])
+        tn = "up" if dl_.startswith("+") else "down" if dl_.startswith("-") else "na"
+        evs.append(_d_row(rid=e["id"], label=e["name"], value=f"{e['count']:,}", delta=dl_, tone=tn,
+                          spark=W.get("ev:" + e["name"]), focus=bool(e.get("focus")), code=True,
+                          sub=t("event.alias", loc, name=e["alias"]) if e.get("alias") else "",
+                          gl=_gl_key(e["id"]), help=e.get("help")))
+    group("events", evs, head=t("col.count", loc), missing=board.get("events_missing") or [])
+
+    # 業務KPI: unlinked → one line
+    biz_linked = [b for b in board["business"] if b.get("value") not in _UNLINKED]
+    if biz_linked:
+        group("biz", [_from_board(b) for b in biz_linked])
+    elif board["business"]:
+        group("biz", [], note=t("biz.collapsed", loc, n=len(board["business"])))
+
+    dialogs = [_dialog_v3(r, loc) for g in groups for r in g["rows"] if r.get("help")]
+    return {"groups": groups, "dialogs": dialogs, "warn": sum(g["warn"] for g in groups)}
+
+
+def _dialog_v3(r: dict[str, Any], loc: str) -> dict[str, Any]:
+    """The 説明 card: the same parts as a 指標辞典 card (kind · title · id · meaning · 計算 · 見るポイント)."""
+    h = r["help"]
+    return {
+        "id": r["id"], "kind": _kind_label(str(h.get("kind") or "digital"), loc), "kind_id": str(h.get("kind") or "digital"),
+        "title": h.get("title") or r["label"], "gl": r.get("gl") or "",
+        "meaning": h.get("meaning") or "", "formula": h.get("formula") or "", "tip": h.get("tip") or "",
+        "bench": r["bench"].get("kind") in ("judge", "none"),
+    }

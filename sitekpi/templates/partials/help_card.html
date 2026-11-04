@@ -1,0 +1,26 @@
+{#- 指標の説明カード — the same parts in 指標辞典 (glossary.html) and the board's 「説明」 (board/_macros.html).
+    Import: {% import "partials/help_card.html" as hc with context %} -#}
+
+{% macro chip(kind_id, kind) -%}
+<span class="gl-chip kind-{{ kind_id }}">{{ kind }}</span>
+{%- endmacro %}
+
+{#- 計算 · 見るポイント · 業界目安あり/なし (+ a link) -#}
+{% macro body(formula, tip, bench, link_href="", link_text="") -%}
+<div class="gl-open">
+  <div class="gl-formula">
+    <span class="gl-k">{{ t("glossary.formula", loc) }}</span>
+    <span class="mono">{{ formula }}</span>
+  </div>
+  <div class="gl-tip">
+    <span class="gl-k">{{ t("glossary.tip", loc) }}</span>
+    <span>{{ tip }}</span>
+  </div>
+  {% if bench is not none or link_href %}
+  <div class="gl-foot">
+    {% if bench is not none %}<span class="gl-bench{{ ' is-on' if bench else '' }}">{{ t("glossary.bench_yes" if bench else "glossary.bench_no", loc) }}</span>{% endif %}
+    {% if link_href %}<a href="{{ link_href }}" class="gl-to-board">{{ link_text }}</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{%- endmacro %}

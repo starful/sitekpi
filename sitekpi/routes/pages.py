@@ -20,9 +20,18 @@ from sitekpi.ga4.data import (
     fetch_pack_overlay,
     saved_events,
 )
+from sitekpi.packs.behaviors import behavior_label
 from sitekpi.i18n import get_locale, set_locale, t
 from sitekpi.routes.flow import live_flow_context, sample_flow_context
-from sitekpi.selection import compose_benchmarks, flow_pack, is_ready, selection, selection_label
+from sitekpi.selection import (
+    auto_notice,
+    compose_benchmarks,
+    ensure_selection,
+    flow_pack,
+    is_ready,
+    selection,
+    selection_label,
+)
 from sitekpi.routes.nav import nav_context, nav_rail_context
 from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.metrics.help import PERIODS
@@ -39,8 +48,12 @@ Period = Literal["7d", "28d"]
 
 
 @router.get("/", response_class=HTMLResponse)
-def index():
-    return HTMLResponse(render_home())
+def index(request: Request):
+    """Start: connected → the board; otherwise one screen with connect / demo / sample."""
+    if nav_context(request)["connected"]:
+        return RedirectResponse("/live", status_code=302)
+    return HTMLResponse(render_home(locale=get_locale(request.session),
+                                    rail=nav_rail_context(request, "home")))
 
 
 # Short-lived per-process cache so switching periods does not re-hit GA4 every
@@ -110,18 +123,85 @@ def _live_pack(
     return base, True, None, prop
 
 
+_BUILDER_CACHE = TTLCache(maxsize=64, ttl=300.0)
+
+
 @router.get("/builder", response_class=HTMLResponse)
 def page_builder(request: Request):
-    widgets, prop_name, live_error = build_live_builder_widgets(
-        request.session, period="28d"
-    )
+    """Shell first — GA4 values load via /builder/values (or cache hit)."""
+    from sitekpi.metrics.help import palette_widgets
+
+    loc = get_locale(request.session)
+    info = connection_info(request.session)
+    prop_name = str((info or {}).get("property_name") or "")
+    widgets = None
+    live_error = None
+    live_fetch = False
+    live_loading = False
+    if info:
+        cache_key = f"builder|help|{info.get('property_id')}|28d|{loc}"
+        hit = _BUILDER_CACHE.get(cache_key)
+        if hit is not None:
+            widgets, live_error = hit
+        else:
+            # Instant HTML: HELP palette with — ; JS fills from /builder/values
+            widgets = palette_widgets(sample=False, locale=loc)
+            for w in widgets:
+                if w.get("group") == "business":
+                    w["value"] = "—"
+            live_fetch = True
+            live_loading = True
+    else:
+        from sitekpi.views.builder import fill_sample_values
+
+        widgets = fill_sample_values(palette_widgets(sample=True, locale=loc))
     return HTMLResponse(
         render_builder(
             property_name=prop_name,
             live_error=live_error,
+            live_loading=live_loading,
+            live_fetch=live_fetch,
             widgets=widgets or None,
-            locale=get_locale(request.session),
+            locale=loc,
             rail=nav_rail_context(request, "builder"),
+        )
+    )
+
+
+@router.get("/builder/values")
+def page_builder_values(request: Request):
+    """JSON: HELP-palette values from GA4 (cached). Used after fast /builder shell."""
+    from fastapi.responses import JSONResponse
+
+    widgets, prop_name, live_error = build_live_builder_widgets(
+        request.session,
+        period="28d",
+        cache=_BUILDER_CACHE,
+        locale=get_locale(request.session),
+    )
+    if not prop_name and not widgets:
+        return JSONResponse({"ok": False, "widgets": [], "error": None})
+    slim = [
+        {
+            "id": w["id"],
+            "value": w.get("value") or "—",
+            "hint": w.get("hint") or "",
+        }
+        for w in widgets
+    ]
+    return JSONResponse(
+        {"ok": not live_error, "property_name": prop_name, "widgets": slim, "error": live_error}
+    )
+
+
+@router.get("/glossary", response_class=HTMLResponse)
+def page_glossary(request: Request):
+    from sitekpi.views.glossary import render_glossary
+
+    return HTMLResponse(
+        render_glossary(
+            locale=get_locale(request.session),
+            rail=nav_rail_context(request, "glossary"),
         )
     )
 
@@ -143,7 +223,7 @@ def page_settings_get(request: Request, saved: int = Query(default=0)):
             pack_links=extras["pack_links"],
             pack_groups=extras["pack_groups"],
             connected=extras["connected"],
-            back_href="/hr",
+            back_href="/live" if extras["connected"] else "/",
         )
     )
 
@@ -158,6 +238,16 @@ async def page_settings_post(request: Request):
 @router.get("/live", response_class=HTMLResponse)
 def page_live(request: Request, period: str = Query(default="28d")):
     """Connected GA4 board (separate menu category from sample packs)."""
+    return _live(request, period)
+
+
+@router.get("/live/details", response_class=HTMLResponse)
+def page_live_details(request: Request, period: str = Query(default="28d")):
+    """詳しい数字 only — board.js loads it after the page (the extra GA4 reports are the slow part)."""
+    return _live(request, period, fragment=True)
+
+
+def _live(request: Request, period: str, *, fragment: bool = False):
     if period not in PERIODS:
         period = "28d"
     extras = nav_context(request)
@@ -166,7 +256,15 @@ def page_live(request: Request, period: str = Query(default="28d")):
     # 訪問者の行動 → flow / events / wording;  業種 → 業界目安
     sel = selection(request.session)
     if not is_ready(sel):
-        return RedirectResponse("/connect", status_code=302)
+        # Numbers first: never send a connected user to a setup wizard before the board.
+        # Guess the behaviour from the site's own events; the board says it is a guess.
+        from sitekpi.routes.setup import site_event_counts
+
+        is_demo_conn = bool(request.session.get("ga4_demo"))
+        counts = None if is_demo_conn else (site_event_counts(request) or {})
+        prop_name = str((request.session.get("ga4_property") or {}).get("name") or "")
+        sel = ensure_selection(request.session, counts, prop_name)
+        extras = nav_context(request)  # the rail shows the new 行動 × 業種
     pack_slug = flow_pack(sel)
     industry = sel["industry"]
     loc = get_locale(request.session)
@@ -184,11 +282,28 @@ def page_live(request: Request, period: str = Query(default="28d")):
         if prev:
             prev = apply_mapping(prev, pack_slug, mapping, primary=primary_ev)
     flow = live_flow if live else sample_flow_context(pack_slug, data, loc)
-    if flow:
-        flow["sessions"] = f"{int(data.get('sessions') or 0):,}"
     label = extras["connected"]["name"]
     pack_label = selection_label(sel, loc)
     is_demo = bool(extras["connected"].get("demo"))
+    if flow:
+        flow["sessions"] = f"{int(data.get('sessions') or 0):,}"
+        flow["demo"] = is_demo
+    from sitekpi.board.extras import live_extras, sample_extras
+    from sitekpi.routes.setup import board_setup
+
+    details_src, extras_x = "", None
+    if live and not fragment:
+        details_src = f"/live/details?period={period}"
+    elif live:
+        ev_names = list(INDUSTRIES[pack_slug].get("events") or []) + list((data.get("event_counts") or {}).keys())
+        extras_x, _x_err = live_extras(request.session, period=period, events=list(dict.fromkeys(ev_names)),
+                                       primary=primary_ev)
+    else:
+        extras_x = sample_extras(pack_slug, data, prev)
+    stages = (flow or {}).get("stages") or []
+    flow_users = {str(st["event"]): int(st["users"]) for st in stages[1:] if st.get("event") and st.get("users")}
+    setup_ctx = None if fragment else board_setup(
+        request, flow_users=flow_users, flow_entry=int(stages[0]["users"]) if stages else 0)
     if is_demo:
         # Demo connect: pack sample site numbers, clearly labelled (business stays —)
         note = t("live.note.demo_mode", loc, pack=pack_label)
@@ -222,6 +337,17 @@ def page_live(request: Request, period: str = Query(default="28d")):
             board_kind="live",
             flow=flow,
             prev=prev,
+            notice=None if fragment else auto_notice(request.session, loc),
+            extras=extras_x,
+            details_src=details_src,
+            fragment=fragment,
+            editor=(setup_ctx or {}).get("editor"),
+            industry_drawer=(setup_ctx or {}).get("industry"),
+            ind_name=(setup_ctx or {}).get("ind_name", ""),
+            meta_short=" · ".join(x for x in (t("connect.badge.demo", loc) if is_demo else "",
+                                                behavior_label(sel["behavior"], loc)) if x),
+            auto_open=("edit" if request.query_params.get("edit") else
+                       "industry" if request.query_params.get("industry") else (setup_ctx or {}).get("open", "")),
         )
     )
 
@@ -232,13 +358,42 @@ def _with_sessions(flow: dict[str, Any] | None, data: dict[str, Any]) -> dict[st
     return flow
 
 
+@router.get("/beginner", response_class=HTMLResponse)
+def page_beginner(request: Request):
+    """Sample judgment scene — kept for direct links; not a rail menu item.
+    After connecting, the board's いまの状態 is the first scene (/live)."""
+    from sitekpi.views.beginner import render_beginner
+
+    return HTMLResponse(
+        render_beginner(
+            locale=get_locale(request.session),
+            rail=nav_rail_context(request, "beginner"),
+        )
+    )
+
+
+@router.get("/first")
+def page_first():
+    """Old 「はじめての5分」 URL: the board's いまの状態 is the first scene now."""
+    return RedirectResponse("/live", status_code=302)
+
+
 @router.get("/samples", response_class=HTMLResponse)
-def page_samples(request: Request):
-    """見本ボード一覧 (behaviour → industries)."""
+def page_samples(request: Request, b: str | None = None, i: str | None = None):
+    """見本ボード: goal list + a preview of that board (?b=behaviour&i=industry)."""
     from sitekpi.views.samples import render_samples
 
     return HTMLResponse(render_samples(locale=get_locale(request.session),
-                                       rail=nav_rail_context(request, "samples")))
+                                       rail=nav_rail_context(request, "samples"), cat=b, ind=i))
+
+
+@router.get("/samples/preview", response_class=HTMLResponse)
+def page_samples_preview(request: Request, b: str | None = None, i: str | None = None):
+    """Just the preview pane — swapped in by samples.js when a goal or industry is picked."""
+    from sitekpi.views.samples import render_samples
+
+    return HTMLResponse(render_samples(locale=get_locale(request.session), rail={}, cat=b, ind=i,
+                                       fragment=True))
 
 
 @router.get("/b2c_membership")
@@ -254,6 +409,8 @@ def legacy_content():
 @router.get("/{slug}", response_class=HTMLResponse)
 def page_industry(request: Request, slug: str, period: str = Query(default="28d")):
     """Dense board for industry sample packs (DEMO only — live is /live)."""
+    from sitekpi.board.extras import sample_extras
+
     if slug not in INDUSTRIES:
         return HTMLResponse("<h1>Not Found</h1>", status_code=404)
     if period not in PERIODS:
@@ -277,6 +434,7 @@ def page_industry(request: Request, slug: str, period: str = Query(default="28d"
             connected=extras["connected"],
             locale=get_locale(request.session),
             flow=_with_sessions(sample_flow_context(slug, data, get_locale(request.session)), data),
-            prev=sample_prev(slug, period, data),
+            prev=(prev := sample_prev(slug, period, data)),
+            extras=sample_extras(slug, data, prev),
         )
     )

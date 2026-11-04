@@ -1,0 +1,39 @@
+{#- 「説明」 popovers of いまの状態 / どこで離れているか: the supplementary lines the blocks no longer print. -#}
+{% import "board/_macros.html" as m with context %}
+{% for k in verdict.tiles %}
+{% set links = [] %}
+{% if k.help_id %}{% set _ = links.append({"help": k.help_id, "text": t("bx.open_card", loc)}) %}{% endif %}
+{% if k.bench.kind == "judge" and k.bench.key %}{% set _ = links.append({"popid": "bench-" ~ k.bench.key, "text": t("detail.set_target", loc)}) %}{% endif %}
+{% if industry_drawer and k.bench.kind in ("judge", "none") %}{% set _ = links.append({"drawer": "industry", "text": t("bx.change_ind", loc)}) %}{% endif %}
+{{ m.info_pop("tile-" ~ loop.index, k.label, [
+  {"k": t("bx.k_bench", loc), "v": (k.bench.avg ~ ("（" ~ k.bench.band ~ "）" if k.bench.band else "")) if k.bench.kind == "judge" else (t("bench_none", loc) if k.bench.kind == "none" else "")},
+  {"k": t("bx.k_gap", loc), "v": k.bench.gap if k.bench.kind == "judge" else ""},
+  {"k": t("bx.k_prev", loc), "v": (k.prev.word ~ (" " ~ k.prev.text if k.prev.text else ""))},
+  {"k": t("bx.k_note", loc), "v": k.note},
+], links) }}
+{% endfor %}
+{% for w in watch %}
+{% set links = [{"help": w.id, "text": t("bx.open_card", loc)}] %}
+{% if industry_drawer %}{% set _ = links.append({"drawer": "industry", "text": t("bx.change_ind", loc)}) %}{% endif %}
+{{ m.info_pop("watch-" ~ loop.index, w.title, [
+  {"k": t("bx.k_bench", loc), "v": w.numbers},
+  {"k": t("bx.k_prev", loc), "v": (w.trend.word ~ " " ~ w.trend.text) if w.trend else ""},
+  {"k": t("bx.k_tip", loc), "v": w.tip},
+], links) }}
+{% endfor %}
+{% if flow %}
+{% set entry = flow.stages[0] if flow.stages else none %}
+{{ m.info_pop("flow-help", t("where.title", loc), [
+  {"k": t("bx.k_read", loc), "v": t("bx.read_flow", loc)},
+  {"k": t("bx.k_events", loc), "v": flow.stages[1:] | map(attribute="event") | select | join(" → ")},
+  {"k": t("bx.k_entry", loc), "v": (t("flow.sessions", loc, n=flow.sessions) if flow.sessions else "") ~ ((" · " ~ t("flow.sources", loc) ~ ": " ~ (entry.mix[:3] | map(attribute="name") | join(" · "))) if entry and entry.mix else "")},
+  {"k": "", "v": t("flow.note_live" if flow.live else ("flow.note_demo" if flow.get("demo") else "flow.note_sample"), loc)},
+], [{"href": "/glossary#behavior_flow", "text": t("bx.open_gl", loc)}]) }}
+{% if flow.ch_rows %}
+{% set ents = [] %}{% for r in flow.ch_rows %}{% set _ = ents.append(r.name ~ " " ~ r.entry) %}{% endfor %}
+{{ m.info_pop("ch-help", t("flow.ch_title", loc, step=flow.last_label), [
+  {"k": t("bx.k_calc", loc), "v": t("bx.calc_ch", loc, step=flow.last_label)},
+  {"k": t("bx.k_entry", loc), "v": ents | join(" · ")},
+]) }}
+{% endif %}
+{% endif %}

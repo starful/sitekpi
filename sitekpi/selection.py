@@ -37,10 +37,85 @@ def selection(session: MutableMapping[str, Any]) -> dict[str, str]:
     return {"behavior": behavior, "industry": industry}
 
 
+AUTO_KEY = "auto_selection"  # set while the flow is only our first guess (cleared once the user chooses)
+
+
 def save_selection(session: MutableMapping[str, Any], behavior: str, industry: str) -> None:
     session[BEHAVIOR_KEY] = behavior
     session[INDUSTRY_KEY] = industry
     session.pop("benchmark_pack", None)
+    session.pop(AUTO_KEY, None)  # the user chose → no more 仮 notice
+
+
+# 主転換 events from the most to the least specific: a site that records purchase is a shop
+# even if it also records click; one with only form_submit is an inquiry site, etc.
+_PRIMARY_RANK = {"purchase": 5, "sign_up": 4, "form_submit": 3, "video_complete": 2, "click": 1}
+FALLBACK_BEHAVIOR = "blog"  # no conversion event yet: reading is what every site has
+
+
+def guess_behavior(event_counts: dict[str, int] | None, property_name: str = "") -> tuple[str, str]:
+    """First guess of 訪問者の行動 so the board can open before any setup.
+
+    Returns (behaviour, reason) — reason is the event that decided it, "demo", or "".
+    Picks the behaviour whose 主転換 event the site records, preferring specific
+    conversions and flows whose steps the site also records."""
+    if event_counts is None:  # demo: no GA4 — go by the demo property's name
+        name = property_name.lower()
+        return ("content" if "media" in name else "commerce"), "demo"
+    seen = {e for e, n in event_counts.items() if n}
+    best: tuple[float, int, str] | None = None
+    for i, (cat, beh) in enumerate(BEHAVIORS.items()):
+        primary = str(beh.get("primary") or "")
+        if primary not in seen:
+            continue
+        steps = [s for s in beh.get("steps") or [] if s != primary]  # the way there, not the goal
+        hits = sum(1 for s in steps if s in seen)
+        score = _PRIMARY_RANK.get(primary, 0) * 10 + hits / max(len(steps), 1) * 9 + hits * 0.1
+        score += 0.05 if cat == FALLBACK_BEHAVIOR else 0  # generic click/scroll sites read, not phone
+        if best is None or score > best[0] or (score == best[0] and i < best[1]):
+            best = (score, i, cat)
+    if best:
+        cat = best[2]
+        return cat, str(BEHAVIORS[cat].get("primary") or "")
+    return FALLBACK_BEHAVIOR, ""
+
+
+def ensure_selection(session: MutableMapping[str, Any], event_counts: dict[str, int] | None,
+                     property_name: str = "") -> dict[str, str]:
+    """Numbers first: a connected property always gets a board. If nothing is chosen yet,
+    guess the behaviour (and its usual industry) and remember that it is only a guess."""
+    sel = selection(session)
+    if is_ready(sel):
+        return sel
+    behavior = sel["behavior"]
+    reason = ""
+    if not behavior:
+        behavior, reason = guess_behavior(event_counts, property_name)
+    industry = sel["industry"] or default_industry(behavior)
+    save_selection(session, behavior, industry)
+    if not sel["behavior"]:
+        session[AUTO_KEY] = {"behavior": behavior, "reason": reason}
+    return selection(session)
+
+
+def auto_notice(session: MutableMapping[str, Any], locale: str) -> dict[str, str] | None:
+    """The 仮 notice on the board while the flow is our guess."""
+    auto = session.get(AUTO_KEY)
+    if not isinstance(auto, dict) or not auto.get("behavior"):
+        return None
+    reason = str(auto.get("reason") or "")
+    why = (t("notice.why_demo", locale) if reason == "demo"
+           else t("notice.why_event", locale, event=reason) if reason
+           else t("notice.why_default", locale))
+    flow = behavior_label(str(auto["behavior"]), locale)
+    ind = str(session.get(INDUSTRY_KEY) or "")
+    if ind in INDUSTRIES:
+        from sitekpi.i18n.pack_l10n import pack_text
+
+        name = pack_text(ind, "label", locale, str(INDUSTRIES[ind]["label"]))
+        # both guesses are listed under the lead, each with its own fix button (board.html)
+        return {"text": t("notice.lead", locale, why=why), "flow": flow, "ind": name}
+    return {"text": t("notice.auto", locale, behavior=flow, why=why), "flow": "", "ind": ""}
 
 
 def clear_selection(session: MutableMapping[str, Any]) -> None:
@@ -54,6 +129,26 @@ def flow_pack(sel: dict[str, str]) -> str:
 
 def is_ready(sel: dict[str, str]) -> bool:
     return bool(sel.get("behavior") and sel.get("industry"))
+
+
+def default_industry(behavior: str) -> str:
+    """Pick a usable industry pack so the board can load without a separate industry step."""
+    if behavior not in BEHAVIORS:
+        return ""
+    beh = BEHAVIORS[behavior]
+    for s in list(beh.get("industries") or []):
+        if s in INDUSTRIES and not INDUSTRIES[s].get("virtual"):
+            return s
+    for s, m in INDUSTRIES.items():
+        if m.get("category") == behavior and not m.get("virtual"):
+            return s
+    rep = str(beh.get("rep") or "")
+    if rep in INDUSTRIES and not INDUSTRIES[rep].get("virtual"):
+        return rep
+    for s, m in INDUSTRIES.items():
+        if not m.get("virtual"):
+            return s
+    return ""
 
 
 def same_funnel(behavior: str, industry: str) -> bool:

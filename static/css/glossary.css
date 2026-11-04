@@ -1,0 +1,119 @@
+/* 指標辞典 — open cards (GlossaryB): compact grid, one card opens to a full row. */
+:root {
+  --ink: #152033;
+  --muted: #5b6676;
+  --faint: #8792a2;
+  --line: #e5eaf1;
+  --accent: #2f6fed;
+  --accent-ink: #1d4ed8;
+  --bg: #f4f6fa;
+  --rail-w: 268px;
+  --font-ui: "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
+  --kind-digital: #2f6fed;
+  --kind-traffic: #0ea5e9;
+  --kind-event: #8b5cf6;
+  --kind-business: #0f766e;
+  --kind-meta: #64748b;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font-ui); background: var(--bg); }
+.main { min-width: 0; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+main.glossary {
+  padding: 40px clamp(16px, 3vw, 44px) 64px;
+  display: flex; flex-direction: column; gap: 22px;
+}
+.gl-head h1 { margin: 0; font-size: 1.75rem; font-weight: 700; }
+.gl-lead { margin: 6px 0 0; font-size: 0.875rem; line-height: 1.7; color: var(--muted); }
+
+/* toolbar */
+.gl-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.gl-search {
+  flex: 1 1 320px; max-width: 480px;
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  padding: 0 14px; min-height: 46px;
+}
+.gl-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.15); }
+.gl-search-ico { color: var(--faint); font-size: 15px; }
+.gl-search input {
+  flex: 1; border: 0; outline: none; font: inherit; font-size: 0.875rem;
+  color: var(--ink); background: transparent; min-height: 44px;
+}
+.gl-search input::placeholder { color: #9aa6b5; }
+.gl-kinds { display: flex; flex-wrap: wrap; gap: 6px; }
+.gl-kind {
+  font: inherit; font-size: 0.8125rem; font-weight: 700;
+  border-radius: 999px; padding: 0 14px; min-height: 40px; cursor: pointer;
+  border: 1px solid var(--line); background: #fff; color: #334155;
+}
+.gl-kind:hover { border-color: #c9d4e4; }
+.gl-kind.is-on { background: #1e293b; border-color: #1e293b; color: #fff; }
+.gl-kind-n { margin-left: 6px; font-size: 0.6875rem; opacity: 0.7; }
+
+/* sections */
+.gl-group { display: flex; flex-direction: column; gap: 12px; }
+.gl-group[hidden] { display: none; }
+.gl-group-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+.gl-group-head h2 { margin: 0; font-size: 1.125rem; font-weight: 700; }
+.gl-count { font-size: 0.75rem; font-weight: 700; color: var(--faint); }
+.gl-group-desc { flex-basis: 100%; margin: 0; padding-left: 20px; font-size: 0.8125rem; line-height: 1.6; color: var(--muted); }
+.gl-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--kind-digital); }
+.gl-dot.kind-traffic { background: var(--kind-traffic); }
+.gl-dot.kind-event { background: var(--kind-event); }
+.gl-dot.kind-business { background: var(--kind-business); }
+.gl-dot.kind-meta { background: var(--kind-meta); }
+
+.gl-list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px; align-items: start; grid-auto-flow: row dense;
+}
+
+/* card */
+.gl-card {
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.gl-card[hidden] { display: none; }
+.gl-card:hover { border-color: #9db8ea; }
+.gl-card[open] { grid-column: 1 / -1; border-color: #9db8ea; box-shadow: 0 6px 20px rgba(21, 32, 51, 0.06); }
+.gl-card summary {
+  list-style: none; cursor: pointer;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 16px 18px; min-height: 150px;
+}
+.gl-card[open] summary { min-height: 0; }
+.gl-card summary::-webkit-details-marker { display: none; }
+.gl-card summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 14px; }
+.gl-caret {
+  width: 8px; height: 8px; margin-right: 4px;
+  border-right: 2px solid var(--faint); border-bottom: 2px solid var(--faint);
+  transform: rotate(45deg); transition: transform 0.2s ease;
+}
+.gl-card[open] .gl-caret { transform: rotate(-135deg); }
+.gl-card-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.gl-card-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.gl-sticker { width: 56px; height: 56px; flex: none; object-fit: contain; }
+
+
+.gl-empty {
+  margin: 0; padding: 28px 16px; font-size: 0.875rem; color: var(--muted); text-align: center;
+  background: #fff; border: 1px solid var(--line); border-radius: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-open { animation: none; }
+  .gl-caret, .gl-card { transition: none; }
+}
+@media (max-width: 720px) {
+  main.glossary { padding: 24px 16px 48px; }
+  .gl-list { grid-template-columns: 1fr; }
+}
+.gl-card:not([open]) .gl-meaning {
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.gl-card summary { min-height: 0; }

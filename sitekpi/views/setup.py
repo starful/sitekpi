@@ -1,116 +1,190 @@
-"""サイトの設定 wizard — view model."""
+"""サイトの設定 on the board — view models (no pages of their own any more).
+
+flow_editor_context : the board's 編集モード of 「どこで離れているか」 (board/edit_bar.html + board_edit.js)
+industry_context    : the 比べる業種 drawer (board/drawer_industry.html)
+"""
 
 from __future__ import annotations
 
 from typing import Any
 
-from sitekpi.i18n import normalize_locale
+from sitekpi.i18n import normalize_locale, t
 from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.packs.flows import FLOW_STEPS, step_label
-from sitekpi.templating import render
+
+EVENT_LIST_MAX = 40
 
 
-UNIVERSAL = {"session_start", "user_engagement", "page_view"}
-
-
-def _flow_options(loc: str, sel: dict[str, str], counts: dict[str, int] | None,
-                  flows: dict[str, list[dict[str, str]]]) -> dict[str, Any]:
-    """Step ① choices: the closest flows first, then every flow by group."""
-    from sitekpi.packs.behaviors import BEHAVIORS, GROUPS, behavior_hint, behavior_label
+def _templates(loc: str) -> list[dict[str, Any]]:
+    """Every behaviour's standard flow — the 「ひな形から始める」 choices."""
+    from sitekpi.packs.behaviors import BEHAVIORS, GROUPS, behavior_label, slug_of
 
     out = []
     for cat, beh in BEHAVIORS.items():
-        steps = [{**s, "found": None if counts is None else s["event"] in counts} for s in flows[cat]]
-        own = [s for s in steps if s["event"] not in UNIVERSAL]
+        pack = slug_of(cat)
+        g = GROUPS.get(beh["group"]) or {}
         out.append({
-            "cat": cat, "group": beh["group"], "label": behavior_label(cat, loc), "hint": behavior_hint(cat, loc),
-            # the universal first steps say nothing about which flow fits
-            "steps": steps, "own": own, "hits": sum(1 for s in own if s["found"]), "total": len(own),
-            "selected": sel["behavior"] == cat, "recommended": False,
+            "id": cat,
+            "label": behavior_label(cat, loc),
+            "group": g.get(loc) or g.get("ja") or "",
+            "steps": [{"key": k, "event": k, "label": step_label(k, loc, pack)} for k in FLOW_STEPS[pack]],
         })
-    best = max((b["hits"] for b in out), default=0)
-    closest = sorted([b for b in out if best and b["hits"] == best], key=lambda b: -b["hits"] / max(b["total"], 1))[:3]
-    for b in closest:
-        b["recommended"] = True
-    rest = [b for b in out if b not in closest]
-    groups = [{"id": g, "label": lab.get(loc) or lab["ja"], "options": [b for b in rest if b["group"] == g]}
-              for g, lab in GROUPS.items()]
-    for g in groups:  # the group holding the current flow starts open
-        g["open"] = any(b["selected"] for b in g["options"])
-    # the shared start is drawn once above the list, not on every card
-    common = [s for s in out[0]["steps"] if s["event"] in UNIVERSAL] if out else []
-    return {"closest": closest, "groups": [g for g in groups if g["options"]], "count": len(out), "common": common}
+    return out
 
 
-def _industry_options(loc: str, sel: dict[str, str], site: dict[str, float] | None = None) -> dict[str, Any]:
+def flow_editor_context(
+    *,
+    locale: str,
+    behavior: str,
+    industry: str,
+    steps: list[dict[str, str]],
+    counts: dict[str, int],
+    entry: int,
+    is_demo: bool,
+    max_steps: int,
+    step_counts: dict[str, int] | None = None,
+) -> dict[str, Any]:
+    """The board's 編集モード: template groups + the data island board_edit.js reads.
+
+    step_counts: people per event as the board's flow shows them (this period) — the steps use
+    these; the event list keeps the site's own event counts."""
+    from sitekpi.packs import INDUSTRIES
+
+    loc = normalize_locale(locale)
+    templates = _templates(loc)
+    events = sorted(counts.items(), key=lambda kv: -kv[1])[:EVENT_LIST_MAX]
+    ind_label = pack_text(industry, "label", loc, str(INDUSTRIES[industry]["label"])) if industry in INDUSTRIES else ""
+    groups: list[dict[str, Any]] = []
+    for tpl in templates:
+        if not groups or groups[-1]["label"] != tpl["group"]:
+            groups.append({"label": tpl["group"], "opts": []})
+        groups[-1]["opts"].append({"id": tpl["id"], "label": tpl["label"], "selected": tpl["id"] == behavior})
+    data = {
+        "behavior": behavior,
+        "steps": [{"key": s["key"], "event": s["event"], "label": s["label"]} for s in steps],
+        "templates": {tpl["id"]: tpl["steps"] for tpl in templates},
+        "counts": {**counts, **(step_counts or {})},
+        "events": [{"name": n, "count": c} for n, c in events],
+        "entry": entry,
+        "max": max_steps,
+        "i18n": {
+            "entry": t("flow.entry", loc),
+            "people": t("setupx.unit", loc),
+            "none": t("setup.adjust.none", loc),
+            "pick": t("setupx.pick_event", loc),
+            "no_event": t("setupx.no_event", loc),
+            "from_prev": t("setupx.from_prev", loc),
+            "primary": t("primary_tag", loc),
+            "step_n": t("setupx.step_n", loc),
+            "step_last": t("setupx.step_last", loc),
+            "new_step": t("setupx.new_step", loc),
+            "all_ok": t("setupx.all_ok", loc),
+            "missing": t("setupx.missing", loc),
+            "worst": t("setupx.worst", loc),
+            "add_here": t("setupx.add_here", loc),
+            "too_many": t("setupx.too_many", loc, n=max_steps),
+            "min_one": t("setupx.min_one", loc),
+            "more": t("setupx.more_events", loc),
+            "fewer": t("setupx.fewer_events", loc),
+        },
+    }
+    return {"data": data, "groups": groups, "industry_label": ind_label, "is_demo": is_demo}
+
+
+# --- /setup/industry -----------------------------------------------------------------
+
+PREVIEW_KEYS = ("signup_rate", "engaged_rate", "bounce_rate", "signup_to_pay")
+
+
+def _source_kind(spec: dict[str, Any]) -> str:
+    src = spec.get("source") or {}
+    if spec.get("custom"):
+        return "custom"
+    if src.get("url"):
+        return "cited"
+    if src.get("kind") == "blend":
+        return "blend"
+    return "none"
+
+
+def _preview(behavior: str, industry: str, mine: dict[str, float | None], labels: dict[str, str],
+             loc: str) -> list[dict[str, Any]]:
+    """業界目安 this industry would give the board, next to the site's own numbers where known."""
+    from sitekpi.selection import compose_benchmarks
+
+    bench = compose_benchmarks(behavior, industry)
+    rows = []
+    for key in PREVIEW_KEYS:
+        spec = bench.get(key)
+        if not spec:
+            continue
+        low, high = float(spec["low"]), float(spec["high"])
+        mid = (low + high) / 2
+        kind = _source_kind(spec)
+        you = mine.get(key)
+        judge = ""
+        if kind != "none" and you is not None:
+            hib = bool(spec.get("higher_is_better", spec.get("hib", True)))
+            if low <= you <= high:
+                judge = "mid"
+            elif (you > high) == hib:
+                judge = "up"
+            else:
+                judge = "down"
+        rows.append({
+            "label": labels.get(key, key),
+            "bench": t("bench_none", loc) if kind == "none" else f"{mid:.1f}%".replace(".0%", "%"),
+            "you": "—" if you is None else f"{you:.1f}%",
+            "gap": "" if (you is None or kind == "none") else f"{you - mid:+.1f}pt",
+            "judge": judge,
+            "none": kind == "none",
+        })
+    return rows
+
+
+def industry_context(
+    *,
+    locale: str,
+    behavior: str,
+    industry: str,
+    mine: dict[str, float | None],
+    labels: dict[str, str],
+) -> dict[str, Any]:
     from sitekpi.packs import BENCHMARKS, INDUSTRIES, packs_by_category
     from sitekpi.packs.behaviors import behavior_label
     from sitekpi.packs.industry_about import industry_about
 
-    def compare(slug: str) -> dict[str, Any] | None:
-        """One number that shows how the site differs: its engagement rate vs this industry's."""
-        spec = BENCHMARKS[slug].get("engaged_rate")
-        if not site or spec is None or not (spec.get("source") or {}).get("url"):
-            return None
-        std = (float(spec["low"]) + float(spec["high"])) / 2
-        you = float(site["engaged_rate"]) if site.get("engaged_rate") is not None else None
-        if you is None:
-            return None
-        return {"you": f"{you:.1f}%", "std": f"{std:.1f}%", "diff": f"{you - std:+.1f}pt".replace("-", "−"),
-                # same rule as the board: inside the band is neutral, outside is good / needs attention
-                "tone": "up" if you > float(spec["high"]) else "down" if you < float(spec["low"]) else "ok"}
+    loc = normalize_locale(locale)
 
     def item(slug: str, label: str) -> dict[str, Any]:
-        return {"slug": slug, "label": pack_text(slug, "label", loc, label),
-                "about": industry_about(slug, loc) or pack_text(slug, "hint", loc, str(INDUSTRIES[slug].get("hint") or "")),
-                "compare": compare(slug),
-                "hint": pack_text(slug, "hint", loc, str(INDUSTRIES[slug].get("hint") or "")),
-                "cited": sum(1 for spec in BENCHMARKS[slug].values() if (spec.get("source") or {}).get("url")),
-                "selected": sel["industry"] == slug}
+        return {
+            "slug": slug,
+            "label": pack_text(slug, "label", loc, label),
+            "about": industry_about(slug, loc) or pack_text(slug, "hint", loc, str(INDUSTRIES[slug].get("hint") or "")),
+            "cited": sum(1 for spec in BENCHMARKS[slug].values() if (spec.get("source") or {}).get("url")),
+            "selected": industry == slug,
+        }
 
-    main, others = [], []
+    main: list[dict[str, Any]] = []
+    others: list[dict[str, Any]] = []
+    previews: dict[str, list[dict[str, Any]]] = {}
     for cid, _lab, items in packs_by_category():
         rows = [item(s, lab) for s, lab, _h in items]
-        if cid == sel["behavior"]:
+        for r in rows:
+            previews[r["slug"]] = _preview(behavior, r["slug"], mine, labels, loc)
+        if cid == behavior:
             main = rows
         else:
             others.append({"label": behavior_label(cid, loc), "packs": rows})
-    return {"main": main, "others": others,
-            "other_selected": not main or any(i["selected"] for g in others for i in g["packs"])}
-
-
-def render_setup(
-    *,
-    step: str,
-    sel: dict[str, str],
-    locale: str,
-    counts: dict[str, int] | None,
-    flows: dict[str, list[dict[str, str]]],
-    can_adjust: bool,
-    max_steps: int,
-    rail: dict[str, Any],
-    error: str | None = None,
-    site: dict[str, float] | None = None,
-) -> str:
-    from sitekpi.packs.behaviors import behavior_label, slug_of
-
-    loc = normalize_locale(locale)
-    ctx: dict[str, Any] = {"step": step, "sel": sel, "error": error, "can_adjust": can_adjust,
-                           "knows_events": counts is not None, "max_steps": max_steps}
-    if step == "flow":
-        ctx["options"] = _flow_options(loc, sel, counts, flows)
-    elif step == "industry":
-        ctx["behavior_label"] = behavior_label(sel["behavior"], loc)
-        from sitekpi.packs.behaviors import BEHAVIORS
-        ctx["behavior_group"] = (BEHAVIORS.get(sel["behavior"]) or {}).get("group", "")
-        ctx["industries"] = _industry_options(loc, sel, site)
-        ctx["site"] = site
-    else:
-        pack = slug_of(sel["behavior"])
-        ctx["behavior_label"] = behavior_label(sel["behavior"], loc)
-        ctx["rows"] = [{**s, "count": None if counts is None else counts.get(s["event"])} for s in flows[sel["behavior"]]]
-        ctx["missing"] = sum(1 for r in ctx["rows"] if counts is not None and not r["count"])
-        ctx["events"] = sorted(((n, c) for n, c in (counts or {}).items()), key=lambda x: -x[1])
-        ctx["std"] = [{"key": k, "event": k, "label": step_label(k, loc, pack)} for k in FLOW_STEPS[pack]]
-        ctx["counts"] = counts or {}
-    return render("setup.html", loc=loc, rail=rail, **ctx)
+    current = industry if industry in previews else (main[0]["slug"] if main else "")
+    labels_by_slug = {r["slug"]: r["label"] for r in main + [p for g in others for p in g["packs"]]}
+    return {
+        "behavior_label": behavior_label(behavior, loc), "main": main, "others": others,
+        "other_selected": bool(industry) and not any(r["selected"] for r in main),
+        "current": current, "current_label": labels_by_slug.get(current, ""),
+        "preview": previews.get(current, []),
+        "data": {"previews": previews, "labels": labels_by_slug,
+                 "judge": {"up": t("judge.up", loc), "mid": t("judge.mid", loc), "down": t("judge.down", loc)},
+                 "you": t("setupx.ind_you", loc), "bench": t("setupx.ind_bench", loc), "none": t("bench_none", loc),
+                 "title_tpl": t("setupx.ind_preview", loc, name="__N__")},
+    }

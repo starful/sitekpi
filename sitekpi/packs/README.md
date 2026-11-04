@@ -1,6 +1,6 @@
 # Industry packs
 
-One file per vertical. Demo numbers, 業界目安 bands, board copy, and event labels live together.
+One file per vertical. Demo numbers, industry benchmark bands (業界目安), board copy, and event labels live together.
 
 ## Add a pack
 
@@ -14,4 +14,4 @@ Categories are defined in [`catalog.py`](catalog.py). Structure conventions for 
 
 ## Shared metrics help
 
-説明テキスト for common KPI ids lives in [`../metrics/help.py`](../metrics/help.py), not per pack.
+Help texts for common KPI ids live in [`../metrics/help.py`](../metrics/help.py), not per pack.

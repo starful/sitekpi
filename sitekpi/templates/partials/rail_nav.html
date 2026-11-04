@@ -5,7 +5,8 @@
   <span class="nav-dot" aria-hidden="true"></span>
   <span class="nav-site-body"><span class="nav-site-name">{{ rail.connected.name or t("nav.property", loc) }}</span>{% if rail.selection_label %}<span class="nav-site-sub">{{ rail.selection_label }}</span>{% endif %}</span>
 </a>
-<a href="/setup" class="nav-indent{{ ' is-on' if rail.active == 'connect' else '' }}">{{ t("nav.setup", loc) }}</a>
+<a href="/live?edit=1#flow" class="nav-indent{{ ' is-on' if rail.active == 'setup' else '' }}">{{ t("nav.setup", loc) }}</a>
+<a href="/connect" class="nav-indent{{ ' is-on' if rail.active == 'connect' else '' }}">{{ t("nav.connect_manage", loc) }}</a>
 {% else %}
 <a href="/connect" class="nav-cta{{ ' is-on' if rail.active == 'connect' else '' }}">＋ {{ t("nav.add_ga4", loc) }}</a>
 <p class="nav-note">{{ t("nav.add_ga4_note", loc) }}</p>
@@ -13,6 +14,7 @@
 
 <div class="nav-group">{{ t("nav.tools", loc) }}</div>
 <a href="/builder" class="{{ 'is-on' if rail.active == 'builder' else '' }}">{{ t("nav.builder", loc) }}</a>
+<a href="/glossary" class="{{ 'is-on' if rail.active == 'glossary' else '' }}">{{ t("nav.glossary", loc) }}</a>
 
 <div class="nav-group">{{ t("nav.samples", loc) }}</div>
 <a href="/samples" class="{{ 'is-on' if rail.active == 'samples' else '' }}">{{ t("nav.samples_all", loc) }}</a>

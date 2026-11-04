@@ -407,12 +407,24 @@ def shared_label(key: str, locale: str) -> str:
 def shared_help(
     key: str, locale: str, *, title: str | None = None, **fmt: Any
 ) -> dict[str, str]:
+    """HELP catalog (指標辞典) is SSOT for ja/en/ko; SHARED_HELP fills gaps."""
+    from sitekpi.metrics.help import get_help
+
     loc = normalize_locale(locale)
     block = SHARED_HELP.get(key) or {}
+    catalog = get_help(key, loc)
     out_title = title or shared_label(key, loc)
-    meaning = _pick(block.get("meaning"), loc)
-    formula = _pick(block.get("formula"), loc)
-    tip = _pick(block.get("tip"), loc)
+    if catalog:
+        out_title = title or str(catalog.get("title") or out_title)
+        meaning = str(catalog.get("meaning") or "") or _pick(block.get("meaning"), loc)
+        formula = str(catalog.get("formula") or "") or _pick(block.get("formula"), loc)
+        tip = str(catalog.get("tip") or "") or _pick(block.get("tip"), loc)
+        kind = str(catalog.get("kind") or "digital")
+    else:
+        meaning = _pick(block.get("meaning"), loc)
+        formula = _pick(block.get("formula"), loc)
+        tip = _pick(block.get("tip"), loc)
+        kind = "digital"
     if fmt:
         try:
             meaning = meaning.format(**fmt)
@@ -422,7 +434,7 @@ def shared_help(
             pass
     return {
         "title": out_title,
-        "kind": "digital",
+        "kind": kind,
         "meaning": meaning,
         "formula": formula,
         "tip": tip,

@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ダッシュボードを作る B</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&amp;family=IBM+Plex+Sans+JP:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f6fa}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+button{font-family:inherit}
+.tpl:hover{border-color:#9db8ea}
+.addsec:hover{border-color:#2f6fed;color:#1d4ed8;background:#f3f7fe}
+.pick:hover{background:#f8fafc}
+</style>
+</helmet>
+<div style="font-family: 'IBM Plex Sans JP', 'Noto Sans JP', system-ui, sans-serif; color: #152033; background: #f4f6fa; min-height: 1100px; display: flex; flex-wrap: wrap; align-items: stretch">
+
+  <nav aria-label="メニュー" style="flex: 0 1 248px; min-width: 220px; box-sizing: border-box; background: #ffffff; border-right: 1px solid #e5eaf1; padding: 20px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 14px">
+    <a href="01-start.dc.html" style="text-decoration: none; color: #152033; font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; padding: 0 8px 18px">Site<span style="color: #2f6fed">KPI</span></a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 6px 10px 4px">マイサイト</div>
+    <a href="03-board.dc.html" style="text-decoration: none; color: #152033; padding: 9px 10px; font-weight: 700">Demo Shop JP（デモ）</a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">ツール</div>
+    <a href="#top" style="text-decoration: none; color: #1d4ed8; background: #eef4ff; padding: 8px 10px; border-radius: 8px; font-weight: 700">ダッシュボードを作る</a>
+    <a href="04-glossary.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">指標辞典</a>
+    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">見本</div>
+    <a href="05-samples.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">見本ボード一覧</a>
+    <div style="flex-grow: 1; min-height: 24px"></div>
+    <a href="07-settings.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 12px 10px 8px; border-top: 1px solid #e5eaf1; font-weight: 600">設定</a>
+  </nav>
+
+  <div id="top" style="flex: 999 1 560px; min-width: 0; display: flex; flex-wrap: wrap; align-items: stretch">
+    <main style="flex: 999 1 520px; min-width: 0; box-sizing: border-box; padding: 28px clamp(16px, 3vw, 36px) 56px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+        <div>
+          <h1 style="margin: 0; font-size: 26px; font-weight: 700">ダッシュボードを作る</h1>
+          <p style="margin: 6px 0 0; font-size: 14px; color: #5b6676">目的を選ぶと、よく使う指標が並びます。あとは足したり外したりするだけ。</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center">
+          <span style="{{saveStyle}}">{{saveText}}</span>
+          <button type="button" onClick="{{save}}" style="font: inherit; font-size: 14px; font-weight: 800; border: 0; background: {{accent}}; color: #ffffff; border-radius: 10px; min-height: 44px; padding: 0 18px; cursor: pointer">保存</button>
+        </div>
+      </div>
+
+      <div role="radiogroup" aria-label="目的" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px">
+        <sc-for list="{{tpls}}" as="t" hint-placeholder-count="5">
+          <button type="button" role="radio" class="tpl" aria-checked="{{t.checked}}" onClick="{{t.pick}}" style="{{t.style}}">
+            <b style="font-size: 14px">{{t.name}}</b>
+            <span style="font-size: 12px; color: #5b6676; line-height: 1.5">{{t.desc}}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <sc-for list="{{sections}}" as="sec" hint-placeholder-count="2">
+        <section style="background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+            <input type="text" value="{{sec.title}}" aria-label="見出し" style="font: inherit; font-size: 17px; font-weight: 800; color: #152033; border: 1px solid transparent; border-radius: 8px; padding: 4px 6px; margin-left: -6px; background: transparent">
+            <span style="font-size: 12px; color: #5b6676">{{sec.count}}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px">
+            <sc-for list="{{sec.cards}}" as="m" hint-placeholder-count="3">
+              <div style="border: 1px solid #e5eaf1; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px">
+                  <span style="font-size: 13px; font-weight: 700">{{m.name}}</span>
+                  <button type="button" onClick="{{m.remove}}" aria-label="外す" style="border: 0; background: none; color: #8792a2; cursor: pointer; font-size: 15px; width: 28px; height: 28px">×</button>
+                </div>
+                <span style="font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 800">{{m.value}}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px">
+                  <span style="{{m.prevStyle}}">{{m.prev}}</span>
+                  <span style="{{m.chipStyle}}">{{m.chip}}</span>
+                </div>
+              </div>
+            </sc-for>
+            <button type="button" class="addsec" onClick="{{sec.openAdd}}" style="font: inherit; min-height: 112px; border: 1.5px dashed #cbd5e1; border-radius: 12px; background: #ffffff; color: #5b6676; font-size: 13px; font-weight: 700; cursor: pointer">＋ 指標を追加</button>
+          </div>
+        </section>
+      </sc-for>
+      <button type="button" onClick="{{addSection}}" style="align-self: flex-start; font: inherit; font-size: 13px; font-weight: 700; border: 1px dashed #c4b5fd; background: #faf5ff; color: #6d28d9; border-radius: 10px; min-height: 44px; padding: 0 16px; cursor: pointer">＋ まとまり（見出し）を追加</button>
+    </main>
+
+    <sc-if value="{{drawerOpen}}" hint-placeholder-val="{{ true }}">
+      <aside aria-label="指標を追加" style="flex: 0 1 340px; min-width: 300px; background: #ffffff; border-left: 1px solid #e5eaf1; box-shadow: -8px 0 24px rgba(21,32,51,0.06); padding: 22px 20px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 800">「{{drawerTitle}}」に追加</h2>
+          <button type="button" onClick="{{closeDrawer}}" aria-label="閉じる" style="width: 36px; height: 36px; border: 1px solid #e5eaf1; border-radius: 8px; background: #ffffff; cursor: pointer; color: #5b6676">×</button>
+        </div>
+        <label style="display: flex; align-items: center; gap: 8px; border: 1px solid #e5eaf1; border-radius: 10px; padding: 0 12px; min-height: 42px">
+          <span aria-hidden="true" style="color: #8792a2">⌕</span>
+          <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0)">指標を探す</span>
+          <input type="search" placeholder="指標名・イベント名" style="flex: 1; border: 0; outline: none; font: inherit; font-size: 13px; background: transparent; min-height: 40px">
+        </label>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{kinds}}" as="k" hint-placeholder-count="5">
+            <button type="button" onClick="{{k.pick}}" aria-pressed="{{k.pressed}}" style="{{k.style}}">{{k.label}}</button>
+          </sc-for>
+        </div>
+        <ul style="list-style: none; margin: 0; padding: 0; border: 1px solid #eef1f5; border-radius: 12px; overflow: hidden">
+          <sc-for list="{{picks}}" as="p" hint-placeholder-count="6">
+            <li class="pick" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid #eef1f5">
+              <span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 700">{{p.name}}<span style="display: block; font-size: 11px; font-weight: 500; color: #5b6676">{{p.value}}</span></span>
+              <button type="button" onClick="{{p.add}}" aria-label="{{p.addLabel}}" style="{{p.btn}}">{{p.btnText}}</button>
+            </li>
+          </sc-for>
+        </ul>
+        <a href="04-glossary.dc.html" style="font-size: 12px; font-weight: 700; text-decoration: none">指標の意味は 指標辞典 で →</a>
+      </aside>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#2f6fed","options":["#2f6fed","#0f766e","#7c3aed","#152033"]},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tpl: 'weekly', sections: this.fromTpl('weekly'), drawer: 1, kind: 'all', saved: true };
+  }
+  tplData() {
+    return {
+      weekly: ['週次の報告', '来た人・成果・前期比を1枚で', [['集客', ['uu', 'sessions', 'os']], ['成果', ['purchase', 'purchase_cvr', 'engaged']]]],
+      ads: ['広告の効果', '広告から来た人が買っているか', [['広告からの流入', ['ps', 'pso']], ['成果', ['purchase_cvr', 'cart_rate', 'bounce']]]],
+      funnel: ['購入まで', 'どこで離れているかを数字で', [['購入まで', ['add_to_cart', 'cart_rate', 'purchase', 'purchase_cvr']]]],
+      seo: ['検索・記事', '検索から来て読まれているか', [['検索', ['os', 'engaged', 'pages_session', 'bounce']]]],
+      blank: ['空から作る', '自分で1つずつ並べる', [['新しいまとまり', []]]]
+    };
+  }
+  fromTpl(id) {
+    return this.tplData()[id][2].map(function (s) { return { title: s[0], ids: s[1].slice() }; });
+  }
+  renderVals() {
+    var self = this, st = this.state;
+    var accent = this.props.accent ?? '#2f6fed';
+    var M = {
+      uu: ['期間 UU', '68,500', '+9.2%', 'up', '—', 'digital'], sessions: ['セッション', '92,400', '+7.6%', 'up', '—', 'digital'],
+      engaged: ['エンゲージ率', '53.8%', '−1.4pt', 'down', '要注意', 'digital'], bounce: ['すぐ離脱に近い率', '46.2%', '+1.4pt', 'down', '要注意', 'digital'],
+      pages_session: ['ページ / セッション', '3.5', '−0.8%', 'down', '基準なし', 'digital'],
+      purchase_cvr: ['購入CVR', '2.3%', '+0.0pt', 'mid', '目安内', 'digital'], cart_rate: ['カート→購入率', '14.6%', '−0.9pt', 'down', '要注意', 'digital'],
+      purchase: ['purchase', '1,580', '+4.2%', 'up', '—', 'event'], add_to_cart: ['add_to_cart', '10,800', '+10.7%', 'up', '—', 'event'],
+      os: ['Organic Search', '25%', '—', 'na', '—', 'traffic'], ps: ['Paid Search', '19%', '—', 'na', '—', 'traffic'], pso: ['Paid Social', '15%', '—', 'na', '—', 'traffic'],
+      revenue: ['売上（業務DB）', '未連携', '—', 'na', '—', 'biz']
+    };
+    var T = this.tplData();
+    var tpls = Object.keys(T).map(function (k) {
+      var on = st.tpl === k;
+      return {
+        name: T[k][0], desc: T[k][1], checked: on ? 'true' : 'false',
+        pick: function () { self.setState({ tpl: k, sections: self.fromTpl(k), drawer: null, saved: false }); },
+        style: 'font: inherit; color: inherit; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 14px; border-radius: 12px; cursor: pointer; text-align: left; min-height: 76px; border: 1.5px solid ' + (on ? accent : '#e5eaf1') + '; background: ' + (on ? '#f3f7fe' : '#ffffff')
+      };
+    });
+    var chip = function (k) {
+      var b = 'font-size: 11px; font-weight: 800; border-radius: 999px; padding: 2px 9px; white-space: nowrap; ';
+      if (k === '要注意') return b + 'background: #fde7c7; color: #92400e';
+      if (k === '目安内') return b + 'background: #e8eefc; color: #1e40af';
+      if (k === '基準なし') return b + 'background: #f1f3f5; color: #5b6676; font-weight: 600';
+      return 'font-size: 12px; color: #8792a2';
+    };
+    var sections = st.sections.map(function (s, si) {
+      return {
+        title: s.title, count: s.ids.length + ' 指標',
+        openAdd: function () { self.setState({ drawer: si }); },
+        cards: s.ids.map(function (id) {
+          var m = M[id];
+          return {
+            name: m[0], value: m[1], prev: m[2] === '—' ? '前期 —' : '前期比 ' + m[2], chip: m[4], chipStyle: chip(m[4]),
+            prevStyle: 'font-size: 12px; font-weight: 700; color: ' + (m[3] === 'up' ? '#0f766e' : m[3] === 'down' ? '#b45309' : '#475569'),
+            remove: function () {
+              var next = st.sections.map(function (x, xi) { return xi === si ? { title: x.title, ids: x.ids.filter(function (y) { return y !== id; }) } : x; });
+              self.setState({ sections: next, saved: false });
+            }
+          };
+        })
+      };
+    });
+    var di = st.drawer;
+    var open = di !== null && di !== undefined && di < st.sections.length;
+    var K = [['all', 'すべて'], ['digital', 'デジタル'], ['event', 'イベント'], ['traffic', '流入'], ['biz', '業務']];
+    var kinds = K.map(function (k) {
+      var on = st.kind === k[0];
+      return {
+        label: k[1], pressed: on ? 'true' : 'false',
+        pick: function () { self.setState({ kind: k[0] }); },
+        style: 'font: inherit; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 0 12px; min-height: 32px; cursor: pointer; border: 1px solid ' + (on ? '#1e293b' : '#e5eaf1') + '; background: ' + (on ? '#1e293b' : '#ffffff') + '; color: ' + (on ? '#ffffff' : '#334155')
+      };
+    });
+    var here = open ? st.sections[di].ids : [];
+    var picks = Object.keys(M).filter(function (id) { return st.kind === 'all' || M[id][5] === st.kind; }).map(function (id) {
+      var on = here.indexOf(id) >= 0;
+      return {
+        name: M[id][0], value: M[id][1] + (M[id][2] !== '—' ? ' · 前期比 ' + M[id][2] : ''), addLabel: M[id][0] + 'を追加',
+        btnText: on ? '✓' : '＋',
+        add: function () {
+          if (!open || on) return;
+          var next = st.sections.map(function (x, xi) { return xi === di ? { title: x.title, ids: x.ids.concat([id]) } : x; });
+          self.setState({ sections: next, saved: false });
+        },
+        btn: 'width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 14px; flex: none; border: 1px solid ' + (on ? '#cdebe3' : '#cbd5e1') + '; background: ' + (on ? '#e6f6f2' : '#ffffff') + '; color: ' + (on ? '#0f766e' : '#475569')
+      };
+    });
+    return {
+      accent: accent, tpls: tpls, sections: sections, kinds: kinds, picks: picks,
+      drawerOpen: open, drawerTitle: open ? st.sections[di].title : '',
+      closeDrawer: function () { self.setState({ drawer: null }); },
+      addSection: function () { self.setState({ sections: st.sections.concat([{ title: '新しいまとまり', ids: [] }]), drawer: st.sections.length, saved: false }); },
+      save: function () { self.setState({ saved: true }); },
+      saveText: st.saved ? '✓ 保存済み' : '未保存の変更あり',
+      saveStyle: 'font-size: 12px; font-weight: 700; color: ' + (st.saved ? '#0f766e' : '#b45309')
+    };
+  }
+}
+</script>
+</body>
+</html>

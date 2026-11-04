@@ -63,13 +63,18 @@ def main() -> int:
         # cat.* keys live in strings; render path uses t(f"cat.{cid}")
         pass
 
-    # 見本ボード一覧 must link every registered industry
+    # 見本ボード must reach every registered industry (goal → industry chip → open the board)
+    from sitekpi.packs import INDUSTRIES as ALL_PACKS
+    from sitekpi.packs.behaviors import BEHAVIORS, slug_of
     from sitekpi.views.samples import render_samples
-    from sitekpi.views.layout import rail_context
 
-    gallery = render_samples(locale="ja", rail=rail_context(nav_active="samples", locale="ja"))
+    reached = ""
+    for cat in BEHAVIORS:
+        members = ALL_PACKS[slug_of(cat)].get("members") or [""]
+        for m in members:
+            reached += render_samples(locale="ja", rail={}, cat=cat, ind=m or None, fragment=True)
     for slug in INDUSTRIES:
-        if f'href="/{slug}"' not in gallery:
+        if f'href="/{slug}"' not in reached:
             errors.append(f"/samples missing link /{slug}")
 
     # Dense board + full sample HTML for each slug × locale

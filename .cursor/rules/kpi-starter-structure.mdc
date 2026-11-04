@@ -7,13 +7,19 @@ alwaysApply: true
 
 Keep modular boundaries so new work does not re-bloat route modules / inline DEMO.
 
+**File names: English only.** Every file and folder committed to git uses ASCII names (letters, digits, `-`, `_`, `.`). No Korean/Japanese file names; file contents may be any language.
+
+**READMEs: English.** `README.md` files are written in English (UI terms may follow in parentheses, e.g. industry benchmarks (業界目安)).
+
 ## Layout
 
 ```
 main.py                    # entry only: `uvicorn main:app` (run.sh)
 sitekpi/
   app.py                   # FastAPI app, sessions, gzip, static, routers
-  routes/pages.py          # /, /{slug}, /live, /builder, /settings
+  board/extras.py          # 8週の推移 · デバイス · 売上 · DAU (sample_extras / live_extras)
+  routes/pages.py          # /, /{slug}, /live, /builder, /settings, /samples (+ /samples/preview fragment), /glossary
+  routes/setup.py          # POST /setup (flow), POST /setup/industry, /setup/keep; GETs redirect to the board; board_setup()
   routes/connect.py        # /connect* — OAuth (PKCE), property, 業界パック pick
   routes/nav.py            # rail context (connected property) for every page
   selection.py             # 訪問者の行動 × 業種 in the session; composes the live board's 業界目安
@@ -27,11 +33,13 @@ sitekpi/
   templates/
     base.html              # <head>, rail shell, blocks: title/fonts/css/main/page/scripts
     partials/              # rail, rail_nav, mobile_bar, logo, head_icons, fonts_full
-    board.html, board/_macros.html, builder.html, connect.html, settings.html, home.html
+    board.html, board/_macros.html, builder.html, connect.html, settings.html, home.html,
+    samples.html, samples/_preview.html, glossary.html, partials/help_card.html,
+    board/details.html, board/info_pops.html, board/edit_bar.html, board/drawer_step.html, board/drawer_industry.html
   packs/  i18n/  metrics/
 static/
-  css/   brand, rail, board, builder, connect, settings, home
-  js/    rail.js (drawer + pack search), board.js, builder.js
+  css/   brand, rail, board, helpcard, builder, connect, settings, home, setup (編集モード parts), samples, glossary
+  js/    rail.js (drawer + pack search), board.js, board_edit.js, builder.js, samples.js
   vendor/sortable-1.15.6.min.js (bundled, MIT)
 ```
 
@@ -48,7 +56,8 @@ static/
 | 業界目安 defaults | `benchmarks` in `sitekpi/packs/{slug}.py` (shown as SiteKPI 初期値) | — |
 | 業界目安 sources | `sitekpi/packs/sources.py` (verified figure = band middle; band rule labelled) | Citing a figure you haven't checked verbatim, or a different metric definition (e.g. landing-page CVR for site CVR) |
 | 自社目安 (user overrides) | `sitekpi/benchmarks.py` (`load_effective`) | Reading pack BENCHMARKS directly in routes |
-| Board numbers / chart points | view models in `sitekpi/views/board.py` | Math inside templates |
+| Board numbers / chart points | view models in `sitekpi/views/board.py` (`_verdict` = L0, `_watch_items` = 今見るべきこと, `tabs` = L2) | Math inside templates |
+| First guess of 訪問者の行動 (entry) | `selection.guess_behavior` / `ensure_selection` / `auto_notice` | Redirecting a connected user to a wizard before the board |
 | Board styles / behaviour | `static/css/board.css` / `static/js/board.js` | `<style>`/`<script>` blocks in templates |
 | Rail | `templates/partials/rail*.html`, `static/css/rail.css`, `static/js/rail.js`; data `views/layout.rail_context` | A second nav / top nav |
 | New page | route in `routes/`, view model in `views/`, template extending `base.html`, assets in `static/` via `static_url()` | HTML/CSS built in Python |
@@ -72,4 +81,4 @@ Templates autoescape: never mark user/GA4 values `|safe`. `scripts/smoke_packs.p
 
 ## Product frame (do not reopen lightly)
 
-Same dense board for every pack; samples ≠ live; connect applies 業界目安 only. Details: `kpi-starter-ux` rule.
+Same board for every pack (判定 → どこ → 詳しく); samples ≠ live; connect opens the board at once and applies 業界目安 only. Details: `kpi-starter-ux` rule.

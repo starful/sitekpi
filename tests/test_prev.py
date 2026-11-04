@@ -43,5 +43,6 @@ def test_board_shows_prev_column_and_trend_in_watch():
     from main import app
 
     html = TestClient(app).get("/ec").text
-    assert "<th style=\"text-align:right\">前期比</th>" in html
-    assert 'class="watch-trend"' in html and "自社の前期" in html
+    assert '<span role="columnheader" class="num">前期比</span>' in html
+    # 自社の前期 of a 今見るべきこと item lives in its 説明 popover
+    assert '<template id="pop-watch-1">' in html and "自社の前期" in html.split('id="pop-watch-1"', 1)[1]

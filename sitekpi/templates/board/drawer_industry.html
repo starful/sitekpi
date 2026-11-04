@@ -1,0 +1,60 @@
+{#- 比べる業種: right-top drawer (replaces /setup/industry). Context: industry_drawer (views/setup.industry_context) -#}
+{% set d = industry_drawer %}
+<aside class="drawer" id="drawer-industry" role="dialog" aria-labelledby="drawer-ind-title" data-drawer="industry" hidden>
+  <div class="drawer-head">
+    <div>
+      <h2 id="drawer-ind-title">{{ t("bx.ind_title", loc) }}</h2>
+      <p class="drawer-lead">{{ t("bx.ind_lead", loc) }}</p>
+    </div>
+    <button type="button" class="drawer-x" data-drawer-close aria-label="{{ t('close', loc) }}">×</button>
+  </div>
+  {% if d.error %}<p class="edit-error" role="alert">{{ d.error }}</p>{% endif %}
+  <form method="post" action="/setup/industry" id="ind-form" class="drawer-form">
+    {% if d.main %}
+    <div class="ind-grid" role="radiogroup" aria-labelledby="drawer-ind-title">
+      {% for i in d.main %}
+      <label class="ind-card">
+        <input type="radio" name="industry" value="{{ i.slug }}"{% if i.slug == d.current %} checked{% endif %} data-ind />
+        <b>{{ i.label }}</b>
+        <span>{{ i.about }}</span>
+      </label>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="drawer-lead">{{ t("setupx.ind_none_main", loc) }}</p>
+    {% endif %}
+    <details class="sx-more"{% if d.other_selected or not d.main %} open{% endif %}>
+      <summary>{{ t("setupx.ind_more", loc) }}</summary>
+      <div class="sx-more-groups">
+        {% for g in d.others %}
+        <div class="sx-more-group">
+          <span class="sx-more-k">{{ g.label }}</span>
+          <div class="sx-chips">
+            {% for i in g.packs %}<label class="sx-chip" title="{{ i.about }}"><input type="radio" name="industry" value="{{ i.slug }}"{% if i.slug == d.current %} checked{% endif %} data-ind /><span>{{ i.label }}</span></label>{% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    <div class="ind-preview">
+      <b data-ind-title>{{ t("setupx.ind_preview", loc, name=d.current_label) }}</b>
+      <div class="sx-ind-rows" data-ind-rows>
+        {% for r in d.preview %}
+        <div class="sx-ind-row">
+          <span class="sx-ind-metric">{{ r.label }}<small>{{ t("setupx.ind_you", loc) }} {{ r.you }} · {{ t("setupx.ind_bench", loc) }} {{ r.bench }}</small></span>
+          <span class="sx-gap tone-{{ r.judge or 'na' }}">{{ r.gap }}</span>
+          {% if r.judge %}<span class="judge judge-{{ r.judge }}">{{ t("judge." ~ r.judge, loc) }}</span>{% elif r.none %}<span class="judge judge-none">{{ t("bench_none", loc) }}</span>{% else %}<span class="judge-na">—</span>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <button type="submit" class="drawer-primary">{{ t("bx.ind_apply", loc) }}</button>
+  </form>
+  {% if bench %}
+  <div class="drawer-adjust">
+    <span>{{ t("bx.ind_adjust_k", loc) }}</span>
+    <button type="button" class="nudge-btn" data-ind-adjust>{{ t("bx.ind_adjust", loc) }} →</button>
+  </div>
+  {% endif %}
+  <script type="application/json" id="ind-data">{{ d.data|tojson }}</script>
+</aside>
