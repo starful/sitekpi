@@ -16,6 +16,18 @@ Login keeps it up (same idea as Starful HQ): LaunchAgent `com.starful.sitekpi` �
 On macOS you can double-click `run.command` in Finder. On the first run (or when `.venv` is broken) it rebuilds `.venv` with Python 3.12+, and reinstalls packages only when `requirements.txt` changes.
 Copy `.env.example` to `.env` and set `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `SESSION_SECRET` (not needed for the demo connection only). Change the port with `PORT=9000 ./run.sh`.
 
+## Deploy (Cloud Run)
+
+Same flow as the other starful sites: Cloud Build → Artifact Registry → Cloud Run (`sitekpi-service`, project `starful-258005`), domain `sitekpi.net`.
+
+```bash
+scripts/gcp_setup.sh ./client_secret_XXXX.json   # once: APIs, secrets, IAM, Firestore TTL
+./deploy.sh                                       # tests → build → deploy
+scripts/gcp_setup.sh --domain                     # once, after the first deploy
+```
+
+On Cloud Run, sessions, flow edits, custom benchmarks and feedback are stored in Firestore (`STORE_BACKEND=firestore`); locally they stay in SQLite under `.data/`.
+
 ## Checks
 
 ```bash

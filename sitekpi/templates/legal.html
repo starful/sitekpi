@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}SiteKPI · {{ title }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/legal.css') }}" />{% endblock %}
+{% block main %}
+  <main class="legal">
+    <nav class="legal-langs" aria-label="Language">
+      {% for code, label in [("ja", "日本語"), ("en", "English"), ("ko", "한국어")] %}
+      <a href="/{{ kind }}?lang={{ code }}"{% if code == loc %} aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+    <article class="legal-body">
+      {% include body %}
+    </article>
+  </main>
+{% endblock %}

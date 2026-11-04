@@ -29,6 +29,9 @@ from sitekpi.routes.setup import router as setup_router  # noqa: E402
 from sitekpi.routes.pages import router as pages_router  # noqa: E402
 from sitekpi.static_files import CachedStaticFiles  # noqa: E402
 from sitekpi.stickers import router as stickers_router  # noqa: E402
+from sitekpi.feedback import router as feedback_router  # noqa: E402
+from sitekpi.routes.legal import router as legal_router  # noqa: E402
+from sitekpi.firestore_store import FirestoreSessionStore, enabled as firestore_enabled  # noqa: E402
 from sitekpi.session import (  # noqa: E402
     ServerSessionMiddleware,
     SQLiteSessionStore,
@@ -45,7 +48,8 @@ app = FastAPI(title=BRAND_NAME)
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.add_middleware(
     ServerSessionMiddleware,
-    store=SQLiteSessionStore(_session["db_path"], _session["secret"], SESSION_MAX_AGE),
+    store=(FirestoreSessionStore(_session["secret"], SESSION_MAX_AGE) if firestore_enabled()
+           else SQLiteSessionStore(_session["db_path"], _session["secret"], SESSION_MAX_AGE)),
     cookie_name="sitekpi_sid",
     https_only=_session["https_only"],
     same_site="lax",
@@ -57,5 +61,7 @@ app.include_router(benchmarks_router)
 app.include_router(flow_router)
 app.include_router(setup_router)
 app.include_router(stickers_router)
+app.include_router(feedback_router)
+app.include_router(legal_router)
 # pages last: it owns the catch-all /{slug}
 app.include_router(pages_router)

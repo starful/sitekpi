@@ -257,7 +257,34 @@ def select_pack(request: Request, pack_slug: str = Form(...)):
     return RedirectResponse("/live" if is_ready(selection(session)) else "/connect", status_code=302)
 
 
+def _revoke_at_google(creds: dict) -> None:
+    """Best effort, in the background: revoke the grant at Google (privacy policy §4)."""
+    import threading
+    import urllib.parse
+    import urllib.request
+
+    token = str(creds.get("refresh_token") or creds.get("token") or "")
+    if not token:
+        return
+
+    def run() -> None:
+        try:
+            req = urllib.request.Request(
+                "https://oauth2.googleapis.com/revoke",
+                data=urllib.parse.urlencode({"token": token}).encode(),
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            urllib.request.urlopen(req, timeout=5).close()
+        except Exception:  # noqa: BLE001 — the session is gone either way
+            pass
+
+    threading.Thread(target=run, daemon=True).start()
+
+
 @router.post("/connect/disconnect")
 def disconnect(request: Request):
+    creds = request.session.get("ga4_credentials")
+    if isinstance(creds, dict) and not request.session.get("ga4_demo"):
+        _revoke_at_google(creds)
     request.session.clear()  # server row + cookie are dropped by the session middleware
     return RedirectResponse("/connect", status_code=302)

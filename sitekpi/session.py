@@ -107,7 +107,7 @@ class ServerSessionMiddleware:
         self,
         app: ASGIApp,
         *,
-        store: SQLiteSessionStore,
+        store: Any,  # SQLiteSessionStore locally, FirestoreSessionStore on Cloud Run
         cookie_name: str = "sitekpi_sid",
         https_only: bool = False,
         same_site: str = "lax",

@@ -1,0 +1,16 @@
+# Files Cloud Build does not need to upload (same list as .dockerignore, minus tests/scripts used by the check step)
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.data
+.env
+.env.*
+client_secret*.json
+.claude_tmp
+brand
+docs
+mac
+*.md

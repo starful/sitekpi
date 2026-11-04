@@ -1,0 +1,17 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.data
+.env
+.env.*
+client_secret*.json
+.claude_tmp
+brand
+docs
+mac
+tests
+scripts
+*.md

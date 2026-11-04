@@ -1,0 +1,25 @@
+.nav-feedback {
+  display: block; width: 100%; margin: 0 0 6px; padding: 8px 10px; text-align: left;
+  font: inherit; font-size: 0.86rem; font-weight: 700; color: var(--accent-ink, #1d4ed8);
+  background: #fff; border: 1px dashed #c9dbfb; border-radius: 8px; cursor: pointer;
+}
+.nav-feedback:hover { background: #eef4ff; }
+.nav-legal { margin: 8px 10px 0; font-size: 0.72rem; color: #8792a2; }
+.nav-legal a { display: inline !important; padding: 0 !important; font-weight: 600 !important; color: #8792a2 !important; background: none !important; }
+.fb { border: 1px solid #d5dce6; border-radius: 16px; padding: 0; width: min(420px, calc(100vw - 32px)); box-shadow: 0 20px 48px rgba(21, 32, 51, 0.18); }
+.fb::backdrop { background: rgba(21, 32, 51, 0.25); }
+.fb-form { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.fb-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.fb-head h2 { margin: 0; font-size: 1.05rem; }
+.fb-x { width: 32px; height: 32px; border: 1px solid #e5eaf1; border-radius: 8px; background: #fff; cursor: pointer; color: #5b6676; }
+.fb-votes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fb-vote { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 1.5px solid #e5eaf1; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 0.9rem; }
+.fb-vote input { position: absolute; opacity: 0; pointer-events: none; }
+.fb-vote:has(input:checked) { border-color: var(--accent, #2f6fed); background: #eef4ff; color: var(--accent-ink, #1d4ed8); }
+.fb-field { display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; font-weight: 700; color: #5b6676; }
+.fb-field textarea { font: inherit; font-size: 0.9rem; padding: 10px; border: 1px solid #e5eaf1; border-radius: 10px; resize: vertical; color: #152033; }
+.fb-hp { position: absolute; left: -9999px; }
+.fb-note { margin: 0; font-size: 0.72rem; color: #8792a2; }
+.fb-msg { margin: 0; font-size: 0.85rem; font-weight: 700; color: #0f766e; min-height: 1.2em; }
+.fb-send { font: inherit; font-weight: 800; border: 0; border-radius: 10px; min-height: 44px; background: var(--accent, #2f6fed); color: #fff; cursor: pointer; }
+.fb-send:disabled { opacity: 0.5; cursor: default; }

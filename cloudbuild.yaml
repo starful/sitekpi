@@ -1,0 +1,64 @@
+# SiteKPI → Cloud Run (same shape as jpcampus). Run via ./deploy.sh
+# One-time setup (Artifact Registry repo, secrets, IAM, APIs, domain): scripts/gcp_setup.sh
+substitutions:
+  _REGION: us-central1
+  _SERVICE: sitekpi-service
+  _DOMAIN: sitekpi.net
+  _CONTACT_EMAIL: ""
+
+steps:
+  # 1. Tests must pass before anything ships
+  - name: 'python:3.12-slim'
+    id: 'tests'
+    entrypoint: 'bash'
+    args: ['-c', 'pip install --no-cache-dir -q -r requirements-dev.txt && python -m pytest -q']
+    waitFor: ['-']
+
+  # 2. Pull the last image for layer cache
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-pull'
+    entrypoint: 'bash'
+    args: ['-c', 'docker pull ${_REGION}-docker.pkg.dev/$PROJECT_ID/sitekpi/sitekpi:latest || exit 0']
+    waitFor: ['tests']
+
+  # 3. Build
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-build'
+    args: [
+      'build',
+      '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/sitekpi/sitekpi:latest',
+      '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/sitekpi/sitekpi:$BUILD_ID',
+      '--cache-from', '${_REGION}-docker.pkg.dev/$PROJECT_ID/sitekpi/sitekpi:latest',
+      '.'
+    ]
+    waitFor: ['docker-pull']
+
+  # 4. Push
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-push'
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/$PROJECT_ID/sitekpi/sitekpi']
+    waitFor: ['docker-build']
+
+  # 5. Deploy
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE}'
+      - '--image=${_REGION}-docker.pkg.dev/$PROJECT_ID/sitekpi/sitekpi:$BUILD_ID'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--memory=512Mi'
+      - '--min-instances=0'
+      - '--max-instances=4'
+      - '--set-env-vars=STORE_BACKEND=firestore,FIRESTORE_COLLECTION=sitekpi,APP_BASE_URL=https://${_DOMAIN},GOOGLE_REDIRECT_URI=https://${_DOMAIN}/connect/callback,CONTACT_EMAIL=${_CONTACT_EMAIL}'
+      - '--set-secrets=SESSION_SECRET=SITEKPI_SESSION_SECRET:latest,GOOGLE_CLIENT_ID=SITEKPI_GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=SITEKPI_GOOGLE_CLIENT_SECRET:latest'
+    waitFor: ['docker-push']
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/sitekpi/sitekpi:latest'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/sitekpi/sitekpi:$BUILD_ID'

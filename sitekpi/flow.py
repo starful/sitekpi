@@ -159,6 +159,12 @@ _store_lock = threading.Lock()
 def get_mapping_store() -> MappingStore:
     global _store
     with _store_lock:
+        from sitekpi import firestore_store
+
+        if firestore_store.enabled():  # Cloud Run: shared and persistent
+            if not isinstance(_store, firestore_store.FirestoreMappingStore):
+                _store = firestore_store.FirestoreMappingStore()  # type: ignore[assignment]
+            return _store  # type: ignore[return-value]
         path = Path(os.getenv("APP_DB_PATH") or (ROOT / ".data" / "app.sqlite3"))
         if _store is None or _store.path != path:
             _store = MappingStore(path)

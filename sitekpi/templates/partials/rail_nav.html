@@ -21,5 +21,7 @@
 {% if rail.sample %}<a href="/{{ rail.sample.slug }}" class="nav-indent is-on">{{ rail.sample.label }}</a>{% endif %}
 
 <div class="nav-bottom">
+  <button type="button" class="nav-feedback" data-feedback-open>{{ t("fb.open", loc) }}</button>
   <a href="/settings" class="{{ 'is-on' if rail.active == 'settings' else '' }}">{{ t("nav.settings", loc) }}</a>
+  <p class="nav-legal"><a href="/policy">{{ t("legal.policy", loc) }}</a> · <a href="/terms">{{ t("legal.terms", loc) }}</a></p>
 </div>

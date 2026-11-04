@@ -8,3 +8,7 @@ __pycache__/
 !.env.example
 .ga4_connection.json
 .data/
+
+# Google OAuth client files (secrets) — never commit
+client_secret*.json
+.claude_tmp/

@@ -1344,3 +1344,19 @@ UI.update({
     "bx.ind_adjust": {"ja": "目安を細かく調整", "en": "Fine-tune targets", "ko": "기준 세부 조정"},
     "bx.ind_adjust_k": {"ja": "目安の幅を自分の数字に合わせる", "en": "Set the target ranges to your own numbers", "ko": "기준 범위를 내 숫자에 맞추기"},
 })
+
+
+UI.update({
+    "fb.open": {"ja": "ご意見を送る", "en": "Send feedback", "ko": "의견 보내기"},
+    "fb.title": {"ja": "この画面はどうでしたか？", "en": "How was this screen?", "ko": "이 화면은 어땠나요?"},
+    "fb.up": {"ja": "役に立った", "en": "Helpful", "ko": "도움이 됐어요"},
+    "fb.down": {"ja": "わかりにくい", "en": "Confusing", "ko": "어려웠어요"},
+    "fb.comment": {"ja": "ひとこと（任意）", "en": "One line (optional)", "ko": "한마디 (선택)"},
+    "fb.ph": {"ja": "どこで迷ったか、欲しい数字など", "en": "Where you got stuck, numbers you want…", "ko": "어디서 헤맸는지, 보고 싶은 숫자 등"},
+    "fb.send": {"ja": "送る", "en": "Send", "ko": "보내기"},
+    "fb.thanks": {"ja": "ありがとうございます。届きました。", "en": "Thank you — received.", "ko": "고맙습니다. 잘 받았어요."},
+    "fb.error": {"ja": "送れませんでした。時間をおいてもう一度お試しください。", "en": "Could not send. Please try again later.", "ko": "보내지 못했어요. 잠시 후 다시 시도해 주세요."},
+    "fb.note": {"ja": "IP アドレスやアカウントは保存しません。", "en": "We don't store your IP address or account.", "ko": "IP 주소나 계정은 저장하지 않아요."},
+    "legal.policy": {"ja": "プライバシーポリシー", "en": "Privacy Policy", "ko": "개인정보 처리방침"},
+    "legal.terms": {"ja": "利用規約", "en": "Terms of Use", "ko": "이용약관"},
+})

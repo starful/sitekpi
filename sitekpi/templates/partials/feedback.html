@@ -1,0 +1,20 @@
+{#- 「ご意見」 dialog (rail button [data-feedback-open]) → POST /feedback (static/js/feedback.js) -#}
+<dialog class="fb" id="feedback" aria-labelledby="fb-title" data-screen="{{ rail.active if rail is defined and rail else '' }}">
+  <form method="dialog" class="fb-form" data-feedback-form>
+    <div class="fb-head">
+      <h2 id="fb-title">{{ t("fb.title", loc) }}</h2>
+      <button type="button" class="fb-x" data-feedback-close aria-label="{{ t('close', loc) }}">×</button>
+    </div>
+    <div class="fb-votes" role="radiogroup" aria-labelledby="fb-title">
+      <label class="fb-vote"><input type="radio" name="vote" value="up" /><span aria-hidden="true">👍</span>{{ t("fb.up", loc) }}</label>
+      <label class="fb-vote"><input type="radio" name="vote" value="down" /><span aria-hidden="true">👎</span>{{ t("fb.down", loc) }}</label>
+    </div>
+    <label class="fb-field">{{ t("fb.comment", loc) }}
+      <textarea name="comment" rows="3" maxlength="500" placeholder="{{ t('fb.ph', loc) }}"></textarea>
+    </label>
+    <input type="text" name="website" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+    <p class="fb-note">{{ t("fb.note", loc) }}</p>
+    <p class="fb-msg" data-feedback-msg role="status" data-ok="{{ t('fb.thanks', loc) }}" data-err="{{ t('fb.error', loc) }}"></p>
+    <button type="submit" class="fb-send">{{ t("fb.send", loc) }}</button>
+  </form>
+</dialog>

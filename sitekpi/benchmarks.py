@@ -83,7 +83,13 @@ _store_lock = threading.Lock()
 def get_store() -> BenchmarkStore:
     global _store
     with _store_lock:
-        if _store is None:
+        from sitekpi import firestore_store
+
+        if firestore_store.enabled():  # Cloud Run: shared and persistent
+            if not isinstance(_store, firestore_store.FirestoreBenchmarkStore):
+                _store = firestore_store.FirestoreBenchmarkStore()  # type: ignore[assignment]
+            return _store  # type: ignore[return-value]
+        if not isinstance(_store, BenchmarkStore):
             path = Path(os.getenv("APP_DB_PATH") or (ROOT / ".data" / "app.sqlite3"))
             _store = BenchmarkStore(path)
         return _store

@@ -16,6 +16,8 @@
 | 실행 | `./run.sh` → http://127.0.0.1:8766 (`PORT=` 로 변경). 개발 중: `python3 -m uvicorn main:app --port 8766 --reload` |
 | 환경 변수 | `.env.example` 참고. `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` · `GOOGLE_REDIRECT_URI` · `APP_BASE_URL` · `SESSION_SECRET` (데모 접속만이면 불필요). 선택: `SESSION_DB_PATH` · `SESSION_ENCRYPTION_KEY` · `APP_DB_PATH` · 로컬 http 전용 `OAUTHLIB_INSECURE_TRANSPORT` |
 | GA4 권한 | `analytics.readonly` 하나 (읽기 전용) |
+| 배포 | Cloud Run(`starful-258005`, us-central1, 서비스 `sitekpi-service`) · 도메인 `sitekpi.net`. 최초 1회 `scripts/gcp_setup.sh <client_secret.json>`(API·Artifact Registry·Secret Manager·IAM·Firestore TTL), 이후 `./deploy.sh`(Cloud Build: 테스트 → 빌드 → 배포), 도메인 연결 `scripts/gcp_setup.sh --domain`. OAuth 동의 화면·클라이언트는 별도 프로젝트 `sitekpi` |
+| 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `CONTACT_EMAIL`(선택). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` |
 | 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-03 기준 176개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
 
 ## 2. 디렉터리
@@ -139,6 +141,8 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 선택 · 仮 · flash | 세션 | `flow_behavior` · `industry` · `auto_selection` · `board_edit_flash` · `ga4_property` · `ga4_demo` |
 | 단 매핑 · 수정본 흐름 · 別の行動 | `.data/app.sqlite3` (`APP_DB_PATH`) 테이블 `event_mappings` · `flow_custom` · `flow_branches` | scope = `prop:{property_id}` (같은 속성은 브라우저가 달라도 공유). 데모는 저장 안 함 |
 | 自社目安 | 같은 DB 테이블 `benchmark_overrides` | 실 GA4: `prop:{id}` / 견본·데모: `sess:{bench_owner}` (저장할 때만 생성) |
+| 운영(Cloud Run) | 위 세 가지(세션 · 흐름 · 自社目安)는 Firestore `sitekpi/{sessions,flow,benchmarks}/rows/…` (`sitekpi/firestore_store.py`, `STORE_BACKEND=firestore`). 세션은 같은 Fernet 암호화, `expire_at` TTL로 자동 삭제 | — |
+| 의견(「ご意見」) | 로컬 `.data/feedback.jsonl`, 운영 Firestore `sitekpi/feedback/rows` — 화면·👍/👎·의견·언어·연결 여부·시각 (IP·계정 없음) | — |
 | 빌더 | 브라우저 localStorage `sitekpi.builder.v4` (v3 자동 이전) | — |
 
 ## 7. 기획서 화면 사본
@@ -163,7 +167,6 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 
 ## 9. 알려진 문제
 
-- `requirements-dev.txt`에 `beautifulsoup4`가 없다 (테스트가 import). 개발 환경에서 따로 설치 필요.
 - 全業種 판별이 출처 문구 "All industries" 문자열에 의존 (`packs/sources.py`).
 - 견본 팩 일부의 `FLOW_STEPS`에 팩 고유 이벤트 이름이 남아 있다 (견본만 영향).
 - `/live/details`는 매 요청 GA4 batch(캐시 5분). 기간을 자주 바꾸면 호출이 는다.
