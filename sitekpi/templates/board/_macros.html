@@ -24,8 +24,8 @@
 {%- endmacro %}
 
 {#- 業界目安 value: opens its popover (adjust / 出典 / why there is none) -#}
-{% macro bench_value(b) -%}
-{% if b.key %}<button type="button" class="bench-v bench-open{{ ' is-none' if b.none else '' }}{{ ' is-custom' if b.custom else '' }}" data-pop-open="bench-{{ b.key }}" title="{{ b.title }}" aria-label="{{ t('bench_none_why', loc) if b.none else t('bench_adjust', loc) }}">{{ b.avg }}</button>{% else %}<span class="muted">—</span>{% endif %}
+{% macro bench_value(b, text=None) -%}
+{% if b.key %}<button type="button" class="bench-v bench-open{{ ' is-none' if b.none else '' }}{{ ' is-custom' if b.custom else '' }}" data-pop-open="bench-{{ b.key }}" title="{{ b.title }}" aria-label="{{ t('bench_none_why', loc) if b.none else t('bench_adjust', loc) }}">{{ text or b.avg }}</button>{% else %}<span class="muted">—</span>{% endif %}
 {%- endmacro %}
 
 {#- The opened part of a row: 業界目安 · 目安差 · 意味 · 説明 / 自社目安 -#}
@@ -109,4 +109,18 @@
 
 {% macro pop_btn(id, title) -%}
 <button type="button" class="help-btn" data-pop-open="{{ id }}" aria-label="{{ t('help_of', loc, title=title) }}" aria-expanded="false">{{ t("help", loc) }}</button>
+{%- endmacro %}
+
+{#- あと: distance from the 業界目安 range (near edge, then 〜 far edge) -#}
+{% macro rg_gap(rg) -%}
+{% if rg %}<span class="rg-gap is-{{ rg.state }}">{% if rg.state == "in" %}<span class="rg-in">{{ t("rg.in", loc) }}</span>{% else %}{% if rg.state == "over" %}<span class="rg-over">{{ t("rg.over", loc) }}</span>{% endif %}<b>{{ rg.main }}</b><small>{{ rg.rest }}</small>{% endif %}</span>{% else %}<span class="muted">—</span>{% endif %}
+{%- endmacro %}
+
+{#- 今 · 業界 · あと box under a tile's value, with the range bar -#}
+{% macro rg_box(b) -%}
+<div class="rg-box">
+  <span class="rg-k">{{ t("rg.ind", loc) }}</span><b class="rg-band">{{ b.band }}</b>
+  <span class="rg-k">{{ t("rg.left", loc) }}</span>{{ rg_gap(b.rg) }}
+  <span class="rg-bar is-{{ b.rg.state }}" aria-hidden="true"><i class="rg-range" style="left:{{ b.rg.pos_lo }}%;width:{{ b.rg.pos_w }}%"></i><i class="rg-dot" style="left:{{ b.rg.pos_v }}%"></i></span>
+</div>
 {%- endmacro %}

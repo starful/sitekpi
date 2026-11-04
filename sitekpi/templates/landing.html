@@ -1,68 +1,166 @@
+{#- Landing (/): docs/plan s01 · screens/01-home.dc.html. Copy: i18n/landing_l10n.py, context: views/landing.py -#}
 {% extends "public.html" %}
 {% block content %}
-<main class="lp">
-  <section class="lp-hero">
+<div class="lp-top">
+  <section class="lp lp-hero">
     <div class="lp-hero-text">
       <p class="lp-kicker">{{ c.hero_kicker }}</p>
       <h1>{{ c.hero_title }}</h1>
       <p class="lp-lead">{{ c.hero_lead }}</p>
       <div class="lp-actions">
-        <a class="lp-cta" href="/connect">{{ c.cta_connect }}</a>
-        <a class="lp-ghost" href="/connect/demo?start=1">{{ c.cta_demo }}</a>
-        <a class="lp-link" href="/samples">{{ c.cta_sample }} →</a>
+        <a class="lp-cta" href="/connect" data-track="cta_click" data-track-cta="connect" data-track-location="hero">{{ c.cta_connect }}</a>
+        <a class="lp-ghost" href="/connect/demo?start=1" data-track="cta_click" data-track-cta="demo" data-track-location="hero">{{ c.cta_demo }}</a>
       </div>
-      <p class="lp-note"><span aria-hidden="true">🔒</span> {{ c.hero_note }}</p>
+      <ul class="lp-trust">{% for x in c.trust %}<li>{{ x }}</li>{% endfor %}</ul>
     </div>
-    <figure class="lp-shot">
-      <img src="{{ static_url('img/board-hero.webp') }}" width="1360" height="860" alt="{{ c.hero_alt }}" fetchpriority="high" />
-    </figure>
-  </section>
-
-  <section class="lp-sec" id="why" aria-labelledby="why-t">
-    <h2 id="why-t">{{ c.why_title }}</h2>
-    <p class="lp-sec-lead">{{ c.why_lead }}</p>
-    <div class="lp-grid3">
-      {% for k, v in c.why_points %}<div class="lp-card lp-card-q"><h3>{{ k }}</h3><p>{{ v }}</p></div>{% endfor %}
+    <div class="lp-hero-shots">
+      <img class="lp-shot" src="{{ img.hero }}" width="1440" height="900" alt="{{ c.hero_alt }}" fetchpriority="high" />
+      <img class="lp-shot lp-shot-front" src="{{ img.state }}" width="1100" height="348" alt="{{ c.state_alt }}" />
     </div>
-    <p class="lp-answer">{{ c.why_answer }}</p>
   </section>
+  <section class="lp lp-stats-wrap" aria-label="{{ c.stats_label }}">
+    <div class="lp-stats">
+      {% for v, k, sub in c.stats %}<div class="lp-stat"><b>{{ v }}</b><span>{{ k }}</span><small>{{ sub }}</small></div>{% endfor %}
+    </div>
+  </section>
+</div>
 
-  <section class="lp-sec" id="who" aria-labelledby="who-t">
-    <h2 id="who-t">{{ c.who_title }}</h2>
-    <div class="lp-grid3">
-      {% for k, v in c.who %}<div class="lp-card"><span class="lp-num">{{ loop.index }}</span><h3>{{ k }}</h3><p>{{ v }}</p></div>{% endfor %}
+<main class="lp">
+  <section class="lp-sec" id="problem" aria-labelledby="problem-t">
+    <p class="lp-k">{{ c.problem_kicker }}</p>
+    <h2 id="problem-t">{{ c.problem_title }}</h2>
+    <p class="lp-sec-lead">{{ c.problem_lead }}</p>
+    <div class="lp-vs">
+      <div class="lp-vs-ga">
+        <p class="lp-vs-h">{{ c.ga_label }} <small>{{ c.ga_note }}</small></p>
+        <div class="lp-ga" role="table" aria-label="{{ c.ga_label }} {{ c.ga_note }}">
+          <div class="lp-ga-row lp-ga-head" role="row">{% for h in c.ga_head %}<span role="columnheader">{{ h }}</span>{% endfor %}</div>
+          {% for r in ga_rows %}<div class="lp-ga-row" role="row">{% for x in r %}<span role="cell">{{ x }}</span>{% endfor %}</div>{% endfor %}
+        </div>
+        <ul>{% for x in c.problem_left %}<li>{{ x }}</li>{% endfor %}</ul>
+      </div>
+      <div class="lp-vs-arrow" aria-hidden="true">→</div>
+      <div class="lp-vs-us">
+        <p class="lp-vs-h">{{ c.board_label }}</p>
+        <img class="lp-shot lp-shot-flat" src="{{ img.state }}" width="1100" height="348" alt="{{ c.state_alt }}" loading="lazy" />
+        <ul>{% for x in c.problem_right %}<li>{{ x }}</li>{% endfor %}</ul>
+      </div>
     </div>
   </section>
 
   <section class="lp-sec" id="features" aria-labelledby="features-t">
+    <p class="lp-k">{{ c.features_kicker }}</p>
     <h2 id="features-t">{{ c.features_title }}</h2>
+    {% for f in features %}
+    <div class="lp-feat{{ ' is-flip' if f.flip else '' }}">
+      <div class="lp-feat-text">
+        <p class="lp-feat-k">{{ f.num }}　{{ f.kicker }}</p>
+        <h3>{{ f.title }}</h3>
+        <p>{{ f.body }}</p>
+        <ul class="lp-checks">{% for p in f.points %}<li>{{ p }}</li>{% endfor %}</ul>
+      </div>
+      {% if f.img == "guess" %}
+      <div class="lp-guess">
+        <div class="lp-guess-ev"><p>{{ c.guess_events }}</p>{% for e, v in guess_events %}<code{% if not loop.first %} class="is-hit"{% endif %}>{{ e }}<span>{{ v }}</span></code>{% endfor %}</div>
+        <div class="lp-guess-ar" aria-hidden="true">→</div>
+        <div class="lp-guess-out">
+          <p class="lp-guess-by">{{ c.guess_by }}</p>
+          <p class="lp-guess-k">{{ c.guess_goal_k }}</p><p class="lp-guess-v">{{ c.guess_goal }}</p>
+          <p class="lp-guess-k">{{ c.guess_ind_k }}</p><p class="lp-guess-v">{{ c.guess_ind }}</p>
+          <span class="lp-guess-fix">{{ c.guess_fix }}</span> <small>{{ c.guess_fix_note }}</small>
+        </div>
+        <img class="lp-shot lp-shot-flat lp-guess-notice" src="{{ img.notice }}" width="1100" height="100" alt="{{ c.guess_alt }}" loading="lazy" />
+      </div>
+      {% else %}
+      <img class="lp-shot" src="{{ f.src }}" alt="{{ f.kicker }}" loading="lazy" />
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="lp-sec" id="who" aria-labelledby="who-t">
+    <p class="lp-k">{{ c.who_kicker }}</p>
+    <h2 id="who-t">{{ c.who_title }}</h2>
     <div class="lp-grid3">
-      {% for k, v in features %}<div class="lp-card lp-card-f"><h3>{{ k }}</h3><p>{{ v }}</p></div>{% endfor %}
+      {% for w in who %}<div class="lp-card lp-who">{% if w.img %}<img src="{{ w.img }}" width="104" height="104" alt="" loading="lazy" />{% endif %}<div><h3>{{ w.k }}</h3><p>{{ w.v }}</p></div></div>{% endfor %}
+    </div>
+  </section>
+
+  <section class="lp-sec" id="samples" aria-labelledby="samples-t">
+    <div class="lp-sec-head">
+      <div><p class="lp-k">{{ c.samples_kicker }}</p><h2 id="samples-t">{{ c.samples_title }}</h2><p class="lp-sec-lead">{{ c.samples_lead }}</p></div>
+      <a class="lp-more" href="/samples" data-track="cta_click" data-track-cta="samples" data-track-location="samples">{{ c.samples_all }} →</a>
+    </div>
+    <div class="lp-grid3">
+      {% for s in samples %}
+      <a class="lp-card lp-sample" href="{{ s.href }}" data-track="cta_click" data-track-cta="sample_card" data-track-location="samples" data-track-behavior="{{ s.b }}" data-track-industry="{{ s.i }}">
+        <span class="lp-sample-ind">{{ s.ind }}</span>
+        <h3>{{ s.goal }}</h3>
+        <span class="lp-bars" aria-hidden="true">{% for b in s.bars %}<i style="height:{{ b.h }}%"{% if b.worst %} class="is-worst"{% endif %}></i>{% endfor %}</span>
+        <span class="lp-bar-labels" aria-hidden="true">{% for x in s.steps %}<span>{{ x }}</span>{% endfor %}</span>
+        <span class="lp-sample-go">{{ c.sample_open }} →</span>
+      </a>
+      {% endfor %}
     </div>
   </section>
 
   <section class="lp-sec" id="how" aria-labelledby="how-t">
-    <h2 id="how-t">{{ c.how_title }}</h2>
-    <ol class="lp-steps">
-      {% for k, v in c.how %}<li><span class="lp-step">{{ loop.index }}</span><div><h3>{{ k }}</h3><p>{{ v }}</p></div></li>{% endfor %}
-    </ol>
-    <p class="lp-sec-lead"><a href="/connect/demo?start=1">{{ c.how_demo }} →</a></p>
-  </section>
-
-  <section class="lp-sec" id="faq" aria-labelledby="faq-t">
-    <h2 id="faq-t">{{ c.faq_title }}</h2>
-    <div class="lp-faq">
-      {% for qq, a in c.faq %}<details><summary>{{ qq }}</summary><p>{{ a }}</p></details>{% endfor %}
+    <div class="lp-sec-head">
+      <div><p class="lp-k">{{ c.how_kicker }}</p><h2 id="how-t">{{ c.how_title }}</h2><p class="lp-sec-lead">{{ c.how_lead }}</p></div>
+      <div class="lp-times" aria-hidden="true">{% for h in c.how %}<span>{{ loop.index }}. {{ h.t }}</span>{% endfor %}</div>
     </div>
+    <ol class="lp-how">
+      {% for h in c.how %}
+      <li>
+        <div class="lp-how-n"><span>{{ loop.index }}</span><small>{{ h.t }}</small></div>
+        <div class="lp-how-text"><h3>{{ h.k }}</h3><p>{{ h.v }}</p><ul class="lp-pills">{% for p in h.pts %}<li>{{ p }}</li>{% endfor %}</ul></div>
+        <div class="lp-mock">
+          {% if loop.index == 1 %}
+          <p class="lp-mock-k">{{ c.mock_auth_k }}</p><p class="lp-mock-t">{{ c.mock_auth_title }}</p>
+          <div class="lp-mock-perm"><span aria-hidden="true">👁</span><span>{{ auth_perm }}</span><em>{{ c.mock_auth_badge }}</em></div>
+          <p class="lp-mock-k">{{ c.mock_auth_note }}</p>
+          {% elif loop.index == 2 %}
+          <p class="lp-mock-t">{{ c.mock_pick }}</p>
+          {% for name, pid in pick_props %}<div class="lp-mock-prop{{ ' is-on' if loop.first else '' }}"><i></i><b>{{ name }}</b><span>{{ pid }}</span></div>{% endfor %}
+          {% elif loop.index == 3 %}
+          <img src="{{ img.state }}" alt="" loading="lazy" />
+          <div class="lp-mock-tabs">{% for x in c.mock_read %}<span{% if loop.first %} class="is-on"{% endif %}>{{ x }}</span>{% endfor %}</div>
+          {% else %}
+          <p class="lp-mock-t">{{ c.mock_fix }}</p>
+          {% for e in fix_events %}<code{% if loop.index == 2 %} class="is-on"{% endif %}>{{ e }}{% if loop.index == 2 %}<em>{{ c.mock_fix_on }}</em>{% endif %}</code>{% endfor %}
+          <span class="lp-mock-btn">{{ c.mock_fix_btn }}</span>
+          {% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
   </section>
 
-  <section class="lp-final">
-    <h2>{{ c.final_title }}</h2>
-    <p>{{ c.final_lead }}</p>
-    <div class="lp-actions lp-actions-c">
-      <a class="lp-cta" href="/connect">{{ c.cta_connect }}</a>
-      <a class="lp-ghost" href="/connect/demo?start=1">{{ c.cta_demo }}</a>
+  <section class="lp-sec" id="story" aria-labelledby="story-t">
+    <div class="lp-story">
+      <div><p class="lp-story-k">{{ c.story_kicker }}</p><h2 id="story-t">{{ c.story_title }}</h2></div>
+      <div>{% for p in c.story %}<p>{{ p }}</p>{% endfor %}</div>
     </div>
   </section>
 </main>
+
+<section class="lp-faq-band" id="faq" aria-labelledby="faq-t">
+  <div class="lp">
+    <p class="lp-k">{{ c.faq_kicker }}</p>
+    <h2 id="faq-t">{{ c.faq_title }}</h2>
+    <div class="lp-faq">
+      {% for qq, a in c.faq %}<details data-track-faq="q{{ '%02d' % loop.index }}"><summary><span class="lp-q">Q</span><span>{{ qq }}</span></summary><p>{{ a }}</p></details>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="lp-final">
+  <h2>{{ c.final_title }}</h2>
+  <p>{{ c.final_lead }}</p>
+  <div class="lp-actions lp-actions-c">
+    <a class="lp-cta" href="/connect" data-track="cta_click" data-track-cta="connect" data-track-location="final">{{ c.cta_connect }}</a>
+    <a class="lp-ghost" href="/connect/demo?start=1" data-track="cta_click" data-track-cta="demo" data-track-location="final">{{ c.cta_demo }}</a>
+  </div>
+  <p class="lp-final-trust">{{ c.final_trust }}</p>
+</section>
 {% endblock %}

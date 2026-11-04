@@ -25,6 +25,7 @@
     try {
       const r = await fetch("/feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       if (!r.ok) throw new Error(String(r.status));
+      if (window.SiteKPITrack) window.SiteKPITrack("feedback_submit", { vote: body.vote || "none", has_comment: body.comment ? "true" : "false" });
       msg.textContent = msg.dataset.ok;
       setTimeout(() => dlg.close(), 1200);
     } catch (_) {

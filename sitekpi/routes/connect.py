@@ -86,11 +86,23 @@ def connect_page(request: Request):
     return _page_from_request(request, error=str(err) if err else None)
 
 
-def _back_to_connect(request: Request, error: str) -> RedirectResponse:
+def _mark(resp: RedirectResponse, event: str = "", conn: str | None = None) -> RedirectResponse:
+    """Analytics hand-off for static/js/track.js: a one-shot event name (sk_ev) and the connection
+    state (sk_conn: none · demo · live). Both are SiteKPI's own words — no ids, no GA4 data."""
+    if event:
+        resp.set_cookie("sk_ev", event, max_age=300, samesite="lax", path="/")
+    if conn == "none":
+        resp.delete_cookie("sk_conn", path="/")
+    elif conn:
+        resp.set_cookie("sk_conn", conn, max_age=14 * 24 * 3600, samesite="lax", path="/")
+    return resp
+
+
+def _back_to_connect(request: Request, error: str, reason: str = "other") -> RedirectResponse:
     """Callback failures: show the message on /connect, never on a page whose URL still
     carries ?code=/state= (that URL would end up in analytics and browser history)."""
     request.session["connect_error"] = error
-    return RedirectResponse("/connect", status_code=302)
+    return _mark(RedirectResponse("/connect", status_code=302), f"oauth_error.{reason}")
 
 
 @router.get("/connect/demo")
@@ -100,9 +112,9 @@ def connect_demo(request: Request, start: int = 0):
     request.session["ga4_email"] = "demo@kpistarter.local"
     if start:  # 「デモで試す」 from the start page: one click to a board
         request.session["ga4_property"] = DEMO_PROPERTIES[0]
-        return RedirectResponse("/live", status_code=302)
+        return _mark(RedirectResponse("/live", status_code=302), "demo_start.one_click", "demo")
     # leave property unset → show picker
-    return RedirectResponse("/connect", status_code=302)
+    return _mark(RedirectResponse("/connect", status_code=302), "demo_start.connect", "demo")
 
 
 @router.get("/connect/google")
@@ -147,12 +159,12 @@ def connect_callback(request: Request):
     if not expected_state or not returned_state or not secrets.compare_digest(
         expected_state, returned_state
     ):
-        return _back_to_connect(request, t("connect.err.oauth_state", loc))
+        return _back_to_connect(request, t("connect.err.oauth_state", loc), "state")
     if request.query_params.get("error"):
         # e.g. access_denied — user cancelled on Google's consent screen
-        return _back_to_connect(request, t("connect.err.oauth_denied", loc))
+        return _back_to_connect(request, t("connect.err.oauth_denied", loc), "denied")
     if not code_verifier or not request.query_params.get("code"):
-        return _back_to_connect(request, t("connect.err.oauth_state", loc))
+        return _back_to_connect(request, t("connect.err.oauth_state", loc), "state")
 
     # Rebuild authorization_response on the registered redirect host
     q = request.url.query
@@ -164,7 +176,7 @@ def connect_callback(request: Request):
     try:
         flow.fetch_token(authorization_response=auth_response)
     except Exception as exc:  # noqa: BLE001
-        return _back_to_connect(request, t("connect.err.token", loc, exc=exc))
+        return _back_to_connect(request, t("connect.err.token", loc, exc=exc), "token")
 
     creds = flow.credentials
     request.session["ga4_credentials"] = json.loads(creds.to_json())
@@ -172,7 +184,7 @@ def connect_callback(request: Request):
     request.session.pop("ga4_demo", None)
     request.session["ga4_email"] = ""
     regenerate_session(request)  # new session id once signed in (anti-fixation)
-    return RedirectResponse("/connect", status_code=302)
+    return _mark(RedirectResponse("/connect", status_code=302), "login", "live")
 
 
 @router.post("/connect/property")
@@ -295,4 +307,4 @@ def disconnect(request: Request):
     if isinstance(creds, dict) and not request.session.get("ga4_demo"):
         _revoke_at_google(creds)
     request.session.clear()  # server row + cookie are dropped by the session middleware
-    return RedirectResponse("/connect", status_code=302)
+    return _mark(RedirectResponse("/connect", status_code=302), conn="none")

@@ -135,6 +135,12 @@ def test_policy_terms_and_rail_links(client):
         assert s.select_one(".legal-body h1"), path
     en = client.get("/policy?lang=en").text
     assert "analytics.readonly" in en and "Limited Use" in en
+    for path in ("/policy", "/terms", "/policy?lang=en", "/terms?lang=en", "/policy?lang=ko", "/terms?lang=ko"):
+        s = BeautifulSoup(client.get(path).text, "html.parser")
+        body = s.select_one(".legal-body")
+        assert len(body.select(".legal-toc li")) in (15, 21) and len(body.select("h2")) in (15, 21), path
+        assert "【" not in body.get_text() and "{{" not in body.get_text()
+        assert body.select_one('a[href^="https://script.google.com/macros/"]'), path
     s = BeautifulSoup(client.get("/glossary").text, "html.parser")
     assert s.select_one("[data-feedback-open]") and s.select_one("dialog#feedback")
     assert s.select_one('.nav-legal a[href="/policy"]') and s.select_one('.nav-legal a[href="/terms"]')
@@ -166,4 +172,22 @@ def test_gtm_only_when_configured(client, monkeypatch):
     monkeypatch.setenv("GTM_ID", "GTM-x\"><script>")  # not a container id → nothing rendered
     assert "googletagmanager.com" not in client.get("/").text
     en = client.get("/policy?lang=en").text
-    assert "Google Analytics 4" in en and "never send" in en
+    assert "Google Analytics" in en and "We never send" in en
+
+
+def test_analytics_handoff_cookies_and_hooks(client):
+    """track.js gets only SiteKPI's own words: one-shot event names and none/demo/live."""
+    c = TestClient(client.app, follow_redirects=False)
+    r = c.get("/connect/demo?start=1")
+    assert r.cookies.get("sk_ev") == "demo_start.one_click" and r.cookies.get("sk_conn") == "demo"
+    s = BeautifulSoup(c.get("/live").text, "html.parser")
+    assert s.select_one('script[src^="/static/js/track.js"]')
+    tiles = [a["data-metric"] for a in s.select(".tile[data-metric]")]
+    watch = [li["data-metric"] for li in s.select(".watch-item[data-metric]")]
+    assert tiles and watch and all(k and " " not in k for k in tiles + watch)
+    r = c.post("/connect/disconnect")
+    assert "sk_conn=" in r.headers.get("set-cookie", "") and "Max-Age=0" in r.headers.get("set-cookie", "")
+    home = BeautifulSoup(c.get("/").text, "html.parser")
+    for a in home.select("[data-track]"):
+        assert a["data-track"] in {"cta_click", "lang_change", "contact_click"}
+    assert len(home.select('details[data-track-faq]')) == 12

@@ -83,6 +83,38 @@ def _source_text(spec: dict[str, Any], locale: str) -> str:
     return t("bench_src.provisional", locale)
 
 
+def _range_gap(value: float, low: float, high: float, hib: bool, gap_unit: str) -> dict[str, Any]:
+    """今 · 業界(range) · あと(range): how far the value is from the 業界目安 range.
+
+    short → "+5.2" "〜+25.2pt" (to the near edge, then to the far edge); in → 0; over → beyond the good edge.
+    pos_* place the range and the value on a small bar (0–100%)."""
+    def f(x: float) -> str:
+        x = abs(x)
+        return f"{x:.2f}" if 0 < x < 1 and gap_unit not in ("pt", "%") else f"{x:.1f}"
+
+    def sign(x: float) -> str:
+        return ("+" if x > 0 else "−" if x < 0 else "±") + f(x)
+
+    u = gap_unit
+    if low <= value <= high:
+        state, main, rest = "in", "", ""
+    elif (hib and value < low) or (not hib and value > high):
+        near, far = (low - value, high - value) if hib else (high - value, low - value)
+        state, main, rest = "short", sign(near), "〜" + sign(far) + u
+    else:
+        beyond = value - high if hib else low - value
+        state, main, rest = "over", "+" + f(beyond), u
+    width = (high - low) or abs(high) or 1.0
+    lo_end = min(low, value) - width * 0.35
+    hi_end = max(high, value) + width * 0.35
+
+    def pos(x: float) -> float:
+        return round((x - lo_end) / (hi_end - lo_end) * 100, 1)
+
+    return {"state": state, "main": main, "rest": rest,
+            "pos_lo": pos(low), "pos_w": round(pos(high) - pos(low), 1), "pos_v": pos(value)}
+
+
 def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | None:
     if not bench_key:
         return None
@@ -95,7 +127,7 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
     unit = str(spec["unit"])
     hib = bool(spec["hib"])
     gap_unit = str(spec.get("gap_unit") or unit)
-    band = f"{low:g}–{high:g}{unit}"
+    band = f"{round(low, 1):g}–{round(high, 1):g}{unit}"
     avg = _fmt_num(mid, unit)
     loc = _ACTIVE_LOCALE.get()
     custom = bool(spec.get("custom"))
@@ -141,6 +173,7 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
         "tone": tone,
         "arrow": arrow,
         "value": value,
+        "rg": _range_gap(value, low, high, hib, gap_unit),
     }
 
 
@@ -170,7 +203,7 @@ def _bench_view(info: dict[str, Any] | None) -> dict[str, Any]:
           "none"  (基準なし — a popover says why), "na" (counts etc.: nothing to compare)."""
     if not info:
         return {"kind": "na", "key": "", "avg": "—", "gap": "—", "tone": "na", "title": "", "band": "",
-                "judge": "", "custom": False, "none": False}
+                "judge": "", "custom": False, "none": False, "rg": None}
     none = bool(info.get("none"))
     return {
         "kind": "none" if none else "judge",
@@ -183,6 +216,7 @@ def _bench_view(info: dict[str, Any] | None) -> dict[str, Any]:
         "judge": "" if none else _judge(info),
         "custom": bool(info.get("custom")),
         "none": none,
+        "rg": None if none else info.get("rg"),
     }
 
 
@@ -281,6 +315,8 @@ def _watch_items(board: dict[str, Any], locale: str) -> list[dict[str, Any]]:
                     "tone": info["tone"],
                     "title": title,
                     "avg": info["avg"],
+                    "band": info["band"],
+                    "rg": info.get("rg"),
                     "numbers": t("watch.numbers", locale, value=r["value"], avg=info["avg"],
                                  band=info["band"], gap=info["gap"]),
                     "trend": _trend(r, locale),

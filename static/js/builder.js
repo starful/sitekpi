@@ -74,6 +74,7 @@
     });
   }
   document.querySelectorAll("[data-tpl]").forEach((b) => b.addEventListener("click", () => {
+    if (window.SiteKPITrack) window.SiteKPITrack("builder_template", { template: b.dataset.tpl });
     state = fromTpl(b.dataset.tpl);
     closeDrawer();
     render();
@@ -215,6 +216,7 @@
       b.setAttribute("aria-label", fill(L.add_x, { name: m.label || id }));
       b.addEventListener("click", () => {
         if (on) return;
+        if (window.SiteKPITrack) window.SiteKPITrack("builder_metric_add", { metric: id });
         state.sections[target].ids.push(id);
         render();
         changed();

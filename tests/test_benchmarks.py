@@ -76,7 +76,7 @@ def test_save_applies_to_board_watch_and_tooltip():
         k for k in sorted(BENCHMARKS["hr"]) if k != "pay_cvr"]}
     html = c.get("/hr").text
     row = _funnel_row(html, "開始→完了率")
-    assert "35%" in row.get_text() and _bench_k(row) == "自社目安"
+    assert "30–40%" in row.get_text() and _bench_k(row) == "自社目安"
     assert "自社目安" in row.select_one(".dt-bench .bench-v")["title"]
     assert "開始→完了率が目安より低い" not in html
     assert _pop(html, "pay_cvr").select_one("#pop-low-pay_cvr")["value"] == "30"

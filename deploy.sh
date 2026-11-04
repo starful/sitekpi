@@ -8,7 +8,10 @@ cd "$(dirname "$0")"
 
 GCP_PROJECT_ID="${GCP_PROJECT_ID:-starful-258005}"
 SITE_DOMAIN="${SITE_DOMAIN:-sitekpi.net}"
-CONTACT_EMAIL="${CONTACT_EMAIL:-}"
+# Optional, shown in /policy and /terms: OPERATOR_NAME, OPERATOR_ADDRESS, LEGAL_COURT
+OPERATOR_NAME="${OPERATOR_NAME:-}"
+OPERATOR_ADDRESS="${OPERATOR_ADDRESS:-}"
+LEGAL_COURT="${LEGAL_COURT:-}"
 
 if [ "${1:-}" = "--check" ]; then
   PY="${PY:-.venv/bin/python}"; [ -x "$PY" ] || PY=python3
@@ -22,5 +25,5 @@ if [ -n "$(git status --porcelain -- sitekpi static main.py requirements.txt 2>/
 fi
 echo "▶ SiteKPI → https://${SITE_DOMAIN}  (project: ${GCP_PROJECT_ID})"
 gcloud builds submit --config=cloudbuild.yaml --project "$GCP_PROJECT_ID" \
-  --substitutions="_DOMAIN=${SITE_DOMAIN},_CONTACT_EMAIL=${CONTACT_EMAIL}"
+  --substitutions="^@^_DOMAIN=${SITE_DOMAIN}@_OPERATOR_NAME=${OPERATOR_NAME}@_OPERATOR_ADDRESS=${OPERATOR_ADDRESS}@_LEGAL_COURT=${LEGAL_COURT}"
 echo "✅ deployed → https://${SITE_DOMAIN}"

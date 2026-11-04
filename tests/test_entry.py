@@ -36,12 +36,24 @@ def test_demo_guess_follows_the_demo_property():
 def test_landing_page_purpose_audience_features_how_and_seo(client):
     import json
 
+    for lang in ("", "?lang=en", "?lang=ko"):
+        s = BeautifulSoup(client.get("/" + lang).text, "html.parser")
+        hrefs = [a["href"] for a in s.select(".lp-hero .lp-actions a")]
+        assert hrefs == ["/connect", "/connect/demo?start=1"]
+        for sec in ("problem", "features", "who", "samples", "how", "story", "faq"):
+            assert s.select_one(f"section#{sec} h2"), (lang, sec)
+        assert len(s.select(".lp-stat")) == 5 and len(s.select(".lp-feat")) == 4
+        assert len(s.select("#who .lp-who img")) == 3 and len(s.select("#samples a.lp-sample")) == 6
+        assert len(s.select("#how .lp-how > li")) == 4 and len(s.select("#faq details")) == 12
+        assert "{" not in s.select_one("main").get_text()  # counts filled in
+        for img in s.select("img.lp-shot"):
+            assert client.get(img["src"].split("?")[0]).status_code == 200, img["src"]
+        faq = next(json.loads(x.string) for x in s.select('script[type="application/ld+json"]')
+                   if json.loads(x.string)["@type"] == "FAQPage")
+        assert len(faq["mainEntity"]) == 12
+        assert s.select_one('footer a[href^="https://script.google.com/macros/"]')  # お問い合わせ
     s = BeautifulSoup(client.get("/").text, "html.parser")
-    hrefs = [a["href"] for a in s.select(".lp-hero .lp-actions a")]
-    assert hrefs == ["/connect", "/connect/demo?start=1", "/samples"]
-    for sec in ("why", "who", "features", "how", "faq"):
-        assert s.select_one(f"section#{sec} h2"), sec
-    assert len(s.select("#features .lp-card")) == 6 and "{" not in s.select_one("#features").get_text()
+    assert s.select_one('a.lp-sample[href="/samples?b=commerce&i=ec"]')
     assert s.select_one('meta[name="description"]')["content"]
     assert s.select_one('link[rel="canonical"]')["href"].endswith("/")
     assert {a["hreflang"] for a in s.select('link[rel="alternate"]')} == {"ja", "en", "ko", "x-default"}

@@ -54,6 +54,7 @@
 {% endif %}
 {% block after_shell %}{% endblock %}
 {% block scripts %}{% endblock %}
+<script src="{{ static_url('js/track.js') }}" defer></script>
 {% if rail is defined and rail %}
   {% include "partials/feedback.html" %}
   <script src="{{ static_url('js/rail.js') }}" defer></script>

@@ -69,8 +69,10 @@ def test_board_reads_verdict_then_where_then_detail(client):
 def test_rows_show_benchmark_gap_trend_and_help(client):
     s = _soup(client, "/ec")
     row = _rows(s, "funnel")[1]
-    assert row.select_one(".dt-bench .bench-v").get_text() == "29.8%"
-    assert row.select_one(".dt-bench .bench-gap").get_text() == "-15.2pt"
+    assert row.select_one(".dt-bench .bench-v").get_text() == "19.8–39.8%"
+    # あと: to the near edge of the range, then 〜 to the far edge
+    gap = row.select_one(".dt-gap .rg-gap.is-short")
+    assert gap.select_one("b").get_text() == "+5.2" and gap.select_one("small").get_text() == "〜+25.2pt"
     btn = row.select_one(".help-btn[data-help]")
     card = s.select_one(f"dialog#help-{btn['data-help']}")
     # the 説明 card is the 指標辞典 card: kind · title · 計算 · 見るポイント · 業界目安あり
@@ -140,8 +142,8 @@ def test_cited_benchmarks_link_their_source(client):
     assert link and "70.22%" in link["title"] and link.get_text(strip=True) == "出典"
     assert _tpl(s, "bench-pages_session").select_one(".pop-why") and not _tpl(s, "bench-pages_session").select_one("a.src-btn")
     cell = s.select_one("#g-funnel .dt-bench .bench-v[title*='Baymard']")
-    assert cell and cell.get_text() == "29.8%" and "±10pt" in cell["title"]
-    assert cell["title"].startswith("業界目安帯 19.78–39.78%")
+    assert cell and cell.get_text() == "19.8–39.8%" and "±10pt" in cell["title"]
+    assert cell["title"].startswith("業界目安帯 19.8–39.8%")
 
 
 def test_issue_tile_never_repeats_the_rate_tile(client):

@@ -17,8 +17,8 @@
 | 환경 변수 | `.env.example` 참고. `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` · `GOOGLE_REDIRECT_URI` · `APP_BASE_URL` · `SESSION_SECRET` (데모 접속만이면 불필요). 선택: `SESSION_DB_PATH` · `SESSION_ENCRYPTION_KEY` · `APP_DB_PATH` · 로컬 http 전용 `OAUTHLIB_INSECURE_TRANSPORT` |
 | GA4 권한 | `analytics.readonly` 하나 (읽기 전용) |
 | 배포 | Cloud Run(`starful-258005`, us-central1, 서비스 `sitekpi-service`) · 도메인 `sitekpi.net`. 최초 1회 `scripts/gcp_setup.sh <client_secret.json>`(API·Artifact Registry·Secret Manager·IAM·Firestore TTL), 이후 `./deploy.sh`(Cloud Build: 테스트 → 빌드 → 배포), 도메인 연결 `scripts/gcp_setup.sh --domain`. OAuth 동의 화면·클라이언트는 별도 프로젝트 `sitekpi` |
-| 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `CONTACT_EMAIL`(선택) · `GTM_ID`(Google 태그 관리자 컨테이너, `GTM-` 형식만 출력. 비어 있으면 태그 없음 → 로컬은 측정 안 함). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` |
-| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-03 기준 176개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
+| 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `OPERATOR_NAME` · `OPERATOR_ADDRESS` · `LEGAL_COURT`(선택, /policy·/terms 표기. 비면 중립 문구) · `GTM_ID`(Google 태그 관리자 컨테이너, `GTM-` 형식만 출력. 비어 있으면 태그 없음 → 로컬은 측정 안 함). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` |
+| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-05 기준 186개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
 
 ## 2. 디렉터리
 
@@ -100,6 +100,9 @@ tests/ · scripts/
 | 05 견본 | `views/samples.py` | `samples.html`, `samples/_preview.html` | `samples.js` · `samples.css` |
 | 06 빌더 | `views/builder.py` | `builder.html` | `builder.js` (localStorage `sitekpi.builder.v4`) · `builder.css` |
 | 07 설정 | `views/settings.py` | `settings.html` | `settings.css` |
+| 01 홈(랜딩) | `views/landing.py` (`landing_context`, 숫자는 카탈로그에서) · 문구 `i18n/landing_l10n.py` (ja/en/ko) | `landing.html` · `public.html`(공개 헤더·푸터) | `landing.css` · 이미지 `static/img/lp/{hero,state,flow,watch,notice,gloss}-{ja,en,ko}.webp`(데모 보드 캡처) |
+| 08·09 처리방침·약관 | `routes/legal.py` (`operator()` ← `OPERATOR_NAME`·`OPERATOR_ADDRESS`·`LEGAL_COURT`) | `legal.html` · `legal/{policy,terms}_{ja,en,ko}.html` | `legal.css` |
+| 측정(GA4) | `templating.gtm_id` (← `GTM_ID`) · `routes/connect._mark` (쿠키 `sk_ev` 1회 이벤트, `sk_conn` none·demo·live) | `base.html` (GTM 태그 · `track.js`) | `static/js/track.js` (`SiteKPITrack`, `data-track*` 속성, 화면별 위임 리스너) |
 | 공통 메뉴 | `routes/nav.py` (`nav_context`, `nav_rail_context`) | `partials/rail*.html` | `rail.js` · `rail.css` |
 
 「説明」 팝업 = `<template id="pop-…">` + `data-pop-open` (popover.js). 지표 「説明」 카드는 指標辞典과 같은 `partials/help_card.html`.
@@ -129,6 +132,8 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 업계·업종 30개 | `packs/*.py` · `packs/catalog.py` · `packs/registry.py` |
 | 業界目安 · 출처 등급 · 범위 폭 | `packs/sources.py` (`ENGAGE_RULE` · `CVR_RULE` · `CART_RULE`) · `packs/derived.py` · `benchmarks.effective_benchmarks` |
 | 판정 칩 (良好·目安内·要注意) | `views/board._bench_info` · `_judge` |
+| 今 · 業界(범위) · あと(범위) | `views/board._range_gap` → `_bench_view`의 `rg` · `board/_macros.html` `rg_box` · `rg_gap` (타일 · 今見るべきこと · 詳しい数字) |
+| GA4 이벤트 설계 | 기획서 `#analytics` → `static/js/track.js` · 사용자 GA4 데이터는 보내지 않음 |
 | 今見るべきこと · 一番の課題 · 업종 안내(`far`) | `views/board._watch_items` · `_verdict` · `board.html` `.watch-ind` |
 | 흐름 계산 (인원 · %) | `views/flow.flow_context` · `flow.sample_flow` |
 | 지표 목록 | `metrics/help.py` `HELP` (+ `i18n/help_l10n.py`) |
@@ -143,6 +148,7 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 自社目安 | 같은 DB 테이블 `benchmark_overrides` | 실 GA4: `prop:{id}` / 견본·데모: `sess:{bench_owner}` (저장할 때만 생성) |
 | 운영(Cloud Run) | 위 세 가지(세션 · 흐름 · 自社目安)는 Firestore `sitekpi/{sessions,flow,benchmarks}/rows/…` (`sitekpi/firestore_store.py`, `STORE_BACKEND=firestore`). 세션은 같은 Fernet 암호화, `expire_at` TTL로 자동 삭제 | — |
 | 의견(「ご意見」) | 로컬 `.data/feedback.jsonl`, 운영 Firestore `sitekpi/feedback/rows` — 화면·👍/👎·의견·언어·연결 여부·시각 (IP·계정 없음) | — |
+| 측정 쿠키 | `sk_ev`(5분, 1회 이벤트 이름) · `sk_conn`(14일, none·demo·live). JS가 읽음(HttpOnly 아님), ID·GA4 값 없음 | — |
 | 빌더 | 브라우저 localStorage `sitekpi.builder.v4` (v3 자동 이전) | — |
 
 ## 7. 기획서 화면 사본

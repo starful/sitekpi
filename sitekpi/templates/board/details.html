@@ -23,7 +23,8 @@
         <span role="columnheader" class="num">{{ g.value_head }}</span>
         <span role="columnheader" class="ctr">{{ t("detail.trend", loc) }}</span>
         <span role="columnheader" class="num">{{ t("col.prev", loc) }}</span>
-        <span role="columnheader" class="num">{{ t("detail.bench_gap", loc) }}</span>
+        <span role="columnheader" class="num">{{ t("rg.ind", loc) }}</span>
+        <span role="columnheader" class="num">{{ t("rg.left", loc) }}</span>
         <span role="columnheader" class="num">{{ t("detail.judge", loc) }}</span>
       </div>
       {% for r in g.rows %}
@@ -37,7 +38,8 @@
         <span class="num dt-value" role="cell">{{ r.value }}</span>
         <span class="ctr" role="cell">{% if r.spark %}<svg class="spark tone-{{ r.spark.tone }}" width="76" height="26" viewBox="0 0 76 26" aria-hidden="true"><polyline points="{{ r.spark.points }}" /><circle cx="{{ r.spark.x }}" cy="{{ r.spark.y }}" r="2.5" /></svg>{% else %}<span class="muted">—</span>{% endif %}</span>
         <span class="num prev-cell tone-{{ r.delta_tone }}" role="cell">{{ r.delta }}</span>
-        <span class="num dt-bench" role="cell">{% if r.bench.kind == "judge" %}{{ m.bench_value(r.bench) }}<small class="bench-gap tone-{{ r.bench.tone }}">{{ r.bench.gap }}</small>{% else %}<span class="muted">—</span>{% endif %}</span>
+        <span class="num dt-bench" role="cell">{% if r.bench.kind == "judge" %}{{ m.bench_value(r.bench, r.bench.band) }}{% else %}<span class="muted">—</span>{% endif %}</span>
+        <span class="num dt-gap" role="cell">{% if r.bench.kind == "judge" %}{{ m.rg_gap(r.bench.rg) }}{% else %}<span class="muted">—</span>{% endif %}</span>
         <span class="num judge-cell" role="cell">{{ m.judge_cell(r.bench) }}</span>
       </div>
       {% endfor %}

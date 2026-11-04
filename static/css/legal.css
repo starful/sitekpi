@@ -19,3 +19,14 @@ body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font-
 .legal-body ul, .legal-body ol { padding-left: 1.3em; }
 .legal-body li { margin-bottom: 8px; }
 .legal-body code { font-size: 0.85em; background: #f1f5f9; border-radius: 4px; padding: 1px 5px; word-break: break-all; }
+.legal-body .legal-toc { background: var(--bg, #f4f6fa); border-radius: 10px; padding: 14px 18px; margin: 0 0 8px; font-size: 0.875rem; }
+.legal-body .legal-toc ol { margin: 6px 0 0; columns: 2; column-gap: 28px; }
+.legal-body .legal-toc li { margin-bottom: 2px; }
+.legal-body .legal-table { width: 100%; border-collapse: collapse; margin: 10px 0 6px; font-size: 0.875rem; }
+.legal-body .legal-table th, .legal-body .legal-table td { border: 1px solid var(--line, #e5eaf1); padding: 8px 10px; text-align: left; vertical-align: top; }
+.legal-body .legal-table th { background: var(--bg, #f4f6fa); color: var(--ink, #152033); }
+.legal-body .legal-note { margin-top: 24px; font-size: 0.8rem; color: var(--muted, #5b6676); }
+.legal-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+.legal-tabs a { font-size: 0.875rem; font-weight: 700; text-decoration: none; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line, #e5eaf1); background: #fff; color: #3d4a5c; }
+.legal-tabs a[aria-current] { border-color: #c9dbfb; background: #eef4ff; color: var(--accent-ink, #1d4ed8); }
+@media (max-width: 640px) { .legal-body .legal-toc ol { columns: 1; } .legal-body .legal-table { display: block; overflow-x: auto; } }

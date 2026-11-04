@@ -2,6 +2,10 @@
 {% block page_css %}<link rel="stylesheet" href="{{ static_url('css/legal.css') }}" />{% endblock %}
 {% block content %}
   <main class="legal">
+    <nav class="legal-tabs" aria-label="{{ t('legal.policy', loc) }} / {{ t('legal.terms', loc) }}">
+      <a href="/policy{{ lq }}"{% if page == "policy" %} aria-current="page"{% endif %}>{{ t("legal.policy", loc) }}</a>
+      <a href="/terms{{ lq }}"{% if page == "terms" %} aria-current="page"{% endif %}>{{ t("legal.terms", loc) }}</a>
+    </nav>
     <article class="legal-body">
       {% include body %}
     </article>

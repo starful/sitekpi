@@ -62,13 +62,14 @@
           <p class="verdict-text">{{ verdict.short or verdict.text }}</p>
           <div class="tiles">
             {% for k in verdict.tiles %}
-            <article class="tile{{ ' is-issue' if k.issue else '' }}">
+            <article class="tile{{ ' is-issue' if k.issue else '' }}"{% if k.bench.key %} data-metric="{{ k.bench.key }}"{% endif %}>
               <div class="tile-head">
                 {% if k.tag %}<span class="tile-tag">{{ k.tag }}</span>{% endif %}
                 <span class="tile-label">{{ k.label }}</span>
                 {{ m.pop_btn("tile-" ~ loop.index, k.label) }}
               </div>
               <div class="tile-value">{{ k.value }}</div>
+              {% if k.bench.kind == "judge" and k.bench.rg %}{{ m.rg_box(k.bench) }}{% endif %}
               <div class="tile-chips">
                 <span class="tile-prev tone-{{ k.prev.tone }}">{{ t("bx.prev", loc, d=k.prev.text) if k.prev.text else t("bx.prev_none", loc) }}</span>
                 {% if k.bench.kind == "na" %}<span class="judge judge-na-chip">{{ t("verdict.bench_na", loc) }}</span>{% else %}{{ m.judge_cell(k.bench) }}{% endif %}
@@ -110,10 +111,12 @@
               {% if watch %}
               <ol class="watch-list">
                 {% for w in watch %}
-                <li class="watch-item tone-{{ w.tone }}">
+                <li class="watch-item tone-{{ w.tone }}" data-metric="{{ w.bench_key }}">
                   <strong class="watch-name">{{ w.label }}</strong>
-                  <span class="watch-value">{{ w.value }}</span>
-                  <span class="watch-bench">{{ t("bx.watch_bench", loc, avg=w.avg) }}</span>
+                  <span class="watch-nums">
+                    <span class="rg-k">{{ t("rg.now", loc) }}</span><span class="rg-k">{{ t("rg.ind", loc) }}</span><span class="rg-k">{{ t("rg.over_k" if w.rg and w.rg.state == "over" else "rg.left", loc) }}</span>
+                    <b class="watch-value">{{ w.value }}</b><b class="rg-band">{{ w.band }}</b>{{ m.rg_gap(w.rg) }}
+                  </span>
                   {{ m.judge_chip(w.tone) }}
                   {{ m.pop_btn("watch-" ~ loop.index, w.label) }}
                 </li>
