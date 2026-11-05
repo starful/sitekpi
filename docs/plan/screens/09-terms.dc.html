@@ -59,7 +59,7 @@ a{color:#1d4ed8}
   <li><b>Google の認証情報:</b> 「GA4 を接続」を押して Google の画面で許可したときに発行される OAuth のアクセストークンとリフレッシュトークン。Google アカウントのパスワードを本サービスが受け取ることはありません。</li>
   <li><b>GA4 の一覧と集計レポート:</b> 見ることのできる GA4 アカウントとプロパティの名前・ID、選んだ 1 つのプロパティの集計値（ユーザー数・セッション・ページビュー・イベント数・流入元・デバイス・売上などの合計や割合）。訪問者一人ひとりを識別できるデータは要求しません。</li>
   <li><b>ボードの設定:</b> 選んだプロパティ、業種、期間、表示言語、直した流れの段とイベント名、分かれ道、自社目安の範囲。</li>
-  <li><b>ご意見:</b> 「ご意見」から送られた 👍/👎、コメント（500 文字まで）、送った画面とパス、表示言語、プロパティ接続の有無（デモ・接続済み・未接続）、送信日時。</li>
+  <li><b>ご意見:</b> 「メモ・ご意見」または「ご意見」から送られたメモ・コメント（500 文字まで）、任意の 👍/👎、送った画面と見ていた部分・パス、表示言語、プロパティ接続の有無（接続済み・未接続）、送信日時。送ったメモはお使いのブラウザ（ローカルストレージ）にも一覧として残りますが、再送信はしません。</li>
   <li><b>アクセスログ:</b> ページを開いたときにサーバーが自動で記録する IP アドレス、ブラウザの種類（User-Agent）、URL、日時、応答コード。Google Cloud の標準機能で記録されます。</li>
 </ul>
 
@@ -173,7 +173,7 @@ a{color:#1d4ed8}
 <ol>
   <li>本サービスは、利用者が選んだプロパティの集計値を GA4 から読み取り、前の期間および業界目安と比べた結果を表示します。</li>
   <li>本サービスは GA4 への読み取り専用のアクセスだけを使い、GA4 のデータや設定を変更しません。</li>
-  <li>本サービスには、GA4 に接続せずに試せるデモと見本ボードが含まれます。デモと見本ボードの数字は架空のものです。</li>
+  <li>本サービスには、GA4 に接続せずに見られる見本ボードが含まれます。見本ボードの数字はすべて例（架空のサイト）です。見本ボードで流れや業種を変えても保存はされません。</li>
 </ol>
 
 <h2>第4条（利用の開始と同意）</h2>
@@ -305,7 +305,7 @@ class Component extends DCLogic {
       c: c, isPolicy: doc === 'policy', isTerms: doc === 'terms',
       nav: [['problem','GA4 との違い'],['features','できること'],['who','対象'],['samples','見本'],['how','使い方'],['faq','よくある質問']].map(function (n) { return { id: n[0], label: n[1] }; }),
       langs: [['ja','日本語'],['en','EN'],['ko','한국어']].map(function (l) { var on = l[0] === 'ja'; return { label: l[1], pick: function () {}, style: 'font: inherit; font-size: 12px; font-weight: 700; border: 0; padding: 4px 8px; border-radius: 999px; background: ' + (on ? '#eef4ff' : 'transparent') + '; color: ' + (on ? '#1d4ed8' : '#5b6676') }; }),
-      tabs: [['policy','プライバシーポリシー'],['terms','利用規約']].map(function (t) { var on = t[0] === doc; return { label: t[1], href: t[0] === 'policy' ? '08-policy.dc.html' : '09-terms.dc.html', pick: function () {}, style: 'font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 7px 14px; border-radius: 999px; border: 1px solid ' + (on ? '#c9dbfb' : '#e5eaf1') + '; background: ' + (on ? '#eef4ff' : '#ffffff') + '; color: ' + (on ? '#1d4ed8' : '#3d4a5c') }; }),
+      tabs: [['policy','プライバシーポリシー'],['terms','利用規約']].map(function (t) { var on = t[0] === doc; return { label: t[1], href: t[0] === 'policy' ? 'Legal.dc.html' : 'Terms.dc.html', pick: function () {}, style: 'font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 7px 14px; border-radius: 999px; border: 1px solid ' + (on ? '#c9dbfb' : '#e5eaf1') + '; background: ' + (on ? '#eef4ff' : '#ffffff') + '; color: ' + (on ? '#1d4ed8' : '#3d4a5c') }; }),
       foot: { policy: 'プライバシーポリシー', terms: '利用規約', glossary: '指標辞典', samples: '見本ボード一覧' }
     };
   }

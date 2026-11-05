@@ -17,3 +17,4 @@ os.environ["GOOGLE_CLIENT_SECRET"] = "test-client-secret"
 os.environ["GOOGLE_REDIRECT_URI"] = "http://127.0.0.1:8766/connect/callback"
 os.environ["APP_BASE_URL"] = "http://127.0.0.1:8766"
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+os.environ["DEMO_CONNECT"] = "1"  # the demo connection is a test-only mode

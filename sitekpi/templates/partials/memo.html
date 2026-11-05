@@ -1,0 +1,28 @@
+{#- v5 メモ・ご意見: right-side panel on board / glossary / samples / builder → POST /feedback (static/js/memo.js).
+    いま見ている所 follows the section on screen ([data-memo-where]); sent notes stay in this browser only. -#}
+{%- set _page = {"glossary": "memo.page.glossary", "samples": "memo.page.samples", "builder": "memo.page.builder"}.get(rail.active, "memo.page.board") %}
+<aside class="memo" id="memo" data-memo data-screen="{{ rail.active }}" aria-label="{{ t('memo.title', loc) }}">
+  <button type="button" class="memo-tab" data-memo-toggle aria-controls="memo-body" aria-expanded="true"><span aria-hidden="true">✎</span> {{ t("memo.open", loc) }}</button>
+  <div class="memo-body" id="memo-body">
+    <div class="memo-head">
+      <b><span aria-hidden="true">✎</span> {{ t("memo.title", loc) }}</b>
+      <button type="button" class="memo-close" data-memo-toggle aria-controls="memo-body" aria-expanded="true">{{ t("memo.close", loc) }} <span aria-hidden="true">›</span></button>
+    </div>
+    <p class="memo-lead">{{ t("memo.lead", loc) }}</p>
+    <p class="memo-where">{{ t("memo.where", loc) }} <span class="memo-where-v" data-memo-where data-page="{{ t(_page, loc) }}">{{ t(_page, loc) }}</span></p>
+    <textarea class="memo-text" data-memo-text maxlength="500" rows="6" placeholder="{{ t('memo.ph', loc) }}" aria-label="{{ t('memo.title', loc) }}"></textarea>
+    <div class="memo-mood" role="group" aria-label="{{ t('memo.mood', loc) }}">
+      <span>{{ t("memo.mood", loc) }}</span>
+      <button type="button" data-mood="up" aria-pressed="false" aria-label="{{ t('memo.up', loc) }}">👍</button>
+      <button type="button" data-mood="down" aria-pressed="false" aria-label="{{ t('memo.down', loc) }}">👎</button>
+    </div>
+    <input type="text" class="fb-hp" data-memo-hp tabindex="-1" autocomplete="off" aria-hidden="true" />
+    <button type="button" class="memo-send" data-memo-send>{{ t("memo.send", loc) }}</button>
+    <p class="memo-msg" data-memo-msg role="status" data-ok="{{ t('memo.thanks', loc) }}" data-err="{{ t('memo.error', loc) }}"></p>
+    <p class="memo-note">{{ t("memo.note", loc) }}</p>
+    <div class="memo-sent" data-memo-sent hidden>
+      <p class="memo-sent-k">{{ t("memo.sent", loc) }}</p>
+      <div data-memo-list></div>
+    </div>
+  </div>
+</aside>

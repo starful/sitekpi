@@ -4,26 +4,19 @@
 {% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
 {% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" /><link rel="stylesheet" href="{{ static_url('css/helpcard.css') }}" />{% if editor %}<link rel="stylesheet" href="{{ static_url('css/setup.css') }}" />{% endif %}{% endblock %}
 {% block main %}
-{% macro card_fb(part) %}<div class="card-fb" data-card-fb="{{ part }}" data-sent="{{ t('cfb.sent', loc) }}"><span>{{ t("cfb.q", loc) }}</span><button type="button" data-vote="up" aria-label="{{ t('cfb.up', loc) }}">👍</button><button type="button" data-vote="down" aria-label="{{ t('cfb.down', loc) }}">👎</button><span class="card-fb-more" hidden><span class="card-fb-thanks">{{ t("cfb.thanks", loc) }}</span><input type="text" maxlength="500" placeholder="{{ t('cfb.ph', loc) }}" aria-label="{{ t('cfb.ph', loc) }}" /><button type="button" class="card-fb-send" data-send>{{ t("cfb.send", loc) }}</button></span></div>{% endmacro %}
-
-      {#- 上のバー: follows the scroll. Site · 比べる業種 · 期間 · page menu -#}
+      {#- v5 上のバー: site name (+ 例の数字) · 比べる業種 · 期間 · ? 見方 — all as text -#}
       <header class="top">
         <div class="top-l">
           <h1>{{ industry_label }}</h1>
-          <div class="meta">
-            <span>{{ meta_short or pack_meta }}</span>
-            {% if is_sample %}<a class="switch-link" href="/samples">{{ t("samples.switch", loc) }}</a>{% endif %}
-          </div>
+          {% if is_sample %}<span class="ex-tag">{{ t("sx.example_nums", loc) }}</span>{% endif %}
         </div>
         <div class="top-right">
-          {#- 比べる業種 · 期間 only; 目安を調整 lives at the bottom of the 業種 drawer (sample boards keep it here) -#}
-          {% if industry_drawer %}<button type="button" class="ind-chip" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false"><span class="ind-k">{{ t("bx.ind_k", loc) }}</span><b>{{ ind_name or t("bx.ind_none", loc) }}</b><span class="ind-caret" aria-hidden="true">▾</span></button>{% endif %}
-          {% if bench and not industry_drawer %}<button type="button" class="adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}
-          <a class="top-help" href="/help#read"><span aria-hidden="true">?</span> {{ t("bx.how_to_read", loc) }}</a>
+          <span class="top-item"><span class="top-k">{{ t("bx.ind_k", loc) }}</span> <b>{{ ind_name or (industry_label if is_sample else t("bx.ind_none", loc)) }}</b>
+            {% if industry_drawer %}<button type="button" class="link-btn" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false">{{ t("bx.change", loc) }} <span aria-hidden="true">▾</span></button>
+            {% elif is_sample %}<a class="link-btn" href="/samples">{{ t("bx.change", loc) }} <span aria-hidden="true">▾</span></a>{% endif %}</span>
           {#- 期間: reloads this board for the chosen period (?period=) -#}
-          <form method="get" class="period" data-period>
-            <label>
-              <span class="sr-only">{{ t("period.label", loc) }}</span>
+          <form method="get" class="period top-item" data-period>
+            <label><span class="top-k">{{ t("period.label", loc) }}</span>
               <select name="period" aria-label="{{ t('period.label', loc) }}">
                 <option value="28d"{% if period == "28d" %} selected{% endif %}>{{ t("period.28d", loc) }}</option>
                 <option value="7d"{% if period == "7d" %} selected{% endif %}>{{ t("period.7d", loc) }}</option>
@@ -31,81 +24,68 @@
             </label>
             <noscript><button type="submit">OK</button></noscript>
           </form>
+          {% if bench and (is_sample or not industry_drawer) %}<button type="button" class="link-btn adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}
+          <a class="link-btn top-help" href="/help#read">? {{ t("bx.how", loc) }}</a>
         </div>
-        <nav class="page-nav" aria-label="{{ t('bx.page_nav', loc) }}">
-          <a href="#s-l0" data-nav="s-l0">{{ t("verdict.title", loc) }}</a>
-          <a href="#flow" data-nav="flow">{{ t("where.title", loc) }}</a>
-          <a href="#s-l2" data-nav="s-l2">{{ t("detail.title", loc) }}<span class="nav-warn" data-nav-warn{% if not (details and details.warn) %} hidden{% endif %}>{{ t("detail.warn_n", loc, n=(details.warn if details else 0)) }}</span></a>
-        </nav>
         {% if industry_drawer %}{% include "board/drawer_industry.html" %}{% endif %}
         {% if editor %}{% include "board/drawer_step.html" %}{% endif %}
       </header>
+      {% if is_sample %}
+      <div class="ex-wrap">{% with ex_b=t("sx.banner_b", loc), ex_text=t("sx.banner", loc), ex_others=True %}{% include "partials/ex_banner.html" %}{% endwith %}</div>
+      {% endif %}
       <div class="content">
-        {% if notice %}
-        <div class="notice" role="status">
-          <p>{{ notice.text }}</p>
-          <div class="notice-actions">
-            {% if notice.get("flow") %}
-            <span class="notice-item"><span class="notice-k">{{ t("notice.k_flow", loc) }}</span><b>{{ notice.flow }}</b>
-              {% if editor %}<button type="button" class="notice-btn" data-edit-open><span aria-hidden="true">✎</span>{{ t("notice.fix", loc) }}</button>
-              {% else %}<a class="notice-btn" href="/live?edit=1#flow"><span aria-hidden="true">✎</span>{{ t("notice.fix", loc) }}</a>{% endif %}</span>
-            <span class="notice-item"><span class="notice-k">{{ t("bx.ind_k", loc) }}</span><b>{{ notice.ind }}</b>
-              {% if industry_drawer %}<button type="button" class="notice-btn" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false">{{ t("notice.change", loc) }}<span aria-hidden="true" class="caret">▾</span></button>
-              {% else %}<a class="notice-btn" href="/live?industry=1">{{ t("notice.change", loc) }}<span aria-hidden="true" class="caret">▾</span></a>{% endif %}</span>
-            {% elif editor %}<button type="button" class="notice-fit" data-edit-open>{{ t("notice.fit", loc) }}</button>
-            {% else %}<a class="notice-fit" href="/live?edit=1#flow">{{ t("notice.fit", loc) }}</a>{% endif %}
-            <form method="post" action="/setup/keep"><button type="submit" class="notice-keep">{{ t("notice.keep", loc) }}</button></form>
-          </div>
-        </div>
-        {% endif %}
 
-        {# L0 — いまの状態: 一言 + three numbers. Everything else is in 「説明」 #}
-        <section class="verdict" id="s-l0" aria-labelledby="verdict-title">
-          <h2 id="verdict-title" class="kicker">{{ t("verdict.title", loc) }}{% if is_sample %} <span class="sample-tag">{{ t("sample_tag", loc) }}</span>{% endif %}</h2>
-          <p class="verdict-text">{{ verdict.short or verdict.text }}</p>
-          <div class="tiles">
+        {# L0 — いまの状態: 一言 + three numbers (3 columns, no boxes) #}
+        <section class="verdict card" id="s-l0" aria-labelledby="verdict-title" data-memo-where="{{ t('verdict.title', loc) }}">
+          {% if notice %}
+          <div class="notice" role="status">
+            {% if notice.get("flow") %}<span class="notice-k">{{ t("bx.provisional", loc, why=notice.why) }}</span> {{ t("notice.k_flow", loc) }} <b>{{ notice.flow }}</b> · {{ t("bx.ind_k", loc) }} <b>{{ notice.ind }}</b>
+            {% else %}<span>{{ notice.text }}</span>{% endif %}
+            <span class="notice-acts">
+              {% if editor %}<button type="button" class="link-btn" data-edit-open>{{ t("notice.fix" if notice.get("flow") else "notice.fit", loc) }}</button>
+              {% else %}<a class="link-btn" href="/live?edit=1#flow">{{ t("notice.fix" if notice.get("flow") else "notice.fit", loc) }}</a>{% endif %}
+              ·
+              <form method="post" action="/setup/keep"><button type="submit" class="link-btn notice-keep">{{ t("notice.keep", loc) }}</button></form>
+            </span>
+          </div>
+          {% endif %}
+          <h2 id="verdict-title" class="verdict-text" aria-description="{{ t('verdict.title', loc) }}">{{ verdict.short_html or verdict.text }}</h2>
+          <div class="stats">
             {% for k in verdict.tiles %}
-            <article class="tile{{ ' is-issue' if k.issue else '' }}"{% if k.bench.key %} data-metric="{{ k.bench.key }}"{% endif %}>
-              <div class="tile-head">
-                {% if k.tag %}<span class="tile-tag">{{ k.tag }}</span>{% endif %}
-                <span class="tile-label">{{ k.label }}</span>
-                {{ m.pop_btn("tile-" ~ loop.index, k.label) }}
-              </div>
-              <div class="tile-line">
-                <span class="tile-value">{{ k.value }}</span>
-                <span class="tile-prev tone-{{ k.prev.tone }}">{{ t("bx.prev", loc, d=k.prev.text) if k.prev.text else t("bx.prev_none", loc) }}</span>
-                {% if k.bench.kind == "na" %}<span class="judge judge-na-chip">{{ t("verdict.bench_na", loc) }}</span>{% else %}{{ m.judge_cell(k.bench) }}{% endif %}
-              </div>
-              {% if k.bench.kind == "judge" and k.bench.rg %}<p class="tile-rg">{{ t("rg.ind", loc) }} <b class="rg-band">{{ k.bench.band }}</b> · {{ t("rg.left", loc) }} {{ m.rg_gap(k.bench.rg) }}</p>{% endif %}
+            <article class="stat{{ ' is-issue' if k.issue else '' }}"{% if k.bench.key %} data-metric="{{ k.bench.key }}"{% endif %}>
+              <p class="stat-label"><span class="stat-name">{{ k.label }}</span>{{ m.pop_btn("tile-" ~ loop.index, k.label) }}</p>
+              <p class="stat-line"><b class="stat-value">{{ k.value }}</b><span class="stat-prev tone-{{ k.prev.tone }}">{{ t("bx.prev", loc, d=k.prev.text) if k.prev.text else t("bx.prev_none", loc) }}</span></p>
+              <p class="stat-note">
+                {%- if k.bench.kind == "judge" and k.bench.rg %}{{ t("rg.ind", loc) }} {{ k.bench.band }} · {{ t("rg.left", loc) }} {{ m.rg_gap(k.bench.rg) }} {{ m.judge_text(k.bench) }}
+                {%- elif k.bench.kind == "none" %}{{ m.judge_text(k.bench) }}
+                {%- elif k.note %}{{ k.note }}
+                {%- else %}{{ t("bx.no_compare", loc) }}{% endif -%}
+              </p>
             </article>
             {% endfor %}
           </div>
-          {{ card_fb("now") }}
         </section>
 
-        {# L1 — どこで離れているか: flow + one line + 今見るべきこと + 流入別. Details in 「説明」 #}
+        {# L1 — どこで離れているか: one line + flow + 今見るべきこと (+ 流入別) #}
         {% set f = flow %}
-        <section class="where{{ ' flow' if f else '' }}"{% if f %} id="flow" data-ch="all"{% endif %} aria-labelledby="where-title"{% if editor %} data-editable{% endif %}>
+        <section class="where card{{ ' flow' if f else '' }}"{% if f %} id="flow" data-ch="all"{% endif %} aria-labelledby="where-title"{% if editor %} data-editable{% endif %} data-memo-where="{{ t('where.title', loc) }}">
           {% if editor %}{% include "board/edit_bar.html" %}{% endif %}
           <div class="where-head">
-            <div class="where-title">
-              <h2 id="where-title">{{ t("where.title", loc) }}{% if f and f.sample %} <span class="sample-tag">{{ t("sample_tag", loc) }}</span>{% endif %}</h2>
-              {% if f %}{{ m.pop_btn("flow-help", t("where.title", loc)) }}{% endif %}
-              {% if editor %}<button type="button" class="where-edit" data-edit-open><span aria-hidden="true">✎</span>{{ t("bx.edit", loc) }}</button>
-              {% elif not is_sample %}<a class="where-edit" href="/live?edit=1#flow"><span aria-hidden="true">✎</span>{{ t("bx.edit", loc) }}</a>{% endif %}
-            </div>
-            <div class="where-tools">
-              {% if f and f.channels %}
-              <button type="button" class="ch-toggle" data-ch-toggle aria-expanded="false">{{ t("flow.ch_show", loc) }}<span aria-hidden="true" class="caret">▾</span></button>
-              <div class="flow-chs" role="group" aria-label="{{ t('flow.by_channel', loc) }}" data-ch-part hidden>
-                <button type="button" class="flow-ch is-on" data-flow-ch="all" aria-pressed="true">{{ t("flow.all", loc) }}</button>
-                {% for c in f.channels %}
-                <button type="button" class="flow-ch" data-flow-ch="{{ c.id }}" aria-pressed="false"><i style="background:{{ c.color }}"></i>{{ c.name }}</button>
-                {% endfor %}
-              </div>
-              {% endif %}
-            </div>
+            <h2 id="where-title">{{ t("where.title", loc) }}{% if f %}{{ m.pop_btn("flow-help", t("where.title", loc)) }}{% endif %}</h2>
+            <span class="where-tools">
+              {% if editor %}<button type="button" class="link-btn where-edit" data-edit-open>✎ {{ t("bx.edit", loc) }}</button>
+              {% elif not is_sample %}<a class="link-btn where-edit" href="/live?edit=1#flow">✎ {{ t("bx.edit", loc) }}</a>{% endif %}
+              {% if f and f.channels %}<button type="button" class="link-btn ch-toggle" data-ch-toggle aria-expanded="false">{{ t("flow.ch_show", loc) }} <span aria-hidden="true" class="caret">▾</span></button>{% endif %}
+            </span>
           </div>
+          {% if f and f.channels %}
+          <div class="flow-chs" role="group" aria-label="{{ t('flow.by_channel', loc) }}" data-ch-part hidden>
+            <button type="button" class="flow-ch is-on" data-flow-ch="all" aria-pressed="true">{{ t("flow.all", loc) }}</button>
+            {% for c in f.channels %}
+            <button type="button" class="flow-ch" data-flow-ch="{{ c.id }}" aria-pressed="false"><i style="background:{{ c.color }}"></i>{{ c.name }}</button>
+            {% endfor %}
+          </div>
+          {% endif %}
           {% if worst %}<p class="where-worst">{{ t("bx.worst_n", loc, a=worst.from, b=worst.to, drop=worst.drop, n=worst.lost.all) if worst.lost and worst.lost.all != "—" else t("bx.worst", loc, a=worst.from, b=worst.to, drop=worst.drop) }}</p>{% endif %}
           {% if f %}<div data-flow-view>{% include "board/flow.html" %}</div>{% endif %}
           {% if editor %}<div class="edit-track" data-edit-track hidden><div class="sx-scroll"><ol class="sx-flow" data-flow></ol></div><p class="sx-cover" data-cover></p></div>{% endif %}
@@ -114,53 +94,44 @@
             <div class="watch" aria-label="{{ t('watch.title', loc) }}">
               <h3>{{ t("watch.title", loc) }}</h3>
               {% if watch %}
-              <ol class="watch-list">
+              <div class="wtable" role="table" aria-label="{{ t('watch.title', loc) }}">
+                <div class="wrow whead" role="row"><span role="columnheader"></span><span role="columnheader" class="num">{{ t("rg.now", loc) }}</span><span role="columnheader" class="num">{{ t("rg.ind", loc) }}</span><span role="columnheader" class="num">{{ t("rg.left", loc) }}</span></div>
                 {% for w in watch %}
-                <li class="watch-item tone-{{ w.tone }}" data-metric="{{ w.bench_key }}">
-                  <strong class="watch-name">{{ w.label }}</strong>
-                  <span class="watch-nums">
-                    <span class="rg-k">{{ t("rg.now", loc) }}</span><span class="rg-k">{{ t("rg.ind", loc) }}</span><span class="rg-k">{{ t("rg.over_k" if w.rg and w.rg.state == "over" else "rg.left", loc) }}</span>
-                    <b class="watch-value">{{ w.value }}</b><b class="rg-band">{{ w.band }}</b>{{ m.rg_gap(w.rg) }}
-                  </span>
-                  {{ m.judge_chip(w.tone) }}
-                  {{ m.pop_btn("watch-" ~ loop.index, w.label) }}
-                </li>
+                <div class="wrow watch-item tone-{{ w.tone }}" role="row" data-metric="{{ w.bench_key }}">
+                  <span class="watch-name" role="rowheader"><span>{{ w.label }}</span>{{ m.pop_btn("watch-" ~ loop.index, w.label) }}</span>
+                  <b class="num watch-value" role="cell">{{ w.value }}</b>
+                  <span class="num rg-band" role="cell">{{ w.band }}</span>
+                  <span class="num" role="cell">{{ m.rg_gap(w.rg) }}</span>
+                </div>
                 {% endfor %}
-              </ol>
+              </div>
               {% else %}
               <p class="watch-none">{{ t("watch.none", loc) }}</p>
               {% endif %}
               {#- far outside one band, or several 要注意 at once → the 比べる業種 may be wrong -#}
-              {% if industry_drawer and watch and (watch | selectattr("far") | list or watch | selectattr("tone", "equalto", "down") | list | length >= 2) %}
-              <div class="watch-ind">
-                <span>{{ t("watch.ind_nudge", loc, ind=ind_name or t("bx.ind_none", loc)) }}</span>
-                <button type="button" class="nudge-btn" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false">{{ t("watch.ind_change", loc) }}<span aria-hidden="true" class="caret">▾</span></button>
-              </div>
+              {% if industry_drawer and not is_sample and watch and (watch | selectattr("far") | list or watch | selectattr("tone", "equalto", "down") | list | length >= 2) %}
+              <p class="watch-ind">{{ t("watch.ind_nudge", loc, ind=ind_name or t("bx.ind_none", loc)) }} <button type="button" class="link-btn" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false">{{ t("watch.ind_change", loc) }} <span aria-hidden="true">▾</span></button></p>
               {% endif %}
             </div>
             {% if f and f.ch_rows %}
             <div class="flow-chtable" data-ch-part hidden>
-              <div class="flow-chtitle"><h3>{{ t("flow.ch_title", loc, step=f.last_label) }}</h3>{{ m.pop_btn("ch-help", t("flow.ch_title", loc, step=f.last_label)) }}</div>
+              <h3 class="flow-chtitle">{{ t("flow.ch_title", loc, step=f.last_label) }}{{ m.pop_btn("ch-help", t("flow.ch_title", loc, step=f.last_label)) }}</h3>
               <ul>
                 {% for r in f.ch_rows %}
                 <li data-ch-row="{{ r.id }}">
                   <span class="flow-chname"><i style="background:{{ r.color }}"></i>{{ r.name }}</span>
-                  <span class="flow-chrate"><b>{{ r.rate_fmt }}</b>{% if r.best %}<em class="tag-best">{{ t("flow.ch_best", loc) }}</em>{% elif r.low %}<em class="tag-low">{{ t("flow.ch_low", loc) }}</em>{% endif %}</span>
+                  <span class="flow-chrate"><b>{{ r.rate_fmt }}</b>{% if r.best %}<em class="jt jt-up">{{ t("flow.ch_best", loc) }}</em>{% elif r.low %}<em class="jt jt-down">{{ t("flow.ch_low", loc) }}</em>{% endif %}</span>
                 </li>
                 {% endfor %}
               </ul>
             </div>
             {% endif %}
           </div>
-          {{ card_fb("flow") }}
         </section>
 
-        {# L2 — 詳しい数字: every category stacked; loaded after the page when GA4 is slow #}
-        <section class="detail" id="s-l2" aria-labelledby="detail-title">
-          <div class="detail-head">
-            <h2 id="detail-title">{{ t("detail.title", loc) }}</h2>
-            <span class="sub">{{ t("detail.hint", loc) }}</span>
-          </div>
+        {# L2 — 詳しい数字: categories (top 3 open); loaded after the page when GA4 is slow #}
+        <section class="detail card" id="s-l2" aria-labelledby="detail-title" data-memo-where="{{ t('detail.title', loc) }}">
+          <h2 id="detail-title">{{ t("detail.title", loc) }}</h2>
           <div class="details" data-details{% if details_src %} data-src="{{ details_src }}" aria-busy="true"{% endif %}>
             {% if details %}{% include "board/details.html" %}
             {% else %}
@@ -168,7 +139,6 @@
             <div class="skeleton" aria-hidden="true">{% for _ in range(6) %}<i></i>{% endfor %}</div>
             {% endif %}
           </div>
-          {{ card_fb("details") }}
         </section>
       </div>
 {% endblock %}

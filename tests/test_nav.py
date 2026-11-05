@@ -94,12 +94,13 @@ def test_menu_sections_and_no_pack_search(client):
     html = client.get("/ec").text
     rail = html.split('<aside class="rail"', 1)[1].split("</aside>", 1)[0]
     groups = re.findall(r'<div class="nav-group">([^<]+)</div>', rail)
-    assert groups == ["マイサイト", "ツール", "見本"]
+    assert groups == ["マイサイト", "見本（例の数字）", "ツール"]  # v5: samples right under マイサイト
     assert "pack-search" not in rail and "pack-cat" not in rail
     assert 'href="/connect" class="nav-cta' in rail  # not connected → connect CTA
     assert 'href="/samples"' in rail and 'href="/glossary"' in rail and 'href="/builder"' in rail
     assert 'href="/beginner"' not in rail  # not a menu item
-    assert re.search(r'<a href="/ec" class="nav-indent is-on">EC・小売</a>', rail)  # current sample
+    assert re.search(r'<a href="/ec" class="nav-sample is-on"><span class="nav-ex" aria-hidden="true">例</span>EC・小売</a>', rail)  # current sample, marked 例
+    assert "data-feedback-open" not in rail  # v5: the メモ panel replaced 「ご意見を送る」
 
 
 def test_connected_rail_has_live_setup_connect(client):

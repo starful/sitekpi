@@ -114,7 +114,7 @@ def auto_notice(session: MutableMapping[str, Any], locale: str) -> dict[str, str
 
         name = pack_text(ind, "label", locale, str(INDUSTRIES[ind]["label"]))
         # both guesses are listed under the lead, each with its own fix button (board.html)
-        return {"text": t("notice.lead", locale, why=why), "flow": flow, "ind": name}
+        return {"text": t("notice.lead", locale, why=why), "flow": flow, "ind": name, "why": why}
     return {"text": t("notice.auto", locale, behavior=flow, why=why), "flow": "", "ind": ""}
 
 

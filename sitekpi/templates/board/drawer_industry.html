@@ -9,7 +9,8 @@
     <button type="button" class="drawer-x" data-drawer-close aria-label="{{ t('close', loc) }}">×</button>
   </div>
   {% if d.error %}<p class="edit-error" role="alert">{{ d.error }}</p>{% endif %}
-  <form method="post" action="/setup/industry" id="ind-form" class="drawer-form">
+  {% if d.get("sample") %}<p class="drawer-try">{{ t("sx.try_ind", loc) }}</p>{% endif %}
+  <form method="{{ 'get' if d.get("sample") else 'post' }}" action="{{ '/samples/open' if d.get("sample") else '/setup/industry' }}" id="ind-form" class="drawer-form">
     {% if d.main %}
     <div class="ind-grid" role="radiogroup" aria-labelledby="drawer-ind-title">
       {% for i in d.main %}
@@ -48,7 +49,7 @@
         {% endfor %}
       </div>
     </div>
-    <button type="submit" class="drawer-primary">{{ t("bx.ind_apply", loc) }}</button>
+    <button type="submit" class="drawer-primary">{{ t("sx.open_sample", loc) if d.get("sample") else t("bx.ind_apply", loc) }}</button>
   </form>
   {% if bench %}
   <div class="drawer-adjust">

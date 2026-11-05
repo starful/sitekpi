@@ -3,6 +3,7 @@
 {% block css %}<link rel="stylesheet" href="{{ static_url('css/samples.css') }}" />{% endblock %}
 {% block main %}
   <main class="sp">
+    {% with ex_b=t("sx.list_banner_b", loc), ex_text=t("sx.list_banner", loc), ex_others=False %}{% include "partials/ex_banner.html" %}{% endwith %}
     <div class="sp-head">
       <div>
         <h1>{{ t("samples.title", loc) }}</h1>

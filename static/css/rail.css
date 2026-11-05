@@ -148,3 +148,22 @@
 .nav-bottom .nav-help { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--accent-ink, #1d4ed8); background: #eef4ff; border-radius: 8px; }
 .nav-help-q { width: 20px; height: 20px; border-radius: 50%; background: var(--accent, #2f6fed); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex: none; }
 .nav-bottom .nav-about { font-weight: 600; }
+
+/* v5: 見本（例の数字） — the sample you are on, with the 例 mark */
+.rail nav a.nav-sample { display: flex; gap: 8px; align-items: center; margin-top: 2px; padding-left: 14px; color: #5b4a12 !important; background: #fff8e6 !important; border: 1px solid #f1d58a; border-radius: 8px; font-weight: 700; }
+.nav-ex { font-size: 0.75rem; font-weight: 800; color: #fff; background: #b7791f; border-radius: 5px; padding: 0 6px; line-height: 1.6; flex: none; }
+.rail nav a.nav-cta { background: #eef4ff; border-style: solid; border-color: #c9dbfb; font-weight: 700; }
+
+/* v5: 例 banner on sample boards and the samples list */
+.ex-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: #fff8e6; border: 1px solid #f1d58a; border-radius: 12px; padding: 10px 16px; font-size: 0.9375rem; color: #5b4a12; line-height: 1.55; }
+.ex-mark { font-size: 0.8125rem; font-weight: 800; color: #fff; background: #b7791f; border-radius: 6px; padding: 1px 8px; flex: none; }
+.ex-text { flex: 1 1 320px; min-width: 0; }
+.ex-text b { font-weight: 800; }
+.ex-links { display: flex; gap: 16px; margin-left: auto; }
+.ex-links a { font-weight: 700; color: var(--accent-ink, #1d4ed8); text-decoration: none; }
+.ex-links a.ex-go { font-weight: 800; }
+.ex-links a:hover { text-decoration: underline; }
+
+/* legal links at the bottom of the menu (moved from feedback.css) */
+.nav-legal { margin: 8px 10px 0; font-size: 0.75rem; color: #8792a2; }
+.nav-legal a { display: inline !important; padding: 0 !important; font-weight: 600 !important; color: #8792a2 !important; background: none !important; }

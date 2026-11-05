@@ -1,4 +1,6 @@
-"""「ご意見」: 👍 / 👎 + one optional line from any screen (rail button → dialog → POST /feedback).
+"""「メモ・ご意見」: a free note (+ optional 👍 / 👎) from the right-side panel → POST /feedback.
+
+The panel sends the part of the page on screen (section). The landing's 「ご意見」 dialog uses the same endpoint.
 
 Stored without IP or account data: screen, path, vote, comment, locale, whether a GA4
 property was connected (demo / live / none), time. Firestore on Cloud Run, a JSONL file locally.
@@ -62,6 +64,7 @@ async def feedback(request: Request) -> JSONResponse:
     connected = "demo" if session.get("ga4_demo") else ("live" if session.get("ga4_credentials") else "none")
     _save({
         "screen": str(body.get("screen") or "")[:40],
+        "section": str(body.get("section") or "")[:60],
         "path": str(body.get("path") or "")[:200],
         "vote": vote,
         "comment": comment,

@@ -21,16 +21,19 @@ button{font-family:inherit}
 <div style="font-family: 'IBM Plex Sans JP', 'Noto Sans JP', system-ui, sans-serif; color: #152033; background: #f4f6fa; min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch">
 
   <nav aria-label="メニュー" style="flex: 0 1 248px; min-width: 220px; box-sizing: border-box; background: #ffffff; border-right: 1px solid #e5eaf1; padding: 20px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 14px">
-    <a href="01-home.dc.html" style="text-decoration: none; color: #152033; font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; padding: 0 8px 18px">Site<span style="color: #2f6fed">KPI</span></a>
-    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 6px 10px 4px">マイサイト</div>
-    <a href="02-connect.dc.html" style="text-decoration: none; color: #1d4ed8; border: 1px dashed #9db8ea; background: #f3f7fe; border-radius: 8px; padding: 9px 10px; font-weight: 700; text-align: center">＋ GA4 を接続</a>
-    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">ツール</div>
+    <a href="01-home.dc.html" style="text-decoration: none; color: #152033; font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-weight: 800; font-size: 22px; padding: 0 8px 16px">Site<span style="color: #2f6fed">KPI</span></a>
+    <div style="font-size: 12px; font-weight: 700; color: #5b6676; padding: 6px 10px 4px">マイサイト</div>
+    <a href="02-connect.dc.html" style="text-decoration: none; color: #1d4ed8; border: 1px solid #c9dbfb; background: #eef4ff; border-radius: 8px; padding: 9px 10px; font-weight: 700; text-align: center">＋ GA4 を接続</a>
+    <div style="font-size: 12px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">見本（例の数字）</div>
+    <a href="#top" style="text-decoration: none; color: #1d4ed8; background: #eef4ff; padding: 8px 10px; border-radius: 8px; font-weight: 700">見本ボード一覧</a>
+    <div style="font-size: 12px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">ツール</div>
     <a href="06-builder.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">ダッシュボードを作る</a>
     <a href="04-glossary.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">指標辞典</a>
-    <div style="font-size: 11px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">見本</div>
-    <a href="#top" style="text-decoration: none; color: #1d4ed8; background: #eef4ff; padding: 8px 10px; border-radius: 8px; font-weight: 700">見本ボード一覧</a>
     <div style="flex-grow: 1; min-height: 24px"></div>
-    <a href="07-settings.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 12px 10px 8px; border-top: 1px solid #e5eaf1; font-weight: 600">設定</a>
+    <a href="10-help.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">使い方・ヘルプ</a>
+    <a href="01-home.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">SiteKPI について</a>
+    <a href="07-settings.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">設定</a>
+    <p style="margin: 8px 10px 0; font-size: 12px; color: #8792a2">ポリシー · 規約 · お問い合わせ</p>
   </nav>
 
   <main id="top" style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px clamp(16px, 3vw, 40px) 48px; display: flex; flex-direction: column; gap: 18px">
@@ -42,6 +45,10 @@ button{font-family:inherit}
       <a href="02-connect.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 12px; background: #ffffff; border: 1px solid #c9dbfb; color: #1d4ed8; font-weight: 800; font-size: 14px; text-decoration: none">自分のサイトで見る（GA4 接続）</a>
     </div>
 
+    <div role="note" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: #fff8e6; border: 1px solid #f1d58a; border-radius: 12px; padding: 12px 16px; font-size: 14px; color: #5b4a12">
+      <span style="font-size: 12px; font-weight: 800; color: #ffffff; background: #b7791f; border-radius: 6px; padding: 2px 8px; letter-spacing: 0.04em">例</span>
+      <span><b>ここの数字はすべて例です。</b>架空のサイトで、ボードの見え方を確かめるためのものです。あなたのサイトの数字は GA4 をつなぐと出ます。</span>
+    </div>
     <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
       <div role="radiogroup" aria-label="サイトのゴール" style="flex: 1 1 280px; max-width: 340px; background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px; padding: 8px 0; max-height: 860px; overflow-y: auto">
         <sc-for list="{{groups}}" as="g" hint-placeholder-count="5">

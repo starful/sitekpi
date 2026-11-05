@@ -1,0 +1,6 @@
+{#- v5: yellow 例 banner — every number on 見本 pages is an example. Vars: ex_b (bold line), ex_text, ex_links -#}
+<div class="ex-banner" role="note">
+  <span class="ex-mark" aria-hidden="true">{{ t("sx.badge", loc) }}</span>
+  <span class="ex-text"><b>{{ ex_b }}</b> {{ ex_text }}</span>
+  <span class="ex-links"><a href="/connect" class="ex-go">{{ t("sx.connect", loc) }}</a>{% if ex_others %}<a href="/samples">{{ t("sx.others", loc) }}</a>{% endif %}</span>
+</div>

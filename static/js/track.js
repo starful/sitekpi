@@ -45,7 +45,7 @@
     });
   }
 
-  // board_view: once per page load; first_in_session marks the activation
+  // board_view: once per page load; first_in_session marks the activation (mode: live · sample; demo is dev only)
   if (isBoard) {
     const mode = path === "/live" ? (connection === "demo" ? "demo" : "live") : "sample";
     const sel = document.querySelector("form[data-period] select[name=period]");
@@ -54,7 +54,6 @@
     track("board_view", { mode: mode, period: sel ? sel.value : "28d", first_in_session: first });
   }
 
-  const TAB = { "s-l0": "now", flow: "flow", "s-l2": "details" };
   function paramsFrom(el) {
     const out = {};
     Object.keys(el.dataset).forEach((k) => {
@@ -77,10 +76,9 @@
     }
     if (a && href === "/connect/google") { track("oauth_start", { location: screen }); return; }
     if (t.closest("[data-feedback-open]")) { track("feedback_open"); return; }
+    if (t.closest("[data-memo-toggle]")) { track("memo_toggle"); return; }
 
     if (isBoard) {
-      const nav = t.closest(".page-nav a[data-nav]");
-      if (nav) { track("board_tab", { tab: TAB[nav.dataset.nav] }); return; }
       const help = t.closest(".help-btn[data-help]");
       if (help) { track("explain_open", { metric: help.dataset.help, location: "details" }); return; }
       const pop = t.closest("[data-pop-open]");
@@ -93,7 +91,7 @@
       }
       const edit = t.closest("[data-edit-open], a[href*='edit=1'], [data-edit-step]");
       if (edit) {
-        track("flow_edit_start", { location: edit.closest(".notice") ? "notice" : edit.closest(".flow-nudge") || edit.hasAttribute("data-edit-step") ? "nudge" : "flow" });
+        track("flow_edit_start", { location: edit.closest(".notice") ? "notice" : edit.closest(".flow-nudge") || edit.hasAttribute("data-edit-step") ? "nudge" : "flow", mode: path === "/live" ? "live" : "sample" });
         return;
       }
       const ch = t.closest("[data-flow-ch]");

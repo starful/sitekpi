@@ -1,7 +1,7 @@
 {#- KPI board building blocks. Import with: {% import "board/_macros.html" as m with context %} -#}
 
 {% macro help_btn(id, title, label=None) -%}
-<button type="button" class="help-btn" data-help="{{ id }}" aria-label="{{ t('help_of', loc, title=title) }}">{{ label or t("help", loc) }}</button>
+<button type="button" class="help-btn{{ '' if label else ' help-q' }}" data-help="{{ id }}" aria-label="{{ t('help_of', loc, title=title) }}">{{ label or "?" }}</button>
 {%- endmacro %}
 
 {% macro focus_tag(label) -%}
@@ -108,7 +108,7 @@
 {%- endmacro %}
 
 {% macro pop_btn(id, title) -%}
-<button type="button" class="help-btn" data-pop-open="{{ id }}" aria-label="{{ t('help_of', loc, title=title) }}" aria-expanded="false">{{ t("help", loc) }}</button>
+<button type="button" class="help-btn help-q" data-pop-open="{{ id }}" aria-label="{{ t('help_of', loc, title=title) }}" aria-expanded="false">?</button>
 {%- endmacro %}
 
 {#- あと: distance from the 業界目安 range (near edge, then 〜 far edge) -#}
@@ -123,4 +123,9 @@
   <span class="rg-k">{{ t("rg.left", loc) }}</span>{{ rg_gap(b.rg) }}
   <span class="rg-bar is-{{ b.rg.state }}" aria-hidden="true"><i class="rg-range" style="left:{{ b.rg.pos_lo }}%;width:{{ b.rg.pos_w }}%"></i><i class="rg-dot" style="left:{{ b.rg.pos_v }}%"></i></span>
 </div>
+{%- endmacro %}
+
+{#- v5: 判定 as colored text (no chips) -#}
+{% macro judge_text(b) -%}
+{% if b.kind == "judge" and b.judge %}<b class="jt jt-{{ b.judge }}">{{ t("judge." ~ b.judge, loc) }}</b>{% elif b.kind == "none" %}<button type="button" class="jt jt-none" data-pop-open="bench-{{ b.key }}" aria-label="{{ t('bench_none_why', loc) }}">{{ t("bench_none", loc) }}</button>{% endif %}
 {%- endmacro %}

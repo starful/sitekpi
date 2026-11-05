@@ -269,3 +269,49 @@ def summary(request: Request, locale: str) -> dict[str, Any] | None:
                         "v": pack_text(ind, "label", locale, str(INDUSTRIES[ind]["label"])),
                         "href": "/live?industry=1"})
     return {"rows": rows, "ready": is_ready(sel)}
+
+
+def sample_setup(request: Request, slug: str, data: dict[str, Any]) -> dict[str, Any] | None:
+    """見本ボード: 流れを直す and 比べる業種 to try, nothing saved (docs/plan s05 · 見本だけ公開).
+
+    The editor reads the sample packs' own event counts; the 業種 drawer opens another sample."""
+    from sitekpi.board.data import build_dense_board
+    from sitekpi.i18n.pack_l10n import pack_text
+    from sitekpi.packs import BENCHMARKS, DEMO
+    from sitekpi.views.setup import flow_editor_context, industry_context
+
+    behavior = str(INDUSTRIES.get(slug, {}).get("category") or "")
+    if behavior not in BEHAVIORS:
+        return None
+    loc = get_locale(request.session)
+    counts: dict[str, int] = {}
+    for cat in BEHAVIORS:
+        for ev, n in (DEMO[slug_of(cat)]["28d"].get("event_counts") or {}).items():
+            counts.setdefault(ev, int(n))
+    counts.update({k: int(v) for k, v in (data.get("event_counts") or {}).items()})
+    steps = [{"key": k, "event": k, "label": step_label(k, loc, slug)} for k in FLOW_STEPS[slug]]
+    editor = flow_editor_context(
+        locale=loc, behavior=behavior, industry=slug, steps=steps, counts=counts,
+        entry=int(data.get("uu") or 0), is_demo=True, max_steps=MAX_FLOW_STEPS,
+    )
+    editor["error"] = None
+    editor["sample"] = True
+    board = build_dense_board(industry=slug, period="28d", ind=INDUSTRIES[slug], data=DEMO[slug]["28d"],
+                              benches_raw=BENCHMARKS[slug], locale=loc)
+    rows = {r["id"]: r for r in board["summary"] + board["funnel"] + board["engage"]}
+    labels = {"signup_rate": rows["signup_cvr"]["label"], "engaged_rate": rows["engaged"]["label"],
+              "bounce_rate": rows["bounce_like"]["label"], "signup_to_pay": rows["funnel_rate_a"]["label"]}
+    mine = {"signup_rate": rows["signup_cvr"].get("value_num"), "engaged_rate": rows["engaged"].get("value_num"),
+            "bounce_rate": rows["bounce_like"].get("value_num"), "signup_to_pay": rows["funnel_rate_a"].get("value_num")}
+    ind = industry_context(locale=loc, behavior=behavior, industry=slug, mine=mine, labels=labels)
+    ind["error"] = None
+    ind["sample"] = True
+    name = pack_text(slug, "label", loc, str(INDUSTRIES[slug]["label"]))
+    return {"editor": editor, "industry": ind, "ind_name": name, "open": ""}
+
+
+
+@router.get("/samples/open")
+def samples_open(industry: str = "") -> Response:
+    """The 見本ボード's 比べる業種 drawer: open the sample board of the chosen industry."""
+    return RedirectResponse(f"/{industry}" if industry in INDUSTRIES else "/samples", status_code=303)

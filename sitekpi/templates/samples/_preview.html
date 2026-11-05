@@ -20,16 +20,14 @@
 
 <div class="sp-card">
   <span class="sp-k sp-k-up">{{ t("verdict.title", loc) }}</span>
-  <p class="sp-verdict">{{ cur.verdict.short or cur.verdict.text }}</p>
+  <p class="sp-verdict">{{ cur.verdict.short_html or cur.verdict.short or cur.verdict.text }}</p>
+  {#- v5: 3 columns with dividers, 判定 as colored text (same as the board) -#}
   <div class="sp-tiles">
     {% for k in cur.verdict.tiles %}
     <div class="sp-tile{{ ' is-issue' if k.issue else '' }}">
-      <span class="sp-tile-label">{% if k.tag %}<span class="tile-tag">{{ k.tag }}</span> {% endif %}{{ k.label }}</span>
-      <span class="sp-tile-value">{{ k.value }}</span>
-      <span class="sp-tile-prev tone-{{ k.prev.tone }}">{{ k.prev.word }}{% if k.prev.text %} {{ k.prev.text }}{% endif %}</span>
-      {% if k.bench.kind == "judge" and k.bench.judge %}<span class="judge judge-{{ k.bench.judge }}">{{ t("judge." ~ k.bench.judge, loc) }}</span>
-      {% elif k.bench.kind == "none" %}<span class="judge judge-none">{{ t("bench_none", loc) }}</span>
-      {% else %}<span class="judge judge-na-chip">{{ t("verdict.bench_na", loc) }}</span>{% endif %}
+      <span class="sp-tile-label">{{ k.label }}</span>
+      <span class="sp-tile-line"><b class="sp-tile-value">{{ k.value }}</b> <span class="sp-tile-prev tone-{{ k.prev.tone }}">{{ t("bx.prev", loc, d=k.prev.text) if k.prev.text else t("bx.prev_none", loc) }}</span></span>
+      <span class="sp-tile-note">{% if k.bench.kind == "judge" and k.bench.judge %}{{ t("rg.ind", loc) }} {{ k.bench.band }} <b class="jt jt-{{ k.bench.judge }}">{{ t("judge." ~ k.bench.judge, loc) }}</b>{% elif k.bench.kind == "none" %}{{ t("bench_none", loc) }}{% else %}{{ t("bx.no_compare", loc) }}{% endif %}</span>
     </div>
     {% endfor %}
   </div>

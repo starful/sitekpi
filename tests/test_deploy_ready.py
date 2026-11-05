@@ -142,7 +142,8 @@ def test_policy_terms_and_rail_links(client):
         assert "【" not in body.get_text() and "{{" not in body.get_text()
         assert body.select_one('a[href^="https://script.google.com/macros/"]'), path
     s = BeautifulSoup(client.get("/glossary").text, "html.parser")
-    assert s.select_one("[data-feedback-open]") and s.select_one("dialog#feedback")
+    # v5: the メモ・ご意見 panel replaced the rail's 「ご意見を送る」 dialog
+    assert s.select_one("aside.memo[data-memo]") and not s.select_one("[data-feedback-open]")
     assert s.select_one('.nav-legal a[href="/policy"]') and s.select_one('.nav-legal a[href="/terms"]')
 
 
@@ -182,7 +183,7 @@ def test_analytics_handoff_cookies_and_hooks(client):
     assert r.cookies.get("sk_ev") == "demo_start.one_click" and r.cookies.get("sk_conn") == "demo"
     s = BeautifulSoup(c.get("/live").text, "html.parser")
     assert s.select_one('script[src^="/static/js/track.js"]')
-    tiles = [a["data-metric"] for a in s.select(".tile[data-metric]")]
+    tiles = [a["data-metric"] for a in s.select(".stat[data-metric]")]
     watch = [li["data-metric"] for li in s.select(".watch-item[data-metric]")]
     assert tiles and watch and all(k and " " not in k for k in tiles + watch)
     r = c.post("/connect/disconnect")

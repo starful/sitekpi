@@ -18,17 +18,15 @@ document.addEventListener("click", (e) => {
   if (e.target.matches && e.target.matches("dialog[data-help-dialog]")) e.target.close();
 });
 
-/* 詳しい数字: groups that start closed (オーディエンス・イベント) */
+/* 詳しい数字: each category opens / closes from its name (the chevron turns); the first three start open */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-dgroup-toggle]");
-  if (!btn) return;
+  if (!btn || !btn.hasAttribute("aria-controls")) return;
   const table = document.getElementById(btn.getAttribute("aria-controls"));
   const open = btn.getAttribute("aria-expanded") !== "true";
   btn.setAttribute("aria-expanded", open ? "true" : "false");
-  btn.textContent = open ? btn.dataset.close : btn.dataset.open;
+  btn.closest(".dgroup")?.classList.toggle("is-open", open);
   if (table) table.hidden = !open;
-  const sum = btn.closest(".dgroup")?.querySelector("[data-dgroup-summary]");
-  if (sum) sum.hidden = open;
 });
 
 /* 詳しい数字 loaded after the page (live GA4: the extra reports are the slow part) */
@@ -41,9 +39,6 @@ document.addEventListener("click", (e) => {
       const res = await fetch(box.dataset.src, { headers: { Accept: "text/html" } });
       if (!res.ok) throw new Error(String(res.status));
       box.innerHTML = await res.text(); // our own server-rendered, autoescaped fragment
-      const warn = Number(box.querySelector("[data-warn]")?.dataset.warn || 0);
-      const badge = document.querySelector("[data-nav-warn]");
-      if (badge && warn) { badge.textContent = badge.textContent.replace(/\d+/, String(warn)); badge.hidden = false; }
       if (location.hash.startsWith("#g-")) document.querySelector(location.hash)?.scrollIntoView();
     } catch (err) {
       const p = document.createElement("p");
@@ -51,7 +46,7 @@ document.addEventListener("click", (e) => {
       p.textContent = BOARD.load_error + " ";
       const retry = document.createElement("button");
       retry.type = "button";
-      retry.className = "dgroup-toggle";
+      retry.className = "link-btn";
       retry.textContent = BOARD.retry;
       retry.addEventListener("click", load);
       p.appendChild(retry);
@@ -61,21 +56,6 @@ document.addEventListener("click", (e) => {
     }
   }
   load();
-})();
-
-/* The page menu in the top bar follows the scroll */
-(function () {
-  const links = Array.from(document.querySelectorAll(".page-nav [data-nav]"));
-  if (!links.length || !("IntersectionObserver" in window)) return;
-  const seen = new Map();
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((en) => seen.set(en.target.id, en.isIntersecting ? en.intersectionRatio : 0));
-    let best = null;
-    links.forEach((a) => { const r = seen.get(a.dataset.nav) || 0; if (r > 0 && (!best || r > (seen.get(best.dataset.nav) || 0))) best = a; });
-    if (!best) return;
-    links.forEach((a) => { const on = a === best; a.classList.toggle("is-on", on); if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current"); });
-  }, { rootMargin: "-120px 0px -40% 0px", threshold: [0, 0.1, 0.3, 0.6] });
-  links.forEach((a) => { const el = document.getElementById(a.dataset.nav); if (el) io.observe(el); });
 })();
 
 /* Right-top drawers (比べる業種 · 段の編集): one open at a time */
@@ -114,7 +94,7 @@ if (BOARD.auto_open === "industry") window.SiteDrawer.open("industry");
 document.addEventListener("click", (e) => {
   if (!e.target.closest("[data-ind-adjust]")) return;
   window.SiteDrawer.close();
-  const chip = document.querySelector(".top-right .ind-chip");
+  const chip = document.querySelector(".top-right [data-drawer-open=industry]");
   /* after this click has passed the popover's outside-click handler */
   if (chip && window.SiteKPIPop) setTimeout(() => window.SiteKPIPop.open("bench-all", chip), 0);
 });
@@ -172,32 +152,3 @@ document.addEventListener("click", (e) => {
   if (!open) document.querySelector('[data-flow-ch="all"]')?.click(); // back to 全体
   if (open && window.SiteKPITrack) window.SiteKPITrack("channel_filter");
 });
-
-/* 👍 👎 under each card: one tap sends; a word can follow */
-(function () {
-  async function send(box, body) {
-    try {
-      const r = await fetch("/feedback", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(Object.assign({ screen: "board." + box.dataset.cardFb, path: location.pathname }, body)) });
-      return r.ok;
-    } catch (err) { return false; }
-  }
-  document.querySelectorAll("[data-card-fb]").forEach((box) => {
-    const more = box.querySelector(".card-fb-more");
-    const input = more.querySelector("input");
-    box.querySelectorAll("[data-vote]").forEach((b) => b.addEventListener("click", async () => {
-      box.querySelectorAll("[data-vote]").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
-      more.hidden = false;
-      await send(box, { vote: b.dataset.vote });
-      if (window.SiteKPITrack) window.SiteKPITrack("feedback_submit", { vote: b.dataset.vote, has_comment: "false", location: "card_" + box.dataset.cardFb });
-    }));
-    more.querySelector("[data-send]").addEventListener("click", async () => {
-      const text = input.value.trim();
-      if (!text) return;
-      if (await send(box, { comment: text })) {
-        more.replaceChildren(Object.assign(document.createElement("span"), { className: "card-fb-thanks", textContent: box.dataset.sent || "✓" }));
-        if (window.SiteKPITrack) window.SiteKPITrack("feedback_submit", { vote: "none", has_comment: "true", location: "card_" + box.dataset.cardFb });
-      }
-    });
-  });
-})();

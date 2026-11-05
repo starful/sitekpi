@@ -22,7 +22,7 @@
         <h2>{{ t("connect.hero.title", loc) }}</h2>
         <p class="meta">{{ t("connect.hero.meta", loc) }}</p>
         <a class="btn primary cx-big" href="{{ '/connect/google' if oauth_ready else '/connect/demo' }}">{{ t("connect.btn.google", loc) }}</a>
-        <a class="cx-demo" href="/connect/demo?start=1">{{ t("connect.btn.demo_x", loc) }}</a>
+        <a class="cx-demo" href="/samples">{{ t("connect.btn.demo_x", loc) }}</a>
         {% if not oauth_ready %}<p class="hint">{{ t("connect.hint.demo_oauth", loc) }}</p>{% endif %}
       </div>
       <ul class="cx-safe">

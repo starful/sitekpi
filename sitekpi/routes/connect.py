@@ -115,8 +115,18 @@ def _back_to_connect(request: Request, error: str, reason: str = "other") -> Red
     return _mark(RedirectResponse("/connect", status_code=302), f"oauth_error.{reason}")
 
 
+def demo_allowed() -> bool:
+    """The demo connection is a dev / test mode only (DEMO_CONNECT=1, or OAuth not set up).
+    In production the public sees sample boards instead (docs/plan: 見本だけ公開)."""
+    import os
+
+    return os.environ.get("DEMO_CONNECT") == "1" or not oauth_configured() or not HAS_GOOGLE_AUTH
+
+
 @router.get("/connect/demo")
 def connect_demo(request: Request, start: int = 0):
+    if not demo_allowed():
+        return RedirectResponse("/samples", status_code=302)
     _clear_keep_locale(request)
     request.session["ga4_demo"] = True
     request.session["ga4_email"] = "demo@kpistarter.local"

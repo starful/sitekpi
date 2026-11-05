@@ -7,6 +7,8 @@ styles in static/css/board.css, behaviour in static/js/board.js.
 
 from __future__ import annotations
 
+from markupsafe import Markup
+
 from contextvars import ContextVar
 from typing import Any
 
@@ -421,8 +423,24 @@ def _verdict(board: dict[str, Any], watch: list[dict[str, Any]],
                                locale=locale, help_id=eng["id"]))
     joiner = "" if locale == "ja" else " "
     sep = t("bx.sep", locale)
-    return {"text": joiner.join(lines), "short": (short[0] + sep + short[1]) if len(short) > 1 else "".join(short),
+    short_text = (short[0] + sep + short[1]) if len(short) > 1 else "".join(short)
+    # v5: the issue's name in orange inside the sentence; its tile says （いちばんの課題） in the label
+    hl = ""
+    for k in tiles:
+        if k["issue"]:
+            hl = k["label"]
+            k["label"] = k["label"] + t("bx.issue_suffix", locale)
+    return {"text": joiner.join(lines), "short": short_text, "short_html": _highlight(short_text, hl),
             "tiles": tiles}
+
+
+def _highlight(text: str, part: str) -> Markup:
+    from markupsafe import escape
+
+    safe = escape(text)
+    if not part or str(escape(part)) not in str(safe):
+        return Markup(safe)
+    return Markup(str(safe).replace(str(escape(part)), f'<span class="v-issue">{escape(part)}</span>', 1))
 
 
 def _dialog(item: dict[str, Any], locale: str) -> dict[str, str]:
@@ -712,8 +730,8 @@ def _details_view(board: dict[str, Any], extras: dict[str, Any] | None, flow: di
         groups.append({
             "id": gid, "title": t(f"panel.{gid}", loc), "rows": rows, "count": len(rows), "warn": warn,
             "value_head": head or t("col.value", loc), "note": note, "missing": missing or [],
-            # v4: every category starts closed (name · count · 要注意); open only what you need
-            "collapsed": bool(rows),
+            # v5: the first three categories (転換ファネル · 売上 · エンゲージ) start open, the rest closed
+            "collapsed": bool(rows) and len(groups) >= 3,
             "summary": " · ".join(f"{r['label']} {r['value']}" for r in rows[:3]) + (" …" if len(rows) > 3 else ""),
         })
 

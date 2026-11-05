@@ -434,6 +434,7 @@ def legacy_content():
 def page_industry(request: Request, slug: str, period: str = Query(default="28d")):
     """Dense board for industry sample packs (DEMO only — live is /live)."""
     from sitekpi.board.extras import sample_extras
+    from sitekpi.routes.setup import sample_setup
 
     if slug not in INDUSTRIES:
         return HTMLResponse("<h1>Not Found</h1>", status_code=404)
@@ -460,5 +461,8 @@ def page_industry(request: Request, slug: str, period: str = Query(default="28d"
             flow=_with_sessions(sample_flow_context(slug, data, get_locale(request.session)), data),
             prev=(prev := sample_prev(slug, period, data)),
             extras=sample_extras(slug, data, prev),
+            editor=(try_ := sample_setup(request, slug, data) or {}).get("editor"),
+            industry_drawer=try_.get("industry"),
+            ind_name=try_.get("ind_name", ""),
         )
     )

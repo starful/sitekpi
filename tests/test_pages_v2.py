@@ -67,7 +67,7 @@ def test_connect_reassures_before_login(client):
     soup = _soup(client.get("/connect").text)
     safe = soup.select(".cx-safe li")
     assert len(safe) == 3 and "読み取りだけ" in safe[0].get_text()
-    assert soup.select_one("a.cx-demo")["href"] == "/connect/demo?start=1"
+    assert soup.select_one("a.cx-demo")["href"] == "/samples"  # v5: samples, not a demo connection
 
 
 def test_settings_language_cards_and_site(client):

@@ -97,3 +97,16 @@ body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font-
 @media (prefers-reduced-motion: reduce) {
   .sp-preview, .sp-bar i { transition: none; }
 }
+
+/* v5: the preview's いまの状態 matches the board — no boxes, no chips */
+.sp-verdict .v-issue { color: #b45309; }
+.sp-tiles { gap: 0; }
+.sp-tile { border: 0; border-left: 1px solid #eef1f5; border-radius: 0; padding: 2px 16px; gap: 2px; background: none; }
+.sp-tile:first-child { border-left: 0; padding-left: 0; }
+.sp-tile.is-issue { background: none; }
+.sp-tile.is-issue .sp-tile-value { color: #b45309; }
+.sp-tile-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.sp-tile-prev.tone-up { color: var(--up, #0f766e); } .sp-tile-prev.tone-down { color: #b45309; }
+.sp-tile-note { font-size: 0.75rem; color: var(--muted); }
+.jt { font-weight: 800; } .jt-up { color: #0f766e; } .jt-mid { color: #1e40af; } .jt-down { color: #b45309; }
+@media (max-width: 860px) { .sp-tile { border-left: 0; padding: 8px 0 0; border-top: 1px solid #eef1f5; } .sp-tile:first-child { border-top: 0; padding-top: 0; } }

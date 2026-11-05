@@ -1,18 +1,17 @@
 {#- 詳しい数字: every category stacked (one per block). Inline in board.html, or the /live/details fragment.
     Context: details (views/board.py _details_view) -#}
 {% import "board/_macros.html" as m with context %}
-<nav class="dnav" aria-label="{{ t('detail.title', loc) }}">
-  {% for g in details.groups %}<a href="#g-{{ g.id }}" class="dnav-chip">{{ g.title }}{% if g.warn %}<span class="dnav-warn">{{ g.warn }}</span>{% endif %}</a>{% endfor %}
-</nav>
 <div class="dgroups" data-warn="{{ details.warn }}">
   {% for g in details.groups %}
-  <div class="dgroup" id="g-{{ g.id }}">
-    <div class="dgroup-head">
-      <h3>{{ g.title }}</h3>
-      {% if g.rows %}<span class="dgroup-n">{{ g.count }}</span>{% endif %}
-      {% if g.warn %}<span class="judge judge-down">{{ t("detail.warn_n", loc, n=g.warn) }}</span>{% endif %}
-      {% if g.collapsed %}<button type="button" class="dgroup-toggle" data-dgroup-toggle aria-expanded="false" aria-controls="dt-{{ g.id }}" data-open="{{ t('detail.open', loc, n=g.count) }}" data-close="{{ t('detail.close', loc) }}">{{ t("detail.open", loc, n=g.count) }}</button>{% endif %}
-    </div>
+  <div class="dgroup{{ ' is-open' if g.rows and not g.collapsed else '' }}" id="g-{{ g.id }}">
+    {% if g.rows %}
+    <h3 class="dgroup-head"><button type="button" class="dgroup-toggle" data-dgroup-toggle aria-expanded="{{ 'false' if g.collapsed else 'true' }}" aria-controls="dt-{{ g.id }}">
+      <span class="chev" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5 L7 5 L3 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <b>{{ g.title }}</b><span class="dgroup-n">{{ t("bx.metrics_n", loc, n=g.count) }}</span>{% if g.warn %}<span class="dgroup-warn">{{ t("detail.warn_n", loc, n=g.warn) }}</span>{% endif %}
+    </button></h3>
+    {% else %}
+    <h3 class="dgroup-head is-static"><b>{{ g.title }}</b></h3>
+    {% endif %}
     {% if g.note %}
     <p class="dgroup-note">{{ g.note }}</p>
     {% else %}
@@ -24,22 +23,19 @@
         <span role="columnheader" class="num">{{ t("col.prev", loc) }}</span>
         <span role="columnheader" class="num">{{ t("rg.ind", loc) }}</span>
         <span role="columnheader" class="num">{{ t("rg.left", loc) }}</span>
-        <span role="columnheader" class="num">{{ t("detail.judge", loc) }}</span>
       </div>
       {% for r in g.rows %}
       <div class="dt-row{{ ' is-focus' if r.focus else '' }}" role="row">
         <span class="dt-name" role="rowheader">
           {% if r.code %}<code class="row-name">{{ r.label }}</code>{% else %}<span class="row-name">{{ r.label }}</span>{% endif %}
           {% if r.help %}{{ m.help_btn(r.id, r.label) }}{% endif %}
-          {% if r.focus %}{{ m.focus_tag(t("primary_tag", loc)) }}{% endif %}
           {% if r.sub %}<small class="dt-sub{{ ' is-warn' if r.sub_warn else '' }}">{{ r.sub }}</small>{% endif %}
         </span>
         <span class="num dt-value" role="cell">{{ r.value }}</span>
         <span class="ctr" role="cell">{% if r.spark %}<svg class="spark tone-{{ r.spark.tone }}" width="76" height="26" viewBox="0 0 76 26" aria-hidden="true"><polyline points="{{ r.spark.points }}" /><circle cx="{{ r.spark.x }}" cy="{{ r.spark.y }}" r="2.5" /></svg>{% else %}<span class="muted">—</span>{% endif %}</span>
         <span class="num prev-cell tone-{{ r.delta_tone }}" role="cell">{{ r.delta }}</span>
         <span class="num dt-bench" role="cell">{% if r.bench.kind == "judge" %}{{ m.bench_value(r.bench, r.bench.band) }}{% else %}<span class="muted">—</span>{% endif %}</span>
-        <span class="num dt-gap" role="cell">{% if r.bench.kind == "judge" %}{{ m.rg_gap(r.bench.rg) }}{% else %}<span class="muted">—</span>{% endif %}</span>
-        <span class="num judge-cell" role="cell">{{ m.judge_cell(r.bench) }}</span>
+        <span class="num dt-gap" role="cell">{% if r.bench.kind == "judge" %}{{ m.rg_gap(r.bench.rg) }}{% elif r.bench.kind == "none" %}{{ m.judge_text(r.bench) }}{% else %}<span class="muted">—</span>{% endif %}</span>
       </div>
       {% endfor %}
     </div>

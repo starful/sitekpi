@@ -39,7 +39,7 @@ def test_landing_page_purpose_audience_features_how_and_seo(client):
     for lang in ("", "?lang=en", "?lang=ko"):
         s = BeautifulSoup(client.get("/" + lang).text, "html.parser")
         hrefs = [a["href"] for a in s.select(".lp-hero .lp-actions a")]
-        assert hrefs == ["/connect", "/connect/demo?start=1"]
+        assert hrefs == ["/connect", "/samples"]  # v5: no public demo — the sample boards instead
         for sec in ("problem", "features", "who", "samples", "how", "story", "faq"):
             assert s.select_one(f"section#{sec} h2"), (lang, sec)
         assert len(s.select(".lp-stat")) == 5 and len(s.select(".lp-feat")) == 4
@@ -84,14 +84,14 @@ def test_demo_is_one_click_to_a_board_with_a_guess_notice(client):
     r = client.get("/connect/demo?start=1")
     assert r.headers["location"] == "/live"
     s = BeautifulSoup(client.get("/live").text, "html.parser")
-    items = [i.get_text(" ", strip=True) for i in s.select(".notice .notice-item")]
-    assert len(items) == 2 and "買う" in items[0] and "EC・小売" in items[1]  # both guesses, each fixable
-    assert s.select_one(".notice form[action='/setup/keep']") and s.select_one(".notice [data-edit-open]")
-    assert s.select_one(".notice [data-drawer-open='industry']")
-    # 上のバー: 比べる業種 sits with 期間; 目安を調整 moved into the 業種 drawer
-    assert s.select_one(".top-right .ind-chip") and not s.select_one(".top-right .adjust-link")
+    # v5: one small line at the top of the verdict card — both guesses, 直す · このままでよい
+    note = s.select_one(".verdict .notice")
+    assert [b.get_text() for b in note.select("b")] == ["買う", "EC・小売"] and "仮で決めた設定" in note.get_text()
+    assert note.select_one("form[action='/setup/keep']") and note.select_one("[data-edit-open]")
+    # 上のバー (text): 比べる業種 … 変える ▾ with 期間; 目安を調整 moved into the 業種 drawer
+    assert s.select_one(".top-right [data-drawer-open='industry'].link-btn") and not s.select_one(".top-right .adjust-link")
     assert s.select_one("#drawer-industry .drawer-adjust [data-ind-adjust]") and s.select_one("template#pop-bench-all")
-    assert s.select_one(".where-title .where-edit")  # 流れを直す beside the title and 説明
+    assert s.select_one(".where-head .where-edit")  # 流れを直す as blue text in the card head
     assert "デモ接続の見本" in str(s.select_one("template#pop-flow-help"))  # not 「GA4 を接続すると」
     assert client.get("/").headers["location"] == "/live"  # connected → straight to the board
 
@@ -130,3 +130,46 @@ def test_help_page_and_connect_explain_the_unverified_app_screen(client, monkeyp
     s = BeautifulSoup(client.get("/connect").text, "html.parser")
     note = s.select_one(".cx-unverified")
     assert note and "続行" in note.get_text() and note.select_one('a[href="/help#connect"]')
+
+
+def test_v5_samples_only_no_public_demo(client, monkeypatch):
+    """v5: the demo connection is a dev / test mode; the public sees sample boards (例 everywhere)."""
+    from fastapi.testclient import TestClient
+
+    c = TestClient(client.app, follow_redirects=False)
+    monkeypatch.delenv("DEMO_CONNECT")
+    r = c.get("/connect/demo?start=1")
+    assert r.status_code == 302 and r.headers["location"] == "/samples"
+    monkeypatch.setenv("DEMO_CONNECT", "1")
+    # sample board: 例の数字 by the title, the yellow banner, 例 in the menu
+    s = BeautifulSoup(client.get("/ec").text, "html.parser")
+    assert s.select_one(".top .ex-tag").get_text() == "例の数字"
+    banner = s.select_one(".ex-banner")
+    assert "数字はすべて例" in banner.get_text() and banner.select_one('a[href="/connect"]') and banner.select_one('a[href="/samples"]')
+    assert s.select_one(".rail a.nav-sample.is-on .nav-ex")
+    # 比べる業種 on a sample opens another sample (GET) — nothing is saved
+    form = s.select_one("#drawer-industry form#ind-form")
+    assert form["method"] == "get" and form["action"] == "/samples/open"
+    r = c.get("/samples/open?industry=hr")
+    assert r.status_code == 303 and r.headers["location"] == "/hr"
+    assert c.get("/samples/open?industry=nope").headers["location"] == "/samples"
+    # the samples list says the same
+    lst = BeautifulSoup(client.get("/samples").text, "html.parser")
+    assert "すべて例" in lst.select_one(".ex-banner").get_text()
+    # every 「デモで試す」 became 「見本ボードを見る」
+    for path in ("/", "/connect", "/help"):
+        html = client.get(path).text
+        assert "/connect/demo" not in html.replace('/connect/demo"', "") or path == "/connect", path
+        assert "デモで試す" not in html, path
+
+
+def test_v5_memo_panel_on_board_glossary_samples_builder(client):
+    for path in ("/ec", "/glossary", "/samples", "/builder"):
+        s = BeautifulSoup(client.get(path).text, "html.parser")
+        memo = s.select_one(".shell.has-memo aside.memo[data-memo]")
+        assert memo and memo.select_one("textarea[data-memo-text][maxlength='500']"), path
+        assert "返信はしません" in memo.get_text() and memo.select_one("[data-mood=up]"), path
+    for path in ("/settings", "/help"):
+        assert not BeautifulSoup(client.get(path).text, "html.parser").select_one("aside.memo"), path
+    r = client.post("/feedback", json={"comment": "「あと」がわからない", "screen": "samples", "section": "どこで離れているか", "path": "/ec"})
+    assert r.status_code == 200 and r.json()["ok"]

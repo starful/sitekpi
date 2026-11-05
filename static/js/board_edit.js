@@ -243,3 +243,8 @@
   const auto = JSON.parse(document.getElementById("board-data").textContent).auto_open;
   if (auto === "edit") setEditing(true);
 })();
+
+/* 見本ボード: 流れを直す is try-only — the form never posts */
+document.addEventListener("submit", (e) => {
+  if (e.target instanceof HTMLFormElement && e.target.hasAttribute("data-try-only")) e.preventDefault();
+}, true);

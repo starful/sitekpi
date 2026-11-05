@@ -27,7 +27,7 @@ def test_no_simple_mode_and_no_next_points(client):
     assert "detail-only" not in html and "simple-hide" not in html
     assert "次に見るポイント" not in html and 'class="insights"' not in html
     s = BeautifulSoup(html, "html.parser")
-    assert len(s.select(".verdict .tile")) == 3
+    assert len(s.select(".verdict .stat")) == 3
     assert "view-switch" not in html  # one table per tab; no per-section view modes
 
 
@@ -51,24 +51,30 @@ def test_board_reads_verdict_then_where_then_detail(client):
     assert order == ["verdict", "where", "detail"]
     text = s.select_one(".verdict-text").get_text()
     assert text.startswith("購入完了は増えています。いちばんの課題は")
-    tiles = s.select(".verdict .tile")
-    assert [t.select_one(".tile-label").get_text() for t in tiles] == ["購入完了", "購入CVR", "カート→購入率"]
-    assert "is-issue" in tiles[2]["class"] and tiles[2].select_one(".judge-down")
-    assert tiles[0].select_one(".judge-na-chip")  # counts are never judged against the industry
-    assert s.select_one(".where #flow, #flow.where") and s.select_one(".where .watch-list")
+    tiles = s.select(".verdict .stat")
+    # v5: 3 columns, no boxes or chips; the issue says so in its label and in orange in the sentence
+    assert [t.select_one(".stat-name").get_text() for t in tiles] == ["購入完了", "購入CVR", "カート→購入率（いちばんの課題）"]
+    assert s.select_one(".verdict-text .v-issue").get_text() == "カート→購入率"
+    assert "is-issue" in tiles[2]["class"] and tiles[2].select_one(".jt.jt-down")
+    assert "業界と比べません" in tiles[0].select_one(".stat-note").get_text()  # counts are never judged
+    assert not s.select(".verdict .judge, .verdict .tile-tag, .tiles")
+    assert s.select_one(".where #flow, #flow.where") and s.select_one(".where .wtable")
     groups = [g["id"] for g in s.select(".dgroup")]
     assert groups == ["g-funnel", "g-revenue", "g-engage", "g-channels", "g-device", "g-audience", "g-events", "g-biz"]
-    assert [a["href"] for a in s.select(".dnav a")] == ["#" + g for g in groups]
-    # v4: every category starts closed — name · count · 要注意, opened on demand
-    assert s.select_one("#dt-audience[hidden]") and s.select_one("#dt-funnel[hidden]")
-    assert s.select_one('#g-funnel [data-dgroup-toggle][aria-controls="dt-funnel"]')
+    assert not s.select(".dnav")
+    # v5: the first three categories are open, the rest closed; a chevron, no 開く / 閉じる text
+    assert not s.select("#dt-funnel[hidden], #dt-revenue[hidden], #dt-engage[hidden]")
+    assert s.select_one("#dt-audience[hidden]") and s.select_one("#dt-channels[hidden]")
+    tg = s.select_one('#g-funnel [data-dgroup-toggle][aria-controls="dt-funnel"]')
+    assert tg["aria-expanded"] == "true" and tg.select_one(".chev svg") and "開く" not in tg.get_text()
+    assert [h.get_text() for h in s.select("#dt-funnel .dt-head span")] == ["指標", "値", "8週", "前期比", "業界", "あと"]
     # less on screen first: channel chips and the 流入別 table wait behind 「流入別に見る」
     assert s.select_one("[data-ch-toggle]") and all(x.has_attr("hidden") for x in s.select("[data-ch-part]"))
-    # 👍 👎 under each card, 「? この画面の見方」 in the top bar
-    assert [b["data-card-fb"] for b in s.select("[data-card-fb]")] == ["now", "flow", "details"]
+    # v5: メモ panel instead of 👍 👎 under each card; 「? 見方」 in the top bar; no page menu
+    assert not s.select("[data-card-fb]") and s.select_one("aside.memo[data-memo] textarea[data-memo-text]")
+    assert [x["data-memo-where"] for x in s.select(".content > section")] == ["いまの状態", "どこで離れているか", "詳しい数字"]
     assert s.select_one('.top a.top-help[href="/help#read"]')
-    # the page menu in the top bar
-    assert [a["href"] for a in s.select(".top .page-nav a")] == ["#s-l0", "#flow", "#s-l2"]
+    assert not s.select(".page-nav")
 
 
 def test_rows_show_benchmark_gap_trend_and_help(client):
@@ -88,11 +94,11 @@ def test_rows_show_benchmark_gap_trend_and_help(client):
 
 def test_watch_ranks_metrics_outside_benchmark(client):
     s = _soup(client, "/hr")
-    items = s.select(".watch-list .watch-item")
+    items = s.select(".wtable .watch-item")
     assert items and "tone-down" in items[0]["class"]
     # 開始→完了率 has only a SiteKPI 初期値 → never judged; the sourced CVR is
     assert "応募CVR" in items[0].select_one(".watch-name").get_text()
-    assert items[0].select_one(".judge.judge-down")
+    assert [h.get_text() for h in s.select(".wtable .whead span")] == ["", "今", "業界", "あと"]
     assert not any("開始→完了率" in i.get_text() for i in items)
     # the long lines (目安帯 · 前期 · 見るポイント) moved to the 説明 popover
     pop = _tpl(s, "watch-1")
@@ -109,10 +115,11 @@ def test_band_only_in_tooltip_and_judge_chips_in_tables(client):
     s = _soup(client, "/hr")
     assert not s.select(".bench-band")
     assert s.select_one("#g-funnel .dt-bench .bench-v[title]")
-    chips = [c.get_text() for c in s.select("#g-funnel .judge-cell .judge:not(.judge-none)")]
-    assert chips == ["要注意"]  # only the sourced 応募CVR is judged; 初期値 rows say 基準なし
+    assert not s.select("#g-funnel .judge-cell, #g-funnel .judge")  # v5: no 判定 column, no chips
+    judged = [r for r in _rows(s, "funnel") if r.select_one(".dt-gap .rg-gap")]
+    assert [_name(r) for r in judged] == ["応募CVR"]  # only the sourced 応募CVR is judged
     row = [r for r in _rows(s, "funnel") if "開始→完了率" in _name(r)][0]
-    assert row.select_one(".judge-cell .judge-none[data-pop-open]")
+    assert row.select_one(".dt-gap .jt-none[data-pop-open]")  # 初期値 rows say 基準なし
 
 
 def test_channels_top5_plus_others_with_help(client):
@@ -154,8 +161,8 @@ def test_cited_benchmarks_link_their_source(client):
 def test_issue_tile_never_repeats_the_rate_tile(client):
     """/hr: 応募CVR is the only metric below its 目安 and already has tile 2 → tile 3 is the flow's biggest drop."""
     s = _soup(client, "/hr")
-    labels = [t.select_one(".tile-label").get_text() for t in s.select(".verdict .tile")]
-    assert labels == ["応募完了", "応募CVR", "求人を見た → 応募を開始"]
+    labels = [t.select_one(".stat-name").get_text() for t in s.select(".verdict .stat")]
+    assert labels == ["応募完了", "応募CVR", "求人を見た → 応募を開始（いちばんの課題）"]
     assert "90.7% が次に進まない" in _tpl(s, "tile-3").get_text()
 
 def test_board_css_uses_the_six_text_sizes_only():

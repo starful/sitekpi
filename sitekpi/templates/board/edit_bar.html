@@ -11,13 +11,13 @@
       {% endfor %}
     </select>
   </label>
-  <form method="post" action="/setup" class="edit-actions" id="edit-form" data-form>
+  <form method="post" action="/setup" class="edit-actions" id="edit-form" data-form{% if editor.get("sample") %} data-try-only{% endif %}>
     <input type="hidden" name="behavior" value="{{ editor.data.behavior }}" data-behavior />
     <input type="hidden" name="period" value="{{ period }}" />
     <div data-hidden hidden></div>
     <button type="button" class="edit-cancel" data-reset data-edit-close>{{ t("bx.cancel", loc) }}</button>
-    <button type="submit" class="edit-save">{{ t("bx.save", loc) }}</button>
+    {% if editor.get("sample") %}<button type="submit" class="edit-save" disabled title="{{ t('sx.no_save', loc) }}">{{ t("bx.save", loc) }}</button>{% else %}<button type="submit" class="edit-save">{{ t("bx.save", loc) }}</button>{% endif %}
   </form>
   {% if editor.error %}<p class="edit-error" role="alert" data-edit-error>{{ editor.error }}</p>{% endif %}
-  {% if editor.is_demo %}<p class="edit-demo">{{ t("setupx.demo_note", loc) }}</p>{% endif %}
+  {% if editor.get("sample") %}<p class="edit-demo">{{ t("sx.no_save", loc) }} <a href="/connect">{{ t("sx.connect", loc) }}</a></p>{% elif editor.is_demo %}<p class="edit-demo">{{ t("setupx.demo_note", loc) }}</p>{% endif %}
 </div>

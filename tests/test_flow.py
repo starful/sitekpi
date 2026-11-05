@@ -56,7 +56,7 @@ def test_sample_flow_only_narrows(slug):
 def test_sample_board_shows_flow_with_worst_step_and_no_mapping_form():
     html = _client().get("/ec").text
     flow = _soup(html).select_one("section#flow")
-    assert flow and "見本" in flow.select_one("h2").get_text()
+    assert flow and _soup(html).select_one(".ex-banner")  # v5: the 例 banner says it is a sample
     stages = flow.select(".flow-stage")
     assert [s.select_one(".flow-label").get_text() for s in stages] == ["サイトに来た", "サイトを開いた", "しっかり見た（10秒以上）", "商品を見た", "カートに追加", "購入手続きへ", "購入"]
     assert stages[0].select_one(".flow-users strong").get_text() == "68,500"
@@ -72,9 +72,12 @@ def test_sample_board_shows_flow_with_worst_step_and_no_mapping_form():
     assert chs[0] == "all" and len(chs) == 6
     strong = stages[1].select_one(".flow-users strong")
     assert all(strong.has_attr(f"data-v-{c}") for c in chs)
-    assert not flow.select("[data-pop-open^='flow-add']") and not _soup(html).select("[data-edit-bar]")
+    assert not flow.select("[data-pop-open^='flow-add']")
+    # v5: 流れを直す can be tried on a sample — the form never posts and 保存 is off
+    bar = _soup(html).select_one("[data-edit-bar]")
+    assert bar.select_one("form#edit-form[data-try-only] .edit-save[disabled]") and "保存はされません" in bar.get_text()
     # Top → bottom: いまの状態 → どこで離れているか (行動フロー + 今見るべきこと) → 詳しい数字
-    assert html.index('class="verdict"') < html.index('id="flow"') < html.index('class="watch"') < html.index('class="detail"')
+    assert html.index('class="verdict card"') < html.index('id="flow"') < html.index('class="watch"') < html.index('class="detail card"')
 
 
 @pytest.mark.parametrize("loc,label", [("en", "Arrived"), ("ko", "사이트 방문")])
@@ -252,7 +255,7 @@ def test_board_first_with_a_guessed_flow_then_setup(live):
     notice = soup.select_one(".notice")
     # the site sends submit_application, not a GA4 conversion event → reading flow, said so
     assert notice and "ブログ・記事を読んでもらう" in notice.get_text() and "転換イベントが見つからない" in notice.get_text()
-    assert soup.select_one(".verdict .tile") and soup.select_one("#flow .flow-stage")
+    assert soup.select_one(".verdict .stat") and soup.select_one("#flow .flow-stage")
     # サイトの設定 opens on the board's own flow (the guess), with the site's numbers
     assert c.get("/setup").headers["location"] == "/live?edit=1#flow"
     soup = _soup(c.get("/live?edit=1").text)
@@ -281,7 +284,7 @@ def test_setup_is_the_boards_edit_mode(live):
     assert data["counts"]["submit_application"] == 260
     assert soup.select_one("form[action='/setup'] [data-behavior]")
     assert soup.select_one("#drawer-step[data-drawer] [data-events]")
-    assert soup.select_one(".ind-chip[data-drawer-open=industry]") and soup.select_one("#drawer-industry form[action='/setup/industry']")
+    assert soup.select_one(".top-right [data-drawer-open=industry]") and soup.select_one("#drawer-industry form[action='/setup/industry']")
     # choosing a ひな形 only: its standard flow, industry follows the behaviour
     r = c.post("/setup", data={"behavior": "recruit"})
     assert r.status_code == 303 and r.headers["location"] == "/live"
@@ -339,8 +342,8 @@ def test_industry_of_another_kind_uses_site_wide_standards_only(live):
     c.post("/setup/industry", data={"industry": "legal"})
     html = c.get("/live").text
     soup = _soup(html)
-    assert "買う" in soup.select_one("header.top .meta").get_text()
-    assert "士業・法律事務所" in soup.select_one("header.top .ind-chip").get_text()
+    assert "買う" in soup.select_one(".rail .nav-site-sub").get_text()
+    assert "士業・法律事務所" in soup.select_one("header.top .top-item b").get_text()
     assert "Consulting & Professional Services" in _template(html, "pop-bench-engaged_rate").select_one("a.src-btn")["title"]
     # CVR standards always follow the chosen industry, whatever the flow
     assert _template(html, "pop-bench-signup_rate").select_one("a.src-btn, .pop-why")
@@ -455,8 +458,8 @@ def test_blog_flow_takes_any_industry(live):
     assert "業種を問いません" in drawer.get_text()
     c.post("/setup/industry", data={"industry": "news"})
     html = c.get("/live").text
-    assert "ブログ・記事を読んでもらう" in _soup(html).select_one("header.top .meta").get_text()
-    assert "ニュース・購読" in _soup(html).select_one("header.top .ind-chip").get_text()
+    assert "ブログ・記事を読んでもらう" in _soup(html).select_one(".rail .nav-site-sub").get_text()
+    assert "ニュース・購読" in _soup(html).select_one("header.top .top-item b").get_text()
     assert _template(html, "pop-bench-engaged_rate")  # site-wide standards still apply
 
 
