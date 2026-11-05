@@ -158,7 +158,7 @@ a { color: var(--accent-ink); }
 .lp-faq-band h2 { margin-bottom: 24px; }
 .lp-faq { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
 .lp-faq details { border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; background: #fff; }
-.lp-faq summary { cursor: pointer; font-weight: 800; display: flex; gap: 10px; list-style: none; }
+.lp-faq summary { cursor: pointer; font-weight: 800; display: flex; align-items: center; gap: 10px; list-style: none; min-height: 3.2em; } /* every closed card the same height (2 lines fit) */
 .lp-faq summary::-webkit-details-marker { display: none; }
 .lp-faq summary::after { content: "+"; margin-left: auto; color: var(--muted); }
 .lp-faq details[open] summary::after { content: "−"; }

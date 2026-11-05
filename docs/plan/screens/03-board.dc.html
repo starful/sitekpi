@@ -46,9 +46,9 @@
         <span style="margin-left: auto; display: flex; gap: 16px"><a href="02-connect.dc.html" style="font-weight: 800; color: #1d4ed8; text-decoration: none">自分のサイトをつなぐ →</a><a href="05-samples.dc.html" style="font-weight: 700; color: #1d4ed8; text-decoration: none">ほかの見本 →</a></span>
       </div>
     </sc-if>
-    <div style="padding: 10px 32px 0; display: flex; justify-content: flex-end"><button type="button" onClick="{{flip}}" style="font: inherit; font-size: 12px; font-weight: 700; color: #5b6676; background: #ffffff; border: 1px dashed #c3cad5; border-radius: 999px; padding: 4px 12px; cursor: pointer">設計の切り替え: {{flipLabel}}</button></div>
+    <div style="padding: 10px 32px 0; display: flex; justify-content: flex-end"><button type="button" onClick="{{flip}}" style="font: inherit; font-size: 12px; font-weight: 700; color: #5b6676; background: #ffffff; border: 1px dashed #c3cad5; border-radius: 999px; padding: 4px 12px; cursor: pointer">設計の切り替え: {{flipLabel}}</button><button type="button" onClick="{{toggleEdit}}" style="margin-left: 8px; font: inherit; font-size: 12px; font-weight: 700; color: #5b6676; background: #ffffff; border: 1px dashed #c3cad5; border-radius: 999px; padding: 4px 12px; cursor: pointer">{{editLabel}}</button></div>
 
-    <main style="padding: 12px 32px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1120px">
+    <main style="padding: 12px 32px 48px; display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1360px; margin: 0 auto; box-sizing: border-box">
       <section style="background: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
         <sc-if value="{{live}}" hint-placeholder-val="{{ false }}"><p style="margin: 0 0 14px; font-size: 13px; color: #5b6676">仮で決めた設定: 流れ <b style="color: #152033">買う</b> · 比べる業種 <b style="color: #152033">EC・小売</b> <span style="margin-left: 8px"><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">直す</span> · <span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">このままでよい</span></span></p></sc-if>
         <h2 style="margin: 0 0 18px; font-size: 22px; font-weight: 800; line-height: 1.45">購入は増えています。いちばんの課題は <span style="color: #b45309">カート→購入率</span>。</h2>
@@ -63,16 +63,24 @@
         </div>
       </section>
 
-      <section style="background: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
+      <section style="{{whereBox}}">
+        <sc-if value="{{editing}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: -24px -28px 20px; padding: 10px 28px; background: #eef4ff; border-bottom: 1px solid #c9dbfb; border-radius: 14px 14px 0 0">
+            <span style="font-size: 12px; font-weight: 800; color: #ffffff; background: #2f6fed; border-radius: 999px; padding: 3px 10px">✎ 編集中</span>
+            <span style="font-size: 13px; font-weight: 600; color: #1e3a8a">保存するまでボードは変わりません。段を押すとイベントを選べます。</span>
+            <span style="margin-left: auto; display: flex; gap: 16px; align-items: center"><button type="button" onClick="{{toggleEdit}}" style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">元に戻す</button><button type="button" onClick="{{toggleEdit}}" style="font: inherit; font-size: 13px; font-weight: 800; color: #ffffff; background: #2f6fed; border: 0; border-radius: 8px; padding: 7px 16px; cursor: pointer">保存</button></span>
+          </div>
+        </sc-if>
         <div style="display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap">
           <h2 style="margin: 0; font-size: 18px; font-weight: 800">どこで離れているか<span aria-label="説明" style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #c3cad5; color: #5b6676; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-left: 6px; vertical-align: 1px">?</span></h2>
-          <span style="margin-left: auto; display: flex; gap: 18px"><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">✎ 流れを直す</span><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">流入別に見る ▾</span></span>
+          <span style="margin-left: auto; display: flex; gap: 18px"><sc-if value="{{notEditing}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{toggleEdit}}" style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">✎ 流れを直す</button></sc-if><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">業種を変える ▾</span><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">流入別に見る ▾</span></span>
         </div>
         <p style="margin: 6px 0 18px; font-size: 15px; font-weight: 700; color: #b45309">いちばん離れているのは「商品を見た → カートに追加」。23,104 人（68%）がここで離れています。</p>
         <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px">
           <sc-for list="{{steps}}" as="s" hint-placeholder-count="7">
-            <li>
+            <li style="position: relative">
               <div style="height: 64px; border-radius: 6px; background: #f1f4f9; position: relative; overflow: hidden"><span style="{{s.bar}}"></span></div>
+              <sc-if value="{{s.removable}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; top: 4px; right: 4px; font-size: 12px; font-weight: 700; color: #ffffff; background: #334155; border-radius: 999px; padding: 0 7px">× 外す</span></sc-if>
               <p style="margin: 8px 0 0; font-size: 13px; font-weight: 700; min-height: 40px; line-height: 1.45">{{s.label}}</p>
               <p style="margin: 0; font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 800">{{s.users}}<span style="font-size: 12px; font-weight: 600; color: #5b6676"> 人</span></p>
               <p style="{{s.dropStyle}}">{{s.drop}}</p>
@@ -147,8 +155,8 @@ class Component extends DCLogic {
     ];
     var S = [['サイトに来た', 68500], ['サイトを開いた', 67815], ['しっかり見た', 36853], ['商品を見た', 33904], ['カートに追加', 10800], ['購入手続きへ', 3620], ['購入', 1580]];
     var steps = S.map(function (s, i) {
-      var worst = i === 4, d = i ? S[i - 1][1] - s[1] : 0;
-      return { label: s[0], users: s[1].toLocaleString(), drop: i ? '−' + d.toLocaleString() + ' 人' : '',
+      var worst = i === 4, d = i ? S[i - 1][1] - s[1] : 0, editing = !!self.state.editing;
+      return { removable: editing && i > 0 && i < S.length - 1, label: s[0], users: s[1].toLocaleString(), drop: i ? '−' + d.toLocaleString() + ' 人' : '',
         dropStyle: 'margin: 2px 0 0; font-size: 12px; font-weight: 700; color: ' + (worst ? '#b45309' : '#8792a2'),
         bar: 'position: absolute; left: 0; right: 0; bottom: 0; height: ' + Math.max(3, s[1] / 68500 * 100) + '%; background: ' + (worst ? '#f59e0b' : '#a9c1f2') };
     });
@@ -167,7 +175,10 @@ class Component extends DCLogic {
         rows: (R[g[0]] || []).map(function (r, i) { return { name: r[0], value: r[1], prev: r[2], prevColor: r[3], band: r[4], left: r[5], leftColor: r[6], spark: spark[i % 3] }; }),
         toggle: function () { self.setState({ open: open ? openSet.filter(function (x) { return x !== g[0]; }) : openSet.concat([g[0]]) }); } };
     });
-    return { demo: demo, live: !demo, title: demo ? '見本 — 買う × EC・小売' : 'example.co.jp', stats: stats, steps: steps, watch: watch, groups: groups,
+    var editing = !!this.state.editing;
+    return { editing: editing, notEditing: !editing, editLabel: editing ? '編集中 → ふつう' : 'ふつう → 編集中', toggleEdit: function () { self.setState({ editing: !editing }); },
+      whereBox: 'background: #ffffff; border-radius: 16px; padding: 24px 28px; ' + (editing ? 'outline: 2px solid #2f6fed; outline-offset: 0; box-shadow: 0 0 0 6px rgba(47,111,237,0.14)' : 'box-shadow: 0 1px 2px rgba(21,32,51,0.06)'),
+      demo: demo, live: !demo, title: demo ? '見本 — 買う × EC・小売' : 'example.co.jp', stats: stats, steps: steps, watch: watch, groups: groups,
       memo: { where: 'どこで離れているか', text: '', sent: true, list: this.state.sent, send: function () {} },
       flipLabel: demo ? '見本 → つないだ後' : 'つないだ後 → 見本', flip: function () { self.setState({ demo: !demo }); } };
   }

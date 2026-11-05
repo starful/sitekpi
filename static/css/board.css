@@ -536,7 +536,7 @@ button.bench-open:hover, button.bench-open[aria-expanded="true"] { color: var(--
 
 
 /* 行動フロー stacked when the panel is narrow (phones): one column, bar turns horizontal */
-@container flow (max-width: 700px) {
+@container flow (max-width: 520px) {
   .flow-track { grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: none; row-gap: 0; min-width: 0; }
   .flow-up, .flow-node, .flow-down, .flow-link { grid-column: 1; grid-row: auto; }
   .flow-up { padding: 0 0 6px 22px; }
@@ -855,8 +855,8 @@ form.period { margin: 0; }
 }
 .link-btn:hover { text-decoration: underline; }
 .top-help { min-height: 0; padding: 0; border: 0; background: none; color: var(--accent-ink); }
-.ex-wrap { padding: 12px 32px 0; max-width: 1120px; }
-.content { padding: 16px 32px 56px; gap: 20px; max-width: 1120px; }
+.ex-wrap { padding: 12px 32px 0; max-width: 1360px; margin: 0 auto; box-sizing: border-box; }
+.content { padding: 16px 32px 56px; gap: 20px; max-width: 1360px; margin: 0 auto; box-sizing: border-box; }
 .content > section.card { border: 0; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21, 32, 51, 0.06); }
 .card h2 { margin: 0; font-size: 1.125rem; font-weight: 800; }
 
@@ -913,7 +913,7 @@ button.jt-none { font: inherit; font-size: inherit; color: var(--muted); font-we
 
 /* 今見るべきこと: indented rows, orange left line */
 .wtable { margin-left: 8px; }
-.wrow { display: grid; grid-template-columns: minmax(0, 1fr) 110px 130px 150px; gap: 0 16px; align-items: center; }
+.wrow { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(64px, 110px) minmax(96px, 130px) minmax(104px, 150px); gap: 0 16px; align-items: center; }
 .whead { padding: 6px 0 6px 21px; font-size: 0.75rem; font-weight: 700; color: var(--muted); border-bottom: 1px solid var(--line); }
 .wrow .num { text-align: right; font-variant-numeric: tabular-nums; }
 .wrow.watch-item { padding: 12px 0 12px 18px; border: 0; border-bottom: 1px solid #eef1f5; border-left: 3px solid #cbd5e1; border-radius: 0; background: none; font-size: 0.9375rem; }
@@ -963,7 +963,8 @@ button.jt-none { font: inherit; font-size: inherit; color: var(--muted); font-we
   .dtable { overflow-x: auto; }
 }
 /* v5: the flow fits the 1120px column (7 steps without scrolling) */
-@media (min-width: 901px) {
+/* only while the flow is laid out sideways (the stacked phone layout below 700px keeps min-width 0); between 521px and the full width the flow scrolls sideways */
+@container flow (min-width: 521px) {
   .flow-track { --link-w: 50px; min-width: calc(var(--n) * 80px + (var(--n) - 1) * var(--link-w)); }
   .flow-users { white-space: nowrap; }
 }
@@ -972,3 +973,9 @@ button.jt-none { font: inherit; font-size: inherit; color: var(--muted); font-we
 .verdict .notice-acts form { display: inline; }
 .verdict .notice-keep { padding: 0; border: 0; border-radius: 0; background: none; font-weight: 700; }
 .edit-save:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* v5.1: 編集中 — the card gets a blue outline + glow, a band across its top */
+.content > section.card.where.is-editing { outline: 2px solid var(--accent); outline-offset: 0; box-shadow: 0 0 0 6px rgba(47, 111, 237, 0.14); border: 0; }
+.where.is-editing .edit-bar { margin: -24px -28px 20px; padding: 10px 28px; border-radius: 14px 14px 0 0; border-bottom: 1px solid #c9dbfb; }
+.edit-badge::before { content: "✎ "; }
+@media (max-width: 900px) { .where.is-editing .edit-bar { margin: -18px -16px 16px; padding: 10px 16px; } }

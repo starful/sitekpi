@@ -92,6 +92,10 @@ def test_demo_is_one_click_to_a_board_with_a_guess_notice(client):
     assert s.select_one(".top-right [data-drawer-open='industry'].link-btn") and not s.select_one(".top-right .adjust-link")
     assert s.select_one("#drawer-industry .drawer-adjust [data-ind-adjust]") and s.select_one("template#pop-bench-all")
     assert s.select_one(".where-head .where-edit")  # 流れを直す as blue text in the card head
+    # v5.1: 流れを直す · 業種を変える ▾ · 流入別に見る ▾ side by side
+    tools = s.select_one(".where-head .where-tools")
+    assert [x.get_text(" ", strip=True) for x in tools.select(".link-btn")] == ["✎ 流れを直す", "業種を変える ▾", "流入別に見る ▾"]
+    assert tools.select_one(".where-ind[data-drawer-open='industry']")
     assert "デモ接続の見本" in str(s.select_one("template#pop-flow-help"))  # not 「GA4 を接続すると」
     assert client.get("/").headers["location"] == "/live"  # connected → straight to the board
 
@@ -173,3 +177,17 @@ def test_v5_memo_panel_on_board_glossary_samples_builder(client):
         assert not BeautifulSoup(client.get(path).text, "html.parser").select_one("aside.memo"), path
     r = client.post("/feedback", json={"comment": "「あと」がわからない", "screen": "samples", "section": "どこで離れているか", "path": "/ec"})
     assert r.status_code == 200 and r.json()["ok"]
+
+
+def test_v51_layout_rules():
+    """FAQ cards share one height; the board grows to 1360px and stays centered; the sideways flow's
+    min-width never applies to the stacked layout; 編集中 outlines the card."""
+    from pathlib import Path
+
+    css = Path(__file__).resolve().parents[1] / "static" / "css"
+    lp = (css / "landing.css").read_text()
+    assert "min-height: 3.2em" in lp.split(".lp-faq summary {", 1)[1].split("}", 1)[0]
+    board = (css / "board.css").read_text()
+    assert "@container flow (min-width: 521px)" in board and "@media (min-width: 901px)" not in board
+    assert ".content { padding: 16px 32px 56px; gap: 20px; max-width: 1360px; margin: 0 auto;" in board
+    assert ".content > section.card.where.is-editing { outline: 2px solid var(--accent);" in board

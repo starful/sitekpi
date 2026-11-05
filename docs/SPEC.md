@@ -134,6 +134,7 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 업계·업종 30개 | `packs/*.py` · `packs/catalog.py` · `packs/registry.py` |
 | 業界目安 · 출처 등급 · 범위 폭 | `packs/sources.py` (`ENGAGE_RULE` · `CVR_RULE` · `CART_RULE`) · `packs/derived.py` · `benchmarks.effective_benchmarks` |
 | 판정 (良好·目安内·要注意, v5는 색 글자 `.jt-*`) | `views/board._bench_info` · `_judge` · `board/_macros.html` `judge_text` |
+| 보드 폭 · 흐름 배치 | `.content` 최대 1360px 가운데 · 흐름은 컨테이너 쿼리 `@container flow`: 521px 이상 가로(최소 폭, 넘치면 스크롤), 520px 이하 세로 · 편집 중 `.where.is-editing` 파란 테두리 |
 | v5 보드 모양 | 카드 3장 `.card` · 숫자 3열 `.stats/.stat` · 今見るべきこと `.wtable/.wrow` · 詳しい数字 위 3개 열림(`_details_view`의 `collapsed`) · `?` 동그라미 `.help-q` · 파란 글자 버튼 `.link-btn` · 課題 강조 `_verdict` → `short_html` (`.v-issue`) |
 | メモ・ご意見 패널 | `partials/memo.html` (base.html, 레일의 `rail.active` ∈ live · samples · glossary · builder) · `static/js/memo.js` · `static/css/memo.css` · localStorage `sk_memo_open` · `sk_memo_sent`(최근 10개) |
 | 글자 6단계 | `board.css` · `rail.css` · `helpcard.css` · `setup.css`의 font-size는 0.75 · 0.8125 · 0.9375 · 1.125 · 1.375 · 1.625rem만 |

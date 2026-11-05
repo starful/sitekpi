@@ -75,6 +75,8 @@
             <span class="where-tools">
               {% if editor %}<button type="button" class="link-btn where-edit" data-edit-open>✎ {{ t("bx.edit", loc) }}</button>
               {% elif not is_sample %}<a class="link-btn where-edit" href="/live?edit=1#flow">✎ {{ t("bx.edit", loc) }}</a>{% endif %}
+              {% if industry_drawer %}<button type="button" class="link-btn where-ind" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false">{{ t("watch.ind_change", loc) }} <span aria-hidden="true">▾</span></button>
+              {% elif is_sample %}<a class="link-btn where-ind" href="/samples">{{ t("watch.ind_change", loc) }} <span aria-hidden="true">▾</span></a>{% endif %}
               {% if f and f.channels %}<button type="button" class="link-btn ch-toggle" data-ch-toggle aria-expanded="false">{{ t("flow.ch_show", loc) }} <span aria-hidden="true" class="caret">▾</span></button>{% endif %}
             </span>
           </div>
