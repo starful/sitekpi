@@ -60,11 +60,19 @@ def test_sample_board_shows_flow_with_worst_step_and_no_mapping_form():
     stages = flow.select(".flow-stage")
     assert [s.select_one(".flow-label").get_text() for s in stages] == ["サイトに来た", "サイトを開いた", "しっかり見た（10秒以上）", "商品を見た", "カートに追加", "購入手続きへ", "購入"]
     assert stages[0].select_one(".flow-users strong").get_text() == "68,500"
-    assert len(flow.select(".flow-link.is-worst")) == 1
-    # one line on screen; the rest (sources, events, sample note) is in 説明
-    assert flow.select_one(".where-worst").get_text().startswith("いちばん離れているのは「商品を見た → カートに追加」。23,104 人")
+    # v6 story: the one issue (カート → 購入, furthest from its 業界目安) is the orange stretch of the flow
+    assert len(flow.select(".flow-link.is-worst")) == 2
+    assert [st.select_one(".flow-label").get_text() for st in flow.select(".flow-stage.is-issue")] == ["カートに追加", "購入手続きへ", "購入"]
+    assert flow.select_one("h2.where-answer").get_text().startswith("「カートに追加 → 購入」で止まっています。カートに追加 10,800 人のうち")
+    # the biggest drop in people is named too, so the two never contradict each other
+    assert "人数がいちばん減るのは「商品を見た → カートに追加」（−23,104 人）" in flow.select_one(".q-note").get_text()
     lost = flow.select_one(".flow-lost.is-worst b")
-    assert lost and lost.get_text() == "−23,104" and lost.has_attr("data-v-all")
+    assert lost and lost.get_text() == "−7,180" and lost.has_attr("data-v-all")
+    # every step keeps the same rows: the first one reserves the 「離れた」 line, the channel bar sits under the count
+    assert stages[0].select_one(".flow-lost.is-blank")
+    node = stages[2].select_one(".flow-node")
+    kids = [c["class"][0] for c in node.find_all(recursive=False) if c.name]
+    assert kids.index("flow-mix") < kids.index("flow-lost")
     pop = _template(html, "pop-flow-help").get_text()
     assert "流入元" in pop and "view_item → add_to_cart" in pop
     # channel switch carries every channel's numbers
@@ -76,8 +84,8 @@ def test_sample_board_shows_flow_with_worst_step_and_no_mapping_form():
     # v5: 流れを直す can be tried on a sample — the form never posts and 保存 is off
     bar = _soup(html).select_one("[data-edit-bar]")
     assert bar.select_one("form#edit-form[data-try-only] .edit-save[disabled]") and "保存はされません" in bar.get_text()
-    # Top → bottom: いまの状態 → どこで離れているか (行動フロー + 今見るべきこと) → 詳しい数字
-    assert html.index('class="verdict card"') < html.index('id="flow"') < html.index('class="watch"') < html.index('class="detail card"')
+    # Top → bottom: ① 大丈夫？ → ② どこで離れている？ → ③ どこがおかしい？ → ④ どうする？ → 詳しい数字
+    assert html.index('class="verdict card"') < html.index('id="flow"') < html.index('id="q3"') < html.index('id="q4"') < html.index('class="detail card"')
 
 
 @pytest.mark.parametrize("loc,label", [("en", "Arrived"), ("ko", "사이트 방문")])

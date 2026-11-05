@@ -17,7 +17,7 @@
   <div class="flow-scroll"><ol class="flow-track{{ ' is-long' if n > 5 else '' }}" style="--n: {{ n }}; grid-template-columns: repeat({{ n - 1 }}, minmax(0, 1fr) var(--link-w)) minmax(0, 1fr);">
     {% for st in f.stages %}
     {% set col = loop.index0 * 2 + 1 %}
-    <li class="flow-stage{{ ' is-missing' if st.missing else '' }}{{ ' is-entry' if st.key == 'entry' else '' }}">
+    <li class="flow-stage{{ ' is-missing' if st.missing else '' }}{{ ' is-entry' if st.key == 'entry' else '' }}{{ ' is-issue' if st.get('in_issue') else '' }}">
       <div class="flow-up" style="--c: {{ col }}">
         {% for b in st.above %}{{ branch(b, "above") }}{% endfor %}
         {% if f.can_add and st.key != "entry" %}<button type="button" class="flow-add" data-pop-open="flow-add-{{ st.key }}-above" title="{{ t('flow.add_above', loc) }}" aria-label="{{ st.label }}: {{ t('flow.add_above', loc) }}">＋</button>{% endif %}
@@ -34,10 +34,12 @@
         {% else %}
         <span class="flow-users"><strong{% for k, v in st.users_fmt.items() %} data-v-{{ k }}="{{ v }}"{% endfor %}>{{ st.users_fmt.all }}</strong> <small>{{ t("flow.people", loc) }}</small></span>
         <span class="flow-bar" aria-hidden="true"><i style="--r: {{ [st.reach_pct, 1.5] | max }}%"></i></span>
-        {% if st.in_link and st.in_link.lost.all != "—" %}<span class="flow-lost{{ ' is-worst' if st.in_link.worst else '' }}"><b{% for k, v in st.in_link.lost.items() %} data-v-{{ k }}="−{{ v }}"{% endfor %}>−{{ st.in_link.lost.all }}</b> <small>{{ t("flow.lost", loc) }}</small></span>{% endif %}
+        {#- the channel bar sits right under the count so every step lines up; the 「離れた」 line below keeps its room on the first step too -#}
         {% if st.mix %}
         <span class="flow-mix" title="{{ t('flow.mix', loc) }}" aria-hidden="true">{% for m in st.mix %}<i data-ch="{{ f.channels[loop.index0].id }}" style="width:{{ m.pct }}%;background:{{ m.color }}"></i>{% endfor %}</span>
         {% endif %}
+        {% if st.in_link and st.in_link.lost.all != "—" %}<span class="flow-lost{{ ' is-worst' if st.in_link.worst else '' }}"><b{% for k, v in st.in_link.lost.items() %} data-v-{{ k }}="−{{ v }}"{% endfor %}>−{{ st.in_link.lost.all }}</b> <small>{{ t("flow.lost", loc) }}</small></span>
+        {% else %}<span class="flow-lost is-blank" aria-hidden="true"><b>&nbsp;</b> <small>&nbsp;</small></span>{% endif %}
         {% endif %}
       </div>
       <div class="flow-down" style="--c: {{ col }}">

@@ -49,18 +49,29 @@
     <div style="padding: 10px 32px 0; display: flex; justify-content: flex-end"><button type="button" onClick="{{flip}}" style="font: inherit; font-size: 12px; font-weight: 700; color: #5b6676; background: #ffffff; border: 1px dashed #c3cad5; border-radius: 999px; padding: 4px 12px; cursor: pointer">設計の切り替え: {{flipLabel}}</button><button type="button" onClick="{{toggleEdit}}" style="margin-left: 8px; font: inherit; font-size: 12px; font-weight: 700; color: #5b6676; background: #ffffff; border: 1px dashed #c3cad5; border-radius: 999px; padding: 4px 12px; cursor: pointer">{{editLabel}}</button></div>
 
     <main style="padding: 12px 32px 48px; display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1360px; margin: 0 auto; box-sizing: border-box">
+      <nav aria-label="このボードの読み方" style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 0 10px">
+        <sc-for list="{{story}}" as="q" hint-placeholder-count="4">
+          <a href="#" style="text-decoration: none; color: #152033; background: #ffffff; border-radius: 12px; padding: 16px 18px; min-height: 92px; box-sizing: border-box; box-shadow: 0 1px 2px rgba(21,32,51,0.06); display: flex; flex-direction: column; gap: 6px; line-height: 1.5">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">{{q.n}}</span>{{q.q}}</span>
+            <span style="font-size: 15px; font-weight: 800; padding-left: 30px; {{q.color}}">{{q.a}}</span>
+          </a>
+          <sc-if value="{{q.arrow}}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="align-self: center; color: #94a3b8; font-size: 18px; font-weight: 800">→</span></sc-if>
+        </sc-for>
+      </nav>
       <section style="background: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
         <sc-if value="{{live}}" hint-placeholder-val="{{ false }}"><p style="margin: 0 0 14px; font-size: 13px; color: #5b6676">仮で決めた設定: 流れ <b style="color: #152033">買う</b> · 比べる業種 <b style="color: #152033">EC・小売</b> <span style="margin-left: 8px"><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">直す</span> · <span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">このままでよい</span></span></p></sc-if>
-        <h2 style="margin: 0 0 18px; font-size: 22px; font-weight: 800; line-height: 1.45">購入は増えています。いちばんの課題は <span style="color: #b45309">カート→購入率</span>。</h2>
+<div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">1</span>大丈夫？</div>
+        <h2 style="margin: 0 0 18px; font-size: 22px; font-weight: 800; line-height: 1.45">購入は増えています（前期 +4.2%）。ただ、<span style="color: #b45309">カートに入れた人が買い切れていません</span>。</h2>
         <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr))">
           <sc-for list="{{stats}}" as="k" hint-placeholder-count="3">
             <div style="{{k.box}}">
               <p style="margin: 0; font-size: 13px; font-weight: 700; color: #5b6676">{{k.label}}<span aria-label="説明" style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #c3cad5; color: #5b6676; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-left: 6px; vertical-align: 1px">?</span></p>
-              <p style="margin: 2px 0 0; display: flex; align-items: baseline; gap: 10px"><b style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 800; {{k.valueColor}}">{{k.value}}</b><span style="font-size: 13px; font-weight: 700; {{k.prevColor}}">{{k.prev}}</span></p>
-              <p style="margin: 2px 0 0; font-size: 12px; color: #5b6676">{{k.note}} <b style="{{k.judgeColor}}">{{k.judge}}</b></p>
+              <p style="margin: 6px 0 0; display: flex; align-items: baseline; gap: 10px"><b style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 800; {{k.valueColor}}">{{k.value}}</b><span style="font-size: 13px; font-weight: 700; {{k.prevColor}}">{{k.prev}}</span></p>
+              <p style="margin: 6px 0 0; font-size: 12px; line-height: 1.6; color: #5b6676">{{k.note}} <b style="{{k.judgeColor}}">{{k.judge}}</b></p>
             </div>
           </sc-for>
         </div>
+        <p style="margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; font-weight: 700; color: #5b6676">↓ ② カートに入れたあと、どの段で止まっているか</p>
       </section>
 
       <section style="{{whereBox}}">
@@ -71,11 +82,13 @@
             <span style="margin-left: auto; display: flex; gap: 16px; align-items: center"><button type="button" onClick="{{toggleEdit}}" style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">元に戻す</button><button type="button" onClick="{{toggleEdit}}" style="font: inherit; font-size: 13px; font-weight: 800; color: #ffffff; background: #2f6fed; border: 0; border-radius: 8px; padding: 7px 16px; cursor: pointer">保存</button></span>
           </div>
         </sc-if>
-        <div style="display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap">
-          <h2 style="margin: 0; font-size: 18px; font-weight: 800">どこで離れているか<span aria-label="説明" style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #c3cad5; color: #5b6676; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-left: 6px; vertical-align: 1px">?</span></h2>
+        <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap">
+          <div style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">2</span>どこで離れている？<span aria-label="説明" style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #c3cad5; color: #5b6676; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-left: 6px; vertical-align: 1px">?</span></div>
           <span style="margin-left: auto; display: flex; gap: 18px"><sc-if value="{{notEditing}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{toggleEdit}}" style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">✎ 流れを直す</button></sc-if><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">業種を変える ▾</span><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">流入別に見る ▾</span></span>
         </div>
-        <p style="margin: 6px 0 18px; font-size: 15px; font-weight: 700; color: #b45309">いちばん離れているのは「商品を見た → カートに追加」。23,104 人（68%）がここで離れています。</p>
+        <h2 style="margin: 8px 0 4px; font-size: 18px; font-weight: 800; line-height: 1.5"><span style="color: #b45309">「カートに追加 → 購入」</span>で止まっています。カートに入れた 10,800 人のうち、買ったのは 1,580 人（14.6%）。</h2>
+        <p style="margin: 0 0 14px; font-size: 13px; color: #5b6676">人数がいちばん減るのは「商品を見た → カートに追加」（−23,104 人）ですが、ここは業界並みです。</p>
+        <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; margin-bottom: 6px"><span style="grid-column: 5 / 8; border-top: 3px solid #f59e0b; padding-top: 4px; font-size: 12px; font-weight: 800; color: #b45309">いちばんの課題: カート → 購入（14.6% · 業界 19.8–39.8%）</span></div>
         <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px">
           <sc-for list="{{steps}}" as="s" hint-placeholder-count="7">
             <li style="position: relative">
@@ -83,21 +96,64 @@
               <sc-if value="{{s.removable}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; top: 4px; right: 4px; font-size: 12px; font-weight: 700; color: #ffffff; background: #334155; border-radius: 999px; padding: 0 7px">× 外す</span></sc-if>
               <p style="margin: 8px 0 0; font-size: 13px; font-weight: 700; min-height: 40px; line-height: 1.45">{{s.label}}</p>
               <p style="margin: 0; font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 800">{{s.users}}<span style="font-size: 12px; font-weight: 600; color: #5b6676"> 人</span></p>
+              <span aria-hidden="true" style="display: flex; height: 4px; margin-top: 6px; border-radius: 99px; overflow: hidden; gap: 1px"><i style="flex: 46; background: #2563eb"></i><i style="flex: 24; background: #0ea5e9"></i><i style="flex: 14; background: #8b5cf6"></i><i style="flex: 9; background: #64748b"></i><i style="flex: 7; background: #cbd5e1"></i></span>
               <p style="{{s.dropStyle}}">{{s.drop}}</p>
             </li>
           </sc-for>
         </ol>
 
-        <h3 style="margin: 28px 0 4px; font-size: 15px; font-weight: 800">今見るべきこと</h3>
-        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 110px 130px 150px; gap: 0 16px; margin-left: 8px; padding: 6px 0 6px 21px; font-size: 12px; font-weight: 700; color: #5b6676; border-bottom: 1px solid #e5eaf1"><span></span><span style="text-align: right">今</span><span style="text-align: right">業界</span><span style="text-align: right">あと</span></div>
-        <sc-for list="{{watch}}" as="w" hint-placeholder-count="3">
-          <div style="display: grid; grid-template-columns: minmax(0, 1fr) 110px 130px 150px; gap: 0 16px; align-items: center; margin-left: 8px; padding: 12px 0 12px 18px; border-bottom: 1px solid #eef1f5; border-left: 3px solid #f59e0b; font-size: 15px">
-            <span style="font-weight: 700">{{w.name}}<span aria-label="説明" style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #c3cad5; color: #5b6676; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-left: 6px; vertical-align: 1px">?</span></span><b style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; text-align: right">{{w.now}}</b><span style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; text-align: right; color: #1e40af; font-weight: 700">{{w.band}}</span><b style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; text-align: right; color: #b45309">{{w.left}}</b>
-          </div>
-        </sc-for>
+        <p style="margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; font-weight: 700; color: #5b6676">↓ ③ なぜそこで止まっているのか、数字を確かめる</p>
       </section>
 
       <section style="background: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
+        <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">3</span>どこがおかしい？</div>
+        <h2 style="margin: 0 0 14px; font-size: 18px; font-weight: 800; line-height: 1.5">カートのあとは<span style="color: #b45309">どの段も前期より下がり</span>、カート→購入率は<span style="color: #b45309">業界の目安も下回っています</span>。</h2>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 90px 110px 130px 150px; gap: 0 16px; margin-left: 8px; padding: 6px 0 6px 21px; font-size: 12px; font-weight: 700; color: #5b6676; border-bottom: 1px solid #e5eaf1"><span></span><span style="text-align: right">今</span><span style="text-align: right">前期</span><span style="text-align: right">業界</span><span style="text-align: right">あと</span></div>
+        <sc-for list="{{why}}" as="w" hint-placeholder-count="3">
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) 90px 110px 130px 150px; gap: 0 16px; align-items: center; margin-left: 8px; padding: 12px 0 12px 18px; border-bottom: 1px solid #eef1f5; border-left: 3px solid #f59e0b; font-size: 15px">
+            <span style="font-weight: 700">{{w.name}}<span style="display: block; font-size: 12px; font-weight: 600; color: #5b6676">{{w.step}}</span></span><b style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; text-align: right; color: #b45309">{{w.now}}</b><span style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; text-align: right; font-weight: 700; color: #b45309">{{w.prev}}</span><span style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; text-align: right; color: #1e40af; font-weight: 700">{{w.band}}</span><b style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; text-align: right; {{w.leftColor}}">{{w.left}}</b>
+          </div>
+        </sc-for>
+        <p style="margin: 12px 0 0 8px; font-size: 13px; color: #5b6676">ほかにも目安から外れている: エンゲージ率 53.8%（業界 56.4–71.4%）· すぐ離脱に近い率 46.2%（業界 28.6–43.6%）— 購入の前の「見てもらう」側の課題です。<span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">詳しい数字で見る ↓</span></p>
+        <p style="margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; font-weight: 700; color: #5b6676">↓ ④ では、何から手をつけるか</p>
+      </section>
+
+      <section style="background: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
+        <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">4</span>どうする？</div>
+        <h2 style="margin: 0 0 4px; font-size: 18px; font-weight: 800; line-height: 1.5">カートから先を直すと、購入は <span style="color: #b45309">+約 560 件 / 28日</span>（+35%）増える見込みです。</h2>
+        <p style="margin: 0 0 16px; font-size: 13px; color: #5b6676">カート→購入率が業界目安の下限 19.8% まで上がった場合: 10,800 人 × 19.8% − 1,580 件。</p>
+        <ol style="list-style: none; margin: 0 0 0 8px; padding: 0">
+          <sc-for list="{{acts}}" as="x" hint-placeholder-count="3">
+            <li style="display: grid; grid-template-columns: 28px minmax(0, 1fr) 230px; gap: 0 16px; padding: 14px 0 14px 18px; border-left: 3px solid #2f6fed; border-bottom: 1px solid #eef1f5">
+              <b style="font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-variant-numeric: tabular-nums; font-size: 18px; color: #1d4ed8">{{x.n}}</b>
+              <span><b style="display: block; font-size: 15px; font-weight: 800">{{x.title}}</b><span style="display: block; margin-top: 4px; font-size: 13px; color: #334155"><b style="color: #5b6676; font-weight: 700">なぜ</b>　{{x.why}}</span><span style="display: block; margin-top: 2px; font-size: 13px; color: #334155"><b style="color: #5b6676; font-weight: 700">確かめ方</b>　{{x.check}}</span></span>
+              <span style="align-self: center; text-align: right"><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">{{x.link}}</span></span>
+            </li>
+          </sc-for>
+        </ol>
+        <p style="margin: 12px 0 0 8px; font-size: 12px; color: #8792a2">よくある原因と確かめ方の例です（出典: Baymard Institute のカート放棄調査など）。サイトに合うかを確かめてから進めてください。直したあとは、このボードで前期と比べて効果を見られます。</p>
+
+        <div style="margin: 16px 0 0; padding-top: 14px; border-top: 1px dashed #e5eaf1">
+          <button type="button" onClick="{{toggleAi}}" style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit; font-size: 15px">✦ 自分の AI に聞く（プロンプトを作る） {{aiCaret}}</button>
+          <span style="margin-left: 10px; font-size: 13px; color: #5b6676">ChatGPT・Claude・Gemini など、お使いの AI に貼り付けて深掘りできます。</span>
+          <sc-if value="{{aiOpen}}" hint-placeholder-val="{{ true }}">
+            <div style="margin: 14px 0 0 8px; padding: 4px 0 4px 18px; border-left: 3px solid #dbe4f3; display: flex; flex-direction: column; gap: 12px">
+              <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; font-size: 13px"><b style="color: #5b6676">何を聞く？</b>
+                <sc-for list="{{aiPurposes}}" as="a" hint-placeholder-count="3"><button type="button" onClick="{{a.pick}}" style="font: inherit; font-size: 13px; background: none; border: 0; padding: 0 0 2px; cursor: pointer; {{a.style}}">{{a.label}}</button></sc-for>
+              </div>
+              <textarea readonly style="font: inherit; font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.6; min-height: 260px; resize: vertical; padding: 12px 14px; border: 1px solid #d5dce6; border-radius: 10px; color: #152033; background: #f8fafc">{{aiPrompt}}</textarea>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; font-size: 13px; color: #334155">
+                <label style="display: inline-flex; align-items: center; gap: 6px"><input type="checkbox" checked>サイト名・URL を入れない（おすすめ）</label>
+                <label style="display: inline-flex; align-items: center; gap: 6px"><input type="checkbox" checked>詳しい数字（転換ファネル）も入れる</label>
+                <span style="margin-left: auto; display: flex; align-items: center; gap: 14px"><span style="font-size: 12px; color: #0f766e; font-weight: 700">{{aiCopied}}</span><button type="button" onClick="{{copyAi}}" style="font: inherit; font-size: 13px; font-weight: 800; color: #ffffff; background: #2f6fed; border: 0; border-radius: 8px; padding: 8px 18px; cursor: pointer">コピー</button></span>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: #8792a2">SiteKPI から AI には何も送りません。コピーした文章を、あなたが使っている AI に貼り付けてください。貼り付ける前に、社外に出してよい数字か確かめてください。</p>
+            </div>
+          </sc-if>
+        </div>      </section>
+
+      <section style="background: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
+        <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #5b6676"><span style="display: inline-flex; height: 22px; border-radius: 999px; background: #eef1f5; color: #5b6676; font-size: 12px; font-weight: 800; align-items: center; padding: 0 9px">参考</span>ぜんぶの数字</div>
         <h2 style="margin: 0 0 6px; font-size: 18px; font-weight: 800">詳しい数字</h2>
         <sc-for list="{{groups}}" as="g" hint-placeholder-count="8">
           <div style="border-bottom: 1px solid #eef1f5">
@@ -142,22 +198,22 @@
   </aside>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1760,"height":2100}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1760,"height":3600}}'>
 class Component extends DCLogic {
   constructor(p) { super(p); this.state = { demo: true, sent: [{ where: 'どこで離れているか', at: '15:02', text: '離れた人数が見えるのはわかりやすい' }] }; }
   renderVals() {
     var self = this, demo = this.state.demo;
-    var div = 'padding: 4px 20px; border-left: 1px solid #eef1f5';
+    var div = 'padding: 8px 24px 10px; border-left: 1px solid #eef1f5';
     var stats = [
-      { label: '購入完了', value: '1,580', valueColor: '', prev: '前期 +4.2%', prevColor: 'color: #0f766e', note: '件数は業界と比べません', judge: '', judgeColor: '', box: 'padding: 4px 20px 4px 0' },
+      { label: '購入完了', value: '1,580', valueColor: '', prev: '前期 +4.2%', prevColor: 'color: #0f766e', note: '件数は業界と比べません', judge: '', judgeColor: '', box: 'padding: 8px 24px 10px 0' },
       { label: '購入CVR', value: '2.3%', valueColor: '', prev: '前期 ±0.0pt', prevColor: 'color: #5b6676', note: '業界 1.7–4.1% · あと 0', judge: '目安内', judgeColor: 'color: #1e40af', box: div },
       { label: 'カート→購入率（いちばんの課題）', value: '14.6%', valueColor: 'color: #b45309', prev: '前期 −0.9pt', prevColor: 'color: #b45309', note: '業界 19.8–39.8% · あと +5.2〜+25.2pt', judge: '要注意', judgeColor: 'color: #b45309', box: div }
     ];
     var S = [['サイトに来た', 68500], ['サイトを開いた', 67815], ['しっかり見た', 36853], ['商品を見た', 33904], ['カートに追加', 10800], ['購入手続きへ', 3620], ['購入', 1580]];
     var steps = S.map(function (s, i) {
-      var worst = i === 4, d = i ? S[i - 1][1] - s[1] : 0, editing = !!self.state.editing;
+      var worst = i >= 5, d = i ? S[i - 1][1] - s[1] : 0, editing = !!self.state.editing;
       return { removable: editing && i > 0 && i < S.length - 1, label: s[0], users: s[1].toLocaleString(), drop: i ? '−' + d.toLocaleString() + ' 人' : '',
-        dropStyle: 'margin: 2px 0 0; font-size: 12px; font-weight: 700; color: ' + (worst ? '#b45309' : '#8792a2'),
+        dropStyle: 'margin: 6px 0 0; min-height: 18px; font-size: 12px; font-weight: 700; color: ' + (worst ? '#b45309' : '#8792a2'),
         bar: 'position: absolute; left: 0; right: 0; bottom: 0; height: ' + Math.max(3, s[1] / 68500 * 100) + '%; background: ' + (worst ? '#f59e0b' : '#a9c1f2') };
     });
     var watch = [{ name: 'カート→購入率', now: '14.6%', band: '19.8–39.8%', left: '+5.2〜+25.2pt' }, { name: 'エンゲージ率', now: '53.8%', band: '56.4–71.4%', left: '+2.6〜+17.6pt' }, { name: 'すぐ離脱に近い率', now: '46.2%', band: '28.6–43.6%', left: '−2.6〜−17.6pt' }];
@@ -176,7 +232,29 @@ class Component extends DCLogic {
         toggle: function () { self.setState({ open: open ? openSet.filter(function (x) { return x !== g[0]; }) : openSet.concat([g[0]]) }); } };
     });
     var editing = !!this.state.editing;
-    return { editing: editing, notEditing: !editing, editLabel: editing ? '編集中 → ふつう' : 'ふつう → 編集中', toggleEdit: function () { self.setState({ editing: !editing }); },
+    var story = [{ n: 1, q: '大丈夫？', a: '購入は増加。でもカート後が弱い', color: 'color: #152033', arrow: true }, { n: 2, q: 'どこで離れている？', a: 'カート → 購入（14.6%）', color: 'color: #b45309', arrow: true }, { n: 3, q: 'どこがおかしい？', a: 'カートのあとがどの段も低下', color: 'color: #b45309', arrow: true }, { n: 4, q: 'どうする？', a: '3 つの手 · +約 560 件の見込み', color: 'color: #1d4ed8', arrow: false }];
+    var why = [{ name: 'カート→購入率', step: 'カートに追加 → 購入', now: '14.6%', prev: '−0.9pt', band: '19.8–39.8%', left: '+5.2〜+25.2pt', leftColor: 'color: #b45309' },
+      { name: 'カート→手続き率', step: 'カートに追加 → 購入手続きへ', now: '33.5%', prev: '−1.1pt', band: '—', left: '基準なし', leftColor: 'color: #8792a2' },
+      { name: '手続き→購入率', step: '購入手続きへ → 購入', now: '43.6%', prev: '−2.6pt', band: '—', left: '基準なし', leftColor: 'color: #8792a2' }];
+    var acts = [{ n: 1, title: '送料・手数料・届く日を、カートより前に見せる', why: 'カートで止まる理由でいちばん多いのは「思っていなかった追加費用」。カート → 手続きが 33.5% と低い。', check: '送料無料ラインの前後で「カート → 手続き」を比べる', link: '流入別に見る ▾' },
+      { n: 2, title: '購入手続きの入力と決済手段を見直す', why: '手続き → 購入が 43.6% で、前期より −2.6pt 下がっている。', check: '配送先入力・支払い情報（add_shipping_info / add_payment_info）を流れに足して、どこで止まるかを見る', link: '✎ 流れに段を足す' },
+      { n: 3, title: 'カートに入れたまま離れた人を呼び戻す', why: 'カートに入れた 10,800 人のうち、9,220 人が買っていない。', check: 'メール・リターゲティングから戻った人の購入率を流入別で見る', link: '流入別に見る ▾' }];
+    var story_ = story;
+    var purpose = this.state.aiPurpose || 'cause', aiOpen = this.state.aiOpen !== false;
+    var P = { cause: '原因を深掘りする', ideas: '施策のアイデアを増やす', report: '報告用の文章にする' };
+    var ask = { cause: '「カートに追加 → 購入」で止まっている原因の仮説を、可能性が高い順に 5 つ挙げてください。それぞれ、GA4 のどのレポート・イベントで確かめられるかも書いてください。',
+      ideas: '「カートに追加 → 購入」を上げる施策を、すぐできるもの・1 か月かかるものに分けて 6 つ挙げてください。それぞれ、効果を GA4 でどう測るかも書いてください。',
+      report: '以下の内容を、上司に送る週次報告（300 字以内・箇条書き 3 つ）にまとめてください。数字は変えないでください。' };
+    var aiPrompt = 'あなたはウェブ解析と EC 改善の専門家です。\n' +
+      '次は、あるサイト（EC・小売、目的: 商品を買ってもらう）の GA4 の数字です。期間は直近 28 日、前期は その前の 28 日です。\n\n' +
+      '■ 大丈夫か\n- 購入完了 1,580 件（前期 +4.2%）\n- 購入 CVR 2.3%（前期 ±0.0pt · 業界目安 1.7–4.1%）\n\n' +
+      '■ どこで離れているか（人数）\nサイトに来た 68,500 → しっかり見た 36,853 → 商品を見た 33,904 → カートに追加 10,800 → 購入手続きへ 3,620 → 購入 1,580\n\n' +
+      '■ いちばんの課題: カートに追加 → 購入\n- カート→購入率 14.6%（前期 −0.9pt · 業界目安 19.8–39.8%）\n- カート→手続き率 33.5%（前期 −1.1pt）\n- 手続き→購入率 43.6%（前期 −2.6pt）\n- 目安の下限まで上がると +約 560 件 / 28 日\n\n' +
+      '■ SiteKPI の対策案\n1. 送料・手数料・届く日を、カートより前に見せる\n2. 購入手続きの入力と決済手段を見直す\n3. カートに入れたまま離れた人を呼び戻す\n\n' +
+      '■ お願い\n' + ask[purpose] + '\n業界目安は公開データの一般的な値です。断定せず、確かめ方とセットで答えてください。';
+    var aiPurposes = Object.keys(P).map(function (k) { var on = k === purpose; return { label: P[k], style: on ? 'font-weight: 800; color: #152033; border-bottom: 2px solid #2f6fed' : 'font-weight: 700; color: #1d4ed8', pick: function () { self.setState({ aiPurpose: k, copied: false }); } }; });
+    return { aiOpen: aiOpen, aiCaret: aiOpen ? '▴' : '▾', toggleAi: function () { self.setState({ aiOpen: !aiOpen }); }, aiPurposes: aiPurposes, aiPrompt: aiPrompt, aiCopied: this.state.copied ? '✓ コピーしました' : '', copyAi: function () { self.setState({ copied: true }); },
+      story: story, why: why, acts: acts, editing: editing, notEditing: !editing, editLabel: editing ? '編集中 → ふつう' : 'ふつう → 編集中', toggleEdit: function () { self.setState({ editing: !editing }); },
       whereBox: 'background: #ffffff; border-radius: 16px; padding: 24px 28px; ' + (editing ? 'outline: 2px solid #2f6fed; outline-offset: 0; box-shadow: 0 0 0 6px rgba(47,111,237,0.14)' : 'box-shadow: 0 1px 2px rgba(21,32,51,0.06)'),
       demo: demo, live: !demo, title: demo ? '見本 — 買う × EC・小売' : 'example.co.jp', stats: stats, steps: steps, watch: watch, groups: groups,
       memo: { where: 'どこで離れているか', text: '', sent: true, list: this.state.sent, send: function () {} },

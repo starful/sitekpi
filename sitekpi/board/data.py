@@ -202,6 +202,9 @@ def build_dense_board(
 
     rate_a = (bottom_count / primary_count * 100) if primary_count else 0.0
     rate_b = (primary_count / mid_count * 100) if mid_count else pay_cvr
+    # which flow steps each rate measures (from → to), for the board's story (views/story.py)
+    seg_a: tuple[str, str] | None = (primary, bottom_event)
+    seg_b: tuple[str, str] | None = (mid_event, primary)
     # content: mid is click_cta; start→complete uses pay fields differently
     logic = str(ind.get("logic_as") or industry)  # 行動タイプ packs compute like their representative
     if logic in ("content", "news", "creator") and mid_count:
@@ -209,6 +212,7 @@ def build_dense_board(
     if logic in ("b2c", "saas", "community"):
         rate_a = (pay_start / signups * 100) if signups else 0.0
         rate_b = pay_cvr
+        seg_a = seg_b = None
         mid_count = pay_start
         bottom_count = pay_success
     elif logic in ("ec", "travel", "marketplace", "d2c"):
@@ -217,6 +221,7 @@ def build_dense_board(
         checkout = int(counts.get(bottom_event, bottom_count))
         rate_a = (primary_count / cart * 100) if cart else 0.0
         rate_b = (primary_count / checkout * 100) if checkout else 0.0
+        seg_a, seg_b = (mid_event, primary), (bottom_event, primary)
         mid_count = cart
         bottom_count = checkout
     elif logic in ("edu", "finance", "gov"):
@@ -225,6 +230,7 @@ def build_dense_board(
         upstream = int(counts.get(bottom_event, bottom_count))
         rate_a = (primary_count / start * 100) if start else 0.0
         rate_b = (primary_count / upstream * 100) if upstream else 0.0
+        seg_a, seg_b = (mid_event, primary), (bottom_event, primary)
         mid_count = start
         bottom_count = upstream
 
@@ -365,6 +371,7 @@ def build_dense_board(
             "value": _fmt_pct(rate_a),
             "value_num": rate_a,
             "bench": "signup_to_pay",
+            "seg": seg_a,
             "help": _help(
                 rate_a_label,
                 kind="digital",
@@ -379,6 +386,7 @@ def build_dense_board(
             "value": _fmt_pct(rate_b),
             "value_num": rate_b,
             "bench": "pay_cvr",
+            "seg": seg_b,
             "help": _help(
                 rate_b_label,
                 kind="digital",

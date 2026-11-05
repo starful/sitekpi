@@ -153,6 +153,7 @@ def _bench_info(value: float | None, bench_key: str | None) -> dict[str, Any] | 
         "high": high,
         "mid": mid,
         "unit": unit,
+        "hib": hib,
     }
     if value is None or none:
         return {
@@ -431,7 +432,7 @@ def _verdict(board: dict[str, Any], watch: list[dict[str, Any]],
             hl = k["label"]
             k["label"] = k["label"] + t("bx.issue_suffix", locale)
     return {"text": joiner.join(lines), "short": short_text, "short_html": _highlight(short_text, hl),
-            "tiles": tiles}
+            "tiles": tiles, "lead": (short[0] + sep) if count and short else "", "no_issue": not hl}
 
 
 def _highlight(text: str, part: str) -> Markup:
@@ -546,6 +547,9 @@ def _render_sample_dense(
         seen.add(r["id"])
         dialogs.append(_dialog_v3({"id": r["id"], "label": r["label"], "help": r["help"], "gl": _gl_key(r["id"]),
                                    "bench": _bench_view(_bench_info(r.get("value_num"), r.get("bench")))}, loc))
+    verdict = _verdict(board, watch, flow, loc)
+    story = _story(board, watch, verdict, flow, loc, industry=industry, site=property_name or "",
+                   ind_label=ind_name or industry_label, period_label=period_label)
     worst = _worst_link(flow)
     return render(
         "board.html",
@@ -558,7 +562,8 @@ def _render_sample_dense(
         industry_label=industry_label,
         pack_meta=f"{industry_note} · {prop} · {period_label}",
         period=period,
-        verdict=_verdict(board, watch, flow, loc),
+        verdict=verdict,
+        story=story,
         watch=watch,
         worst=worst,
         details=details,
@@ -582,6 +587,20 @@ def _render_sample_dense(
             "retry": t("detail.retry", loc),
         },
     )
+
+
+def _story(board: dict[str, Any], watch: list[dict[str, Any]], verdict: dict[str, Any],
+           flow: dict[str, Any] | None, loc: str, *, industry: str, site: str, ind_label: str,
+           period_label: str) -> dict[str, Any] | None:
+    """① 大丈夫？ → ② どこで？ → ③ どこがおかしい？ → ④ どうする？ (views/story.py)."""
+    from sitekpi.packs import INDUSTRIES
+    from sitekpi.packs.behaviors import BEHAVIORS, behavior_label
+    from sitekpi.views.story import build_story
+
+    cat = str((INDUSTRIES.get(industry) or {}).get("category") or "")
+    beh = behavior_label(cat, loc) if cat in BEHAVIORS else ""
+    return build_story(board=board, watch=watch, verdict=verdict, flow=flow, locale=loc, bench_info=_bench_info,
+                       site=site, industry_label=ind_label, behavior_label=beh, period_label=period_label)
 
 
 def verdict_scene(*, industry: str, data: dict[str, Any], benches_raw: dict[str, dict[str, Any]],

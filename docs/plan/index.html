@@ -342,6 +342,27 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>카드별 👍👎가 안 보임</td><td>카드 맨 아래라 스크롤해야 보임</td><td>오른쪽 「メモ・ご意見」 패널(아래)</td></tr>
       </tbody>
     </table>
+    <h3>v6 — 스토리 (2026-11-05)</h3>
+    <p class="note">「1~3이 부족하다」의 원인: ①의 「가장 큰 문제」(업계 기준으로 가장 나쁜 지표)와 ②의 「가장 많이 이탈하는 단」이 서로 달라서, 질문은 이어지는데 답이 이어지지 않았다. 「그래서 얼마나 중요한가」「그래서 무엇을 하나」도 없었다.</p>
+    <table>
+      <thead><tr><th>카드</th><th>질문</th><th>답(제목)</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>맨 위 띠</td><td>①→②→③→④</td><td>질문 + 한 줄 답 4개</td><td>누르면 그 카드로. 이것만 읽어도 이야기가 잡힌다</td></tr>
+        <tr><td>①</td><td>大丈夫？</td><td>「購入完了は増えています。ただ、<b>カートに入れた人が買い切れていません</b>。」</td><td>숫자 3개 · 끝에 「↓ ② …」</td></tr>
+        <tr><td>②</td><td>どこで離れている？</td><td>「「カートに追加 → 購入」で止まっています。… 1,580 人（14.6%）。」</td><td>흐름에서 그 구간을 주황으로. 인원이 가장 많이 줄어드는 단이 다르면 한 줄로 설명(「…ただ、業界の目安と比べていちばん離れているのは上の段です」)</td></tr>
+        <tr><td>③</td><td>どこがおかしい？</td><td>「カート→購入率が業界の目安（19.8–39.8%）を下回っています。」</td><td>문제의 지표 + 구간 안의 각 단(今 · 前期比 · 業界 · あと). 나머지 기준 밖 지표는 「ほかにも…」 한 줄(문제가 흐름 단일 때는 행으로)</td></tr>
+        <tr><td>④</td><td>どうする？</td><td>「…目安の下限 19.8% まで上がると、購入は +約 556 人 増える見込みです。」</td><td>계산식 · 대책 3개(なぜ · 確かめ方 · 바로 가기) · 「よくある原因の例」 · ✦ 自分の AI に聞く</td></tr>
+        <tr><td>참고</td><td>ぜんぶの数字</td><td>詳しい数字</td><td>그대로</td></tr>
+      </tbody>
+    </table>
+    <ul class="dec">
+      <li><span class="tag">규칙</span>문제는 하나. ① 「いちばんの課題」 타일(업계 기준에서 가장 벗어난 지표, CVR 타일 제외)이 흐름의 구간(그 비율의 분모 단 → 분자 단)에 대응되면 그것, 아니면 흐름에서 넘어가는 비율이 가장 낮은 단. 참여율·이탈률은 「開いた → しっかり見た」, 전체 CVR은 처음부터 끝까지.</li>
+      <li><span class="tag">기대 효과</span>업계 기준이 있는 비율만: 구간 시작 인원 × 기준 하한 − 지금의 구간 끝 인원. 기준이 없으면 숫자를 만들지 않고 「まず「A → B」から手をつけます」.</li>
+      <li><span class="tag">대책 카탈로그</span>문제 구간의 마지막 단으로 종류를 정한다(engage · browse · cart · checkout · form_start · form_submit · signup · click · download · video · overall, 이벤트 이름으로 판별). 종류마다 ①의 문장 + 대책 3개(제목 · 흔한 이유 · GA4에서 확인하는 법 · 바로 가기), 일본어·영어·한국어. 「흔한 원인의 예」라고 항상 밝힌다(진단이 아님).</li>
+      <li><span class="tag">AI 프롬프트</span>「✦ 自分の AI に聞く」: 무엇을 물을지(原因 · 施策 · 報告) → ①~④의 숫자와 대책으로 만든 글 → 「コピー」. 글은 브라우저 안에서 만들고 SiteKPI는 아무 데도 보내지 않는다(서버 AI 비용 0). 사이트 이름은 기본으로 빼고, 「ChatGPT에서 열기」 같은 URL 전달은 숫자가 URL에 실리므로 만들지 않는다. 개인정보 처리방침 5장에 한 줄.</li>
+      <li><span class="tag">흐름 그림</span>모든 단이 같은 높이: 단 이름 높이를 맞추고, 유입 비율 막대는 인원 바로 아래, 「離れた」 줄은 첫 단에도 자리를 비워 둔다.</li>
+      <li><span class="tag">여유</span>맨 위 띠는 높이 92px 이상, 숫자 3개는 위아래 간격을 넓혔다.</li>
+    </ul>
     <h3>v5.1 (2026-11-05)</h3>
     <ul class="dec">
       <li><span class="tag">링크</span>「どこで離れているか」 머리에 <span class="jp">「✎ 流れを直す · 業種を変える ▾ · 流入別に見る ▾」</span>를 나란히(업종 바꾸기는 오른쪽 위 드로어, 見本에서는 다른 見本으로).</li>
@@ -356,8 +377,8 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
       <li>보낸 메모는 이 브라우저에만 목록으로 남는다(최근 10개). 「閉じる ›」로 오른쪽 끝 탭으로 접히고, 열림·닫힘은 기억. 폭 1600 미만에서는 처음엔 접힌 채, 열면 화면 위에 겹쳐 뜬다.</li>
       <li>카드별 👍👎와 메뉴의 「ご意見を送る」를 대신한다. 랜딩(레일 없음)의 「ご意見」 대화상자는 그대로.</li>
     </ul>
-    <div class="frame-head"><span>v5 화면 (오른쪽 위 「設計の切り替え」로 見本 ↔ つないだ後)</span><a href="screens/03-board.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
-    <div class="frame" data-w="1760" data-h="2100"><div class="frame-bar"><i></i><i></i><i></i><span>/live</span></div><div class="frame-box"><iframe src="screens/03-board.dc.html" title="03 ボード v5" loading="lazy"></iframe></div></div>
+    <div class="frame-head"><span>v6 화면 (오른쪽 위 「設計の切り替え」로 見本 ↔ つないだ後 · ふつう ↔ 編集中)</span><a href="screens/03-board.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
+    <div class="frame" data-w="1760" data-h="3600"><div class="frame-bar"><i></i><i></i><i></i><span>/live</span></div><div class="frame-box"><iframe src="screens/03-board.dc.html" title="03 ボード v6" loading="lazy"></iframe></div></div>
     <h3>v4에서 남은 것</h3>
     <ul class="dec">
       <li><span class="tag">글자</span>6단계(위 「전체 규칙」). <span class="tag">이탈</span>각 단 아래 「−23,104 人が離れた」, 가장 많이 빠진 단은 주황, 맨 위 한 줄 「いちばん離れているのは…」.</li>
@@ -657,6 +678,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>ビルダー</td><td class="ev">builder_template</td><td>템플릿 선택</td><td><code>template</code></td><td></td></tr>
         <tr><td>ビルダー</td><td class="ev">builder_metric_add</td><td>지표 추가</td><td><code>metric</code></td><td></td></tr>
         <tr><td>공통</td><td class="ev">feedback_open</td><td>랜딩의 「ご意見」 열기</td><td>—</td><td></td></tr>
+        <tr><td>보드</td><td class="ev">ai_prompt_copy</td><td>「✦ 自分の AI に聞く」의 「コピー」</td><td><code>purpose</code> cause · ideas · report · <code>details</code> true · false (글 내용·숫자는 보내지 않음)</td><td></td></tr>
         <tr><td>공통</td><td class="ev">memo_toggle</td><td>「メモ・ご意見」 패널 열기·접기</td><td>—</td><td></td></tr>
         <tr><td>공통</td><td class="ev">feedback_submit</td><td>메모·ご意見 전송 성공</td><td><code>vote</code> up · down · none · <code>has_comment</code> true · false · <code>location</code> memo</td><td>★</td></tr>
       </tbody>
@@ -669,7 +691,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
       <tbody>
         <tr><td class="ev">ui_language</td><td>사용자</td><td>ja · en · ko</td></tr>
         <tr><td class="ev">connection</td><td>사용자</td><td>none · live (demo는 개발·테스트만, 페이지마다 갱신)</td></tr>
-        <tr><td class="ev">screen · cta · location · metric · industry · behavior · period · mode · faq_id · reason · vote · change · category · template</td><td>이벤트</td><td>위 표의 값. GA4 관리 → 맞춤 정의에 등록</td></tr>
+        <tr><td class="ev">screen · cta · location · metric · industry · behavior · period · mode · purpose · details · faq_id · reason · vote · change · category · template</td><td>이벤트</td><td>위 표의 값. GA4 관리 → 맞춤 정의에 등록</td></tr>
       </tbody>
     </table>
 
@@ -733,6 +755,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table class="log">
       <thead><tr><th>날짜</th><th>내용</th></tr></thead>
       <tbody>
+        <tr><td>2026-11-05</td><td>v6 스토리: ① 大丈夫？ → ② どこで離れている？ → ③ どこがおかしい？ → ④ どうする？. 문제 하나를 끝까지(규칙), 대책 카탈로그(11종 × 3, 3개 언어), 기대 효과, 「✦ 自分の AI に聞く」(복사만), 흐름 단 높이 통일, 맨 위 띠·숫자 3개에 여유.</td></tr>
         <tr><td>2026-11-05</td><td>v5.1: FAQ 카드 높이 통일, 「業種を変える ▾」를 흐름 카드 머리에, 편집 중 카드에 파란 테두리, 보드 폭 최대 1360·가운데, 좁은 폭에서 흐름이 잘리던 버그 수정.</td></tr>
         <tr><td>2026-11-05</td><td>보드 v5(상자 안 상자·칩 없앰, 버튼은 파란 글자, 상단 탭·dnav 삭제, 仮 안내를 한 줄로, 「?」 동그라미, 詳しい数字 위 3개 열림 + › 아이콘, 判定 열 삭제, 유입 칩 버그 수정), 오른쪽 「メモ・ご意見」 패널(카드별 👍👎 · 메뉴 「ご意見を送る」 대체), 공개 데모 폐지 → 見本만(「例」 표시 · 노란 띠 · 見本에서 흐름 고치기·업종 바꾸기 해 보기).</td></tr>
         <tr><td>2026-11-05</td><td>보드 v4(글자 6단계 · 숫자 3개 작게 · 이탈 인원 · 단 빼기 · 유입별 접기 · 詳しい数字 모두 닫기 · 카드별 👍👎), 10 使い方・ヘルプ, 접속 화면의 「확인되지 않은 앱」 안내, 언어를 세션에 저장(데모·해제 후에도 유지), 메뉴에 ヘルプ·ホーム.</td></tr>

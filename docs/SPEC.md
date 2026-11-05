@@ -18,7 +18,7 @@
 | GA4 권한 | `analytics.readonly` 하나 (읽기 전용) |
 | 배포 | Cloud Run(`starful-258005`, us-central1, 서비스 `sitekpi-service`) · 도메인 `sitekpi.net`. 최초 1회 `scripts/gcp_setup.sh <client_secret.json>`(API·Artifact Registry·Secret Manager·IAM·Firestore TTL), 이후 `./deploy.sh`(Cloud Build: 테스트 → 빌드 → 배포), 도메인 연결 `scripts/gcp_setup.sh --domain`. OAuth 동의 화면·클라이언트는 별도 프로젝트 `sitekpi` |
 | 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `OPERATOR_NAME` · `OPERATOR_ADDRESS` · `LEGAL_COURT`(선택, /policy·/terms 표기. 비면 중립 문구) · `GTM_ID`(Google 태그 관리자 컨테이너, `GTM-` 형식만 출력. 비어 있으면 태그 없음 → 로컬은 측정 안 함) · `DEMO_CONNECT`(운영에서는 비워 둔다. `1`이면 데모 연결을 연다 — 개발·테스트용). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` |
-| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-05 기준 190개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
+| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-05 기준 230개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
 
 ## 2. 디렉터리
 
@@ -134,6 +134,7 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 업계·업종 30개 | `packs/*.py` · `packs/catalog.py` · `packs/registry.py` |
 | 業界目安 · 출처 등급 · 범위 폭 | `packs/sources.py` (`ENGAGE_RULE` · `CVR_RULE` · `CART_RULE`) · `packs/derived.py` · `benchmarks.effective_benchmarks` |
 | 판정 (良好·目安内·要注意, v5는 색 글자 `.jt-*`) | `views/board._bench_info` · `_judge` · `board/_macros.html` `judge_text` |
+| 스토리 ①〜④ | `views/story.py` (`pick_issue` 규칙 · `build_story` · `_prompt`) ← `views/board._story` · 문구·대책 카탈로그 `i18n/story_l10n.py` (`STORY` · `ACTIONS` · `kind_of_event`) · 비율의 흐름 구간은 `board/data.py` 행의 `seg` · `board.html` `.story-strip` `#q1`〜`#q4` · `static/js/story.js` (프롬프트 조립·복사, 단 이름 높이 맞춤) · GA4 `ai_prompt_copy` |
 | 보드 폭 · 흐름 배치 | `.content` 최대 1360px 가운데 · 흐름은 컨테이너 쿼리 `@container flow`: 521px 이상 가로(최소 폭, 넘치면 스크롤), 520px 이하 세로 · 편집 중 `.where.is-editing` 파란 테두리 |
 | v5 보드 모양 | 카드 3장 `.card` · 숫자 3열 `.stats/.stat` · 今見るべきこと `.wtable/.wrow` · 詳しい数字 위 3개 열림(`_details_view`의 `collapsed`) · `?` 동그라미 `.help-q` · 파란 글자 버튼 `.link-btn` · 課題 강조 `_verdict` → `short_html` (`.v-issue`) |
 | メモ・ご意見 패널 | `partials/memo.html` (base.html, 레일의 `rail.active` ∈ live · samples · glossary · builder) · `static/js/memo.js` · `static/css/memo.css` · localStorage `sk_memo_open` · `sk_memo_sent`(최근 10개) |

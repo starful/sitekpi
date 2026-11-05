@@ -48,17 +48,20 @@ def test_board_reads_verdict_then_where_then_detail(client):
     """L0 いまの状態 (一言 + 3) → L1 どこ (行動フロー + 今見るべきこと) → L2 詳しい数字 (stacked)."""
     s = _soup(client, "/ec")
     order = [sec.get("class")[0] for sec in s.select(".content > section")]
-    assert order == ["verdict", "where", "detail"]
+    assert order == ["verdict", "where", "why", "do", "detail"]
+    # v6 story: the same one issue in ① (orange clause) … ④
     text = s.select_one(".verdict-text").get_text()
-    assert text.startswith("購入完了は増えています。いちばんの課題は")
+    assert text == "購入完了は増えています。ただ、カートに入れた人が買い切れていません。"
+    assert [a.get_text(" ", strip=True) for a in s.select(".story-strip .story-step .qk")] == ["1 大丈夫？", "2 どこで離れている？", "3 どこがおかしい？", "4 どうする？"]
+    assert [a["href"] for a in s.select(".story-strip a")] == ["#q1", "#q2", "#q3", "#q4"]
     tiles = s.select(".verdict .stat")
     # v5: 3 columns, no boxes or chips; the issue says so in its label and in orange in the sentence
     assert [t.select_one(".stat-name").get_text() for t in tiles] == ["購入完了", "購入CVR", "カート→購入率（いちばんの課題）"]
-    assert s.select_one(".verdict-text .v-issue").get_text() == "カート→購入率"
+    assert s.select_one(".verdict-text .v-issue").get_text() == "カートに入れた人が買い切れていません"
     assert "is-issue" in tiles[2]["class"] and tiles[2].select_one(".jt.jt-down")
     assert "業界と比べません" in tiles[0].select_one(".stat-note").get_text()  # counts are never judged
     assert not s.select(".verdict .judge, .verdict .tile-tag, .tiles")
-    assert s.select_one(".where #flow, #flow.where") and s.select_one(".where .wtable")
+    assert s.select_one(".where #flow, #flow.where") and s.select_one("#q3 .wtable")
     groups = [g["id"] for g in s.select(".dgroup")]
     assert groups == ["g-funnel", "g-revenue", "g-engage", "g-channels", "g-device", "g-audience", "g-events", "g-biz"]
     assert not s.select(".dnav")
@@ -72,7 +75,7 @@ def test_board_reads_verdict_then_where_then_detail(client):
     assert s.select_one("[data-ch-toggle]") and all(x.has_attr("hidden") for x in s.select("[data-ch-part]"))
     # v5: メモ panel instead of 👍 👎 under each card; 「? 見方」 in the top bar; no page menu
     assert not s.select("[data-card-fb]") and s.select_one("aside.memo[data-memo] textarea[data-memo-text]")
-    assert [x["data-memo-where"] for x in s.select(".content > section")] == ["いまの状態", "どこで離れているか", "詳しい数字"]
+    assert [x["data-memo-where"] for x in s.select(".content > section")] == ["大丈夫？", "どこで離れている？", "どこがおかしい？", "どうする？", "詳しい数字"]
     assert s.select_one('.top a.top-help[href="/help#read"]')
     assert not s.select(".page-nav")
 
@@ -94,11 +97,13 @@ def test_rows_show_benchmark_gap_trend_and_help(client):
 
 def test_watch_ranks_metrics_outside_benchmark(client):
     s = _soup(client, "/hr")
-    items = s.select(".wtable .watch-item")
+    # v6: ③ どこがおかしい？ — the issue's step first, then the metrics that are off (with 業界目安)
+    items = s.select("#q3 .wtable .watch-item")
     assert items and "tone-down" in items[0]["class"]
+    assert items[0].select_one(".watch-name").get_text() == "求人を見た → 応募を開始"
     # 開始→完了率 has only a SiteKPI 初期値 → never judged; the sourced CVR is
-    assert "応募CVR" in items[0].select_one(".watch-name").get_text()
-    assert [h.get_text() for h in s.select(".wtable .whead span")] == ["", "今", "業界", "あと"]
+    assert "応募CVR" in items[1].select_one(".watch-name").get_text() and items[1]["data-metric"] == "signup_rate"
+    assert [h.get_text() for h in s.select("#q3 .wtable .whead span")] == ["", "今", "前期比", "業界", "あと"]
     assert not any("開始→完了率" in i.get_text() for i in items)
     # the long lines (目安帯 · 前期 · 見るポイント) moved to the 説明 popover
     pop = _tpl(s, "watch-1")
@@ -107,8 +112,8 @@ def test_watch_ranks_metrics_outside_benchmark(client):
 
 def test_watch_says_so_when_nothing_is_off(client):
     s = _soup(client, "/b2c")
-    assert not s.select(".watch-item")
-    assert "大きく外れている指標はありません" in s.select_one(".watch").get_text()
+    assert not s.select(".watch-item[data-metric]")
+    assert "大きく外れている指標はありません" in s.select_one("#q3 .watch").get_text()
 
 
 def test_band_only_in_tooltip_and_judge_chips_in_tables(client):
@@ -139,7 +144,7 @@ def test_unlinked_business_kpis_collapse_to_one_line(client):
     assert not biz.select(".dt-row")
 
 
-@pytest.mark.parametrize("loc,text", [("en", "What to look at now"), ("ko", "지금 봐야 할 것")])
+@pytest.mark.parametrize("loc,text", [("en", "What is off?"), ("ko", "어디가 이상한가?")])
 def test_localized(client, loc, text):
     client.post("/settings", data={"locale": loc})
     html = client.get("/hr").text
