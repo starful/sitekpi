@@ -119,6 +119,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
   <a href="#s07">07 設定</a>
   <a href="#s08">08 プライバシーポリシー</a>
   <a href="#s09">09 利用規約</a>
+  <a href="#s10">10 使い方・ヘルプ</a>
   <div class="k">제품 규칙</div>
   <a href="#terms">용어</a>
   <a href="#guess">첫 추측 (숫자 먼저)</a>
@@ -187,6 +188,9 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
       <div class="rule"><b>화면에는 「숫자·판정·한마디」만</b><p>계산식·출처·전기 내역·보는 포인트·주의 문구는 모두 「説明」 팝업으로 보낸다.</p></div>
       <div class="rule"><b>겹쳐 여는 것은 2종류만</b><p>작은 보충 = 「説明」 팝업 / 고르기·고치기 = 오른쪽 위 드로어(비교 업종·흐름의 단). 둘을 동시에 겹치지 않는다.</p></div>
       <div class="rule"><b>판정은 색 + 글자</b><p>良好·目安内·要注意 를 항상 글자로 함께. 오렌지 = 악화, 틸 = 개선, 파랑 = 조작과 기준.</p></div>
+      <div class="rule"><b>글자 크기는 6단계만</b><p>26(주요 숫자) · 22(결론 한 문장) · 18(카드 제목) · 15(본문·행) · 13(라벨·버튼) · 12(주석)px. 카드 하나에 3단계까지. 행 안의 숫자는 이름과 같은 15px 굵게.</p></div>
+      <div class="rule"><b>처음 보이는 양은 적게</b><p>열어야 보이는 것: 유입별(칩·표), 詳しい数字의 각 카테고리, 범위 막대(설명 안). 카드마다 👍 👎.</p></div>
+      <div class="rule"><b>언어는 세션에</b><p>랜딩·처리방침·약관·도움말의 <code>?lang=</code> / 언어 버튼은 세션에 저장. 데모 시작·연결 해제로 세션을 비워도 언어는 남긴다.</p></div>
       <div class="rule"><b>휴대폰 화면은 일단 제외</b><p>PC(폭 1440)를 기준으로 설계한다. 좁은 화면은 깨지지 않을 정도만.</p></div>
     </div>
   </section>
@@ -215,6 +219,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>07</td><td><a href="#s07" class="jp">設定</a></td><td><code>/settings</code></td><td>표시 언어·연결한 사이트</td></tr>
         <tr><td>08</td><td><a href="#s08" class="jp">プライバシーポリシー</a></td><td><code>/policy</code></td><td>무엇을 모으고·어디에 얼마나 두고·어떻게 지우는지. Google OAuth 심사 필수 페이지</td></tr>
         <tr><td>09</td><td><a href="#s09" class="jp">利用規約</a></td><td><code>/terms</code></td><td>이용 조건(무료·읽기 전용·業界目安의 성격·면책·금지 사항·준거법)</td></tr>
+        <tr><td>10</td><td><a href="#s10" class="jp">使い方・ヘルプ</a></td><td><code>/help</code></td><td>Google 「확인되지 않은 앱」 화면 안내 · 보드 읽는 법 · 판정 용어 · 자주 하는 조작 · 막혔을 때 (SEO 대상)</td></tr>
       </tbody>
     </table>
   </section>
@@ -319,6 +324,17 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
       <li>단을 누르면 오른쪽 위 드로어(이름·이벤트·삭제). 아래에 <span class="jp">「この段にする」「保存」</span>을 고정(드로어가 편집 바의 저장을 가리므로).</li>
       <li>편집 모드의 인원은 보드 흐름과 같은 숫자(같은 기간). 드로어의 이벤트 목록은 사이트 기록 수 그대로.</li>
     </ul>
+    <h3>v4 — 보기 쉽게 (2026-11-05)</h3>
+    <ul class="dec">
+      <li><span class="tag">글자</span>약 40가지였던 크기를 6단계로(위 「전체 규칙」). いまの状態의 숫자 3개는 높이를 절반으로: 값 26px + 「前期 · 판정」 한 줄, 「業界 · あと」는 주석 한 줄.</li>
+      <li><span class="tag">이탈</span>각 단 아래에 「−23,104 人が離れた」(유입별 전환에도 따라감). 가장 많이 빠진 단은 주황. 맨 위 한 줄: 「いちばん離れているのは「A → B」。N 人（P%）…」.</li>
+      <li><span class="tag">단 빼기</span>「✎ 流れを直す」에서 각 단에 「× 外す」(마지막 단 = 主転換은 제외). 뺀 단은 「元に戻す」. 저장 전까지 보드는 그대로, 뺀 단의 숫자는 詳しい数字에 남는다.</li>
+      <li><span class="tag">줄인 것</span>유입 칩과 「流入別」 표는 「流入別に見る ▾」 안으로. 詳しい数字는 8 카테고리 모두 닫힌 채(이름 · 개수 · 要注意).</li>
+      <li><span class="tag">의견</span>카드 3개(いまの状態 · どこで離れているか · 詳しい数字) 아래에 「この部分はわかりやすいですか？ 👍 👎」. 누르면 바로 전송(<code>screen=board.now</code> 등), 그다음에만 한마디 칸.</li>
+      <li><span class="tag">도움</span>상단 바 「? この画面の見方」 → <code>/help#read</code>. 메뉴 아래 「使い方・ヘルプ」 · 「SiteKPI について（ホーム）」(<code>/?home=1</code>, 연결돼 있어도 랜딩).</li>
+    </ul>
+    <div class="frame-head"><span>v4 제안 화면 (편집 중: 「しっかり見た」를 뺀 상태)</span><a href="screens/03-board-v4.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
+    <div class="frame" data-w="1760" data-h="2100"><div class="frame-bar"><i></i><i></i><i></i><span>/live</span></div><div class="frame-box"><iframe src="screens/03-board-v4.dc.html" title="03 ボード v4" loading="lazy"></iframe></div></div>
     <h3>今 · 業界 · あと (2026-11-05)</h3>
     <ul class="dec">
       <li>업계 기준은 가운데 값이 아니라 <b>범위</b>로 보여 준다. 「あと」도 범위: 가까운 끝까지 <b>+5.2</b>, 먼 끝까지 <small>〜+25.2pt</small>. 범위 안이면 「0（目安内）」, 좋은 쪽으로 벗어나면 「目安超え」.</li>
@@ -401,6 +417,17 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     </ul>
     <div class="frame-head"><span>1440 × 5750</span><a href="screens/09-terms.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
     <div class="frame" data-w="1440" data-h="5750"><div class="frame-bar"><i></i><i></i><i></i><span>/terms</span></div><div class="frame-box"><iframe src="screens/09-terms.dc.html" title="09 利用規約" loading="lazy"></iframe></div></div>
+  </section>
+
+  <section class="block" id="s10">
+    <h2><span class="num">10</span><span class="jp">使い方・ヘルプ</span><span class="url">/help</span></h2>
+    <ul class="dec">
+      <li>메뉴(레일)가 있는 앱 화면이지만 검색 노출 대상(사이트맵·hreflang). ja/en/ko, 문구는 <code>i18n/guide_l10n.py</code>.</li>
+      <li>섹션: はじめての方へ · GA4 をつなぐとき · ボードの読み方 · 判定のことば · よくある操作 · 困ったとき · お問い合わせ・ご意見.</li>
+      <li><span class="tag">결정</span>OAuth 심사 전에는 로그인 뒤 「Google で確認されていないアプリ」 화면이 나온다. 놀라지 않도록 미리 알린다: 02 접속 화면의 로그인 아래 노란 안내, 랜딩 사용법 1단계·FAQ, 이 페이지의 화면 예시(「（画面のイメージ）」 표시).</li>
+    </ul>
+    <div class="frame-head"><span>1440 × 2650</span><a href="screens/10-help.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
+    <div class="frame" data-w="1440" data-h="2650"><div class="frame-bar"><i></i><i></i><i></i><span>/help</span></div><div class="frame-box"><iframe src="screens/10-help.dc.html" title="10 使い方・ヘルプ" loading="lazy"></iframe></div></div>
   </section>
 
   <section class="block" id="terms">
@@ -676,6 +703,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table class="log">
       <thead><tr><th>날짜</th><th>내용</th></tr></thead>
       <tbody>
+        <tr><td>2026-11-05</td><td>보드 v4(글자 6단계 · 숫자 3개 작게 · 이탈 인원 · 단 빼기 · 유입별 접기 · 詳しい数字 모두 닫기 · 카드별 👍👎), 10 使い方・ヘルプ, 접속 화면의 「확인되지 않은 앱」 안내, 언어를 세션에 저장(데모·해제 후에도 유지), 메뉴에 ヘルプ·ホーム.</td></tr>
         <tr><td>2026-11-05</td><td>코드 반영: 랜딩 10섹션(ja/en/ko, 언어별 화면 캡처), 처리방침 15항목·약관 21조(ja/en/ko), 문의 폼 링크, 보드의 今·業界·あと 범위 표시, GA4 맞춤 이벤트(<code>track.js</code>).</td></tr>
         <tr><td>2026-11-05</td><td>01을 「スタート」에서 랜딩(10섹션)으로 재설계, 08 プライバシーポリシー · 09 利用規約 추가(분량 약 3~6배). 문의는 Apps Script 폼. GTM 태그(<code>GTM_ID</code>) 설치, GA4 이벤트 설계 추가, OAuth 콜백 실패도 <code>/connect</code>로 302.</td></tr>
         <tr><td>2026-11-04</td><td>공개 준비: Cloud Run(sitekpi.net) 배포 파일, Firestore 저장, 개인정보처리방침·이용약관, 「ご意見」 버튼.</td></tr>

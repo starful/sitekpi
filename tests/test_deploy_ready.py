@@ -160,7 +160,7 @@ def test_robots_and_sitemap(client):
     r = client.get("/robots.txt")
     assert r.status_code == 200 and "Disallow: /live" in r.text and "Sitemap:" in r.text
     x = client.get("/sitemap.xml")
-    assert x.status_code == 200 and x.text.count("<url>") == 9 and "/policy?lang=en" in x.text
+    assert x.status_code == 200 and x.text.count("<url>") == 12 and "/help?lang=ko" in x.text and "/policy?lang=en" in x.text
 
 
 def test_gtm_only_when_configured(client, monkeypatch):

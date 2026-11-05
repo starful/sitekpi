@@ -16,7 +16,6 @@
     {% if g.note %}
     <p class="dgroup-note">{{ g.note }}</p>
     {% else %}
-    {% if g.collapsed %}<p class="dgroup-summary" data-dgroup-summary>{{ g.summary }}</p>{% endif %}
     <div class="dtable" id="dt-{{ g.id }}" role="table" aria-label="{{ g.title }}"{% if g.collapsed %} hidden{% endif %}>
       <div class="dt-row dt-head" role="row">
         <span role="columnheader">{{ t("col.metric", loc) }}</span>

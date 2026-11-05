@@ -31,6 +31,13 @@
         {% endfor %}
       </ul>
     </section>
+    {% if oauth_ready %}
+    <div class="cx-unverified" role="note">
+      <span aria-hidden="true" class="cx-unverified-i">⚠️</span>
+      <span><b>{{ t("connect.unverified_t", loc) }}</b><br>{{ t("connect.unverified_p", loc)|safe }}</span>
+      <a href="/help#connect">{{ t("connect.unverified_link", loc) }} →</a>
+    </div>
+    {% endif %}
 
     {% elif not selected %}
     {# ② property #}

@@ -62,7 +62,9 @@ def test_sample_board_shows_flow_with_worst_step_and_no_mapping_form():
     assert stages[0].select_one(".flow-users strong").get_text() == "68,500"
     assert len(flow.select(".flow-link.is-worst")) == 1
     # one line on screen; the rest (sources, events, sample note) is in 説明
-    assert flow.select_one(".where-worst").get_text().startswith("一番の離脱：商品を見た → カートに追加")
+    assert flow.select_one(".where-worst").get_text().startswith("いちばん離れているのは「商品を見た → カートに追加」。23,104 人")
+    lost = flow.select_one(".flow-lost.is-worst b")
+    assert lost and lost.get_text() == "−23,104" and lost.has_attr("data-v-all")
     pop = _template(html, "pop-flow-help").get_text()
     assert "流入元" in pop and "view_item → add_to_cart" in pop
     # channel switch carries every channel's numbers

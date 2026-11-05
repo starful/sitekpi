@@ -159,3 +159,45 @@ document.querySelectorAll("[data-period] select").forEach((sel) => sel.addEventL
   url.hash = "";
   location.assign(url.toString());
 }));
+
+/* 流入別に見る: the channel chips and the 流入別 table stay closed until asked for */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-ch-toggle]");
+  if (!btn) return;
+  const open = btn.getAttribute("aria-expanded") !== "true";
+  btn.setAttribute("aria-expanded", open ? "true" : "false");
+  document.querySelectorAll("[data-ch-part]").forEach((el) => { el.hidden = !open; });
+  const grid = document.querySelector("[data-where-grid]");
+  if (grid) grid.classList.toggle("is-single", !open || !grid.querySelector(".flow-chtable"));
+  if (!open) document.querySelector('[data-flow-ch="all"]')?.click(); // back to 全体
+  if (open && window.SiteKPITrack) window.SiteKPITrack("channel_filter");
+});
+
+/* 👍 👎 under each card: one tap sends; a word can follow */
+(function () {
+  async function send(box, body) {
+    try {
+      const r = await fetch("/feedback", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.assign({ screen: "board." + box.dataset.cardFb, path: location.pathname }, body)) });
+      return r.ok;
+    } catch (err) { return false; }
+  }
+  document.querySelectorAll("[data-card-fb]").forEach((box) => {
+    const more = box.querySelector(".card-fb-more");
+    const input = more.querySelector("input");
+    box.querySelectorAll("[data-vote]").forEach((b) => b.addEventListener("click", async () => {
+      box.querySelectorAll("[data-vote]").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+      more.hidden = false;
+      await send(box, { vote: b.dataset.vote });
+      if (window.SiteKPITrack) window.SiteKPITrack("feedback_submit", { vote: b.dataset.vote, has_comment: "false", location: "card_" + box.dataset.cardFb });
+    }));
+    more.querySelector("[data-send]").addEventListener("click", async () => {
+      const text = input.value.trim();
+      if (!text) return;
+      if (await send(box, { comment: text })) {
+        more.replaceChildren(Object.assign(document.createElement("span"), { className: "card-fb-thanks", textContent: box.dataset.sent || "✓" }));
+        if (window.SiteKPITrack) window.SiteKPITrack("feedback_submit", { vote: "none", has_comment: "true", location: "card_" + box.dataset.cardFb });
+      }
+    });
+  });
+})();

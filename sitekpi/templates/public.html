@@ -12,8 +12,12 @@
     <div class="pub-langs" aria-label="Language">
       {% for code, label in [("ja", "日本語"), ("en", "EN"), ("ko", "한국어")] %}<a href="{{ path }}{{ '' if code == 'ja' else '?lang=' ~ code }}"{% if code == loc %} aria-current="true"{% endif %} hreflang="{{ code }}" data-track="lang_change" data-track-language="{{ code }}" data-track-location="header">{{ label }}</a>{% endfor %}
     </div>
+    {% if connected is defined and connected %}
+    <a class="pub-login" href="/live">{{ c.open_board }}</a>
+    {% else %}
     <a class="pub-demo" href="/connect/demo?start=1" data-track="cta_click" data-track-cta="demo" data-track-location="header">{{ c.demo }}</a>
     <a class="pub-login" href="/connect" data-track="cta_click" data-track-cta="connect" data-track-location="header">{{ c.login }}</a>
+    {% endif %}
   </div>
 </header>
 {% block content %}{% endblock %}
@@ -25,6 +29,7 @@
       <a href="/terms{{ lq }}">{{ t("legal.terms", loc) }}</a>
       <a href="/glossary">{{ t("nav.glossary", loc) }}</a>
       <a href="/samples">{{ t("nav.samples_all", loc) }}</a>
+      <a href="/help{{ lq }}">{{ t("nav.help", loc) }}</a>
       <a href="{{ contact_url }}" target="_blank" rel="noopener" data-track="contact_click" data-track-location="footer">{{ c.contact }}</a>
       <button type="button" class="pub-fb" data-feedback-open>{{ c.feedback }}</button>
     </nav>

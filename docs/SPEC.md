@@ -18,7 +18,7 @@
 | GA4 권한 | `analytics.readonly` 하나 (읽기 전용) |
 | 배포 | Cloud Run(`starful-258005`, us-central1, 서비스 `sitekpi-service`) · 도메인 `sitekpi.net`. 최초 1회 `scripts/gcp_setup.sh <client_secret.json>`(API·Artifact Registry·Secret Manager·IAM·Firestore TTL), 이후 `./deploy.sh`(Cloud Build: 테스트 → 빌드 → 배포), 도메인 연결 `scripts/gcp_setup.sh --domain`. OAuth 동의 화면·클라이언트는 별도 프로젝트 `sitekpi` |
 | 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `OPERATOR_NAME` · `OPERATOR_ADDRESS` · `LEGAL_COURT`(선택, /policy·/terms 표기. 비면 중립 문구) · `GTM_ID`(Google 태그 관리자 컨테이너, `GTM-` 형식만 출력. 비어 있으면 태그 없음 → 로컬은 측정 안 함). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` |
-| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-05 기준 186개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
+| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-05 기준 188개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
 
 ## 2. 디렉터리
 
@@ -61,7 +61,8 @@ tests/ · scripts/
 
 | 메서드 · 경로 | 처리 | 비고 |
 |---|---|---|
-| GET `/` | 홈. 연결돼 있으면 `/live`로 | |
+| GET `/` | 홈(랜딩). 연결돼 있으면 `/live`로, `?home=1`이면 연결돼 있어도 랜딩. `?lang=`은 세션에 저장 | `routes/pages.index` |
+| GET `/help` | 使い方・ヘルプ (ja/en/ko, `?lang=` 저장) | `routes/pages.page_help` · `help.html` · `i18n/guide_l10n.py` · `help.css` |
 | GET `/connect` | 연결 상태별: 로그인 / 속성 선택 / 연결됨 | `routes/connect.py` |
 | GET `/connect/google` · `/connect/callback` | OAuth 시작 · 콜백(state 검증, 세션 재발급) | |
 | GET `/connect/demo?start=1` | 데모 연결 → 바로 `/live` | |
@@ -132,6 +133,8 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 업계·업종 30개 | `packs/*.py` · `packs/catalog.py` · `packs/registry.py` |
 | 業界目安 · 출처 등급 · 범위 폭 | `packs/sources.py` (`ENGAGE_RULE` · `CVR_RULE` · `CART_RULE`) · `packs/derived.py` · `benchmarks.effective_benchmarks` |
 | 판정 칩 (良好·目安内·要注意) | `views/board._bench_info` · `_judge` |
+| 글자 6단계 | `board.css` · `rail.css` · `helpcard.css` · `setup.css`의 font-size는 0.75 · 0.8125 · 0.9375 · 1.125 · 1.375 · 1.625rem만 |
+| 이탈 인원 · 단 빼기 | `views/flow.flow_context` 링크의 `lost` · 단의 `in_link` → `flow.html` `.flow-lost` · `board_edit.js` 「× 外す」/「元に戻す」 |
 | 今 · 業界(범위) · あと(범위) | `views/board._range_gap` → `_bench_view`의 `rg` · `board/_macros.html` `rg_box` · `rg_gap` (타일 · 今見るべきこと · 詳しい数字) |
 | GA4 이벤트 설계 | 기획서 `#analytics` → `static/js/track.js` · 사용자 GA4 데이터는 보내지 않음 |
 | 今見るべきこと · 一番の課題 · 업종 안내(`far`) | `views/board._watch_items` · `_verdict` · `board.html` `.watch-ind` |
@@ -147,6 +150,7 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 단 매핑 · 수정본 흐름 · 別の行動 | `.data/app.sqlite3` (`APP_DB_PATH`) 테이블 `event_mappings` · `flow_custom` · `flow_branches` | scope = `prop:{property_id}` (같은 속성은 브라우저가 달라도 공유). 데모는 저장 안 함 |
 | 自社目安 | 같은 DB 테이블 `benchmark_overrides` | 실 GA4: `prop:{id}` / 견본·데모: `sess:{bench_owner}` (저장할 때만 생성) |
 | 운영(Cloud Run) | 위 세 가지(세션 · 흐름 · 自社目安)는 Firestore `sitekpi/{sessions,flow,benchmarks}/rows/…` (`sitekpi/firestore_store.py`, `STORE_BACKEND=firestore`). 세션은 같은 Fernet 암호화, `expire_at` TTL로 자동 삭제 | — |
+| 카드별 👍👎 | 같은 `/feedback`, `screen` = `board.now` · `board.flow` · `board.details` (투표 → 이어서 한마디) | — |
 | 의견(「ご意見」) | 로컬 `.data/feedback.jsonl`, 운영 Firestore `sitekpi/feedback/rows` — 화면·👍/👎·의견·언어·연결 여부·시각 (IP·계정 없음) | — |
 | 측정 쿠키 | `sk_ev`(5분, 1회 이벤트 이름) · `sk_conn`(14일, none·demo·live). JS가 읽음(HttpOnly 아님), ID·GA4 값 없음 | — |
 | 빌더 | 브라우저 localStorage `sitekpi.builder.v4` (v3 자동 이전) | — |

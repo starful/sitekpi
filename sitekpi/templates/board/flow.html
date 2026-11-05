@@ -34,6 +34,7 @@
         {% else %}
         <span class="flow-users"><strong{% for k, v in st.users_fmt.items() %} data-v-{{ k }}="{{ v }}"{% endfor %}>{{ st.users_fmt.all }}</strong> <small>{{ t("flow.people", loc) }}</small></span>
         <span class="flow-bar" aria-hidden="true"><i style="--r: {{ [st.reach_pct, 1.5] | max }}%"></i></span>
+        {% if st.in_link and st.in_link.lost.all != "—" %}<span class="flow-lost{{ ' is-worst' if st.in_link.worst else '' }}"><b{% for k, v in st.in_link.lost.items() %} data-v-{{ k }}="−{{ v }}"{% endfor %}>−{{ st.in_link.lost.all }}</b> <small>{{ t("flow.lost", loc) }}</small></span>{% endif %}
         {% if st.mix %}
         <span class="flow-mix" title="{{ t('flow.mix', loc) }}" aria-hidden="true">{% for m in st.mix %}<i data-ch="{{ f.channels[loop.index0].id }}" style="width:{{ m.pct }}%;background:{{ m.color }}"></i>{% endfor %}</span>
         {% endif %}

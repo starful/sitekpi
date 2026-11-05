@@ -71,7 +71,7 @@ def landing_context(loc: str) -> dict[str, Any]:
     }
 
 
-def render_landing(*, locale: str) -> str:
+def render_landing(*, locale: str, connected: bool = False) -> str:
     loc = locale if locale in LANDING else "ja"
     ctx = landing_context(loc)
     c = ctx["c"]
@@ -89,7 +89,7 @@ def render_landing(*, locale: str) -> str:
         },
     ]
     return render(
-        "landing.html", loc=loc, page="home", lq="" if loc == "ja" else f"?lang={loc}", path="/",
+        "landing.html", loc=loc, page="home", connected=connected, lq="" if loc == "ja" else f"?lang={loc}", path="/",
         seo=seo_context(path="/", loc=loc, title=c["meta_title"], description=c["meta_desc"], jsonld=jsonld),
         **ctx,
     )

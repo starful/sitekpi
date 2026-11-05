@@ -21,7 +21,9 @@
 {% if rail.sample %}<a href="/{{ rail.sample.slug }}" class="nav-indent is-on">{{ rail.sample.label }}</a>{% endif %}
 
 <div class="nav-bottom">
+  <a href="/help" class="nav-help{{ ' is-on' if rail.active == 'help' else '' }}"><span class="nav-help-q" aria-hidden="true">?</span>{{ t("nav.help", loc) }}</a>
+  <a href="/?home=1" class="nav-about">{{ t("nav.about", loc) }}</a>
   <button type="button" class="nav-feedback" data-feedback-open>{{ t("fb.open", loc) }}</button>
   <a href="/settings" class="{{ 'is-on' if rail.active == 'settings' else '' }}">{{ t("nav.settings", loc) }}</a>
-  <p class="nav-legal"><a href="/policy">{{ t("legal.policy", loc) }}</a> · <a href="/terms">{{ t("legal.terms", loc) }}</a></p>
+  <p class="nav-legal"><a href="/policy">{{ t("legal.policy", loc) }}</a> · <a href="/terms">{{ t("legal.terms", loc) }}</a> · <a href="{{ contact_url() }}" target="_blank" rel="noopener">{{ t("nav.contact", loc) }}</a></p>
 </div>

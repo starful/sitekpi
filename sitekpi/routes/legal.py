@@ -7,7 +7,7 @@ import os
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 
-from sitekpi.i18n import get_locale, normalize_locale, t
+from sitekpi.i18n import get_locale, normalize_locale, set_locale, t
 from sitekpi.i18n.landing_l10n import CONTACT_URL, LANDING
 from sitekpi.templating import render
 from sitekpi.views.seo import seo_context
@@ -47,11 +47,13 @@ def operator(loc: str) -> dict[str, str]:
 
 
 def _page(request: Request, kind: str, lang: str) -> HTMLResponse:
-    loc = normalize_locale(lang) if lang else get_locale(request.session)
+    if lang:
+        set_locale(request.session, lang)
+    loc = get_locale(request.session)
     title = f"{t(f'legal.{kind}', loc)} | SiteKPI"
     return HTMLResponse(render(
         "legal.html",
-        loc=loc, c=LANDING[loc], page=kind, path=f"/{kind}", lq="" if loc == "ja" else f"?lang={loc}",
+        loc=loc, c=LANDING[loc], page=kind, connected=bool(request.session.get("ga4_credentials") or request.session.get("ga4_demo")), path=f"/{kind}", lq="" if loc == "ja" else f"?lang={loc}",
         body=f"legal/{kind}_{loc}.html",
         op=operator(loc), contact_url=CONTACT_URL,
         seo=seo_context(path=f"/{kind}", loc=loc, title=title, description=_DESC[kind][loc]),
@@ -86,7 +88,7 @@ def sitemap() -> Response:
     from sitekpi.views.seo import LANGS, lang_url
 
     urls = []
-    for path in ("/", "/policy", "/terms"):
+    for path in ("/", "/help", "/policy", "/terms"):
         links = "".join(f'<xhtml:link rel="alternate" hreflang="{lg}" href="{lang_url(path, lg)}"/>' for lg in LANGS)
         for lg in LANGS:
             urls.append(f"<url><loc>{lang_url(path, lg)}</loc>{links}</url>")

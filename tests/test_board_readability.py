@@ -59,9 +59,14 @@ def test_board_reads_verdict_then_where_then_detail(client):
     groups = [g["id"] for g in s.select(".dgroup")]
     assert groups == ["g-funnel", "g-revenue", "g-engage", "g-channels", "g-device", "g-audience", "g-events", "g-biz"]
     assert [a["href"] for a in s.select(".dnav a")] == ["#" + g for g in groups]
-    # よく見ないカテゴリは閉じて、上位3つを1行で
-    assert s.select_one("#dt-audience[hidden]") and s.select_one("#g-audience [data-dgroup-summary]")
-    assert not s.select_one("#dt-funnel[hidden]")
+    # v4: every category starts closed — name · count · 要注意, opened on demand
+    assert s.select_one("#dt-audience[hidden]") and s.select_one("#dt-funnel[hidden]")
+    assert s.select_one('#g-funnel [data-dgroup-toggle][aria-controls="dt-funnel"]')
+    # less on screen first: channel chips and the 流入別 table wait behind 「流入別に見る」
+    assert s.select_one("[data-ch-toggle]") and all(x.has_attr("hidden") for x in s.select("[data-ch-part]"))
+    # 👍 👎 under each card, 「? この画面の見方」 in the top bar
+    assert [b["data-card-fb"] for b in s.select("[data-card-fb]")] == ["now", "flow", "details"]
+    assert s.select_one('.top a.top-help[href="/help#read"]')
     # the page menu in the top bar
     assert [a["href"] for a in s.select(".top .page-nav a")] == ["#s-l0", "#flow", "#s-l2"]
 
@@ -152,3 +157,14 @@ def test_issue_tile_never_repeats_the_rate_tile(client):
     labels = [t.select_one(".tile-label").get_text() for t in s.select(".verdict .tile")]
     assert labels == ["応募完了", "応募CVR", "求人を見た → 応募を開始"]
     assert "90.7% が次に進まない" in _tpl(s, "tile-3").get_text()
+
+def test_board_css_uses_the_six_text_sizes_only():
+    """v4: 26 · 22 · 18 · 15 · 13 · 12px — nothing in between."""
+    import re
+    from pathlib import Path
+
+    allowed = {"0.75rem", "0.8125rem", "0.9375rem", "1.125rem", "1.375rem", "1.625rem"}
+    for name in ("board.css", "rail.css", "helpcard.css", "setup.css"):
+        css = (Path(__file__).resolve().parents[1] / "static" / "css" / name).read_text()
+        sizes = set(re.findall(r"font-size:\s*([0-9.]+(?:rem|px))", css))
+        assert sizes <= allowed, (name, sorted(sizes - allowed))

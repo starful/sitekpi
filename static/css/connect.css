@@ -470,3 +470,9 @@ button.choice.ind-choice { padding: 14px 30px 14px 16px; }
 .cx-pick-foot { display: flex; justify-content: flex-end; border-top: 1px solid #eef1f5; padding-top: 16px; }
 .cx-note { margin: 10px 0 0; font-size: 0.75rem; }
 .prop { min-height: 60px; }
+
+/* the Google "unverified app" screen, explained before the user meets it */
+.cx-unverified { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; margin-top: 16px; background: #fffaf3; border: 1px solid #f3d9b5; border-radius: 14px; padding: 16px 20px; font-size: 0.875rem; line-height: 1.65; color: #3d2f1c; }
+.cx-unverified-i { font-size: 1.375rem; }
+.cx-unverified a { font-size: 0.8125rem; font-weight: 700; white-space: nowrap; text-decoration: none; }
+@media (max-width: 640px) { .cx-unverified { grid-template-columns: 1fr; } }

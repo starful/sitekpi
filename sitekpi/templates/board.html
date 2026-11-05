@@ -4,6 +4,8 @@
 {% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
 {% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" /><link rel="stylesheet" href="{{ static_url('css/helpcard.css') }}" />{% if editor %}<link rel="stylesheet" href="{{ static_url('css/setup.css') }}" />{% endif %}{% endblock %}
 {% block main %}
+{% macro card_fb(part) %}<div class="card-fb" data-card-fb="{{ part }}" data-sent="{{ t('cfb.sent', loc) }}"><span>{{ t("cfb.q", loc) }}</span><button type="button" data-vote="up" aria-label="{{ t('cfb.up', loc) }}">👍</button><button type="button" data-vote="down" aria-label="{{ t('cfb.down', loc) }}">👎</button><span class="card-fb-more" hidden><span class="card-fb-thanks">{{ t("cfb.thanks", loc) }}</span><input type="text" maxlength="500" placeholder="{{ t('cfb.ph', loc) }}" aria-label="{{ t('cfb.ph', loc) }}" /><button type="button" class="card-fb-send" data-send>{{ t("cfb.send", loc) }}</button></span></div>{% endmacro %}
+
       {#- 上のバー: follows the scroll. Site · 比べる業種 · 期間 · page menu -#}
       <header class="top">
         <div class="top-l">
@@ -17,6 +19,7 @@
           {#- 比べる業種 · 期間 only; 目安を調整 lives at the bottom of the 業種 drawer (sample boards keep it here) -#}
           {% if industry_drawer %}<button type="button" class="ind-chip" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false"><span class="ind-k">{{ t("bx.ind_k", loc) }}</span><b>{{ ind_name or t("bx.ind_none", loc) }}</b><span class="ind-caret" aria-hidden="true">▾</span></button>{% endif %}
           {% if bench and not industry_drawer %}<button type="button" class="adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}
+          <a class="top-help" href="/help#read"><span aria-hidden="true">?</span> {{ t("bx.how_to_read", loc) }}</a>
           {#- 期間: reloads this board for the chosen period (?period=) -#}
           <form method="get" class="period" data-period>
             <label>
@@ -68,15 +71,16 @@
                 <span class="tile-label">{{ k.label }}</span>
                 {{ m.pop_btn("tile-" ~ loop.index, k.label) }}
               </div>
-              <div class="tile-value">{{ k.value }}</div>
-              {% if k.bench.kind == "judge" and k.bench.rg %}{{ m.rg_box(k.bench) }}{% endif %}
-              <div class="tile-chips">
+              <div class="tile-line">
+                <span class="tile-value">{{ k.value }}</span>
                 <span class="tile-prev tone-{{ k.prev.tone }}">{{ t("bx.prev", loc, d=k.prev.text) if k.prev.text else t("bx.prev_none", loc) }}</span>
                 {% if k.bench.kind == "na" %}<span class="judge judge-na-chip">{{ t("verdict.bench_na", loc) }}</span>{% else %}{{ m.judge_cell(k.bench) }}{% endif %}
               </div>
+              {% if k.bench.kind == "judge" and k.bench.rg %}<p class="tile-rg">{{ t("rg.ind", loc) }} <b class="rg-band">{{ k.bench.band }}</b> · {{ t("rg.left", loc) }} {{ m.rg_gap(k.bench.rg) }}</p>{% endif %}
             </article>
             {% endfor %}
           </div>
+          {{ card_fb("now") }}
         </section>
 
         {# L1 — どこで離れているか: flow + one line + 今見るべきこと + 流入別. Details in 「説明」 #}
@@ -92,7 +96,8 @@
             </div>
             <div class="where-tools">
               {% if f and f.channels %}
-              <div class="flow-chs" role="group" aria-label="{{ t('flow.by_channel', loc) }}">
+              <button type="button" class="ch-toggle" data-ch-toggle aria-expanded="false">{{ t("flow.ch_show", loc) }}<span aria-hidden="true" class="caret">▾</span></button>
+              <div class="flow-chs" role="group" aria-label="{{ t('flow.by_channel', loc) }}" data-ch-part hidden>
                 <button type="button" class="flow-ch is-on" data-flow-ch="all" aria-pressed="true">{{ t("flow.all", loc) }}</button>
                 {% for c in f.channels %}
                 <button type="button" class="flow-ch" data-flow-ch="{{ c.id }}" aria-pressed="false"><i style="background:{{ c.color }}"></i>{{ c.name }}</button>
@@ -101,11 +106,11 @@
               {% endif %}
             </div>
           </div>
-          {% if worst %}<p class="where-worst">{{ t("bx.worst", loc, a=worst.from, b=worst.to, drop=worst.drop) }}</p>{% endif %}
+          {% if worst %}<p class="where-worst">{{ t("bx.worst_n", loc, a=worst.from, b=worst.to, drop=worst.drop, n=worst.lost.all) if worst.lost and worst.lost.all != "—" else t("bx.worst", loc, a=worst.from, b=worst.to, drop=worst.drop) }}</p>{% endif %}
           {% if f %}<div data-flow-view>{% include "board/flow.html" %}</div>{% endif %}
           {% if editor %}<div class="edit-track" data-edit-track hidden><div class="sx-scroll"><ol class="sx-flow" data-flow></ol></div><p class="sx-cover" data-cover></p></div>{% endif %}
 
-          <div class="where-grid{{ ' is-single' if not (f and f.ch_rows) else '' }}">
+          <div class="where-grid is-single" data-where-grid>
             <div class="watch" aria-label="{{ t('watch.title', loc) }}">
               <h3>{{ t("watch.title", loc) }}</h3>
               {% if watch %}
@@ -134,7 +139,7 @@
               {% endif %}
             </div>
             {% if f and f.ch_rows %}
-            <div class="flow-chtable">
+            <div class="flow-chtable" data-ch-part hidden>
               <div class="flow-chtitle"><h3>{{ t("flow.ch_title", loc, step=f.last_label) }}</h3>{{ m.pop_btn("ch-help", t("flow.ch_title", loc, step=f.last_label)) }}</div>
               <ul>
                 {% for r in f.ch_rows %}
@@ -147,6 +152,7 @@
             </div>
             {% endif %}
           </div>
+          {{ card_fb("flow") }}
         </section>
 
         {# L2 — 詳しい数字: every category stacked; loaded after the page when GA4 is slow #}
@@ -162,6 +168,7 @@
             <div class="skeleton" aria-hidden="true">{% for _ in range(6) %}<i></i>{% endfor %}</div>
             {% endif %}
           </div>
+          {{ card_fb("details") }}
         </section>
       </div>
 {% endblock %}

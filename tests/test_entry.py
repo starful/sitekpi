@@ -52,6 +52,11 @@ def test_landing_page_purpose_audience_features_how_and_seo(client):
                    if json.loads(x.string)["@type"] == "FAQPage")
         assert len(faq["mainEntity"]) == 12
         assert s.select_one('footer a[href^="https://script.google.com/macros/"]')  # お問い合わせ
+    # the language picked on the landing page stays for the session (board after connecting too)
+    assert client.get("/connect").text.count('lang="ko"') == 1
+    client.get("/connect/demo?start=1")
+    assert BeautifulSoup(client.get("/live").text, "html.parser").html["lang"] == "ko"
+    client.cookies.clear()
     s = BeautifulSoup(client.get("/").text, "html.parser")
     assert s.select_one('a.lp-sample[href="/samples?b=commerce&i=ec"]')
     assert s.select_one('meta[name="description"]')["content"]
@@ -63,6 +68,14 @@ def test_landing_page_purpose_audience_features_how_and_seo(client):
     assert s.select_one('footer a[href="/policy"]') and s.select_one('footer a[href="/terms"]')
     en = BeautifulSoup(client.get("/?lang=en").text, "html.parser")
     assert en.html["lang"].startswith("en") and "?lang=en" in en.select_one('link[rel="canonical"]')["href"]
+    # connected: / goes to the board, the menu's 「SiteKPI について」 (/?home=1) shows the landing page
+    client.cookies.clear()
+    client.get("/connect/demo?start=1")
+    assert client.get("/").headers["location"] == "/live"
+    home = BeautifulSoup(client.get("/?home=1").text, "html.parser")
+    assert home.select_one('.pub-top a.pub-login[href="/live"]') and home.select_one("#problem")
+    board = BeautifulSoup(client.get("/live").text, "html.parser")
+    assert board.select_one('.nav-bottom a[href="/help"]') and board.select_one('.nav-bottom a[href="/?home=1"]')
     # app pages stay out of search results
     assert BeautifulSoup(client.get("/glossary").text, "html.parser").select_one('meta[name="robots"]')
 
@@ -102,3 +115,18 @@ def test_board_period_switch_and_edit_numbers_match_the_flow(client):
             assert f"{data['counts'][st['event']]:,}" == txt, (period, st)
     # the 段 drawer can save (the drawer covers the 編集中 bar)
     assert s.select_one("#drawer-step button[type=submit][form=edit-form]") and s.select_one("form#edit-form")
+
+
+def test_help_page_and_connect_explain_the_unverified_app_screen(client, monkeypatch):
+    for lang in ("ja", "en", "ko"):
+        s = BeautifulSoup(client.get(f"/help?lang={lang}").text, "html.parser")
+        for sec in ("start", "connect", "read", "words", "fix", "trouble", "contact"):
+            assert s.select_one(f"section#{sec} h2"), (lang, sec)
+        assert len(s.select("#words .hp-word")) == 8 and s.select_one("#contact a[href^='https://script.google.com/']")
+        assert s.select_one('link[rel="canonical"]') and not s.select_one('meta[name="robots"]')
+    client.cookies.clear()
+    import sitekpi.routes.connect as connect
+    monkeypatch.setattr(connect, "oauth_configured", lambda: True)
+    s = BeautifulSoup(client.get("/connect").text, "html.parser")
+    note = s.select_one(".cx-unverified")
+    assert note and "続行" in note.get_text() and note.select_one('a[href="/help#connect"]')

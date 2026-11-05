@@ -2,14 +2,14 @@
    Markup: templates/partials/help_card.html */
 .gl-card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .gl-chip {
-  font-size: 0.6875rem; font-weight: 800; border-radius: 999px; padding: 2px 8px;
+  font-size: 0.75rem; font-weight: 800; border-radius: 999px; padding: 2px 8px;
   background: #eaf1ff; color: #1d4ed8;
 }
 .gl-chip.kind-traffic { background: #e0f2fe; color: #0369a1; }
 .gl-chip.kind-event { background: #f3effe; color: #6d28d9; }
 .gl-chip.kind-business { background: #e6f6f2; color: #0f766e; }
 .gl-chip.kind-meta { background: #f1f3f5; color: #475569; }
-.gl-title { font-size: 1.0625rem; line-height: 1.35; }
+.gl-title { font-size: 1.125rem; line-height: 1.35; }
 .gl-id {
   align-self: flex-start; font-family: ui-monospace, Menlo, monospace; font-size: 0.75rem;
   color: #475569; background: #f1f5f9; border-radius: 4px; padding: 1px 6px; overflow-wrap: anywhere;
@@ -22,7 +22,7 @@
   animation: gl-in 0.22s ease-out;
 }
 @keyframes gl-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-.gl-k { font-size: 0.6875rem; font-weight: 800; color: var(--muted); }
+.gl-k { font-size: 0.75rem; font-weight: 800; color: var(--muted); }
 .gl-formula, .gl-tip { display: flex; flex-direction: column; gap: 6px; }
 .gl-formula .mono {
   font-family: ui-monospace, Menlo, monospace; font-size: 0.8125rem; line-height: 1.6;
@@ -31,7 +31,7 @@
 }
 .gl-tip { background: #f3f7fe; border-radius: 12px; padding: 12px 14px; }
 .gl-tip .gl-k { color: var(--accent-ink); }
-.gl-tip span:last-child { font-size: 0.875rem; line-height: 1.7; }
+.gl-tip span:last-child { font-size: 0.9375rem; line-height: 1.7; }
 .gl-foot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; align-content: flex-start; }
 .gl-bench {
   display: inline-flex; align-items: center; min-height: 32px; padding: 0 10px; border-radius: 8px;
@@ -54,6 +54,6 @@
 .help-card .gl-open { padding-top: 4px; }
 .help-close {
   width: 32px; height: 32px; flex: none; border: 1px solid #e5eaf1; border-radius: 8px; background: #fff;
-  color: #5b6676; cursor: pointer; font: inherit; font-size: 15px;
+  color: #5b6676; cursor: pointer; font: inherit; font-size: 0.9375rem;
 }
 .help-close:hover { background: #f1f5f9; color: #152033; }

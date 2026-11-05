@@ -1,0 +1,56 @@
+{#- 使い方・ヘルプ (/help): docs/plan s10 · screens/10-help.dc.html. Copy: i18n/guide_l10n.py -#}
+{% extends "base.html" %}
+{% block title %}{{ g.title }} | SiteKPI{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/help.css') }}" />{% endblock %}
+{% block main %}
+<div class="hp">
+  <aside class="hp-toc" aria-label="{{ g.toc_k }}">
+    <p>{{ g.toc_k }}</p>
+    {% for id in ("start", "connect", "read", "words", "fix", "trouble", "contact") %}<a href="#{{ id }}">{{ g.toc[id] }}</a>{% endfor %}
+  </aside>
+  <main class="hp-main">
+    <div class="hp-head"><p class="hp-k">/help</p><h1>{{ g.title }}</h1><p>{{ g.lead }} <a href="/glossary">{{ t("nav.glossary", loc) }} →</a></p></div>
+
+    <section id="start" class="hp-card"><h2>{{ g.toc.start }}</h2>
+      <ol class="hp-steps">{% for k, v in g.start %}<li><b>{{ k }}</b><p>{{ v }}</p></li>{% endfor %}</ol>
+      <p class="hp-small"><a href="/connect/demo?start=1">{{ g.start_demo }}</a></p>
+    </section>
+
+    <section id="connect" class="hp-card"><h2>{{ g.connect_title }}</h2>
+      <div class="hp-connect">
+        <div>
+          <p>{{ g.connect_p }}</p>
+          <ol>{% for x in g.connect_steps %}<li>{{ x | safe }}</li>{% endfor %}</ol>
+          <p class="hp-small">{{ g.connect_note }}</p>
+        </div>
+        <div class="hp-mock" aria-hidden="true">
+          <p class="hp-mock-k">{{ g.mock_k }}</p>
+          <p class="hp-mock-t">{{ g.mock_title }}</p>
+          <p class="hp-mock-b">{{ g.mock_body }}</p>
+          <div class="hp-mock-btns"><span class="hp-mock-go">{{ g.mock_go }}</span><span class="hp-mock-back">{{ g.mock_back }}</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="read" class="hp-card"><h2>{{ g.read_title }}</h2>
+      <div class="hp-grid3">{% for k, v in g.read %}<div><b>{{ k }}</b><p>{{ v }}</p></div>{% endfor %}</div>
+    </section>
+
+    <section id="words" class="hp-card"><h2>{{ g.words_title }}</h2>
+      {% for kind, k, v in g.words %}<div class="hp-word"><span>{% if kind %}<span class="judge judge-{{ 'up' if kind == 'good' else kind }}">{{ k }}</span>{% else %}<b>{{ k }}</b>{% endif %}</span><span>{{ v }}</span></div>{% endfor %}
+    </section>
+
+    <section id="fix" class="hp-card"><h2>{{ g.fix_title }}</h2>
+      <ul class="hp-list">{% for k, v in g.fix %}<li><b>{{ k }}</b><p>{{ v }}</p></li>{% endfor %}</ul>
+    </section>
+
+    <section id="trouble" class="hp-card"><h2>{{ g.trouble_title }}</h2>
+      {% for k, v in g.trouble %}<details class="hp-q"><summary>{{ k }}</summary><p>{{ v }}</p></details>{% endfor %}
+    </section>
+
+    <section id="contact" class="hp-card"><h2>{{ g.contact_title }}</h2>
+      <p>{{ g.contact_p }} <a href="{{ contact_url() }}" target="_blank" rel="noopener">{{ g.contact_link }}</a>{{ g.contact_end }}</p>
+    </section>
+  </main>
+</div>
+{% endblock %}

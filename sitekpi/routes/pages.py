@@ -48,15 +48,18 @@ Period = Literal["7d", "28d"]
 
 
 @router.get("/", response_class=HTMLResponse)
-def index(request: Request, lang: str = Query(default="")):
-    """Connected → the board. Otherwise the public landing page (?lang=ja|en|ko for SEO links)."""
-    from sitekpi.i18n import normalize_locale
+def index(request: Request, lang: str = Query(default=""), home: int = 0):
+    """Connected → the board (unless ?home=1 from the menu). Otherwise the public landing page.
+    ?lang=ja|en|ko is remembered in the session, so the board after connecting keeps the language."""
+    from sitekpi.i18n import set_locale
     from sitekpi.views.landing import render_landing
 
-    if nav_context(request)["connected"]:
+    connected = bool(nav_context(request)["connected"])
+    if lang:
+        set_locale(request.session, lang)
+    if connected and not home:
         return RedirectResponse("/live", status_code=302)
-    loc = normalize_locale(lang) if lang else get_locale(request.session)
-    return HTMLResponse(render_landing(locale=loc))
+    return HTMLResponse(render_landing(locale=get_locale(request.session), connected=connected))
 
 
 # Short-lived per-process cache so switching periods does not re-hit GA4 every
@@ -207,6 +210,24 @@ def page_glossary(request: Request):
             rail=nav_rail_context(request, "glossary"),
         )
     )
+
+
+@router.get("/help", response_class=HTMLResponse)
+def page_help(request: Request, lang: str = Query(default="")):
+    """使い方・ヘルプ: connecting (the unverified-app screen), reading the board, verdict words, tasks."""
+    from sitekpi.i18n import set_locale
+    from sitekpi.i18n.guide_l10n import GUIDE
+    from sitekpi.templating import render
+    from sitekpi.views.seo import seo_context
+
+    if lang:
+        set_locale(request.session, lang)
+    loc = get_locale(request.session)
+    g = GUIDE[loc]
+    return HTMLResponse(render(
+        "help.html", loc=loc, g=g, rail=nav_rail_context(request, "help"),
+        seo=seo_context(path="/help", loc=loc, title=f"{g['title']} | SiteKPI", description=g["meta_desc"]),
+    ))
 
 
 @router.get("/sample", response_class=HTMLResponse)

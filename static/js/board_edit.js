@@ -46,6 +46,7 @@
   const original = { behavior: D.behavior, steps: D.steps.map((s) => ({ ...s })) };
   let state = { behavior: D.behavior, steps: D.steps.map((s) => ({ ...s })), sel: -1 };
   let showAll = false;
+  let removed = []; // [{ at, step }] — 「× 外す」, undone in reverse order
   const count = (ev) => (ev && D.counts[ev]) || 0;
 
   function setEditing(on) {
@@ -102,6 +103,19 @@
       b.appendChild(users);
       if (i === state.steps.length - 1) b.appendChild(el("span", "sx-primary-tag", L.primary));
       li.append(link, b);
+      if (i < state.steps.length - 1 && state.steps.length > 1) { // the last step is the 主転換: keep it
+        const rm = el("button", "sx-remove", L.remove_step);
+        rm.type = "button";
+        rm.setAttribute("aria-label", (s.label || "") + " " + L.remove_step);
+        rm.addEventListener("click", () => {
+          removed.push({ at: i, step: state.steps[i] });
+          state.steps.splice(i, 1);
+          state.sel = -1;
+          window.SiteDrawer.close();
+          render();
+        });
+        li.appendChild(rm);
+      }
       items.push(li);
     });
     if (worst) items[worst.at + 1].classList.add("is-worst");
@@ -110,6 +124,18 @@
     const cover = track.querySelector("[data-cover]");
     cover.textContent = miss ? L.missing.replace("{n}", miss) : L.all_ok;
     cover.classList.toggle("is-warn", !!miss);
+    if (removed.length) {
+      const names = removed.map((r) => "「" + (r.step.label || r.step.event || "—") + "」").join(" ");
+      const line = el("span", "sx-removed", " · " + L.removed.replace("{names}", names) + " ");
+      const undo = el("button", "sx-undo", L.undo);
+      undo.type = "button";
+      undo.addEventListener("click", () => {
+        while (removed.length) { const r = removed.pop(); state.steps.splice(Math.min(r.at, state.steps.length), 0, r.step); }
+        render();
+      });
+      line.appendChild(undo);
+      cover.appendChild(line);
+    }
   }
 
   function renderEditor() {
@@ -194,6 +220,7 @@
     state.behavior = e.target.value;
     state.steps = (D.templates[state.behavior] || []).map((s) => ({ ...s }));
     state.sel = -1;
+    removed = [];
     window.SiteDrawer.close();
     render();
   });
@@ -206,6 +233,7 @@
   }));
   $("[data-edit-close]").addEventListener("click", () => {
     state = { behavior: original.behavior, steps: original.steps.map((s) => ({ ...s })), sel: -1 };
+    removed = [];
     $("[data-template]").value = original.behavior;
     setEditing(false);
   });

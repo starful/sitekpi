@@ -26,14 +26,14 @@
 }
 .rail nav a {
   display: block; padding: 7px 10px; border-radius: 6px;
-  color: #3d4a5c; text-decoration: none; font-size: 0.9rem; font-weight: 600;
+  color: #3d4a5c; text-decoration: none; font-size: 0.9375rem; font-weight: 600;
   margin-bottom: 1px;
 }
 .rail nav a:hover { background: #f3f6fa; color: var(--ink); }
 .rail nav a.is-on { background: #eef4ff; color: var(--accent); }
 .rail .nav-group {
   margin: 16px 0 6px; padding: 0 10px;
-  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em;
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em;
   color: #8b97a8; text-transform: none;
 }
 .rail .nav-group:first-child { margin-top: 0; }
@@ -45,14 +45,14 @@
   margin: 0 0 4px; padding: 0; background: transparent;
 }
 .rail .nav-sub a {
-  font-size: 0.9rem; font-weight: 600; padding: 9px 10px;
+  font-size: 0.9375rem; font-weight: 600; padding: 9px 10px;
 }
 .rail .nav-sub a .pack-name {
   display: block; line-height: 1.35; color: inherit; font-weight: 600;
 }
 .rail .nav-sub a .pack-hint {
   display: none; margin-top: 3px;
-  font-size: 0.66rem; font-weight: 500; color: #8b97a8; line-height: 1.3;
+  font-size: 0.75rem; font-weight: 500; color: #8b97a8; line-height: 1.3;
 }
 .rail .nav-sub a.is-on .pack-hint { display: block; color: #6b8fd4; }
 /* Findy-like: category = Noto + chevron; packs = Plex */
@@ -62,7 +62,7 @@
   display: flex; align-items: center; gap: 4px;
   padding: 8px 10px; border-radius: 4px;
   font-family: "Noto Sans JP", sans-serif;
-  font-size: 0.9rem; font-weight: 700; letter-spacing: 0.02em;
+  font-size: 0.9375rem; font-weight: 700; letter-spacing: 0.02em;
   color: #8b97a8; background: transparent;
 }
 .rail .pack-cat[open] summary { color: #6b7788; }
@@ -70,7 +70,7 @@
 .rail .pack-cat summary::-webkit-details-marker { display: none; }
 .rail .pack-cat summary::before {
   content: "▸"; flex: 0 0 auto; width: 0.75em;
-  color: #a8b2c1; font-size: 0.8rem; line-height: 1;
+  color: #a8b2c1; font-size: 0.8125rem; line-height: 1;
 }
 .rail .pack-cat[open] summary::before { content: "▾"; }
 .rail .pack-cat-label { flex: 1 1 auto; min-width: 0; }
@@ -86,7 +86,7 @@
 .rail .pack-cat-body a.is-on:hover { background: #eef4ff; color: var(--accent); }
 .rail .pack-cat-body a .pack-name {
   font-family: var(--font-ui);
-  font-size: 0.9rem; font-weight: 600;
+  font-size: 0.9375rem; font-weight: 600;
 }
 .rail .nav-muted { color: #8b97a8 !important; font-weight: 500 !important; }
 .rail .nav-add {
@@ -110,7 +110,7 @@
   .rail .nav-close {
     display: block; position: absolute; top: 14px; right: 12px;
     border: 1px solid var(--line); background: #fff; border-radius: 8px;
-    font: inherit; font-size: 0.8rem; font-weight: 700; color: var(--muted, #6b7788);
+    font: inherit; font-size: 0.8125rem; font-weight: 700; color: var(--muted, #6b7788);
     padding: 4px 10px; cursor: pointer;
   }
   .mobile-bar {
@@ -119,12 +119,12 @@
     background: #fff; border-bottom: 1px solid var(--line);
     padding: 10px 16px;
   }
-  .mobile-bar .logo { font-size: 1.05rem; }
+  .mobile-bar .logo { font-size: 1.125rem; }
   .mobile-bar .logo .logo-mark { width: 24px; height: 24px; }
   .menu-btn {
     display: inline-flex; align-items: center; gap: 6px;
     border: 1px solid var(--line); background: #fff; border-radius: 8px;
-    font: inherit; font-size: 0.85rem; font-weight: 700; color: var(--ink);
+    font: inherit; font-size: 0.8125rem; font-weight: 700; color: var(--ink);
     padding: 6px 10px; cursor: pointer;
   }
   .menu-btn svg { width: 16px; height: 16px; }
@@ -136,10 +136,15 @@
 .rail .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px #dcfce7; margin-top: 6px; flex: none; }
 .rail .nav-site-body { min-width: 0; display: flex; flex-direction: column; }
 .rail .nav-site-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rail .nav-site-sub { font-size: 0.7rem; font-weight: 600; color: #8b97a8; line-height: 1.35; }
+.rail .nav-site-sub { font-size: 0.75rem; font-weight: 600; color: #8b97a8; line-height: 1.35; }
 .rail nav a.is-on .nav-site-sub { color: #6b8fd4; }
-.rail nav a.nav-indent { padding-left: 26px; font-size: 0.84rem; color: #5b6878; }
+.rail nav a.nav-indent { padding-left: 26px; font-size: 0.8125rem; color: #5b6878; }
 .rail nav a.nav-indent.is-on { color: var(--accent); }
 .rail nav a.nav-cta { color: var(--accent); border: 1px dashed #bfd2f8; text-align: center; }
-.rail .nav-note { margin: 4px 10px 0; font-size: 0.7rem; color: #8b97a8; line-height: 1.5; }
+.rail .nav-note { margin: 4px 10px 0; font-size: 0.75rem; color: #8b97a8; line-height: 1.5; }
 .rail .nav-bottom { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); }
+
+/* 使い方・ヘルプ / SiteKPI について */
+.nav-bottom .nav-help { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--accent-ink, #1d4ed8); background: #eef4ff; border-radius: 8px; }
+.nav-help-q { width: 20px; height: 20px; border-radius: 50%; background: var(--accent, #2f6fed); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex: none; }
+.nav-bottom .nav-about { font-weight: 600; }

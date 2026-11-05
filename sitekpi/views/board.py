@@ -712,7 +712,8 @@ def _details_view(board: dict[str, Any], extras: dict[str, Any] | None, flow: di
         groups.append({
             "id": gid, "title": t(f"panel.{gid}", loc), "rows": rows, "count": len(rows), "warn": warn,
             "value_head": head or t("col.value", loc), "note": note, "missing": missing or [],
-            "collapsed": gid in _COLLAPSED and not warn,
+            # v4: every category starts closed (name · count · 要注意); open only what you need
+            "collapsed": bool(rows),
             "summary": " · ".join(f"{r['label']} {r['value']}" for r in rows[:3]) + (" …" if len(rows) > 3 else ""),
         })
 

@@ -139,7 +139,13 @@ def flow_context(
             per[c["id"]] = _fmt_pct(g)
             drops[c["id"]] = _fmt_pct(100.0 - g) if g is not None else "—"
         drop = 100.0 - go if go is not None else None
-        links.append({"go": per, "drop": drops["all"], "drops": drops,
+        # people who left between the two steps ("−23,104 人"), per channel for the switch
+        lost: dict[str, str] = {"all": _int(a["users"] - b["users"]) if ok and a["users"] >= b["users"] else "—"}
+        for c in channels:
+            av = c["entry"] if a["key"] == "entry" else a["ch_users"][c["id"]]
+            bv = b["ch_users"][c["id"]]
+            lost[c["id"]] = _int(av - bv) if av and bv and av >= bv else "—"
+        links.append({"go": per, "drop": drops["all"], "drops": drops, "lost": lost,
                       "drop_num": drop, "worst": False, "from": a["label"], "to": b["label"]})
         if drop is not None and (worst is None or drop > worst[0]):
             worst = (drop, len(links) - 1)
@@ -147,6 +153,7 @@ def flow_context(
         links[worst[1]]["worst"] = True
     for i, st in enumerate(stages):
         st["link"] = links[i] if i < len(links) else None  # link to the next stage
+        st["in_link"] = links[i - 1] if i > 0 else None  # link from the step before
 
     # Channel summary: share of arrivals that reached the last measured step.
     last = next((st for st in reversed(stages[1:]) if st["users"] > 0), None)

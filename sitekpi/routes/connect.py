@@ -86,6 +86,16 @@ def connect_page(request: Request):
     return _page_from_request(request, error=str(err) if err else None)
 
 
+def _clear_keep_locale(request: Request) -> None:
+    """Start a fresh session but keep the display language (set on the landing page or in 設定)."""
+    from sitekpi.i18n import SESSION_KEY
+
+    loc = request.session.get(SESSION_KEY)
+    request.session.clear()
+    if loc:
+        request.session[SESSION_KEY] = loc
+
+
 def _mark(resp: RedirectResponse, event: str = "", conn: str | None = None) -> RedirectResponse:
     """Analytics hand-off for static/js/track.js: a one-shot event name (sk_ev) and the connection
     state (sk_conn: none · demo · live). Both are SiteKPI's own words — no ids, no GA4 data."""
@@ -107,7 +117,7 @@ def _back_to_connect(request: Request, error: str, reason: str = "other") -> Red
 
 @router.get("/connect/demo")
 def connect_demo(request: Request, start: int = 0):
-    request.session.clear()
+    _clear_keep_locale(request)
     request.session["ga4_demo"] = True
     request.session["ga4_email"] = "demo@kpistarter.local"
     if start:  # 「デモで試す」 from the start page: one click to a board
@@ -306,5 +316,5 @@ def disconnect(request: Request):
     creds = request.session.get("ga4_credentials")
     if isinstance(creds, dict) and not request.session.get("ga4_demo"):
         _revoke_at_google(creds)
-    request.session.clear()  # server row + cookie are dropped by the session middleware
+    _clear_keep_locale(request)  # the language the person chose stays; everything else goes
     return _mark(RedirectResponse("/connect", status_code=302), conn="none")
