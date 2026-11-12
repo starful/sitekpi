@@ -1,4 +1,7 @@
-"""Industry pack: 人材紹介・エージェント."""
+"""Industry pack: 人材紹介・エージェント.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'agency',
                   ('paid_rate', '面接化率', '応募のうち面接', '面接 ÷ 応募 × 100'),
                   ('revenue', '紹介成功報酬（期間）', '成功報酬売上', 'SUM(期間報酬)'),
                   ('arpu', '応募単価', '応募1件あたりコスト', 'コスト ÷ 応募'),
-                  ('churn_rate', '辞退率', '選考辞退割合', '辞退 ÷ 選考 × 100')]},
- 'event_desc': {'candidate_view': '候補者・求人詳細を開いた回数',
-                'resume_dl': '履歴書・職務経歴をDLした回数',
-                'match_start': 'マッチング・推薦を開始した回数',
-                'apply_submit': '応募・推薦が完了した回数（主転換）',
-                'interview_book': '面接予約が完了した回数',
-                'offer_sent': '内定・オファーを送った回数'}}
+                  ('churn_rate', '辞退率', '選考辞退割合', '辞退 ÷ 選考 × 100')]}}

@@ -1,4 +1,7 @@
-"""Industry pack: マーケットプレイス."""
+"""Industry pack: マーケットプレイス.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -129,10 +132,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'marketplace',
                   ('paid_rate', '取引完了率', '注文のうち完了', '完了 ÷ 注文 × 100'),
                   ('revenue', '流通総額（期間）', 'GMV', 'SUM(期間GMV)'),
                   ('arpu', '客単価', '注文1件あたりGMV', 'GMV ÷ 注文'),
-                  ('churn_rate', 'キャンセル率', '注文キャンセル割合', 'キャンセル ÷ 注文 × 100')]},
- 'event_desc': {'search': 'サイト内検索を実行した回数',
-                'view_item': '商品詳細を開いた回数',
-                'add_to_cart': 'カートに追加した回数',
-                'begin_checkout': 'チェックアウトを開始した回数',
-                'purchase': '購入が完了した回数（主転換）',
-                'seller_contact': '出品者へ問い合わせた回数'}}
+                  ('churn_rate', 'キャンセル率', '注文キャンセル割合', 'キャンセル ÷ 注文 × 100')]}}

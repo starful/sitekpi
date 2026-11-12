@@ -72,24 +72,9 @@ UI: dict[str, dict[str, str]] = {
         "en": "SiteKPI reference",
         "ko": "SiteKPI reference",
     },
-    "glossary.lead": {
-        "ja": "ボードの「説明」と同じ言葉です。意味・計算・見るポイントを、指標IDごとにまとめています。",
-        "en": "Same wording as board 説明 — meaning, formula, and what to watch, by metric id.",
-        "ko": "보드 「설명」과 같은 말입니다. 의미·계산·볼 포인트를 지표 ID별로 모아 둡니다.",
-    },
     "glossary.meaning": {"ja": "意味", "en": "Meaning", "ko": "의미"},
     "glossary.formula": {"ja": "計算", "en": "Formula", "ko": "계산"},
     "glossary.tip": {"ja": "見るポイント", "en": "What to watch", "ko": "볼 포인트"},
-    "glossary.search_ph": {
-        "ja": "指標名・IDで検索…",
-        "en": "Search by name or id…",
-        "ko": "지표명·ID로 검색…",
-    },
-    "glossary.search_empty": {
-        "ja": "該当する指標がありません",
-        "en": "No matching metrics",
-        "ko": "맞는 지표가 없습니다",
-    },
     "glossary.filter_all": {"ja": "すべて", "en": "All", "ko": "전체"},
     "glossary.filter_label": {
         "ja": "種類で絞り込み",
@@ -179,7 +164,6 @@ UI: dict[str, dict[str, str]] = {
         "ko": "판단용 샘플 화면입니다. 본편 밀도 보드는 「샘플 보드 목록」에 있습니다.",
     },
     "samples.title": {"ja": "見本ボード", "en": "Sample boards", "ko": "샘플 보드"},
-    "samples.lead": {"ja": "行動ごとの流れと、業種ごとの業界目安を見本の数字で確かめられます。", "en": "See each behaviour's flow and each industry's standards with sample numbers.", "ko": "행동별 흐름과 업종별 업계 기준을 샘플 수치로 확인할 수 있습니다."},
     "samples.switch": {"ja": "見本を切り替える", "en": "Switch sample", "ko": "샘플 바꾸기"},
     "nav.menu": {"ja": "メニュー", "en": "Menu", "ko": "메뉴"},
     "nav.property": {
@@ -416,7 +400,6 @@ UI: dict[str, dict[str, str]] = {
     "setup.err.industry": {"ja": "業種を選んでください。", "en": "Choose an industry.", "ko": "업종을 고르세요."},
     "setup.start": {"ja": "サイトの設定をはじめる", "en": "Set up your site", "ko": "사이트 설정 시작"},
     "setup.summary": {"ja": "サイトの設定", "en": "Site setup", "ko": "사이트 설정"},
-    "setup.change": {"ja": "変更", "en": "Change", "ko": "변경"},
     "connect.beh.title": {"ja": "訪問者の行動", "en": "What visitors do", "ko": "방문자 행동"},
     "connect.beh.lead": {"ja": "サイトで追う流れを選びます。ボードの行動フローとファネルがこの流れになります。", "en": "Choose the flow to follow. The board's behaviour flow and funnel use it.", "ko": "사이트에서 따라갈 흐름을 고릅니다. 보드의 행동 흐름과 퍼널이 이 흐름이 됩니다."},
     "connect.beh.customised": {"ja": "カスタム", "en": "Custom", "ko": "커스텀"},
@@ -775,17 +758,6 @@ UI: dict[str, dict[str, str]] = {
     },
     # Connect page chrome
     "connect.title": {"ja": "GA4 接続", "en": "Connect GA4", "ko": "GA4 연결"},
-    "connect.lead": {
-        "ja": "Google でログインして、使うデータ（Property）を1つ選ぶだけです。",
-        "en": "Sign in with Google and pick one Property to analyze.",
-        "ko": "Google로 로그인한 뒤 분석할 Property를 하나 고르면 됩니다.",
-    },
-    "connect.hero.title": {"ja": "GA4 を接続", "en": "Connect GA4", "ko": "GA4 연결"},
-    "connect.hero.meta": {
-        "ja": "Google アカウントでログインし、分析したい Property を1つ選びます。パスワードはこちらに保存しません（Google の画面で許可するだけです）。",
-        "en": "Sign in with Google and choose one Property. We never store your password—you only approve access on Google’s screen.",
-        "ko": "Google 계정으로 로그인해 분석할 Property를 하나 고릅니다. 비밀번호는 저장하지 않으며 Google 화면에서 허용만 하면 됩니다.",
-    },
     "connect.btn.google": {
         "ja": "Google で接続",
         "en": "Connect with Google",
@@ -808,11 +780,6 @@ UI: dict[str, dict[str, str]] = {
         "en": "Google linked",
         "ko": "Google 연동됨",
     },
-    "connect.pick_property": {
-        "ja": "使う Property を1つ選んでください",
-        "en": "Choose one Property to use",
-        "ko": "사용할 Property를 하나 고르세요",
-    },
     "connect.pick_property_meta": {
         "ja": "読み取り専用です。あとから切り替えることもできます。",
         "en": "Read-only. You can switch later.",
@@ -822,11 +789,6 @@ UI: dict[str, dict[str, str]] = {
         "ja": "Property を選択（{n}）",
         "en": "Select a Property ({n})",
         "ko": "Property 선택（{n}）",
-    },
-    "connect.use_property": {
-        "ja": "この Property を使う",
-        "en": "Use this Property",
-        "ko": "이 Property 사용",
     },
     "connect.no_property": {
         "ja": "Property が見つかりません",
@@ -1065,7 +1027,6 @@ UI.update({
     "where.sub": {"ja": "行動フロー：来た人が、どこまで進んだか", "en": "Behaviour flow: how far visitors got", "ko": "행동 흐름: 들어온 사람이 어디까지 갔는지"},
     "where.edit": {"ja": "流れを合わせる", "en": "Fit the flow", "ko": "흐름 맞추기"},
     "detail.title": {"ja": "詳しい数字", "en": "All the numbers", "ko": "자세한 수치"},
-    "detail.hint": {"ja": "行を押すと 業界目安・目安差・意味・説明 が開きます", "en": "Open a row for its standard, gap, meaning and help", "ko": "행을 누르면 업계 기준·차이·의미·설명이 열립니다"},
     "detail.judge": {"ja": "判定", "en": "Verdict", "ko": "판정"},
     "detail.share": {"ja": "構成比", "en": "Share", "ko": "구성비"},
     "detail.meaning": {"ja": "意味", "en": "Meaning", "ko": "의미"},
@@ -1287,6 +1248,18 @@ UI.update({
     "connect.unverified_link": {"ja": "画面の例を見る", "en": "See the screen", "ko": "화면 예시 보기"},
     "bx.how_to_read": {"ja": "この画面の見方", "en": "How to read this", "ko": "이 화면 보는 법"},
     "flow.ch_show": {"ja": "流入別に見る", "en": "By traffic source", "ko": "유입별로 보기"},
+    "flow.ch_now": {"ja": "いま見ている流入：{name}", "en": "Viewing traffic: {name}", "ko": "지금 보는 유입: {name}"},
+    "flow.ch_now_all": {"ja": "いま見ている流入：全体（すべての流入）", "en": "Viewing traffic: All sources", "ko": "지금 보는 유입: 전체 (모든 유입)"},
+    "detail.lede_warn": {
+        "ja": "要注意 {n} · いちばん離れているのは「{label}」{value}（目安差 {gap}）",
+        "en": "{n} to watch · furthest off: “{label}” {value} (gap {gap})",
+        "ko": "주의 {n} · 가장 벗어난 지표는 「{label}」 {value} (기준 차 {gap})",
+    },
+    "detail.lede_ok": {
+        "ja": "このまとまりは目安内 — 証拠として数字を見るとき用です",
+        "en": "This group is in range — numbers here are for evidence",
+        "ko": "이 묶음은 기준 안 — 증거로 숫자를 볼 때용입니다",
+    },
     "cfb.q": {"ja": "この部分はわかりやすいですか？", "en": "Is this part easy to understand?", "ko": "이 부분은 이해하기 쉬운가요?"},
     "cfb.up": {"ja": "わかりやすい", "en": "Easy to understand", "ko": "이해하기 쉬움"},
     "cfb.down": {"ja": "わかりにくい", "en": "Hard to understand", "ko": "이해하기 어려움"},

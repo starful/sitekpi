@@ -109,7 +109,7 @@ def test_connected_rail_has_live_setup_connect(client):
     html = client.get("/ec").text
     rail = html.split('<aside class="rail"', 1)[1].split("</aside>", 1)[0]
     assert 'href="/live"' in rail
-    assert 'href="/live?edit=1#flow"' in rail and "サイトの設定" in rail
+    assert 'href="/live?edit=1"' in rail and "サイトの設定" in rail
     assert 'href="/connect"' in rail and "接続・切断" in rail
     assert 'href="/beginner"' not in rail
 

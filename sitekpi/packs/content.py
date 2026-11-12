@@ -1,4 +1,7 @@
-"""Industry pack: メディア・コンテンツ."""
+"""Industry pack: メディア・コンテンツ.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -129,10 +132,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'content',
                   ('paid_rate', '有料化率', '読者のうち有料割合', '有料 ÷ 読者 × 100'),
                   ('revenue', '売上（期間）', '購読・広告など', 'SUM(期間売上)'),
                   ('arpu', 'ARPU', '読者1人あたり売上', '売上 ÷ 読者数'),
-                  ('churn_rate', '解約率', '購読解約の割合', '解約 ÷ 有料 × 100')]},
- 'event_desc': {'page_view': 'ページが表示された回数（人ではなく表示回数）',
-                'scroll_90': 'ページをだいたい最後まで読んだとみなす回数',
-                'video_play': '動画の再生を開始した回数',
-                'click_cta': '記事内の主要CTA（登録ボタンなど）を押した回数',
-                'newsletter_signup': 'メルマガ登録が完了した回数（このパックの主転換）',
-                'share': 'SNSなどへシェアした回数'}}
+                  ('churn_rate', '解約率', '購読解約の割合', '解約 ÷ 有料 × 100')]}}

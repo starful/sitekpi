@@ -1,4 +1,7 @@
-"""Industry pack: 会員・サブスク."""
+"""Industry pack: 会員・サブスク.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -125,10 +128,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'b2c',
                   ('paid_rate', '有料化率', '全会員のうち有料割合', '有料会員 ÷ 会員 × 100'),
                   ('revenue', '売上（期間）', '課金・会計側の期間売上', 'SUM(期間売上)'),
                   ('arpu', 'ARPU', '会員1人あたり売上', '売上 ÷ 会員数'),
-                  ('churn_rate', '解約率', '期間中の退会割合', '退会 ÷ 会員 × 100')]},
- 'event_desc': {'sign_up': '会員登録フォーム送信などが成功した回数（ブラウザ計測）',
-                'login': 'ログインに成功した回数（同じ人が何度でも加算）',
-                'view_pricing': '料金・プランページを開いた回数',
-                'trial_start': '無料トライアルを開始した回数',
-                'pay_start': '有料プランや決済画面へ進もうとした回数（未完了含む）',
-                'pay_success': '支払い完了まで届いた回数（売上DBとはズレることがある）'}}
+                  ('churn_rate', '解約率', '期間中の退会割合', '退会 ÷ 会員 × 100')]}}

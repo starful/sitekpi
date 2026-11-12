@@ -12,9 +12,10 @@
     {% else %}
     <h3 class="dgroup-head is-static"><b>{{ g.title }}</b></h3>
     {% endif %}
-    {% if g.note %}
+    {% if g.note and not g.rows %}
     <p class="dgroup-note">{{ g.note }}</p>
     {% else %}
+    {% if g.lede %}<p class="dgroup-summary{{ ' is-warn' if g.warn else '' }}">{{ g.lede }}</p>{% endif %}
     <div class="dtable" id="dt-{{ g.id }}" role="table" aria-label="{{ g.title }}"{% if g.collapsed %} hidden{% endif %}>
       <div class="dt-row dt-head" role="row">
         <span role="columnheader">{{ t("col.metric", loc) }}</span>

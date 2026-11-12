@@ -1,5 +1,5 @@
+/* tokens: brand.css */
 /* 使い方・ヘルプ (/help). Type: 22 / 18 / 15 / 13 / 12px (the board's scale) */
-:root { --ink: #152033; --muted: #5b6676; --line: #e5eaf1; --bg: #f4f6fa; --accent: #2f6fed; --accent-ink: #1d4ed8; --up: #0f766e; --down: #b45309; --rail-w: 268px; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans JP", "Noto Sans JP", system-ui, sans-serif; line-height: 1.7; }
 .hp { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 28px; padding: 32px clamp(16px, 3vw, 36px) 56px; max-width: 1180px; }

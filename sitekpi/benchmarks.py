@@ -31,9 +31,10 @@ class BenchmarkStore:
     def __init__(self, path: Path) -> None:
         self.path = path
         self._lock = threading.Lock()
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with self._connect() as db:
-            db.execute("PRAGMA journal_mode=WAL")
+        from sitekpi.sqlite_util import connect, init_wal
+
+        init_wal(path)
+        with connect(path) as db:
             db.execute(
                 "CREATE TABLE IF NOT EXISTS benchmark_overrides ("
                 " scope TEXT NOT NULL, pack TEXT NOT NULL, metric TEXT NOT NULL,"
@@ -42,7 +43,9 @@ class BenchmarkStore:
             )
 
     def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.path, timeout=5, isolation_level=None)
+        from sitekpi.sqlite_util import connect
+
+        return connect(self.path)
 
     def get(self, scope: str, pack: str) -> dict[str, dict[str, float]]:
         with self._connect() as db:

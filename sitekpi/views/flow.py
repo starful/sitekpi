@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from sitekpi.board.data import CHANNEL_COLORS
+from sitekpi.format import fmt_int as _int
+from sitekpi.format import fmt_pct as _fmt_pct
 from sitekpi.i18n import t
 from sitekpi.packs.flows import step_label
 
@@ -12,20 +14,8 @@ TOP_CHANNELS = 4
 OTHER_COLOR = "#cbd5e1"
 
 
-def _int(n: float) -> str:
-    return f"{int(round(n)):,}"
-
-
 def _pct(part: float, whole: float) -> float | None:
     return 100.0 * part / whole if whole else None
-
-
-def _fmt_pct(v: float | None) -> str:
-    if v is None:
-        return "—"
-    if v and v < 1:
-        return f"{v:.2f}%"
-    return f"{v:.1f}%"
 
 
 def _group_channels(flow: dict[str, Any], loc: str) -> list[dict[str, Any]]:

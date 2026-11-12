@@ -49,9 +49,10 @@ class SQLiteSessionStore:
         self.max_age = max_age
         self._fernet = Fernet(_fernet_key(secret))
         self._lock = threading.Lock()
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with self._connect() as db:
-            db.execute("PRAGMA journal_mode=WAL")
+        from sitekpi.sqlite_util import connect, init_wal
+
+        init_wal(path)
+        with connect(path) as db:
             db.execute(
                 "CREATE TABLE IF NOT EXISTS sessions ("
                 " id_hash TEXT PRIMARY KEY,"
@@ -61,7 +62,9 @@ class SQLiteSessionStore:
         self.purge_expired()
 
     def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.path, timeout=5, isolation_level=None)
+        from sitekpi.sqlite_util import connect
+
+        return connect(self.path)
 
     @staticmethod
     def _key(sid: str) -> str:

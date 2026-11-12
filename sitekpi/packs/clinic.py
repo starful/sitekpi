@@ -1,4 +1,7 @@
-"""Industry pack: 医療・クリニック."""
+"""Industry pack: 医療・クリニック.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -129,10 +132,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'clinic',
                   ('paid_rate', '来院率', '予約のうち来院', '来院 ÷ 予約 × 100'),
                   ('revenue', '保険外売上（期間）', '自費・物販など', 'SUM(期間自費)'),
                   ('arpu', '予約単価', '予約1件あたり広告費', '広告費 ÷ 予約数'),
-                  ('churn_rate', 'キャンセル率', '予約のうちキャンセル', 'キャンセル ÷ 予約 × 100')]},
- 'event_desc': {'service_view': '診療案内・メニューページを開いた回数',
-                'price_view': '料金案内を開いた回数',
-                'reserve_start': '予約フォームを開始した回数',
-                'reserve_complete': '予約が完了した回数（このパックの主転換）',
-                'cancel_reserve': '予約をキャンセルした回数',
-                'review_submit': '口コミ・アンケートを送信した回数'}}
+                  ('churn_rate', 'キャンセル率', '予約のうちキャンセル', 'キャンセル ÷ 予約 × 100')]}}

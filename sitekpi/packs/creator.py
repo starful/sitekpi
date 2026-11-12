@@ -1,4 +1,7 @@
-"""Industry pack: クリエイター・UGC."""
+"""Industry pack: クリエイター・UGC.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -125,10 +128,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'creator',
                   ('paid_rate', 'メンバー化率', 'フォロワーのうち有料', 'メンバー ÷ フォロワー × 100'),
                   ('revenue', '売上（期間）', 'メンバー・チップ売上', 'SUM(期間売上)'),
                   ('arpu', 'ARPU', 'フォロワー1人あたり売上', '売上 ÷ フォロワー'),
-                  ('churn_rate', '解約率', 'メンバー解約割合', '解約 ÷ メンバー × 100')]},
- 'event_desc': {'content_view': 'コンテンツを視聴・表示した回数',
-                'like': 'いいね等のリアクション回数',
-                'follow': 'フォローが完了した回数（主転換）',
-                'click_cta': 'メンバーシップ等のCTAクリック',
-                'tip_start': 'チップ・投げ銭を開始した回数',
-                'membership_join': '有料メンバーシップに加入した回数'}}
+                  ('churn_rate', '解約率', 'メンバー解約割合', '解約 ÷ メンバー × 100')]}}

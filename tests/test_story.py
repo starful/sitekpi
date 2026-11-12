@@ -1,4 +1,4 @@
-"""v6 story: ① 大丈夫？ → ② どこで？ → ③ どこがおかしい？ → ④ どうする？ (views/story.py, i18n/story_l10n.py)."""
+"""v6 story: 0 総評 → 1 どこで？ → 2 どこがおかしい？ → 3 どうする？ (views/story.py, i18n/story_l10n.py)."""
 
 from __future__ import annotations
 
@@ -41,7 +41,11 @@ def test_step_kinds(event, kind):
 def test_every_behaviour_sample_tells_one_story(cat):
     """Every 目的 has ①〜④ with one issue: its steps are the orange stretch, ④ lists three actions."""
     s = _soup(TestClient(app), f"/type-{cat}")
-    assert len(s.select(".story-strip .story-step")) == 4, cat
+    assert len(s.select(".story-toc .story-toc-step")) == 4, cat
+    assert s.select_one(".story-toc-step.is-lede"), cat
+    assert s.select_one(".verdict-text .v-issue"), cat
+    assert not s.select_one("#q1"), cat
+
     stretch = s.select("#flow .flow-stage.is-issue")
     assert len(stretch) >= 2, cat
     a, b = stretch[0].select_one(".flow-label").get_text(), stretch[-1].select_one(".flow-label").get_text()
@@ -83,6 +87,8 @@ def test_story_localized(loc, q):
     c = TestClient(app)
     c.post("/settings", data={"locale": loc})
     s = _soup(c, "/ec")
-    assert s.select(".story-strip .qk")[3].get_text(" ", strip=True) == f"4 {q}"
+    assert s.select(".story-toc .story-toc-step")[0].get_text(" ", strip=True) in ("0 Overview", "0 총평")
+    assert s.select(".story-toc .story-toc-step")[3].get_text(" ", strip=True) == f"3 {q}"
     html = str(s.select_one(".content"))
     assert "大丈夫？" not in html and "どうする？" not in html
+    assert "있어요. ." not in html and ". . " not in s.select_one(".verdict-text").get_text()

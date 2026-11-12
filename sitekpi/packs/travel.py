@@ -1,4 +1,7 @@
-"""Industry pack: 旅行・宿泊."""
+"""Industry pack: 旅行・宿泊.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'travel',
                   ('paid_rate', '宿泊完了率', '予約のうち宿泊', '宿泊 ÷ 予約 × 100'),
                   ('revenue', '売上（期間）', '会計側の期間売上', 'SUM(期間売上)'),
                   ('arpu', '予約単価', '予約1件あたり売上', '売上 ÷ 予約数'),
-                  ('churn_rate', 'キャンセル率', '予約のうちキャンセル', 'キャンセル ÷ 予約 × 100')]},
- 'event_desc': {'search': '宿泊・ツアー検索を実行した回数',
-                'view_offer': 'プラン・物件詳細を開いた回数',
-                'select_room': '部屋・プランを選択した回数',
-                'book_start': '予約・決済手続きを開始した回数',
-                'purchase': '予約・購入が完了した回数（このパックの主転換）',
-                'add_to_wishlist': 'お気に入りに追加した回数'}}
+                  ('churn_rate', 'キャンセル率', '予約のうちキャンセル', 'キャンセル ÷ 予約 × 100')]}}

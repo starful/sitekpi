@@ -1,4 +1,7 @@
-"""Industry pack: 美容・サロン."""
+"""Industry pack: 美容・サロン.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -129,10 +132,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'beauty',
                   ('paid_rate', '来店率', '予約のうち来店', '来店 ÷ 予約 × 100'),
                   ('revenue', '売上（期間）', '会計側の期間売上', 'SUM(期間売上)'),
                   ('arpu', '客単価', '来店1回あたり売上', '売上 ÷ 来店数'),
-                  ('churn_rate', 'キャンセル率', '予約のうちキャンセル', 'キャンセル ÷ 予約 × 100')]},
- 'event_desc': {'menu_view': 'メニュー・料金ページを開いた回数',
-                'style_view': 'スタイル・症例ギャラリーを開いた回数',
-                'book_start': '来店予約フォームを開始した回数',
-                'book_complete': '来店予約が完了した回数（このパックの主転換）',
-                'repeat_book': 'リピート予約が完了した回数',
-                'coupon_use': 'クーポンを適用した回数'}}
+                  ('churn_rate', 'キャンセル率', '予約のうちキャンセル', 'キャンセル ÷ 予約 × 100')]}}

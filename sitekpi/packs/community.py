@@ -1,4 +1,7 @@
-"""Industry pack: コミュニティ・アプリ."""
+"""Industry pack: コミュニティ・アプリ.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -129,10 +132,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'community',
                   ('paid_rate', '有料化率', '会員のうち有料割合', '有料 ÷ 会員 × 100'),
                   ('revenue', '売上（期間）', '課金売上', 'SUM(期間売上)'),
                   ('arpu', 'ARPU', '会員1人あたり売上', '売上 ÷ 会員'),
-                  ('churn_rate', '退会率', '期間退会割合', '退会 ÷ 会員 × 100')]},
- 'event_desc': {'sign_up': '会員登録が完了した回数（主転換）',
-                'profile_complete': 'プロフィール入力が完了した回数',
-                'post_create': '投稿を作成した回数',
-                'join_group': 'グループ・サークルに参加した回数',
-                'pay_start': '有料プラン決済を開始した回数',
-                'pay_success': '有料決済が完了した回数'}}
+                  ('churn_rate', '退会率', '期間退会割合', '退会 ÷ 会員 × 100')]}}

@@ -1,19 +1,12 @@
-/* KPI board (sample packs + /live): 判定 (L0) → どこ (L1) → 詳しく (L2) */
-:root {
-  --ink: #152033;
-  --muted: #5b6676;      /* 4.5:1 on white and on --bg */
-  --faint: #8792a2;
-  --line: #e5eaf1;
-  --bg: #f4f6fa;
-  --panel: #ffffff;
-  --accent: #2f6fed;
-  --accent-ink: #1d4ed8;
-  --up: #0f766e;
-  --down: #b45309;
-  --font-ui: "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
-  --font-num: "DM Sans", "IBM Plex Sans JP", sans-serif;
-  --rail-w: 268px;
-}
+/* tokens: brand.css (:root colours / fonts — do not redeclare here)
+ *
+ * KPI board (sample packs + /live): L0 いまの状態 → L1 どこで → L2 詳しい数字
+ *
+ * File eras (keep in this order; later blocks override earlier):
+ *   1) Base layout — .top / .content / L0–L2 tables / 説明 / 業界目安 popover
+ *   2) Board v3   — stacked 詳しい数字, drawers, 編集モード, guess notice
+ * Do not resurrect list/card/bar/比較/トレンド view-mode selectors (removed 2026-11).
+ */
 * { box-sizing: border-box; }
 body {
   margin: 0; min-height: 100vh; color: var(--ink);
@@ -147,6 +140,7 @@ code {
 
 /* 行動フロー (compact funnel: one row of columns, scrolls sideways before it stacks) */
 .flow { container-type: inline-size; container-name: flow; }
+.flow-chs-wrap { margin-top: 12px; margin-bottom: 18px; }
 .flow-chs { display: flex; flex-wrap: wrap; gap: 6px; }
 .flow-ch {
   display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 0.75rem; font-weight: 700;
@@ -155,6 +149,19 @@ code {
 }
 .flow-ch i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .flow-ch.is-on { background: #1e293b; border-color: #1e293b; color: #fff; }
+.flow-ch-now {
+  margin: 10px 0 0; font-size: 0.8125rem; font-weight: 700; color: #475569;
+}
+.flow-ch-now.is-filtered {
+  color: #1e40af; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
+  padding: 8px 12px; margin-top: 12px;
+}
+.flow.is-ch-filtered .flow-track .flow-node {
+  background: #f8fbff; box-shadow: inset 0 0 0 2px #93c5fd;
+}
+.flow.is-ch-filtered .flow-track .flow-bar { background: #e0effe; }
+.flow.is-ch-filtered .where-answer,
+.flow.is-ch-filtered .q-h.where-answer { outline: 2px solid #93c5fd; outline-offset: 4px; border-radius: 8px; }
 .flow-error { margin: 10px 0 0; padding: 8px 10px; border-radius: 8px; background: #fff1f2; color: #9f1239; font-size: 0.8125rem; font-weight: 700; }
 .flow-insights { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
 .flow-insights li { font-size: 0.8125rem; line-height: 1.55; color: #1e293b; padding-left: 16px; position: relative; }
@@ -176,6 +183,9 @@ code {
 .flow-down { grid-row: 3; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; gap: 6px; }
 .flow-link { grid-row: 2; }
 .flow-up:empty, .flow-down:empty { display: none; }
+/* Outside 編集モード, hide columns that only held a ＋ (no 別の行動 yet) */
+.where:not(.is-editing) .flow-up:not(:has(.flow-branch)),
+.where:not(.is-editing) .flow-down:not(:has(.flow-branch)) { display: none; }
 .flow-node {
   min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
   text-align: left; font: inherit; color: inherit; background: #fff;
@@ -517,14 +527,20 @@ button.bench-open:hover, button.bench-open[aria-expanded="true"] { color: var(--
 .flow-branch .flow-label { font-size: 0.8125rem; }
 .flow-branch .flow-users strong { font-size: 0.9375rem; }
 .flow-branch .flow-reach b { color: #6d28d9; }
+/* ＋ = add 別の行動 — only while 「流れを直す」編集モード (.where.is-editing) */
 .flow-add {
-  align-self: center; width: 22px; height: 22px; border-radius: 50%; border: 1px dashed #94a3b8;
+  display: none;
+  align-self: center; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%; border: 1px dashed #94a3b8;
   background: #fff; color: #475569; font: inherit; font-size: 0.8125rem; line-height: 1; cursor: pointer; padding: 0;
   opacity: 0.55; transition: opacity 0.15s;
 }
-.flow:hover .flow-add, .flow-add:focus-visible { opacity: 1; }
-.flow-add:hover, .flow-add[aria-expanded="true"] { opacity: 1; border-style: solid; border-color: #7c3aed; color: #7c3aed; }
-@media (hover: none) { .flow-add { opacity: 1; } }
+.where.is-editing .flow-add { display: inline-flex; }
+.where.is-editing .flow:hover .flow-add, .where.is-editing .flow-add:focus-visible { opacity: 1; }
+.where.is-editing .flow-add:hover, .where.is-editing .flow-add[aria-expanded="true"] {
+  opacity: 1; border-style: solid; border-color: #7c3aed; color: #7c3aed;
+}
+@media (hover: none) { .where.is-editing .flow-add { opacity: 1; } }
 .pop-field { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; font-size: 0.75rem; font-weight: 700; color: var(--muted); }
 .pop-field input {
   font: inherit; font-size: 0.8125rem; color: var(--ink); padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px;
@@ -541,9 +557,9 @@ button.bench-open:hover, button.bench-open[aria-expanded="true"] { color: var(--
   .flow-up, .flow-node, .flow-down, .flow-link { grid-column: 1; grid-row: auto; }
   .flow-up { padding: 0 0 6px 22px; }
   .flow-down { padding: 6px 0 0 22px; }
-  .flow-add { align-self: flex-end; margin-right: 6px; }
-  .flow-up .flow-add { display: none; }
-  .flow-down:has(> .flow-add:only-child) { padding-top: 0; margin-top: -11px; position: relative; z-index: 1; }
+  .where.is-editing .flow-add { align-self: flex-end; margin-right: 6px; }
+  .where.is-editing .flow-up .flow-add { display: none; } /* phones: add only below the box */
+  .where.is-editing .flow-down:has(> .flow-add:only-child) { padding-top: 0; margin-top: -11px; position: relative; z-index: 1; }
   .flow-branch { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "mark mark" "label users" "event reach"; column-gap: 12px; }
   .flow-branch-mark { grid-area: mark; }
   .flow-branch .flow-label { grid-area: label; }
@@ -586,7 +602,8 @@ button.bench-open.is-none { color: #94a3b8; font-weight: 700; border-bottom-styl
 .pop-why-set { color: var(--muted); }
 .pop-note { margin: 6px 0 0; font-size: 0.75rem; color: #9a3412; line-height: 1.5; }
 
-/* ===== Board v3 — 一言 + popups, stacked 詳しい数字, drawers, 編集モード ===== */
+/* ===== Board v3 — one-sentence L0 + popups, stacked L2, drawers, 編集モード =====
+   Overrides denser table chrome above; keep this section last for those rules. */
 .top { padding: 10px 28px 0; box-shadow: 0 4px 14px rgba(21, 32, 51, 0.05); }
 .top-l { min-width: 0; }
 .top .meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -597,7 +614,7 @@ button.bench-open.is-none { color: #94a3b8; font-weight: 700; border-bottom-styl
 }
 .ind-chip:hover, .ind-chip[aria-expanded="true"] { border-color: var(--accent); background: #eef4ff; }
 .nav-warn { font-size: 0.75rem; font-weight: 800; border-radius: 999px; padding: 1px 7px; background: #fde7c7; color: #92400e; }
-.content > section { scroll-margin-top: calc(var(--top-h, 104px) + 12px); }
+.content > section { scroll-margin-top: calc(var(--top-h, 80px) + 16px); }
 
 /* L0 */
 .verdict-text { font-size: 1.375rem; font-weight: 800; line-height: 1.5; }
@@ -649,6 +666,7 @@ button.bench-open.is-none { color: #94a3b8; font-weight: 700; border-bottom-styl
   margin: 0 6px 10px; padding: 10px 14px; background: #f8fafc; border-radius: 10px; font-size: 0.8125rem; font-weight: 600; color: #475569;
   font-variant-numeric: tabular-nums;
 }
+.dgroup-summary.is-warn { background: #fffbeb; color: #92400e; }
 .dgroup-note { border: 1px dashed #d5dce6; font-weight: 500; }
 .dtable { overflow-x: auto; }
 .dt-row {
@@ -827,16 +845,6 @@ form.period { margin: 0; }
 .flow-lost small { display: block; font-size: 0.75rem; }
 .flow-lost.is-worst { color: var(--down); background: #fff4e5; border-radius: 6px; padding: 2px 6px; }
 
-/* v4: いまの状態 is compact — value, 前期 and the verdict on one line; 業界 · あと as a note */
-.tile { padding: 12px 16px; gap: 4px; }
-.tile-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
-.tile-line .tile-value { line-height: 1.2; }
-.tile-rg { margin: 0; font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-.tile-rg .rg-band { font-size: 0.75rem; }
-.tile-rg .rg-gap b { font-size: 0.8125rem; }
-.tile-rg .rg-gap small { font-size: 0.75rem; }
-.tiles { gap: 12px; }
-.verdict-text { margin-bottom: 12px; }
 /* ---- v5 (docs/plan s03 · screens/03-board.dc.html): three cards, no box-in-box, no chips,
    buttons as blue text (only 保存 is filled), 判定 as colored text, ? circles for 説明 ---- */
 .top { padding: 14px 32px; box-shadow: none; }
@@ -898,15 +906,26 @@ button.jt-none { font: inherit; font-size: inherit; color: var(--muted); font-we
 .stat-note .rg-gap small { font-size: 0.75rem; }
 
 /* どこで離れているか */
-.where-head { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin: 0; }
+.where-head { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
 .where-tools { margin-left: auto; display: flex; gap: 18px; }
 .where-edit { display: inline; min-height: 0; padding: 0; border: 0; box-shadow: none; background: none; color: var(--accent-ink); font-size: 0.8125rem; font-weight: 700; }
 .where-edit:hover { background: none; text-decoration: underline; }
-.ch-toggle { border: 0; background: none; padding: 0; border-radius: 0; color: var(--accent-ink); }
-.ch-toggle[aria-expanded="true"] { background: none; }
+.ch-toggle {
+  border: 1px solid transparent; background: none; padding: 4px 10px; border-radius: 999px;
+  color: var(--accent-ink); font: inherit; font-size: 0.8125rem; font-weight: 700; cursor: pointer;
+}
+.ch-toggle[aria-expanded="true"] {
+  background: #1e40af; border-color: #1e40af; color: #fff;
+}
 .ch-toggle[aria-expanded="true"] .caret { display: inline-block; transform: rotate(180deg); }
+.ch-toggle.is-filtered {
+  background: #eff6ff; border-color: #93c5fd; color: #1e40af;
+}
+.ch-toggle.is-filtered[aria-expanded="true"] {
+  background: #1e40af; border-color: #1e40af; color: #fff;
+}
 [data-ch-part][hidden] { display: none !important; }
-.flow-chs { margin-top: 12px; }
+/* .flow-chs-wrap carries vertical spacing (chips + 「いま見ている流入」) */
 .where-worst { margin: 6px 0 18px; font-size: 0.9375rem; font-weight: 700; color: #b45309; }
 .where-grid { margin-top: 28px; gap: 28px; }
 .watch h3, .flow-chtitle { margin: 0 0 4px; font-size: 0.9375rem; font-weight: 800; }
@@ -980,26 +999,46 @@ button.jt-none { font: inherit; font-size: inherit; color: var(--muted); font-we
 .edit-badge::before { content: "✎ "; }
 @media (max-width: 900px) { .where.is-editing .edit-bar { margin: -18px -16px 16px; padding: 10px 16px; } }
 
-/* v6: the story — ①〜④ strip, numbered questions, the issue's stretch of the flow in orange */
-.story-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 28px; position: relative; }
-.story-step {
-  position: relative; display: flex; flex-direction: column; gap: 6px; min-height: 92px; box-sizing: border-box;
-  padding: 16px 18px; border-radius: 12px; background: var(--panel); box-shadow: 0 1px 2px rgba(21, 32, 51, 0.06);
-  color: var(--ink); text-decoration: none; line-height: 1.5;
+/* v6: story — 総評 is the verdict h2; 0〜3 is a slim TOC (no mini-answers). Issue stretch stays orange. */
+.story-toc {
+  display: flex; flex-wrap: wrap; gap: 8px 4px; margin: 0 0 14px; padding: 0 0 14px;
+  border-bottom: 1px dashed var(--line);
 }
-.story-step:not(:last-child)::after { content: "→"; position: absolute; right: -21px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.125rem; font-weight: 800; }
-.story-step:hover { box-shadow: 0 0 0 2px #c9dbfb; }
-.story-a { padding-left: 30px; font-size: 0.9375rem; font-weight: 800; }
-.story-a.tone-issue { color: #b45309; } .story-a.tone-ok { color: var(--up); } .story-a.tone-act { color: var(--accent-ink); }
-.qk { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 0.8125rem; font-weight: 800; color: var(--accent-ink); }
+.story-toc-step {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px;
+  border-radius: 999px; background: #f1f5f9; color: var(--ink); text-decoration: none;
+  font-size: 0.8125rem; font-weight: 700;
+}
+.story-toc-step:hover { background: #e2e8f0; }
+.story-toc-step.is-lede { background: #1e293b; color: #fff; }
+.story-toc-step.is-lede .qn { background: #fff; color: #1e293b; }
+.story-toc-step .qn { width: 20px; height: 20px; font-size: 0.75rem; }
+/* Jump targets sit at the card top so sticky .top doesn't clip the qk / sentence. */
+.story-mark {
+  position: absolute; top: 0; left: 0; width: 1px; height: 1px;
+  overflow: hidden; pointer-events: none;
+}
+.content > section.card { position: relative; }
+#q0, #q2, #q3, #q4,
+.content > section.card {
+  scroll-margin-top: calc(var(--top-h, 80px) + 16px);
+}
+/* Same rhythm for 0〜3: label → 12px → sentence → 16px → body */
+.qk { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 0.8125rem; font-weight: 800; color: var(--accent-ink); }
 .qn { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 0.75rem; font-weight: 800; align-items: center; justify-content: center; flex: none; }
 .qk-ref { color: var(--muted); }
 .qk-ref .qn { width: auto; padding: 0 9px; border-radius: 999px; background: #eef1f5; color: var(--muted); }
-.card h2.q-h { margin: 0 0 4px; font-size: 1.125rem; line-height: 1.5; }
-.verdict .verdict-text { margin-bottom: 18px; }
-.q-note { margin: 0 0 14px; font-size: 0.8125rem; color: var(--muted); }
+.where-head { margin: 0 0 12px; }
+.where-head .qk { margin-bottom: 0; }
+.verdict-text,
+.card h2.q-h {
+  margin: 0 0 16px; font-weight: 800; line-height: 1.5;
+}
+.card h2.q-h { font-size: 1.125rem; }
+.verdict-text { font-size: 1.375rem; }
+.q-note { margin: -4px 0 16px; font-size: 0.8125rem; color: var(--muted); line-height: 1.55; }
+.q-note-gap { height: 0; margin: 0; }
 .q-next { margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed var(--line); font-size: 0.8125rem; font-weight: 700; color: var(--muted); }
-.content > section.card { scroll-margin-top: calc(var(--top-h, 64px) + 12px); }
 .stat { padding: 8px 24px 10px; }
 .stat-line { margin-top: 6px !important; }
 .stat-note { margin-top: 6px !important; line-height: 1.6; }
@@ -1036,9 +1075,7 @@ button.jt-none { font: inherit; font-size: inherit; color: var(--muted); font-we
 .ai-msg { font-size: 0.75rem; font-weight: 700; color: var(--up); }
 .ai-copy { font: inherit; font-size: 0.8125rem; font-weight: 800; color: #fff; background: var(--accent); border: 0; border-radius: 8px; padding: 8px 18px; cursor: pointer; }
 .ai-note { margin: 0; font-size: 0.75rem; color: #8792a2; }
-@media (max-width: 1100px) { .story-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } .story-step:nth-child(2)::after { display: none; } }
 @media (max-width: 900px) {
-  .story-strip { grid-template-columns: 1fr; gap: 8px; } .story-step::after { display: none; }
   .act { grid-template-columns: 24px minmax(0, 1fr); } .act-go { grid-column: 2; text-align: left; margin-top: 6px; }
   .wrow.why-row { grid-template-columns: minmax(120px, 1fr) 70px 70px 100px 110px; min-width: 520px; }
 }

@@ -84,7 +84,7 @@ def test_sample_board_shows_flow_with_worst_step_and_no_mapping_form():
     # v5: 流れを直す can be tried on a sample — the form never posts and 保存 is off
     bar = _soup(html).select_one("[data-edit-bar]")
     assert bar.select_one("form#edit-form[data-try-only] .edit-save[disabled]") and "保存はされません" in bar.get_text()
-    # Top → bottom: ① 大丈夫？ → ② どこで離れている？ → ③ どこがおかしい？ → ④ どうする？ → 詳しい数字
+    # Top → bottom: 0 総評 → 1 どこで離れている？ → 2 どこがおかしい？ → 3 どうする？ → 詳しい数字
     assert html.index('class="verdict card"') < html.index('id="flow"') < html.index('id="q3"') < html.index('id="q4"') < html.index('class="detail card"')
 
 
@@ -265,7 +265,7 @@ def test_board_first_with_a_guessed_flow_then_setup(live):
     assert notice and "ブログ・記事を読んでもらう" in notice.get_text() and "転換イベントが見つからない" in notice.get_text()
     assert soup.select_one(".verdict .stat") and soup.select_one("#flow .flow-stage")
     # サイトの設定 opens on the board's own flow (the guess), with the site's numbers
-    assert c.get("/setup").headers["location"] == "/live?edit=1#flow"
+    assert c.get("/setup").headers["location"] == "/live?edit=1"
     soup = _soup(c.get("/live?edit=1").text)
     assert soup.select_one("[data-edit-bar] [data-template] option[selected]")["value"] == "blog"
     assert soup.select_one(".notice [data-edit-open]")  # 「サイトに合わせる」 opens 編集モード in place
@@ -279,9 +279,9 @@ def test_setup_is_the_boards_edit_mode(live):
     c.post("/connect/property/change")
     c.post("/connect/property", data={"property_id": "4242"})
     # the old pages open the board in 編集モード / with the 業種 drawer
-    assert c.get("/setup").headers["location"] == "/live?edit=1#flow"
+    assert c.get("/setup").headers["location"] == "/live?edit=1"
     assert c.get("/setup/industry").headers["location"] == "/live?industry=1"
-    assert c.get("/setup/flow").headers["location"] == "/live?edit=1#flow"
+    assert c.get("/setup/flow").headers["location"] == "/live?edit=1"
     soup = _soup(c.get("/live?edit=1").text)
     data = json.loads(soup.select_one("#setup-data").get_text())
     board = json.loads(soup.select_one("#board-data").get_text())
@@ -329,7 +329,7 @@ def test_adjust_the_flow_to_the_site(live):
     # errors come back on the board, 編集モード open, with what was posted
     bad = [("behavior", "recruit"), ("key", ""), ("event", "bad name"), ("label", "")]
     r = c.post("/setup", data=_form_lists(bad))
-    assert r.headers["location"] == "/live?edit=1#flow"
+    assert r.headers["location"] == "/live?edit=1"
     soup = _soup(c.get("/live?edit=1").text)
     assert "イベント名" in soup.select_one("[data-edit-error]").get_text()
     assert json.loads(soup.select_one("#setup-data").get_text())["steps"][0]["event"] == "bad name"

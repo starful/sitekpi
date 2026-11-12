@@ -54,7 +54,7 @@
     bar.hidden = !on;
     track.hidden = !on;
     if (view) view.hidden = on;
-    if (on) { render(); section.scrollIntoView({ block: "start" }); }
+    if (on) render();
     else { state.sel = -1; window.SiteDrawer.close(); }
   }
 

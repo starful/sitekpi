@@ -5,7 +5,7 @@
   <span class="nav-dot" aria-hidden="true"></span>
   <span class="nav-site-body"><span class="nav-site-name">{{ rail.connected.name or t("nav.property", loc) }}</span>{% if rail.selection_label %}<span class="nav-site-sub">{{ rail.selection_label }}</span>{% endif %}</span>
 </a>
-<a href="/live?edit=1#flow" class="nav-indent{{ ' is-on' if rail.active == 'setup' else '' }}">{{ t("nav.setup", loc) }}</a>
+<a href="/live?edit=1" class="nav-indent{{ ' is-on' if rail.active == 'setup' else '' }}">{{ t("nav.setup", loc) }}</a>
 <a href="/connect" class="nav-indent{{ ' is-on' if rail.active == 'connect' else '' }}">{{ t("nav.connect_manage", loc) }}</a>
 {% else %}
 <a href="/connect" class="nav-cta{{ ' is-on' if rail.active == 'connect' else '' }}">＋ {{ t("nav.add_ga4", loc) }}</a>

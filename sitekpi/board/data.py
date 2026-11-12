@@ -13,6 +13,10 @@ from sitekpi.i18n.metric_l10n import (
     tmpl,
 )
 from sitekpi.benchmarks import source_of
+from sitekpi.format import fmt_delta_pct as _fmt_delta_pct
+from sitekpi.format import fmt_int as _fmt_int
+from sitekpi.format import fmt_pct as _fmt_pct
+from sitekpi.format import mmss_to_seconds as _mmss_to_seconds
 from sitekpi.i18n.pack_l10n import pack_biz_rows, pack_text
 from sitekpi.packs import PACK_COPY
 
@@ -33,38 +37,6 @@ CHANNEL_COLORS: dict[str, str] = {
 
 def _help(title: str, *, kind: str, meaning: str, formula: str, tip: str) -> dict[str, str]:
     return help_dict(title, kind=kind, meaning=meaning, formula=formula, tip=tip)
-
-
-def _fmt_int(n: int | float) -> str:
-    return f"{int(round(n)):,}"
-
-
-def _fmt_pct(n: float, digits: int = 1) -> str:
-    return f"{n:.{digits}f}%"
-
-
-def _fmt_delta_pct(v: float) -> tuple[str, str]:
-    sign = "+" if v > 0 else ""
-    tone = "up" if v >= 0 else "down"
-    return f"{sign}{v:.1f}%", tone
-
-
-def _mmss_to_seconds(raw: Any) -> float | None:
-    """Parse 'm:ss' / 'h:mm:ss' demo strings into seconds for charts."""
-    if raw is None or raw in ("", "—", "–"):
-        return None
-    if isinstance(raw, (int, float)):
-        return float(raw)
-    parts = str(raw).strip().split(":")
-    try:
-        nums = [int(p) for p in parts]
-    except ValueError:
-        return None
-    if len(nums) == 2:
-        return float(nums[0] * 60 + nums[1])
-    if len(nums) == 3:
-        return float(nums[0] * 3600 + nums[1] * 60 + nums[2])
-    return None
 
 
 def _benches_for_sample(raw: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:

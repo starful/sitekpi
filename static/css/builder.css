@@ -1,10 +1,5 @@
+/* tokens: brand.css */
 /* ダッシュボードを作る: purpose templates → sections of metric cards → add drawer. Tokens follow board.css */
-:root {
-  --ink: #152033; --muted: #5b6676; --faint: #8792a2; --line: #e5eaf1; --bg: #f4f6fa;
-  --accent: #2f6fed; --accent-ink: #1d4ed8; --up: #0f766e; --down: #b45309;
-  --font-ui: "IBM Plex Sans JP", "Noto Sans JP", sans-serif; --font-num: "DM Sans", "IBM Plex Sans JP", sans-serif;
-  --rail-w: 268px;
-}
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font-ui); background: var(--bg); }
 .main { min-width: 0; }

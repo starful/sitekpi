@@ -1,4 +1,9 @@
-"""Tiny thread-safe TTL cache (per process)."""
+"""Tiny thread-safe TTL cache (per process).
+
+Used for GA4 overlay / flow / builder so period switches do not re-hit the API
+every click. Bound maxsize + lock because sync FastAPI routes run in a thread
+pool — never use module globals for per-user state (that lives in the session).
+"""
 
 from __future__ import annotations
 

@@ -1,4 +1,12 @@
-"""Pack-owned labels / notes / biz copy (ja / en / ko)."""
+"""Pack-owned spoken labels / notes / biz copy (ja / en / ko).
+
+Single source for what the board says out loud (指標名, 業界パック名, CVR labels).
+registry._apply_spoken_ja copies JA into INDUSTRIES / PACK_COPY at load time;
+pack_text() serves en/ko (and ja) at render time.
+
+When renaming a pack's spoken term, edit here — not packs/{slug}.py meta/copy
+(those JA strings are readable fallbacks only; see packs/schema.SPOKEN_*).
+"""
 
 from __future__ import annotations
 

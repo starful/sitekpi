@@ -1,4 +1,7 @@
-"""Industry pack: 不動産・物件."""
+"""Industry pack: 不動産・物件.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'realestate',
                   ('paid_rate', '内見化率', '問い合わせのうち内見', '内見 ÷ 問い合わせ × 100'),
                   ('revenue', '仲介手数料（期間）', '会計側の期間手数料', 'SUM(期間手数料)'),
                   ('arpu', 'リード単価', 'リード1件あたり広告費', '広告費 ÷ リード数'),
-                  ('churn_rate', '失注率', '商談のうち失注', '失注 ÷ 商談 × 100')]},
- 'event_desc': {'listing_view': '物件詳細を開いた回数',
-                'map_search': '地図・エリア検索を使った回数',
-                'inquiry_start': '問い合わせフォームを開始した回数',
-                'inquiry_submit': '問い合わせが完了した回数（このパックの主転換）',
-                'tour_book': '内見予約が完了した回数',
-                'brochure_dl': '物件資料をダウンロードした回数'}}
+                  ('churn_rate', '失注率', '商談のうち失注', '失注 ÷ 商談 × 100')]}}

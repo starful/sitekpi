@@ -49,15 +49,19 @@ def test_board_reads_verdict_then_where_then_detail(client):
     s = _soup(client, "/ec")
     order = [sec.get("class")[0] for sec in s.select(".content > section")]
     assert order == ["verdict", "where", "why", "do", "detail"]
-    # v6 story: the same one issue in ① (orange clause) … ④
+    # v6 story: 総評 names the issue + rate; ①〜④ is a TOC (no mini-answers)
     text = s.select_one(".verdict-text").get_text()
-    assert text == "購入完了は増えています。ただ、カートに入れた人が買い切れていません。"
-    assert [a.get_text(" ", strip=True) for a in s.select(".story-strip .story-step .qk")] == ["1 大丈夫？", "2 どこで離れている？", "3 どこがおかしい？", "4 どうする？"]
-    assert [a["href"] for a in s.select(".story-strip a")] == ["#q1", "#q2", "#q3", "#q4"]
+    assert "購入完了は増えています" in text and "カートに追加 → 購入" in text and "目安から外れた" in text
+    assert [a.get_text(" ", strip=True) for a in s.select(".story-toc .story-toc-step")] == [
+        "0 総評", "1 どこで離れている？", "2 どこがおかしい？", "3 どうする？"]
+    assert [a["href"] for a in s.select(".story-toc a")] == ["#q0", "#q2", "#q3", "#q4"]
+    assert s.select_one(".story-toc-step.is-lede") and s.select_one("#q0")
+    assert not s.select("#q1, .story-strip, .story-a")  # 「大丈夫？」absorbed into 総評
     tiles = s.select(".verdict .stat")
-    # v5: 3 columns, no boxes or chips; the issue says so in its label and in orange in the sentence
+    # v5: 3 columns, no boxes or chips; the issue stretch is orange in the 総評
     assert [t.select_one(".stat-name").get_text() for t in tiles] == ["購入完了", "購入CVR", "カート→購入率（いちばんの課題）"]
-    assert s.select_one(".verdict-text .v-issue").get_text() == "カートに入れた人が買い切れていません"
+    assert "カートに追加 → 購入" in s.select_one(".verdict-text .v-issue").get_text()
+
     assert "is-issue" in tiles[2]["class"] and tiles[2].select_one(".jt.jt-down")
     assert "業界と比べません" in tiles[0].select_one(".stat-note").get_text()  # counts are never judged
     assert not s.select(".verdict .judge, .verdict .tile-tag, .tiles")
@@ -75,7 +79,7 @@ def test_board_reads_verdict_then_where_then_detail(client):
     assert s.select_one("[data-ch-toggle]") and all(x.has_attr("hidden") for x in s.select("[data-ch-part]"))
     # v5: メモ panel instead of 👍 👎 under each card; 「? 見方」 in the top bar; no page menu
     assert not s.select("[data-card-fb]") and s.select_one("aside.memo[data-memo] textarea[data-memo-text]")
-    assert [x["data-memo-where"] for x in s.select(".content > section")] == ["大丈夫？", "どこで離れている？", "どこがおかしい？", "どうする？", "詳しい数字"]
+    assert [x["data-memo-where"] for x in s.select(".content > section")] == ["総評", "どこで離れている？", "どこがおかしい？", "どうする？", "詳しい数字"]
     assert s.select_one('.top a.top-help[href="/help#read"]')
     assert not s.select(".page-nav")
 
@@ -142,6 +146,16 @@ def test_unlinked_business_kpis_collapse_to_one_line(client):
     biz = s.select_one("#g-biz")
     assert "業務データ未連携（6指標）" in biz.select_one(".dgroup-note").get_text()
     assert not biz.select(".dt-row")
+
+
+def test_detail_category_lede_is_verdict_not_metric_list(client):
+    """Each judged L2 group opens with why to look — furthest 要注意 or 目安内 — not a value dump."""
+    s = _soup(client, "/hr")
+    funnel = s.select_one("#g-funnel .dgroup-summary")
+    engage = s.select_one("#g-engage .dgroup-summary")
+    assert funnel and "要注意" in funnel.get_text() and "応募CVR" in funnel.get_text()
+    assert engage and "目安内" in engage.get_text()
+    assert not s.select_one("#g-channels .dgroup-summary")  # share-only: no invented lede
 
 
 @pytest.mark.parametrize("loc,text", [("en", "What is off?"), ("ko", "어디가 이상한가?")])

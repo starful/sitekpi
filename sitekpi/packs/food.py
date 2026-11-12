@@ -1,4 +1,7 @@
-"""Industry pack: 飲食・店舗."""
+"""Industry pack: 飲食・店舗.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -129,10 +132,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'food',
                   ('paid_rate', '来店率', '予約のうち来店', '来店 ÷ 予約 × 100'),
                   ('revenue', '売上（期間）', '会計側の期間売上', 'SUM(期間売上)'),
                   ('arpu', '客単価', '来店1組あたり売上', '売上 ÷ 来店組数'),
-                  ('churn_rate', 'キャンセル率', '予約のうちキャンセル', 'キャンセル ÷ 予約 × 100')]},
- 'event_desc': {'menu_view': 'メニューページを開いた回数',
-                'store_view': '店舗・アクセスページを開いた回数',
-                'reserve_start': '来店予約を開始した回数',
-                'reserve_complete': '来店予約が完了した回数（このパックの主転換）',
-                'coupon_use': 'クーポンを適用した回数',
-                'order_takeout': 'テイクアウト注文が完了した回数'}}
+                  ('churn_rate', 'キャンセル率', '予約のうちキャンセル', 'キャンセル ÷ 予約 × 100')]}}

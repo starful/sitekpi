@@ -1,4 +1,7 @@
-"""Industry pack: EC・小売."""
+"""Industry pack: EC・小売.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'ec',
                   ('paid_rate', '出荷完了率', '注文のうち出荷完了', '出荷 ÷ 注文 × 100'),
                   ('revenue', '売上（期間）', '受注・会計側の期間売上', 'SUM(期間売上)'),
                   ('arpu', '客単価', '注文1件あたり売上', '売上 ÷ 注文件数'),
-                  ('churn_rate', '返品率', '注文のうち返品', '返品 ÷ 注文 × 100')]},
- 'event_desc': {'view_item_list': '商品一覧・カテゴリを表示した回数',
-                'view_item': '商品詳細を開いた回数',
-                'add_to_cart': 'カートに追加した回数',
-                'begin_checkout': 'チェックアウト（購入手続き）を開始した回数',
-                'purchase': '購入が完了した回数（このパックの主転換）',
-                'add_to_wishlist': 'お気に入り・ウィッシュリストに追加した回数'}}
+                  ('churn_rate', '返品率', '注文のうち返品', '返品 ÷ 注文 × 100')]}}

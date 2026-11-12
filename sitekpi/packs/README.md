@@ -5,9 +5,9 @@ One file per vertical. Demo numbers, industry benchmark bands (業界目安), bo
 ## Add a pack
 
 1. Copy an existing file (e.g. `ec.py`) to `sitekpi/packs/{slug}.py`.
-2. Edit `PACK`: `meta` (incl. `category`), `benchmarks`, `demo`, `copy`, `event_desc`.
+2. Edit `PACK`: `meta` (incl. `category`), `benchmarks`, `demo`, `copy`.
 3. Append `"{slug}"` to `PACK_MODULES` in [`registry.py`](registry.py).
-4. Add `PACK_L10N["{slug}"]` in [`../i18n/pack_l10n.py`](../i18n/pack_l10n.py) (`label` / `hint` at least, `ja`/`en`/`ko`).
+4. Add `PACK_L10N["{slug}"]` in [`../i18n/pack_l10n.py`](../i18n/pack_l10n.py) (`label` / `hint` at least, `ja`/`en`/`ko`). Spoken JA for label · hint · signup · funnel labels is owned here — the registry overlays it onto the pack at load time.
 5. Run `python scripts/smoke_packs.py` then restart the server — `/{slug}` is available.
 
 Categories are defined in [`catalog.py`](catalog.py). Structure conventions for agents: `../../.cursor/rules/kpi-starter-structure.mdc`.

@@ -1,4 +1,7 @@
-"""Industry pack: 建設・住宅."""
+"""Industry pack: 建設・住宅.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -132,10 +135,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'construction',
                   ('paid_rate', '見積化率', '問い合わせのうち見積化', '見積 ÷ 問い合わせ × 100'),
                   ('revenue', '受注売上（期間）', '会計側の期間受注', 'SUM(期間受注)'),
                   ('arpu', 'リード単価', 'リード1件あたりコスト', '広告費 ÷ リード数'),
-                  ('churn_rate', '失注率', '見積のうち失注', '失注 ÷ 見積 × 100')]},
- 'event_desc': {'project_view': '施工事例・物件ページを開いた回数',
-                'catalog_dl': 'カタログ・資料をダウンロードした回数',
-                'inquiry_start': '問い合わせフォームを開始した回数',
-                'inquiry_submit': '問い合わせ送信が完了した回数（このパックの主転換）',
-                'estimate_request': '見積依頼をした回数',
-                'site_visit_book': '現場見学・来場予約をした回数'}}
+                  ('churn_rate', '失注率', '見積のうち失注', '失注 ÷ 見積 × 100')]}}

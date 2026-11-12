@@ -1,4 +1,7 @@
-"""Industry pack: 自治体・公共."""
+"""Industry pack: 自治体・公共.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'gov',
                   ('paid_rate', '処理完了率', '申請のうち処理完了', '処理済 ÷ 申請 × 100'),
                   ('revenue', '手数料（期間）', '手数料収入（あれば）', 'SUM(期間手数料)'),
                   ('arpu', '申請単価', '申請1件あたり運用コスト', 'コスト ÷ 申請数'),
-                  ('churn_rate', '取下げ率', '申請のうち取下げ', '取下げ ÷ 申請 × 100')]},
- 'event_desc': {'guide_view': '手続き案内ページを開いた回数',
-                'form_start': '申請フォームを開始した回数',
-                'form_complete': '申請が完了した回数（このパックの主転換）',
-                'doc_upload': '添付書類をアップロードした回数',
-                'status_check': '申請状況を確認した回数',
-                'faq_click': 'FAQ・よくある質問を開いた回数'}}
+                  ('churn_rate', '取下げ率', '申請のうち取下げ', '取下げ ÷ 申請 × 100')]}}

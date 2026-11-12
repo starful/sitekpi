@@ -103,6 +103,21 @@ document.addEventListener("click", (e) => {
 (function () {
   const flow = document.getElementById("flow");
   if (!flow) return;
+  const nowEl = flow.querySelector("[data-ch-now]");
+
+  function setNow(btn) {
+    if (!nowEl) return;
+    const ch = btn.dataset.flowCh;
+    const name = btn.dataset.chLabel || btn.textContent.trim();
+    const filtered = ch !== "all";
+    flow.classList.toggle("is-ch-filtered", filtered);
+    nowEl.classList.toggle("is-filtered", filtered);
+    nowEl.textContent = filtered
+      ? (nowEl.dataset.tplNamed || "").replace("{name}", name)
+      : (nowEl.dataset.tplAll || "");
+    document.querySelectorAll("[data-ch-toggle]").forEach((t) => t.classList.toggle("is-filtered", filtered));
+  }
+
   flow.querySelectorAll("[data-flow-ch]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const ch = btn.dataset.flowCh;
@@ -118,6 +133,7 @@ document.addEventListener("click", (e) => {
       });
       flow.querySelectorAll(".flow-mix i").forEach((i) => i.classList.toggle("is-on", ch !== "all" && i.dataset.ch === ch));
       flow.querySelectorAll("[data-ch-row]").forEach((r) => r.classList.toggle("is-on", r.dataset.chRow === ch));
+      setNow(btn);
     });
   });
 })();

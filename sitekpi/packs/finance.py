@@ -1,4 +1,7 @@
-"""Industry pack: 金融・保険."""
+"""Industry pack: 金融・保険.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'finance',
                   ('paid_rate', '成約率', '申込のうち成約', '成約 ÷ 申込 × 100'),
                   ('revenue', '手数料売上（期間）', '会計側の期間手数料', 'SUM(期間手数料)'),
                   ('arpu', '申込単価', '申込1件あたり広告費', '広告費 ÷ 申込数'),
-                  ('churn_rate', '離脱率', '申込中断・取消の割合', '取消 ÷ 申込 × 100')]},
- 'event_desc': {'product_view': '商品・プラン詳細を開いた回数',
-                'quote_start': '見積・シミュレーションを開始した回数',
-                'quote_complete': '見積結果を表示した回数',
-                'apply_start': '申込フォームを開始した回数',
-                'apply_complete': '申込が完了した回数（このパックの主転換）',
-                'doc_upload': '必要書類をアップロードした回数'}}
+                  ('churn_rate', '離脱率', '申込中断・取消の割合', '取消 ÷ 申込 × 100')]}}

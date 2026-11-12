@@ -115,7 +115,7 @@ FLASH_KEY = "board_edit_flash"
 def _flash(request: Request, error: str, steps: list[dict[str, str]] | None = None,
            behavior: str | None = None, where: str = "edit") -> Response:
     request.session[FLASH_KEY] = {"error": error, "steps": steps, "behavior": behavior, "where": where}
-    return RedirectResponse("/live?edit=1#flow" if where == "edit" else "/live?industry=1", status_code=303)
+    return RedirectResponse("/live?edit=1" if where == "edit" else "/live?industry=1", status_code=303)
 
 
 def board_setup(request: Request, flow_users: dict[str, int] | None = None,
@@ -163,7 +163,7 @@ def setup_keep(request: Request) -> Response:
 def setup_page(request: Request) -> Response:
     if not _connected(request):
         return RedirectResponse("/connect", status_code=302)
-    return RedirectResponse("/live?edit=1#flow", status_code=302)
+    return RedirectResponse("/live?edit=1", status_code=302)
 
 
 @router.post("/setup")
@@ -247,7 +247,7 @@ async def setup_industry(request: Request) -> Response:
 @router.get("/setup/{step}")
 def setup_old_steps(step: str) -> Response:
     """The old 3-step wizard (steps / flow / adjust) is one page now."""
-    return RedirectResponse("/live?edit=1#flow", status_code=302)
+    return RedirectResponse("/live?edit=1", status_code=302)
 
 
 def summary(request: Request, locale: str) -> dict[str, Any] | None:
@@ -261,8 +261,8 @@ def summary(request: Request, locale: str) -> dict[str, Any] | None:
     rows = []
     if sel["behavior"]:
         steps = current_flow(request, sel["behavior"], locale)
-        rows.append({"k": t("setupx.template", locale), "v": behavior_label(sel["behavior"], locale), "href": "/live?edit=1#flow"})
-        rows.append({"k": t("flow.title", locale), "v": " → ".join(s["label"] for s in steps), "href": "/live?edit=1#flow"})
+        rows.append({"k": t("setupx.template", locale), "v": behavior_label(sel["behavior"], locale), "href": "/live?edit=1"})
+        rows.append({"k": t("flow.title", locale), "v": " → ".join(s["label"] for s in steps), "href": "/live?edit=1"})
     if sel["industry"]:
         ind = sel["industry"]
         rows.insert(1, {"k": t("setup.industry.all", locale),

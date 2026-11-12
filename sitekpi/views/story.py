@@ -1,4 +1,4 @@
-"""The board's story: ① 大丈夫？ → ② どこで離れている？ → ③ どこがおかしい？ → ④ どうする？ (docs/plan s03).
+"""The board's story: 0 総評 → 1 どこで？ → 2 どこがおかしい？ → 3 どうする？ (docs/plan s03; 「大丈夫？」は総評に吸収).
 
 One issue runs through all four cards. The rule (pick_issue):
   1. いまの状態's issue tile — the metric furthest outside its 業界目安 (not the CVR tile) — if its rate maps
@@ -15,6 +15,7 @@ from typing import Any
 
 from markupsafe import Markup, escape
 
+from sitekpi.format import fmt_int as _fmt_int
 from sitekpi.i18n.story_l10n import ACTIONS, STORY, kind_of_event
 
 ENGAGE_KEYS = ("engaged_rate", "bounce_rate")
@@ -23,10 +24,6 @@ ENGAGE_KEYS = ("engaged_rate", "bounce_rate")
 def _s(loc: str, key: str, **kw: Any) -> str:
     text = STORY.get(loc, STORY["ja"]).get(key) or STORY["ja"][key]
     return text.format(**kw) if kw else text
-
-
-def _fmt_int(n: float) -> str:
-    return f"{int(round(n)):,}"
 
 
 def _stage_index(stages: list[dict[str, Any]], event: str) -> int:
@@ -118,14 +115,23 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
     for n in range(issue["i"], issue["j"] + 1):
         stages[n]["in_issue"] = True
 
-    # ①: the count sentence + 「ただ、…」 in orange
-    lead = verdict.get("lead") or ""
+    # 0 総評: one boss-repeatable sentence + the three tiles (「大丈夫？」は総評に吸収).
+    # verdict.lead already ends with bx.sep — strip it so we don't get "…요. . 다만".
+    lead = str(verdict.get("lead") or "").rstrip()
+    while lead and lead[-1] in "。.!?！？":
+        lead = lead[:-1].rstrip()
     has_issue = any(k.get("issue") for k in verdict.get("tiles", [])) and not verdict.get("no_issue")
-    s1 = Markup(escape(lead))
+    n_off = len([w for w in watch if w["tone"] == "down"])
+    stop = "。" if loc == "ja" else ". "
     if has_issue:
-        head = cat["head"]
-        s1 = Markup(f'{escape(lead)}{escape(_s(loc, "but"))}<span class="v-issue">{escape(head)}</span>'
-                    f'{"。" if loc == "ja" else "."}')
+        core = _s(loc, "lede_core", a=A, b=B, rate=rate)
+        tail = _s(loc, "lede_off", n=n_off) if n_off else _s(loc, "lede_end")
+        s1 = Markup(
+            f"{escape(lead)}{escape(stop)}{escape(_s(loc, 'but'))}"
+            f'<span class="v-issue">{escape(core)}</span>{escape(tail)}'
+        )
+    else:
+        s1 = Markup(f"{escape(lead)}{escape(stop)}{escape(_s(loc, 'lede_ok'))}")
 
     # ②
     s2 = Markup(escape(_s(loc, "where_h", a=A, b=B, na=_fmt_int(na), nb=_fmt_int(nb), rate=rate))
@@ -173,26 +179,26 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
     else:
         h4, calc = _s(loc, "do_h", a=A, b=B), ""
 
-    n_off = len([w for w in watch if w["tone"] == "down"])
-    strip = [
-        {"n": 1, "q": _s(loc, "q1"), "a": _s(loc, "a1_issue", a=A, b=B) if has_issue else _s(loc, "a1_ok"),
-         "tone": "issue" if has_issue else "ok", "href": "#q1"},
-        {"n": 2, "q": _s(loc, "q2"), "a": f"{A} → {B}（{rate}）" if loc == "ja" else f"{A} → {B} ({rate})", "tone": "issue", "href": "#q2"},
-        {"n": 3, "q": _s(loc, "q3"), "a": _s(loc, "a3_n", n=n_off) if n_off else _s(loc, "a3_none"),
-         "tone": "issue" if n_off else "ok", "href": "#q3"},
-        {"n": 4, "q": _s(loc, "q4"), "a": _s(loc, "a4_gain", n=len(acts), gain=gain_txt) if gain else _s(loc, "a4", n=len(acts)),
-         "tone": "act", "href": "#q4"},
+    # 0 総評 (sentence + tiles). 1〜3 = where / why / do. 「大丈夫？」was absorbed into 0.
+    toc = [
+        {"n": 0, "q": _s(loc, "q0"), "href": "#q0"},
+        {"n": 1, "q": _s(loc, "q2"), "href": "#q2"},
+        {"n": 2, "q": _s(loc, "q3"), "href": "#q3"},
+        {"n": 3, "q": _s(loc, "q4"), "href": "#q4"},
     ]
 
     prompt = _prompt(loc=loc, site=site, ind=industry_label, beh=behavior_label, period=period_label,
                      verdict=verdict, stages=stages, a=A, b=B, rows=rows, gain=gain_txt, acts=acts, board=board,
                      bench_info=bench_info)
     return {
-        "q": {k: _s(loc, k) for k in ("q1", "q2", "q3", "q4", "ref", "ref_k", "strip", "why", "check",
+        "q": {k: _s(loc, k) for k in ("q0", "q1", "q2", "q3", "q4", "ref", "ref_k", "strip", "toc", "why", "check",
                                        "others", "others_more", "do_note", "go_edit", "go_ch", "go_gl")},
-        "strip": strip, "s1": s1, "s2": s2, "note": note, "h3": h3, "rows": rows, "others": others, "none_off": none_off,
+        "toc": toc, "strip": toc,
+        "s1": s1, "s2": s2, "note": note, "h3": h3, "rows": rows, "others": others, "none_off": none_off,
         "h4": h4, "calc": calc, "acts": acts, "kind": issue["kind"],
         "next2": _s(loc, "next2", a=A), "next3": _s(loc, "next3"), "next4": _s(loc, "next4"),
+        # Display numbers on section headers (anchors stay #q2/#q3/#q4 for stable deep links)
+        "n_where": 1, "n_why": 2, "n_do": 3,
         "ai": {k: _s(loc, k) for k in ("ai_btn", "ai_lead", "ai_ask_k", "ai_cause", "ai_ideas", "ai_report",
                                         "ai_anon", "ai_detail", "ai_copy", "ai_copied", "ai_copy_fail", "ai_note")},
         "prompt": prompt,

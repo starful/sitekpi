@@ -1,4 +1,7 @@
-"""Industry pack: B2B・リード."""
+"""Industry pack: B2B・リード.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'b2b',
                   ('paid_rate', '商談化率', 'リードのうち商談化', '商談 ÷ リード × 100'),
                   ('revenue', '受注売上（期間）', '会計側の期間受注', 'SUM(期間受注)'),
                   ('arpu', 'リード単価', 'リード1件あたりコスト', '広告費 ÷ リード数'),
-                  ('churn_rate', '失注率', '商談のうち失注', '失注 ÷ 商談 × 100')]},
- 'event_desc': {'case_view': '導入事例ページを開いた回数',
-                'pricing_view': '料金・プランページを開いた回数',
-                'whitepaper_dl': '資料・ホワイトペーパーをダウンロードした回数',
-                'webinar_reg': 'ウェビナーに登録した回数',
-                'demo_request': '製品デモを申し込んだ回数',
-                'contact_submit': '問い合わせフォーム送信が完了した回数（このパックの主転換）'}}
+                  ('churn_rate', '失注率', '商談のうち失注', '失注 ÷ 商談 × 100')]}}

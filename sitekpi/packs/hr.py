@@ -1,4 +1,7 @@
-"""Industry pack: 人事・採用."""
+"""Industry pack: 人事・採用.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -132,10 +135,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'hr',
                   ('paid_rate', '書類通過率', '応募のうち書類通過の割合', '書類通過 ÷ 応募 × 100'),
                   ('revenue', '採用コスト（期間）', '媒体費・成功報酬など', 'SUM(期間採用コスト)'),
                   ('arpu', '応募単価', '応募1件あたりコスト', '採用コスト ÷ 応募者数'),
-                  ('churn_rate', '辞退率', '選考中の辞退・離脱割合', '辞退 ÷ 選考中 × 100')]},
- 'event_desc': {'job_view': '求人詳細ページを開いた回数',
-                'apply_start': '応募フォームを開始した回数',
-                'apply_submit': '応募フォーム送信が完了した回数（このパックの主転換）',
-                'entry_complete': 'エントリー（書類など）が完了した回数',
-                'scout_open': 'スカウトメッセージを開いた回数',
-                'message_reply': '候補者がメッセージに返信した回数'}}
+                  ('churn_rate', '辞退率', '選考中の辞退・離脱割合', '辞退 ÷ 選考中 × 100')]}}

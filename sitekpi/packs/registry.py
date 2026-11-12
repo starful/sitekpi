@@ -1,9 +1,15 @@
-"""Aggregate pack modules into INDUSTRIES / DEMO / BENCHMARKS / PACK_COPY / EVENT_DESC.
+"""Aggregate pack modules into INDUSTRIES / DEMO / BENCHMARKS / PACK_COPY.
 
 Add a new industry:
-  1. Create packs/{slug}.py with PACK = {...}
+  1. Create packs/{slug}.py with PACK = {meta, benchmarks, demo, copy}
   2. Append slug to PACK_MODULES below
-  3. Restart — /{slug} works automatically
+  3. Add PACK_L10N[slug] (ja/en/ko) for spoken labels — see packs/schema.SPOKEN_*
+  4. Run python scripts/smoke_packs.py
+
+Spoken JA source of truth: sitekpi/i18n/pack_l10n.py.
+Pack file meta.label / hint / signup_label and copy.*_label / property may still
+hold JA for readability, but build_registry always overwrites them from PACK_L10N.
+Edit the l10n entry when changing what the board says out loud.
 """
 
 from __future__ import annotations
@@ -83,24 +89,42 @@ def _behavior_demo(base: dict[str, dict[str, Any]], flow: list[str]) -> dict[str
     return out
 
 
+from sitekpi.packs.schema import SPOKEN_COPY_FIELDS, SPOKEN_META_FIELDS
+
+
+def _apply_spoken_ja(slug: str, meta: dict[str, Any], copy: dict[str, Any]) -> None:
+    """Overwrite pack-file JA with pack_l10n JA so one edit site owns the spoken terms."""
+    from sitekpi.i18n.pack_l10n import PACK_L10N
+
+    loc = PACK_L10N.get(slug) or {}
+    for field in SPOKEN_META_FIELDS:
+        row = loc.get(field)
+        ja = row.get("ja") if isinstance(row, dict) else None
+        if ja:
+            meta[field] = str(ja)
+    for field in SPOKEN_COPY_FIELDS:
+        row = loc.get(field)
+        ja = row.get("ja") if isinstance(row, dict) else None
+        if ja:
+            copy[field] = str(ja)
+
+
 def build_registry() -> dict[str, Any]:
     industries: dict[str, dict[str, Any]] = {}
     demo: dict[str, dict[str, dict[str, Any]]] = {}
     benchmarks: dict[str, dict[str, dict[str, Any]]] = {}
     pack_copy: dict[str, dict[str, Any]] = {}
-    event_desc: dict[str, str] = {}
-
     for slug in PACK_MODULES:
         pack = _load_pack(slug)
         meta = dict(pack["meta"])
         meta.setdefault("slug", slug)
+        copy = dict(pack["copy"])
+        _apply_spoken_ja(slug, meta, copy)
         industries[slug] = meta
         demo[slug] = pack["demo"]
         # cited 業界目安 (packs/sources.py) replace SiteKPI defaults where a source matches
         benchmarks[slug] = apply_sources(slug, pack["benchmarks"])
-        pack_copy[slug] = pack["copy"]
-        for k, v in (pack.get("event_desc") or {}).items():
-            event_desc[str(k)] = str(v)
+        pack_copy[slug] = copy
 
     # Packs derived from a base pack for industries with a published benchmark
     from sitekpi.packs.derived import DERIVED, scaled_demo
@@ -157,7 +181,6 @@ def build_registry() -> dict[str, Any]:
         "DEMO": demo,
         "BENCHMARKS": benchmarks,
         "PACK_COPY": pack_copy,
-        "EVENT_DESC": event_desc,
     }
 
 
@@ -166,7 +189,6 @@ INDUSTRIES: dict[str, dict[str, Any]] = _REG["INDUSTRIES"]
 DEMO: dict[str, dict[str, dict[str, Any]]] = _REG["DEMO"]
 BENCHMARKS: dict[str, dict[str, dict[str, Any]]] = _REG["BENCHMARKS"]
 PACK_COPY: dict[str, dict[str, Any]] = _REG["PACK_COPY"]
-EVENT_DESC: dict[str, str] = _REG["EVENT_DESC"]
 
 
 def get_pack(slug: str) -> dict[str, Any]:

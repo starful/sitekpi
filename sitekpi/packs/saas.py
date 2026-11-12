@@ -1,4 +1,7 @@
-"""Industry pack: SaaS・B2B."""
+"""Industry pack: SaaS・B2B.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'saas',
                   ('paid_rate', '有料化率', '全アカウントのうち有料割合', '有料 ÷ アカウント × 100'),
                   ('revenue', 'MRR（期間）', '課金側の期間売上/MRR', 'SUM(期間MRR)'),
                   ('arpu', 'ARPU', 'アカウント1件あたり売上', '売上 ÷ アカウント'),
-                  ('churn_rate', '解約率', '期間中の解約割合', '解約 ÷ 有料 × 100')]},
- 'event_desc': {'view_pricing': '料金・プランページを開いた回数',
-                'trial_start': '無料トライアルを開始した回数',
-                'sign_up': 'アカウント登録が完了した回数（このパックの主転換）',
-                'invite_sent': 'チーム招待を送った回数',
-                'pay_start': '有料プラン決済を開始した回数',
-                'pay_success': '有料決済が完了した回数'}}
+                  ('churn_rate', '解約率', '期間中の解約割合', '解約 ÷ 有料 × 100')]}}

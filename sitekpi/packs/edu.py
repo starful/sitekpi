@@ -1,4 +1,7 @@
-"""Industry pack: 教育・スクール."""
+"""Industry pack: 教育・スクール.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -129,10 +132,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'edu',
                   ('paid_rate', '入金完了率', '申込のうち入金完了', '入金 ÷ 申込 × 100'),
                   ('revenue', '受講料売上（期間）', '会計側の期間受講料', 'SUM(期間受講料)'),
                   ('arpu', '申込単価', '申込1件あたりコスト', '広告費 ÷ 申込者数'),
-                  ('churn_rate', '離脱率', '申込〜開講前のキャンセル', 'キャンセル ÷ 申込 × 100')]},
- 'event_desc': {'course_view': '講座・コース詳細を開いた回数',
-                'syllabus_dl': 'シラバス・カリキュラム資料をDLした回数',
-                'trial_book': '体験授業・無料体験を予約した回数',
-                'enroll_start': '受講申込フォームを開始した回数',
-                'enroll_complete': '受講申込が完了した回数（このパックの主転換）',
-                'open_campus': '説明会・オープンキャンパスに申し込んだ回数'}}
+                  ('churn_rate', '離脱率', '申込〜開講前のキャンセル', 'キャンセル ÷ 申込 × 100')]}}

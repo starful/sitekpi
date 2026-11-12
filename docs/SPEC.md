@@ -83,7 +83,7 @@ tests/ · scripts/
 
 | 메서드 · 경로 | 처리 |
 |---|---|
-| GET `/setup` · `/setup/{step}` | → `/live?edit=1#flow` (옛 설정 페이지 없음) |
+| GET `/setup` · `/setup/{step}` | → `/live?edit=1` (옛 설정 페이지 없음) |
 | GET `/setup/industry` | → `/live?industry=1` |
 | POST `/setup` | 흐름 저장 (behavior · key/event/label 배열 · period). 오류는 세션 flash(`board_edit_flash`)로 편집 모드에 표시 |
 | POST `/setup/industry` | 업종 저장. 오류는 flash로 업종 드로어에 표시 |

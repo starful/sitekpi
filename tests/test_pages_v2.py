@@ -78,7 +78,7 @@ def test_settings_language_cards_and_site(client):
     client.get("/connect/demo?start=1")
     soup = _soup(client.get("/settings").text)
     assert "Demo Shop JP" in soup.select_one(".st-site").get_text()
-    assert soup.select_one(".st-site a[href='/live?edit=1#flow']") and soup.select_one("a.st-back")["href"] == "/live"
+    assert soup.select_one(".st-site a[href='/live?edit=1']") and soup.select_one("a.st-back")["href"] == "/live"
     r = client.post("/settings", data={"locale": "en"})
     assert r.headers["location"] == "/settings?saved=1"
     soup = _soup(client.get("/settings?saved=1").text)

@@ -3,7 +3,6 @@
 from sitekpi.packs.registry import (
     BENCHMARKS,
     DEMO,
-    EVENT_DESC,
     INDUSTRIES,
     PACK_COPY,
     PACK_MODULES,
@@ -15,7 +14,6 @@ from sitekpi.packs.registry import (
 __all__ = [
     "BENCHMARKS",
     "DEMO",
-    "EVENT_DESC",
     "INDUSTRIES",
     "PACK_COPY",
     "PACK_MODULES",

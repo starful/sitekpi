@@ -1,7 +1,25 @@
-/* SiteKPI logo (rail, mobile bar, home) */
+/* SiteKPI brand tokens + logo (loaded on every page via base.html). */
+:root {
+  --ink: #152033;
+  --muted: #5b6676;      /* 4.5:1 on white and on --bg */
+  --faint: #8792a2;
+  --line: #e5eaf1;
+  --bg: #f4f6fa;
+  --panel: #ffffff;
+  --card: #ffffff;
+  --accent: #2f6fed;
+  --accent-ink: #1d4ed8;
+  --up: #0f766e;
+  --down: #b45309;
+  --notice: #eef4ff;
+  --font-ui: "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
+  --font-num: "DM Sans", "IBM Plex Sans JP", sans-serif;
+  --rail-w: 268px;
+}
+
 .logo, a.brand.logo {
   display: inline-flex; align-items: center; gap: 12px;
-  text-decoration: none; color: #152033;
+  text-decoration: none; color: var(--ink);
   font-family: "DM Sans", "IBM Plex Sans JP", "Noto Sans JP", sans-serif;
   font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em;
 }
@@ -11,5 +29,5 @@
 .logo .logo-text, a.brand.logo .logo-text {
   display: inline-flex; align-items: baseline;
 }
-.logo .logo-site, a.brand.logo .logo-site { color: #152033; }
-.logo .logo-kpi, a.brand.logo .logo-kpi { color: #2f6fed; }
+.logo .logo-site, a.brand.logo .logo-site { color: var(--ink); }
+.logo .logo-kpi, a.brand.logo .logo-kpi { color: var(--accent); }

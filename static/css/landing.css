@@ -1,10 +1,5 @@
+/* tokens: brand.css */
 /* Public pages (landing / policy / terms). Tokens follow board.css */
-:root {
-  --ink: #152033; --muted: #5b6676; --faint: #8792a2; --line: #e5eaf1; --bg: #f4f6fa;
-  --accent: #2f6fed; --accent-ink: #1d4ed8; --up: #0f766e; --down: #b45309; --notice: #eef4ff;
-  --font-ui: "IBM Plex Sans JP", "Noto Sans JP", system-ui, sans-serif;
-  --font-num: "DM Sans", "IBM Plex Sans JP", sans-serif;
-}
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 76px; }
 body { margin: 0; color: var(--ink); font-family: var(--font-ui); background: #fff; line-height: 1.7; }

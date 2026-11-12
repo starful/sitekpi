@@ -1,4 +1,7 @@
-"""Industry pack: アルバイト・シフト."""
+"""Industry pack: アルバイト・シフト.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'parttime',
                   ('paid_rate', '確定率', '応募のうち確定', '確定 ÷ 応募 × 100'),
                   ('revenue', '採用コスト（期間）', '媒体費など', 'SUM(期間コスト)'),
                   ('arpu', '応募単価', '応募1件あたりコスト', 'コスト ÷ 応募'),
-                  ('churn_rate', '辞退率', '応募後の辞退割合', '辞退 ÷ 応募 × 100')]},
- 'event_desc': {'job_list': '求人一覧を表示した回数',
-                'job_view': '求人詳細を開いた回数',
-                'apply_start': '応募フォームを開始した回数',
-                'apply_submit': '応募が完了した回数（主転換）',
-                'shift_confirm': 'シフト・勤務が確定した回数',
-                'message_open': 'メッセージ・スカウトを開いた回数'}}
+                  ('churn_rate', '辞退率', '応募後の辞退割合', '辞退 ÷ 応募 × 100')]}}

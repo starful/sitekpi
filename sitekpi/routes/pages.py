@@ -1,9 +1,11 @@
-"""Board pages — home, sample packs (/{slug}), connected /live, builder, settings."""
+"""Board pages — home, sample packs (/{slug}), connected /live, builder, settings.
+
+/live assembly lives in routes.live_board.build_live_kwargs so this file stays route glue.
+"""
 
 from __future__ import annotations
 
 import copy
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Literal
 
 from fastapi import APIRouter, Query, Request
@@ -12,7 +14,6 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sitekpi.benchmarks import load_effective
 from sitekpi.board.prev import sample_prev
 from sitekpi.cache import TTLCache
-from sitekpi.flow import apply_mapping, board_mapping, load_custom_flow, load_mapping
 from sitekpi.ga4.data import (
     build_live_builder_widgets,
     connection_info,
@@ -20,26 +21,15 @@ from sitekpi.ga4.data import (
     fetch_pack_overlay,
     saved_events,
 )
-from sitekpi.packs.behaviors import behavior_label
-from sitekpi.i18n import get_locale, set_locale, t
-from sitekpi.routes.flow import live_flow_context, sample_flow_context
-from sitekpi.selection import (
-    auto_notice,
-    compose_benchmarks,
-    ensure_selection,
-    flow_pack,
-    is_ready,
-    selection,
-    selection_label,
-)
+from sitekpi.i18n import get_locale, set_locale
+from sitekpi.routes.flow import sample_flow_context
+from sitekpi.routes.live_board import build_live_kwargs
 from sitekpi.routes.nav import nav_context, nav_rail_context
-from sitekpi.i18n.pack_l10n import pack_text
 from sitekpi.metrics.help import PERIODS
 from sitekpi.packs import BENCHMARKS, DEMO, INDUSTRIES
 from sitekpi.views.benchmarks import bench_context
 from sitekpi.views.board import render_sample_dense
 from sitekpi.views.builder import render_builder
-from sitekpi.views.home import render_home
 from sitekpi.views.settings import render_settings_page
 
 router = APIRouter(tags=["pages"])
@@ -272,108 +262,11 @@ def page_live_details(request: Request, period: str = Query(default="28d")):
 
 
 def _live(request: Request, period: str, *, fragment: bool = False):
-    if period not in PERIODS:
-        period = "28d"
-    extras = nav_context(request)
-    if not extras["connected"]:
-        return RedirectResponse("/connect", status_code=302)
-    # 訪問者の行動 → flow / events / wording;  業種 → 業界目安
-    sel = selection(request.session)
-    if not is_ready(sel):
-        # Numbers first: never send a connected user to a setup wizard before the board.
-        # Guess the behaviour from the site's own events; the board says it is a guess.
-        from sitekpi.routes.setup import site_event_counts
-
-        is_demo_conn = bool(request.session.get("ga4_demo"))
-        counts = None if is_demo_conn else (site_event_counts(request) or {})
-        prop_name = str((request.session.get("ga4_property") or {}).get("name") or "")
-        sel = ensure_selection(request.session, counts, prop_name)
-        extras = nav_context(request)  # the rail shows the new 行動 × 業種
-    pack_slug = flow_pack(sel)
-    industry = sel["industry"]
-    loc = get_locale(request.session)
-    primary_ev = str(INDUSTRIES[pack_slug].get("primary_event") or "")
-    mapping = board_mapping(pack_slug, load_mapping(request.session, pack_slug),
-                            load_custom_flow(request.session, pack_slug), primary_ev)
-    # Board numbers and the 行動フロー are independent GA4 calls → fetch them side by side
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        flow_job = pool.submit(live_flow_context, request, pack_slug, period, mapping, loc)
-        data, live, err, prop = _live_pack(request, pack_slug, period, mapping)  # type: ignore[arg-type]
-        live_flow = flow_job.result()
-    prev = data.pop("_prev", None) if live else sample_prev(pack_slug, period, data)
-    if live and mapping:
-        data = apply_mapping(data, pack_slug, mapping, primary=primary_ev)
-        if prev:
-            prev = apply_mapping(prev, pack_slug, mapping, primary=primary_ev)
-    flow = live_flow if live else sample_flow_context(pack_slug, data, loc)
-    label = extras["connected"]["name"]
-    pack_label = selection_label(sel, loc)
-    is_demo = bool(extras["connected"].get("demo"))
-    if flow:
-        flow["sessions"] = f"{int(data.get('sessions') or 0):,}"
-        flow["demo"] = is_demo
-    from sitekpi.board.extras import live_extras, sample_extras
-    from sitekpi.routes.setup import board_setup
-
-    details_src, extras_x = "", None
-    if live and not fragment:
-        details_src = f"/live/details?period={period}"
-    elif live:
-        ev_names = list(INDUSTRIES[pack_slug].get("events") or []) + list((data.get("event_counts") or {}).keys())
-        extras_x, _x_err = live_extras(request.session, period=period, events=list(dict.fromkeys(ev_names)),
-                                       primary=primary_ev)
-    else:
-        extras_x = sample_extras(pack_slug, data, prev)
-    stages = (flow or {}).get("stages") or []
-    flow_users = {str(st["event"]): int(st["users"]) for st in stages[1:] if st.get("event") and st.get("users")}
-    setup_ctx = None if fragment else board_setup(
-        request, flow_users=flow_users, flow_entry=int(stages[0]["users"]) if stages else 0)
-    if is_demo:
-        # Demo connect: pack sample site numbers, clearly labelled (business stays —)
-        note = t("live.note.demo_mode", loc, pack=pack_label)
-    elif live:
-        note = t("live.note.ok", loc, pack=pack_label)
-    elif err:
-        note = t("live.note.err", loc, pack=pack_label)
-    else:
-        note = t("live.note.demo", loc, pack=pack_label)
-    return HTMLResponse(
-        render_sample_dense(
-            industry=pack_slug,
-            period=period,
-            data=data,
-            ind=INDUSTRIES[pack_slug],
-            benches_raw=(effective := load_effective(
-                request.session, industry, compose_benchmarks(sel["behavior"], industry), live=True)),
-            bench=bench_context(
-                pack=industry, board="live" if not is_demo else "sample", effective=effective, locale=loc,
-                labels_from=pack_slug,
-                property_name=str((request.session.get("ga4_property") or {}).get("name") or ""),
-            ),
-            property_name=prop or label,
-            industry_label=label,
-            industry_note=note,
-            pack_links=extras["pack_links"],
-            pack_groups=extras["pack_groups"],
-            nav_active="live",
-            connected=extras["connected"],
-            locale=loc,
-            board_kind="live",
-            flow=flow,
-            prev=prev,
-            notice=None if fragment else auto_notice(request.session, loc),
-            extras=extras_x,
-            details_src=details_src,
-            fragment=fragment,
-            editor=(setup_ctx or {}).get("editor"),
-            industry_drawer=(setup_ctx or {}).get("industry"),
-            ind_name=(setup_ctx or {}).get("ind_name", ""),
-            meta_short=" · ".join(x for x in (t("connect.badge.demo", loc) if is_demo else "",
-                                                behavior_label(sel["behavior"], loc)) if x),
-            auto_open=("edit" if request.query_params.get("edit") else
-                       "industry" if request.query_params.get("industry") else (setup_ctx or {}).get("open", "")),
-        )
-    )
+    """/live and /live/details — kwargs from live_board; HTML from render_sample_dense."""
+    result = build_live_kwargs(request, period, fragment=fragment, live_pack=_live_pack)
+    if isinstance(result, RedirectResponse):
+        return result
+    return HTMLResponse(render_sample_dense(**result))
 
 
 def _with_sessions(flow: dict[str, Any] | None, data: dict[str, Any]) -> dict[str, Any] | None:

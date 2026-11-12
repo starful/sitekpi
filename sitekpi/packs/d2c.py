@@ -1,4 +1,7 @@
-"""Industry pack: D2C・定期便."""
+"""Industry pack: D2C・定期便.
+
+Spoken labels (label / hint / signup_label / copy.*_label / property): edit sitekpi/i18n/pack_l10n.py — registry overlays JA from there.
+"""
 
 from __future__ import annotations
 
@@ -130,10 +133,4 @@ PACK: dict[str, Any] = {'meta': {'slug': 'd2c',
                   ('paid_rate', '定期化率', '初回購入のうち定期', '定期 ÷ 初回 × 100'),
                   ('revenue', '売上（期間）', '受注売上', 'SUM(期間売上)'),
                   ('arpu', '客単価', '注文1件あたり売上', '売上 ÷ 注文'),
-                  ('churn_rate', '定期解約率', '定期の解約割合', '解約 ÷ 定期 × 100')]},
- 'event_desc': {'view_item': '商品詳細を開いた回数',
-                'quiz_complete': '診断・クイズを完了した回数',
-                'add_to_cart': 'カートに追加した回数',
-                'begin_checkout': 'チェックアウトを開始した回数',
-                'purchase': '購入が完了した回数（主転換）',
-                'subscribe_box': '定期便・サブスクを開始した回数'}}
+                  ('churn_rate', '定期解約率', '定期の解約割合', '解約 ÷ 定期 × 100')]}}

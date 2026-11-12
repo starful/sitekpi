@@ -1,4 +1,4 @@
-"""The board's story (docs/plan s03 「ストーリー」): ① 大丈夫？ → ② どこで？ → ③ どこがおかしい？ → ④ どうする？
+"""The board's story (docs/plan s03 「ストーリー」): 0 総評 → 1 どこで？ → 2 どこがおかしい？ → 3 どうする？
 
 ACTIONS is the 対策カタログ: for each kind of step (the issue's last step decides the kind), a headline for ①
 and three actions — what to try, the usual reason, and how to check it in GA4. They are common causes,
@@ -41,18 +41,26 @@ def kind_of_event(event: str) -> str:
 
 STORY: dict[str, dict[str, str]] = {
     "ja": {
-        "q1": "大丈夫？", "q2": "どこで離れている？", "q3": "どこがおかしい？", "q4": "どうする？",
+        "q0": "総評", "q1": "大丈夫？", "q2": "どこで離れている？", "q3": "どこがおかしい？", "q4": "どうする？",
         "ref": "参考", "ref_k": "ぜんぶの数字",
         "strip": "このボードの読み方",
         "a1_ok": "大きな問題なし", "a1_issue": "伸びしろは「{a} → {b}」",
         "a3_n": "目安から外れた {n} つ", "a3_none": "目安から大きく外れた指標なし",
         "a4_gain": "{n} つの手 · {gain}", "a4": "{n} つの手",
         "but": "ただ、",
+        # Top 総評 (boss-repeatable). Stretch + rate + how many are off — not four mini Q&A answers.
+        "lede_core": "いちばんの課題は「{a} → {b}」（{rate}）",
+        "lede_off": "。目安から外れた指標が {n} つあります。",
+        "lede_end": "です。",
+        "lede_ok": "大きな問題はありません。",
+        "toc": "このボードの読み方",
+
         "where_h": "「{a} → {b}」で止まっています。{a} {na} 人のうち、{b}まで進んだのは {nb} 人（{rate}）。",
         "where_note": "人数がいちばん減るのは「{a} → {b}」（−{n} 人）。ただ、業界の目安と比べていちばん離れているのは上の段です。",
-        "next2": "② {a} のあと、どの段で止まっているか",
-        "next3": "③ なぜそこで止まっているのか、数字を確かめる",
-        "next4": "④ では、何から手をつけるか",
+        "next2": "① {a} のあと、どの段で止まっているか",
+        "next3": "② なぜそこで止まっているのか、数字を確かめる",
+        "next4": "③ では、何から手をつけるか",
+
         "why_h_bench": "{label}が業界の目安（{band}）を下回っています。",
         "why_h_flow": "「{a} → {b}」に進む人の割合が、この流れの中でいちばん低い段です。",
         "why_h_none": "業界の目安から大きく外れた指標はありません。流れの中で人数が大きく減る段を見ます。",
@@ -86,18 +94,25 @@ STORY: dict[str, dict[str, str]] = {
         "p_prev": "前期 {d}", "p_band": "業界目安 {band}", "p_gain": "目安の下限まで上がると {gain}",
     },
     "en": {
-        "q1": "Is it OK?", "q2": "Where do people leave?", "q3": "What is off?", "q4": "What to do?",
+        "q0": "Overview", "q1": "Is it OK?", "q2": "Where do people leave?", "q3": "What is off?", "q4": "What to do?",
         "ref": "Reference", "ref_k": "Every number",
         "strip": "How to read this board",
         "a1_ok": "No big problem", "a1_issue": "Room to grow: {a} → {b}",
         "a3_n": "{n} off the standard", "a3_none": "Nothing far off the standard",
         "a4_gain": "{n} things to try · {gain}", "a4": "{n} things to try",
         "but": "But ",
+        "lede_core": "the main issue is “{a} → {b}” ({rate})",
+        "lede_off": ". {n} metrics are off the standard.",
+        "lede_end": ".",
+        "lede_ok": "Nothing big is wrong.",
+        "toc": "How to read this board",
+
         "where_h": "People stall at “{a} → {b}”. Of {na} who reached {a}, {nb} reached {b} ({rate}).",
         "where_note": "The biggest drop in people is “{a} → {b}” (−{n}). Against the industry standard, though, the step above is further off.",
-        "next2": "② After {a}, which step do people stall at",
-        "next3": "③ Check the numbers behind it",
-        "next4": "④ So where to start",
+        "next2": "① After {a}, which step do people stall at",
+        "next3": "② Check the numbers behind it",
+        "next4": "③ So where to start",
+
         "why_h_bench": "{label} is below the industry standard ({band}).",
         "why_h_flow": "“{a} → {b}” has the lowest share of people moving on in this flow.",
         "why_h_none": "Nothing is far off the industry standard. Look at where the flow loses the most people.",
@@ -130,18 +145,25 @@ STORY: dict[str, dict[str, str]] = {
         "p_prev": "prior {d}", "p_band": "industry standard {band}", "p_gain": "at the low end of the standard: {gain}",
     },
     "ko": {
-        "q1": "괜찮은가?", "q2": "어디서 이탈하는가?", "q3": "어디가 이상한가?", "q4": "어떻게 할까?",
+        "q0": "총평", "q1": "괜찮은가?", "q2": "어디서 이탈하는가?", "q3": "어디가 이상한가?", "q4": "어떻게 할까?",
         "ref": "참고", "ref_k": "모든 숫자",
         "strip": "이 보드를 읽는 순서",
         "a1_ok": "큰 문제 없음", "a1_issue": "개선 여지는 「{a} → {b}」",
         "a3_n": "기준을 벗어난 {n}개", "a3_none": "기준에서 크게 벗어난 지표 없음",
         "a4_gain": "{n}가지 방법 · {gain}", "a4": "{n}가지 방법",
         "but": "다만 ",
+        "lede_core": "가장 큰 과제는 「{a} → {b}」({rate})",
+        "lede_off": ". 기준을 벗어난 지표가 {n}개 있습니다.",
+        "lede_end": "입니다.",
+        "lede_ok": "큰 문제는 없습니다.",
+        "toc": "이 보드를 읽는 순서",
+
         "where_h": "「{a} → {b}」에서 멈추고 있어요. {a} {na}명 중 {b}까지 간 사람은 {nb}명({rate}).",
         "where_note": "인원이 가장 많이 줄어드는 곳은 「{a} → {b}」(−{n}명). 다만 업계 기준과 비교해 가장 벗어난 곳은 위의 단계예요.",
-        "next2": "② {a} 다음, 어느 단계에서 멈추는가",
-        "next3": "③ 왜 거기서 멈추는지 숫자로 확인",
-        "next4": "④ 그럼 무엇부터 할까",
+        "next2": "① {a} 다음, 어느 단계에서 멈추는가",
+        "next3": "② 왜 거기서 멈추는지 숫자로 확인",
+        "next4": "③ 그럼 무엇부터 할까",
+
         "why_h_bench": "{label}이(가) 업계 기준({band})보다 낮아요.",
         "why_h_flow": "「{a} → {b}」로 넘어가는 비율이 이 흐름에서 가장 낮아요.",
         "why_h_none": "업계 기준에서 크게 벗어난 지표는 없어요. 흐름에서 인원이 크게 줄어드는 단계를 봐요.",
