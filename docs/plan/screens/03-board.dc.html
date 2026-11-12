@@ -49,19 +49,15 @@
     <div style="padding: 10px 32px 0; display: flex; justify-content: flex-end"><button type="button" onClick="{{flip}}" style="font: inherit; font-size: 12px; font-weight: 700; color: #5b6676; background: #ffffff; border: 1px dashed #c3cad5; border-radius: 999px; padding: 4px 12px; cursor: pointer">設計の切り替え: {{flipLabel}}</button><button type="button" onClick="{{toggleEdit}}" style="margin-left: 8px; font: inherit; font-size: 12px; font-weight: 700; color: #5b6676; background: #ffffff; border: 1px dashed #c3cad5; border-radius: 999px; padding: 4px 12px; cursor: pointer">{{editLabel}}</button></div>
 
     <main style="padding: 12px 32px 48px; display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1360px; margin: 0 auto; box-sizing: border-box">
-      <nav aria-label="このボードの読み方" style="display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 0 10px">
-        <sc-for list="{{story}}" as="q" hint-placeholder-count="4">
-          <a href="#" style="text-decoration: none; color: #152033; background: #ffffff; border-radius: 12px; padding: 16px 18px; min-height: 92px; box-sizing: border-box; box-shadow: 0 1px 2px rgba(21,32,51,0.06); display: flex; flex-direction: column; gap: 6px; line-height: 1.5">
-            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">{{q.n}}</span>{{q.q}}</span>
-            <span style="font-size: 15px; font-weight: 800; padding-left: 30px; {{q.color}}">{{q.a}}</span>
-          </a>
-          <sc-if value="{{q.arrow}}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="align-self: center; color: #94a3b8; font-size: 18px; font-weight: 800">→</span></sc-if>
+      <nav aria-label="このボードの読み方" style="display: flex; flex-wrap: wrap; gap: 8px 12px; padding-bottom: 14px; border-bottom: 1px dashed #dbe2ec">
+        <sc-for list="{{toc}}" as="q" hint-placeholder-count="4">
+          <a href="#" style="{{q.style}}"><span style="{{q.num}}">{{q.n}}</span>{{q.q}}</a>
         </sc-for>
       </nav>
       <section style="background: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
         <sc-if value="{{live}}" hint-placeholder-val="{{ false }}"><p style="margin: 0 0 14px; font-size: 13px; color: #5b6676">仮で決めた設定: 流れ <b style="color: #152033">買う</b> · 比べる業種 <b style="color: #152033">EC・小売</b> <span style="margin-left: 8px"><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">直す</span> · <span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">このままでよい</span></span></p></sc-if>
-<div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">1</span>大丈夫？</div>
-        <h2 style="margin: 0 0 18px; font-size: 22px; font-weight: 800; line-height: 1.45">購入は増えています（前期 +4.2%）。ただ、<span style="color: #b45309">カートに入れた人が買い切れていません</span>。</h2>
+<div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">0</span>総評</div>
+        <h2 style="margin: 0 0 18px; font-size: 22px; font-weight: 800; line-height: 1.45">購入完了は増えています。ただ、<span style="color: #b45309">いちばんの課題は「カートに追加 → 購入」（14.6%）</span>。目安から外れた指標が 3 つあります。</h2>
         <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr))">
           <sc-for list="{{stats}}" as="k" hint-placeholder-count="3">
             <div style="{{k.box}}">
@@ -71,7 +67,7 @@
             </div>
           </sc-for>
         </div>
-        <p style="margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; font-weight: 700; color: #5b6676">↓ ② カートに入れたあと、どの段で止まっているか</p>
+        <p style="margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; font-weight: 700; color: #5b6676">↓ ① カートに入れたあと、どの段で止まっているか</p>
       </section>
 
       <section style="{{whereBox}}">
@@ -83,7 +79,7 @@
           </div>
         </sc-if>
         <div style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap">
-          <div style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">2</span>どこで離れている？<span aria-label="説明" style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #c3cad5; color: #5b6676; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-left: 6px; vertical-align: 1px">?</span></div>
+          <div style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">1</span>どこで離れている？<span aria-label="説明" style="display: inline-flex; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #c3cad5; color: #5b6676; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-left: 6px; vertical-align: 1px">?</span></div>
           <span style="margin-left: auto; display: flex; gap: 18px"><sc-if value="{{notEditing}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{toggleEdit}}" style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">✎ 流れを直す</button></sc-if><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">業種を変える ▾</span><span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">流入別に見る ▾</span></span>
         </div>
         <h2 style="margin: 8px 0 4px; font-size: 18px; font-weight: 800; line-height: 1.5"><span style="color: #b45309">「カートに追加 → 購入」</span>で止まっています。カートに入れた 10,800 人のうち、買ったのは 1,580 人（14.6%）。</h2>
@@ -102,11 +98,11 @@
           </sc-for>
         </ol>
 
-        <p style="margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; font-weight: 700; color: #5b6676">↓ ③ なぜそこで止まっているのか、数字を確かめる</p>
+        <p style="margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; font-weight: 700; color: #5b6676">↓ ② なぜそこで止まっているのか、数字を確かめる</p>
       </section>
 
       <section style="background: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
-        <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">3</span>どこがおかしい？</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">2</span>どこがおかしい？</div>
         <h2 style="margin: 0 0 14px; font-size: 18px; font-weight: 800; line-height: 1.5">カートのあとは<span style="color: #b45309">どの段も前期より下がり</span>、カート→購入率は<span style="color: #b45309">業界の目安も下回っています</span>。</h2>
         <div style="display: grid; grid-template-columns: minmax(0, 1fr) 90px 110px 130px 150px; gap: 0 16px; margin-left: 8px; padding: 6px 0 6px 21px; font-size: 12px; font-weight: 700; color: #5b6676; border-bottom: 1px solid #e5eaf1"><span></span><span style="text-align: right">今</span><span style="text-align: right">前期</span><span style="text-align: right">業界</span><span style="text-align: right">あと</span></div>
         <sc-for list="{{why}}" as="w" hint-placeholder-count="3">
@@ -115,11 +111,11 @@
           </div>
         </sc-for>
         <p style="margin: 12px 0 0 8px; font-size: 13px; color: #5b6676">ほかにも目安から外れている: エンゲージ率 53.8%（業界 56.4–71.4%）· すぐ離脱に近い率 46.2%（業界 28.6–43.6%）— 購入の前の「見てもらう」側の課題です。<span style="font-size: 13px; font-weight: 700; color: #1d4ed8; text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit">詳しい数字で見る ↓</span></p>
-        <p style="margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; font-weight: 700; color: #5b6676">↓ ④ では、何から手をつけるか</p>
+        <p style="margin: 18px 0 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; font-weight: 700; color: #5b6676">↓ ③ では、何から手をつけるか</p>
       </section>
 
       <section style="background: #ffffff; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
-        <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">4</span>どうする？</div>
+        <div style="display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 13px; font-weight: 800; color: #1d4ed8"><span style="display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: #2f6fed; color: #ffffff; font-size: 12px; font-weight: 800; align-items: center; justify-content: center; flex: none">3</span>どうする？</div>
         <h2 style="margin: 0 0 4px; font-size: 18px; font-weight: 800; line-height: 1.5">カートから先を直すと、購入は <span style="color: #b45309">+約 560 件 / 28日</span>（+35%）増える見込みです。</h2>
         <p style="margin: 0 0 16px; font-size: 13px; color: #5b6676">カート→購入率が業界目安の下限 19.8% まで上がった場合: 10,800 人 × 19.8% − 1,580 件。</p>
         <ol style="list-style: none; margin: 0 0 0 8px; padding: 0">
@@ -232,7 +228,13 @@ class Component extends DCLogic {
         toggle: function () { self.setState({ open: open ? openSet.filter(function (x) { return x !== g[0]; }) : openSet.concat([g[0]]) }); } };
     });
     var editing = !!this.state.editing;
-    var story = [{ n: 1, q: '大丈夫？', a: '購入は増加。でもカート後が弱い', color: 'color: #152033', arrow: true }, { n: 2, q: 'どこで離れている？', a: 'カート → 購入（14.6%）', color: 'color: #b45309', arrow: true }, { n: 3, q: 'どこがおかしい？', a: 'カートのあとがどの段も低下', color: 'color: #b45309', arrow: true }, { n: 4, q: 'どうする？', a: '3 つの手 · +約 560 件の見込み', color: 'color: #1d4ed8', arrow: false }];
+    var NUM = 'display: inline-flex; width: 22px; height: 22px; border-radius: 50%; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; ';
+    var toc = [{ n: 0, q: '総評' }, { n: 1, q: 'どこで離れている？' }, { n: 2, q: 'どこがおかしい？' }, { n: 3, q: 'どうする？' }].map(function (x) {
+      var lede = x.n === 0;
+      return { n: x.n, q: x.q, num: NUM + (lede ? 'background: #ffffff; color: #1e293b' : 'background: #2f6fed; color: #ffffff'),
+        style: 'display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 13px; font-weight: 800; border-radius: 999px; padding: 6px 14px 6px 6px; ' + (lede ? 'background: #1e293b; color: #ffffff' : 'background: #ffffff; color: #152033; box-shadow: 0 1px 2px rgba(21,32,51,0.06)') };
+    });
+    var story = toc;
     var why = [{ name: 'カート→購入率', step: 'カートに追加 → 購入', now: '14.6%', prev: '−0.9pt', band: '19.8–39.8%', left: '+5.2〜+25.2pt', leftColor: 'color: #b45309' },
       { name: 'カート→手続き率', step: 'カートに追加 → 購入手続きへ', now: '33.5%', prev: '−1.1pt', band: '—', left: '基準なし', leftColor: 'color: #8792a2' },
       { name: '手続き→購入率', step: '購入手続きへ → 購入', now: '43.6%', prev: '−2.6pt', band: '—', left: '基準なし', leftColor: 'color: #8792a2' }];
@@ -254,7 +256,7 @@ class Component extends DCLogic {
       '■ お願い\n' + ask[purpose] + '\n業界目安は公開データの一般的な値です。断定せず、確かめ方とセットで答えてください。';
     var aiPurposes = Object.keys(P).map(function (k) { var on = k === purpose; return { label: P[k], style: on ? 'font-weight: 800; color: #152033; border-bottom: 2px solid #2f6fed' : 'font-weight: 700; color: #1d4ed8', pick: function () { self.setState({ aiPurpose: k, copied: false }); } }; });
     return { aiOpen: aiOpen, aiCaret: aiOpen ? '▴' : '▾', toggleAi: function () { self.setState({ aiOpen: !aiOpen }); }, aiPurposes: aiPurposes, aiPrompt: aiPrompt, aiCopied: this.state.copied ? '✓ コピーしました' : '', copyAi: function () { self.setState({ copied: true }); },
-      story: story, why: why, acts: acts, editing: editing, notEditing: !editing, editLabel: editing ? '編集中 → ふつう' : 'ふつう → 編集中', toggleEdit: function () { self.setState({ editing: !editing }); },
+      toc: toc, story: story, why: why, acts: acts, editing: editing, notEditing: !editing, editLabel: editing ? '編集中 → ふつう' : 'ふつう → 編集中', toggleEdit: function () { self.setState({ editing: !editing }); },
       whereBox: 'background: #ffffff; border-radius: 16px; padding: 24px 28px; ' + (editing ? 'outline: 2px solid #2f6fed; outline-offset: 0; box-shadow: 0 0 0 6px rgba(47,111,237,0.14)' : 'box-shadow: 0 1px 2px rgba(21,32,51,0.06)'),
       demo: demo, live: !demo, title: demo ? '見本 — 買う × EC・小売' : 'example.co.jp', stats: stats, steps: steps, watch: watch, groups: groups,
       memo: { where: 'どこで離れているか', text: '', sent: true, list: this.state.sent, send: function () {} },

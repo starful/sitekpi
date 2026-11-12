@@ -18,7 +18,7 @@
 | GA4 권한 | `analytics.readonly` 하나 (읽기 전용) |
 | 배포 | Cloud Run(`starful-258005`, us-central1, 서비스 `sitekpi-service`) · 도메인 `sitekpi.net`. 최초 1회 `scripts/gcp_setup.sh <client_secret.json>`(API·Artifact Registry·Secret Manager·IAM·Firestore TTL), 이후 `./deploy.sh`(Cloud Build: 테스트 → 빌드 → 배포), 도메인 연결 `scripts/gcp_setup.sh --domain`. OAuth 동의 화면·클라이언트는 별도 프로젝트 `sitekpi` |
 | 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `OPERATOR_NAME` · `OPERATOR_ADDRESS` · `LEGAL_COURT`(선택, /policy·/terms 표기. 비면 중립 문구) · `GTM_ID`(Google 태그 관리자 컨테이너, `GTM-` 형식만 출력. 비어 있으면 태그 없음 → 로컬은 측정 안 함) · `DEMO_CONNECT`(운영에서는 비워 둔다. `1`이면 데모 연결을 연다 — 개발·테스트용). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` |
-| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-05 기준 230개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
+| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-12 기준 235개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
 
 ## 2. 디렉터리
 
@@ -27,6 +27,8 @@ main.py                      앱 진입점 (sitekpi.app)
 sitekpi/
   app.py                     FastAPI 조립 · 미들웨어 · 정적 파일
   session.py                 서버 측 세션 (SQLite, Fernet 암호화)
+  sqlite_util.py             로컬 SQLite 공통 설정 (WAL · 짧은 timeout · autocommit)
+  format.py                  숫자 표기 공통 (쉼표 · % 자릿수 · 빈 값 —)
   selection.py               행동 × 업종 선택 · 첫 추측 · 仮 안내 · 目安 합성
   flow.py                    흐름(단계·이벤트 매핑·別の行動) 저장소와 계산
   benchmarks.py              自社目安 저장소 · 실효 目安 계산
@@ -35,12 +37,19 @@ sitekpi/
            extras.py         詳しい数字의 추가 데이터 (sample_extras / live_extras)
            prev.py           견본의 前期 숫자
   ga4/     oauth.py          Google OAuth (state 검증, 토큰 갱신)
-           data.py           GA4 Data/Admin API 호출 (batch, 이벤트 탐색, 흐름, 빌더 값)
-  packs/                     업종 팩 30 + 행동 18 (behaviors.py · flows.py · catalog.py · sources.py …)
+           data.py           GA4 호출의 공개 창구 (아래 모듈을 다시 내보냄 — 호출부·테스트는 여기서 import)
+           report.py         Data API 기본 (batch · 이벤트 탐색 discover_event_names)
+           overlay.py        보드 숫자 (fetch_pack_overlay)
+           flow.py           흐름 인원 (fetch_flow) · 사이트 기본값 (fetch_site_basics)
+           builder.py        대시보드 빌더 값
+  packs/                     업종 팩 30 + 행동 18 (behaviors.py · flows.py · catalog.py · sources.py …) · schema.py (팩 필수 키 검사)
   metrics/help.py            지표 카탈로그 HELP (指標辞典 · 「説明」 · 빌더 공통)
   i18n/                      UI 문구 strings.py (ja/en/ko) · help/metric/pack 번역
-  views/                     화면별 뷰 모델 (HTML 없음) — board.py · setup.py · samples.py …
-  routes/                    pages · connect · setup · flow · benchmarks · nav
+  views/                     화면별 뷰 모델 (HTML 없음) — board.py(조립 · render_sample_dense · verdict_scene · _story)
+                             · board_bench.py(目安 판정 · _bench_info · _range_gap) · board_verdict.py(_verdict · _watch_items)
+                             · board_details.py(詳しい数字 · _details_view) · board_ctx.py(요청별 ContextVar)
+                             · story.py · setup.py · samples.py …
+  routes/                    pages · live_board(접속 보드 조립 build_live_kwargs) · connect · setup · flow · benchmarks · nav
   templates/                 Jinja 템플릿 (board/ · partials/)
 static/css · static/js       화면별 CSS/JS (아래 4장)
 docs/plan/                   기획서 + 화면 설계 사본(screens/*.dc.html, support.js)
@@ -67,7 +76,7 @@ tests/ · scripts/
 | GET `/connect/google` · `/connect/callback` | OAuth 시작 · 콜백(state 검증, 세션 재발급) | |
 | GET `/connect/demo?start=1` | 데모 연결 → 바로 `/live`. **개발·테스트 전용**: `DEMO_CONNECT=1` 또는 OAuth 미설정일 때만, 그 외는 `/samples`로 302 | `routes/connect.demo_allowed` · 테스트는 `conftest.py`에서 `DEMO_CONNECT=1` |
 | POST `/connect/property` · `/property/change` · `/disconnect` · `/selection` · `/pack` | 속성 선택 · 변경 · 해제 · 선택 저장 | |
-| GET `/live?period=28d\|7d` | 내 보드. 미선택이면 첫 추측 후 표시 | `routes/pages._live` |
+| GET `/live?period=28d\|7d` | 내 보드. 미선택이면 첫 추측 후 표시 | `routes/pages._live` → `routes/live_board.build_live_kwargs` |
 | GET `/live?edit=1` · `?industry=1` | 편집 모드 / 업종 드로어를 열린 채로 | `auto_open` |
 | GET `/live/details?period=` | 詳しい数字 조각 (실 GA4일 때 board.js가 나중에 불러옴) | `fragment=True` |
 | GET `/{slug}` | 見本 보드 (업종 팩, 예의 숫자). 「例の数字」 · 노란 띠 · 해 보기 편집(저장 안 됨) · 업종 드로어 = 다른 見本 | `routes/setup.sample_setup` · `partials/ex_banner.html` |
@@ -96,7 +105,7 @@ tests/ · scripts/
 
 | 화면 | 뷰 모델 | 템플릿 | JS / CSS |
 |---|---|---|---|
-| 03 보드 | `views/board.py` (`_render_sample_dense`, `_verdict`, `_watch_items`, `_details_view`) · `views/flow.py` · `views/setup.py`(편집 모드·업종 드로어 데이터) | `board.html`, `board/{flow,details,info_pops,bench_pops,edit_bar,drawer_step,drawer_industry,_macros}.html` | `board.js`(설명 팝업 위임 · 상세 지연 로드 · 카테고리 열고 닫기 · `SiteDrawer` · 기간 전환 · 目安 조정 열기) · `board_edit.js`(편집 모드 · 업종 미리보기 · 見本은 `data-try-only`로 전송 안 함) · `popover.js`(`SiteKPIPop`) · `board.css` · `helpcard.css` · `setup.css` |
+| 03 보드 | `views/board.py` (`_render_sample_dense`) · `board_verdict.py` (`_verdict`, `_watch_items`) · `board_details.py` (`_details_view`) · `board_bench.py` · `story.py` · `views/flow.py` · `views/setup.py`(편집 모드·업종 드로어 데이터) | `board.html`, `board/{flow,details,info_pops,bench_pops,edit_bar,drawer_step,drawer_industry,_macros}.html` | `board.js`(설명 팝업 위임 · 상세 지연 로드 · 카테고리 열고 닫기 · `SiteDrawer` · 기간 전환 · 目安 조정 열기) · `board_edit.js`(편집 모드 · 업종 미리보기 · 見本은 `data-try-only`로 전송 안 함) · `popover.js`(`SiteKPIPop`) · `board.css` · `helpcard.css` · `setup.css` |
 | 02 접속 | `views/connect.py` | `connect.html` | `connect.css` |
 | 04 사전 | `views/glossary.py` | `glossary.html`, `partials/help_card.html` | `glossary.css` · `helpcard.css` |
 | 05 견본 | `views/samples.py` | `samples.html`, `samples/_preview.html` | `samples.js` · `samples.css` |
@@ -116,7 +125,7 @@ tests/ · scripts/
 
 1. 연결 확인 → 선택(`selection(session)`)이 없으면 `ensure_selection` = 첫 추측(`guess_behavior`) + `AUTO_KEY` 기록.
 2. 행동 → 팩(`flow_pack`), 매핑(`board_mapping`: 속성별 매핑 · 수정본 흐름 · 주전환).
-3. 병렬: 흐름(`live_flow_context` → `ga4.data.fetch_flow`) ∥ 보드 숫자(`_live_pack` → `fetch_pack_overlay`). 둘 다 `TTLCache` 5분.
+3. 병렬: 흐름(`live_flow_context` → `ga4.data.fetch_flow`, 실체는 `ga4/flow.py`) ∥ 보드 숫자(`_live_pack` → `fetch_pack_overlay`). 둘 다 `TTLCache` 5분.
 4. 前期: 실 GA4는 같은 요청의 직전 기간, 견본은 `board/prev.sample_prev`.
 5. 詳しい数字: 실 GA4는 `/live/details` 조각으로 나중에(`live_extras`: 7~8개 리포트 batch), 견본·데모는 같은 요청에서 `sample_extras`(결정적).
 6. 편집 모드·업종 드로어: `routes/setup.board_setup(request, flow_users=…, flow_entry=…)` — 편집 모드 인원은 3의 흐름 숫자를 그대로 쓴다.
@@ -133,16 +142,16 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 행동 18개 · 단계 · 주전환 | `selection.BEHAVIORS` (← `packs/behaviors.py`) · `packs/flows.py` `FLOW_STEPS` |
 | 업계·업종 30개 | `packs/*.py` · `packs/catalog.py` · `packs/registry.py` |
 | 業界目安 · 출처 등급 · 범위 폭 | `packs/sources.py` (`ENGAGE_RULE` · `CVR_RULE` · `CART_RULE`) · `packs/derived.py` · `benchmarks.effective_benchmarks` |
-| 판정 (良好·目安内·要注意, v5는 색 글자 `.jt-*`) | `views/board._bench_info` · `_judge` · `board/_macros.html` `judge_text` |
-| 스토리 ①〜④ | `views/story.py` (`pick_issue` 규칙 · `build_story` · `_prompt`) ← `views/board._story` · 문구·대책 카탈로그 `i18n/story_l10n.py` (`STORY` · `ACTIONS` · `kind_of_event`) · 비율의 흐름 구간은 `board/data.py` 행의 `seg` · `board.html` `.story-strip` `#q1`〜`#q4` · `static/js/story.js` (프롬프트 조립·복사, 단 이름 높이 맞춤) · GA4 `ai_prompt_copy` |
+| 판정 (良好·目安内·要注意, v5는 색 글자 `.jt-*`) | `views/board_bench._bench_info` · `_judge` · `board/_macros.html` `judge_text` |
+| 스토리 0 総評 → 1〜3 | `views/story.py` (`pick_issue` 규칙 · `build_story` · `_prompt`) ← `views/board._story` (見本ボード一覧 미리보기도 `verdict_scene`에서 같은 이야기) · 문구·대책 카탈로그 `i18n/story_l10n.py` (`STORY` · `ACTIONS` · `kind_of_event`) · 비율의 흐름 구간은 `board/data.py` 행의 `seg` · `board.html` 목차 `.story-toc`, 앵커 `#q0` · `#q2` · `#q3` · `#q4` (표시 번호는 0〜3) · `static/js/story.js` (프롬프트 조립·복사, 단 이름 높이 맞춤) · GA4 `ai_prompt_copy` |
 | 보드 폭 · 흐름 배치 | `.content` 최대 1360px 가운데 · 흐름은 컨테이너 쿼리 `@container flow`: 521px 이상 가로(최소 폭, 넘치면 스크롤), 520px 이하 세로 · 편집 중 `.where.is-editing` 파란 테두리 |
 | v5 보드 모양 | 카드 3장 `.card` · 숫자 3열 `.stats/.stat` · 今見るべきこと `.wtable/.wrow` · 詳しい数字 위 3개 열림(`_details_view`의 `collapsed`) · `?` 동그라미 `.help-q` · 파란 글자 버튼 `.link-btn` · 課題 강조 `_verdict` → `short_html` (`.v-issue`) |
 | メモ・ご意見 패널 | `partials/memo.html` (base.html, 레일의 `rail.active` ∈ live · samples · glossary · builder) · `static/js/memo.js` · `static/css/memo.css` · localStorage `sk_memo_open` · `sk_memo_sent`(최근 10개) |
 | 글자 6단계 | `board.css` · `rail.css` · `helpcard.css` · `setup.css`의 font-size는 0.75 · 0.8125 · 0.9375 · 1.125 · 1.375 · 1.625rem만 |
 | 이탈 인원 · 단 빼기 | `views/flow.flow_context` 링크의 `lost` · 단의 `in_link` → `flow.html` `.flow-lost` · `board_edit.js` 「× 外す」/「元に戻す」 |
-| 今 · 業界(범위) · あと(범위) | `views/board._range_gap` → `_bench_view`의 `rg` · `board/_macros.html` `rg_box` · `rg_gap` (타일 · 今見るべきこと · 詳しい数字) |
+| 今 · 業界(범위) · あと(범위) | `views/board_bench._range_gap` → `_bench_view`의 `rg` · `board/_macros.html` `rg_box` · `rg_gap` (타일 · 今見るべきこと · 詳しい数字) |
 | GA4 이벤트 설계 | 기획서 `#analytics` → `static/js/track.js` · 사용자 GA4 데이터는 보내지 않음 |
-| 今見るべきこと · 一番の課題 · 업종 안내(`far`) | `views/board._watch_items` · `_verdict` · `board.html` `.watch-ind` |
+| 今見るべきこと · 一番の課題 · 업종 안내(`far`) | `views/board_verdict._watch_items` · `_verdict` · `board.html` `.watch-ind` |
 | 흐름 계산 (인원 · %) | `views/flow.flow_context` · `flow.sample_flow` |
 | 지표 목록 | `metrics/help.py` `HELP` (+ `i18n/help_l10n.py`) |
 

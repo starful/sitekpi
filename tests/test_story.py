@@ -92,3 +92,14 @@ def test_story_localized(loc, q):
     html = str(s.select_one(".content"))
     assert "大丈夫？" not in html and "どうする？" not in html
     assert "있어요. ." not in html and ". . " not in s.select_one(".verdict-text").get_text()
+
+
+def test_samples_preview_tells_the_same_story_as_the_board():
+    """見本ボード一覧: the preview's 総評 and orange stretch are the board's (one issue everywhere)."""
+    c = TestClient(app)
+    prev = _soup(c, "/samples?b=commerce")
+    board = _soup(c, prev.select_one(".sp-card-head a.sp-btn-primary")["href"])  # 「この見本をボードで開く」
+    assert prev.select_one(".sp-verdict").get_text() == board.select_one(".verdict-text").get_text()
+    marked = [li.select_one(".sp-bar-label").get_text() for li in prev.select(".sp-bars li.is-issue")]
+    assert marked == [st.select_one(".flow-label").get_text() for st in board.select("#flow .flow-stage.is-issue")]
+    assert len(prev.select(".sp-bars li")) == 7

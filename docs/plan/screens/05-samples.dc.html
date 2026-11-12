@@ -84,7 +84,7 @@ button{font-family:inherit}
         </div>
 
         <div style="background: #ffffff; border: 1px solid #e5eaf1; border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px">
-          <span style="font-size: 12px; font-weight: 800; color: #5b6676; letter-spacing: 0.06em">いまの状態</span>
+          <span style="font-size: 12px; font-weight: 800; color: #5b6676; letter-spacing: 0.06em">総評（ボードと同じ一文）</span>
           <p style="margin: 0; font-size: 18px; line-height: 1.6; font-weight: 700">{{cur.verdict}}</p>
           <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
             <sc-for list="{{tiles}}" as="t" hint-placeholder-count="3">
@@ -207,7 +207,7 @@ class Component extends DCLogic {
       accent: accent, groups: groups, inds: inds, noInd: d[5].length === 0, tiles: tiles, bars: bars,
       cur: {
         label: d[2], hint: d[3], ind: indName,
-        verdict: d[7] + 'は前期より増えました。' + d[6] + 'は業界目安（' + indName + '）の範囲内です。いちばん多く離れるのは「' + worstLabel + '」です。'
+        verdict: d[7] + 'は増えています。ただ、いちばんの課題は「' + worstLabel + '」（' + (100 - worst).toFixed(1) + '%）。'
       }
     };
   }

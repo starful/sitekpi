@@ -41,12 +41,8 @@ def kind_of_event(event: str) -> str:
 
 STORY: dict[str, dict[str, str]] = {
     "ja": {
-        "q0": "総評", "q1": "大丈夫？", "q2": "どこで離れている？", "q3": "どこがおかしい？", "q4": "どうする？",
+        "q0": "総評", "q2": "どこで離れている？", "q3": "どこがおかしい？", "q4": "どうする？",
         "ref": "参考", "ref_k": "ぜんぶの数字",
-        "strip": "このボードの読み方",
-        "a1_ok": "大きな問題なし", "a1_issue": "伸びしろは「{a} → {b}」",
-        "a3_n": "目安から外れた {n} つ", "a3_none": "目安から大きく外れた指標なし",
-        "a4_gain": "{n} つの手 · {gain}", "a4": "{n} つの手",
         "but": "ただ、",
         # Top 総評 (boss-repeatable). Stretch + rate + how many are off — not four mini Q&A answers.
         "lede_core": "いちばんの課題は「{a} → {b}」（{rate}）",
@@ -94,12 +90,8 @@ STORY: dict[str, dict[str, str]] = {
         "p_prev": "前期 {d}", "p_band": "業界目安 {band}", "p_gain": "目安の下限まで上がると {gain}",
     },
     "en": {
-        "q0": "Overview", "q1": "Is it OK?", "q2": "Where do people leave?", "q3": "What is off?", "q4": "What to do?",
+        "q0": "Overview", "q2": "Where do people leave?", "q3": "What is off?", "q4": "What to do?",
         "ref": "Reference", "ref_k": "Every number",
-        "strip": "How to read this board",
-        "a1_ok": "No big problem", "a1_issue": "Room to grow: {a} → {b}",
-        "a3_n": "{n} off the standard", "a3_none": "Nothing far off the standard",
-        "a4_gain": "{n} things to try · {gain}", "a4": "{n} things to try",
         "but": "But ",
         "lede_core": "the main issue is “{a} → {b}” ({rate})",
         "lede_off": ". {n} metrics are off the standard.",
@@ -145,12 +137,8 @@ STORY: dict[str, dict[str, str]] = {
         "p_prev": "prior {d}", "p_band": "industry standard {band}", "p_gain": "at the low end of the standard: {gain}",
     },
     "ko": {
-        "q0": "총평", "q1": "괜찮은가?", "q2": "어디서 이탈하는가?", "q3": "어디가 이상한가?", "q4": "어떻게 할까?",
+        "q0": "총평", "q2": "어디서 이탈하는가?", "q3": "어디가 이상한가?", "q4": "어떻게 할까?",
         "ref": "참고", "ref_k": "모든 숫자",
-        "strip": "이 보드를 읽는 순서",
-        "a1_ok": "큰 문제 없음", "a1_issue": "개선 여지는 「{a} → {b}」",
-        "a3_n": "기준을 벗어난 {n}개", "a3_none": "기준에서 크게 벗어난 지표 없음",
-        "a4_gain": "{n}가지 방법 · {gain}", "a4": "{n}가지 방법",
         "but": "다만 ",
         "lede_core": "가장 큰 과제는 「{a} → {b}」({rate})",
         "lede_off": ". 기준을 벗어난 지표가 {n}개 있습니다.",

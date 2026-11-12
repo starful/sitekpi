@@ -140,10 +140,10 @@ def _group_lede(rows: list[dict[str, Any]], loc: str) -> str:
     return t(
         "detail.lede_warn",
         loc,
-        n=len(bad),
         label=worst["label"],
         value=worst["value"],
-        gap=worst["bench"].get("gap") or "—",
+        # the same 「あと」 as the table (to the near edge of the range, then the far edge), not 目安差 (vs. the middle)
+        left=((worst["bench"].get("rg") or {}).get("main") or "") + ((worst["bench"].get("rg") or {}).get("rest") or ""),
     )
 
 

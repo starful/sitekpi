@@ -38,7 +38,7 @@
         {#- v6 story: 0 総評 → ①〜④ (TOC). 総評 is the boss-repeatable line. -#}
         {% set S = story %}
         {% if S %}
-        <nav class="story-toc" aria-label="{{ S.q.toc or S.q.strip }}">
+        <nav class="story-toc" aria-label="{{ S.q.toc }}">
           {% for q in S.toc %}<a class="story-toc-step{{ ' is-lede' if q.n == 0 else '' }}" href="{{ q.href }}"><span class="qn">{{ q.n }}</span>{{ q.q }}</a>{% endfor %}
         </nav>
         {% endif %}

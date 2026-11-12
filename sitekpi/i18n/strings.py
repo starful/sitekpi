@@ -1251,9 +1251,9 @@ UI.update({
     "flow.ch_now": {"ja": "いま見ている流入：{name}", "en": "Viewing traffic: {name}", "ko": "지금 보는 유입: {name}"},
     "flow.ch_now_all": {"ja": "いま見ている流入：全体（すべての流入）", "en": "Viewing traffic: All sources", "ko": "지금 보는 유입: 전체 (모든 유입)"},
     "detail.lede_warn": {
-        "ja": "要注意 {n} · いちばん離れているのは「{label}」{value}（目安差 {gap}）",
-        "en": "{n} to watch · furthest off: “{label}” {value} (gap {gap})",
-        "ko": "주의 {n} · 가장 벗어난 지표는 「{label}」 {value} (기준 차 {gap})",
+        "ja": "いちばん離れているのは「{label}」{value}（目安まで あと {left}）",
+        "en": "Furthest off: “{label}” {value} ({left} to the standard)",
+        "ko": "가장 벗어난 지표는 「{label}」 {value} (기준까지 {left})",
     },
     "detail.lede_ok": {
         "ja": "このまとまりは目安内 — 証拠として数字を見るとき用です",

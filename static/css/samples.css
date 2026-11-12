@@ -105,3 +105,13 @@ body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font-
 .sp-tile-note { font-size: 0.75rem; color: var(--muted); }
 .jt { font-weight: 800; } .jt-up { color: #0f766e; } .jt-mid { color: #1e40af; } .jt-down { color: #b45309; }
 @media (max-width: 860px) { .sp-tile { border-left: 0; padding: 8px 0 0; border-top: 1px solid #eef1f5; } .sp-tile:first-child { border-top: 0; padding-top: 0; } }
+
+/* the preview marks the same issue as the board: the stretch in orange (top line), its arrows' rates in orange;
+   seven steps fit the card (labels wrap) instead of scrolling past the last step */
+.sp-bars { min-width: 0; gap: 4px; }
+.sp-bars li.is-worst .sp-bar i { background: #93b4f5; }
+.sp-bars li.is-last.is-worst .sp-bar i { background: var(--accent-ink); }
+.sp-bars li.is-issue .sp-bar { box-shadow: inset 0 3px 0 #f59e0b; }
+.sp-bars li.is-issue .sp-bar-label { color: #92400e; }
+.sp-bar-label { overflow-wrap: anywhere; }
+@media (max-width: 860px) { .sp-bars { min-width: 560px; } }

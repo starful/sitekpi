@@ -19,8 +19,9 @@
 </div>
 
 <div class="sp-card">
-  <span class="sp-k sp-k-up">{{ t("verdict.title", loc) }}</span>
-  <p class="sp-verdict">{{ cur.verdict.short_html or cur.verdict.short or cur.verdict.text }}</p>
+  <span class="sp-k sp-k-up">{{ cur.verdict.story_q0 or t("verdict.title", loc) }}</span>
+  {#- the board's 総評: the same one issue as the board (views/story.py) -#}
+  <p class="sp-verdict">{{ cur.verdict.story_s1 or cur.verdict.short_html or cur.verdict.short or cur.verdict.text }}</p>
   {#- v5: 3 columns with dividers, 判定 as colored text (same as the board) -#}
   <div class="sp-tiles">
     {% for k in cur.verdict.tiles %}
@@ -38,7 +39,7 @@
   <div class="sp-scroll">
     <ol class="sp-bars">
       {% for s in cur.bars %}
-      <li class="{{ 'is-worst' if s.worst else '' }}{{ ' is-last' if s.last else '' }}">
+      <li class="{{ 'is-worst' if s.worst else '' }}{{ ' is-issue' if s.issue else '' }}{{ ' is-last' if s.last else '' }}">
         <div class="sp-bar"><i style="height: {{ s.height }}%"></i></div>
         <span class="sp-bar-label">{{ s.label }}</span>
         <span class="sp-bar-users">{{ s.users }}{% if t("samplesx.people", loc) %} <small>{{ t("samplesx.people", loc) }}</small>{% endif %}</span>

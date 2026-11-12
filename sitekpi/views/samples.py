@@ -60,6 +60,7 @@ def preview(cat: str, ind: str, locale: str) -> dict[str, Any]:
             "height": max(3.0, round(users / entry * 100, 1)) if entry else 3.0,
             "go": (before or {}).get("go", {}).get("all") if before else "",
             "worst": bool(before and before.get("worst")),
+            "issue": bool(st.get("in_issue")),
             "last": i == len(stages) - 1,
         })
 

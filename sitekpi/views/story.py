@@ -191,9 +191,9 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
                      verdict=verdict, stages=stages, a=A, b=B, rows=rows, gain=gain_txt, acts=acts, board=board,
                      bench_info=bench_info)
     return {
-        "q": {k: _s(loc, k) for k in ("q0", "q1", "q2", "q3", "q4", "ref", "ref_k", "strip", "toc", "why", "check",
+        "q": {k: _s(loc, k) for k in ("q0", "q2", "q3", "q4", "ref", "ref_k", "toc", "why", "check",
                                        "others", "others_more", "do_note", "go_edit", "go_ch", "go_gl")},
-        "toc": toc, "strip": toc,
+        "toc": toc,
         "s1": s1, "s2": s2, "note": note, "h3": h3, "rows": rows, "others": others, "none_off": none_off,
         "h4": h4, "calc": calc, "acts": acts, "kind": issue["kind"],
         "next2": _s(loc, "next2", a=A), "next3": _s(loc, "next3"), "next4": _s(loc, "next4"),

@@ -1083,3 +1083,10 @@ button.jt-none { font: inherit; font-size: inherit; color: var(--muted); font-we
 /* ② without 今見るべきこと (moved to ③): no empty block while 流入別 is closed */
 .where-grid:not(:has(> :not([hidden]))) { display: none; }
 .q-note-gap { height: 14px; }
+
+/* 詳しい数字: the category's one line is plain text under its name (no box in a box) */
+.dgroup-summary { margin: 0 0 8px 37px; padding: 0; background: none; border-radius: 0; font-size: 0.8125rem; font-weight: 600; color: var(--muted); }
+.dgroup-summary.is-warn { background: none; color: #b45309; }
+/* 「基準なし」 in tables: whole word, underline clear of the text */
+button.jt-none { white-space: nowrap; text-underline-offset: 3px; line-height: 1.6; }
+.dt-row .dt-gap { overflow: visible; }

@@ -153,7 +153,9 @@ def test_detail_category_lede_is_verdict_not_metric_list(client):
     s = _soup(client, "/hr")
     funnel = s.select_one("#g-funnel .dgroup-summary")
     engage = s.select_one("#g-engage .dgroup-summary")
-    assert funnel and "要注意" in funnel.get_text() and "応募CVR" in funnel.get_text()
+    # the count of 要注意 is in the category name already; the line names the furthest one with the table's 「あと」
+    assert funnel and funnel.get_text().startswith("いちばん離れているのは「応募CVR」") and "あと +" in funnel.get_text()
+    assert "目安差" not in funnel.get_text() and "要注意" in s.select_one("#g-funnel .dgroup-warn").get_text()
     assert engage and "目安内" in engage.get_text()
     assert not s.select_one("#g-channels .dgroup-summary")  # share-only: no invented lede
 

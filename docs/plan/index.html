@@ -342,6 +342,15 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>카드별 👍👎가 안 보임</td><td>카드 맨 아래라 스크롤해야 보임</td><td>오른쪽 「メモ・ご意見」 패널(아래)</td></tr>
       </tbody>
     </table>
+    <h3>v6.1 — 총평 + 목차 (2026-11-12, 커서 정리 반영)</h3>
+    <ul class="dec">
+      <li><span class="tag">구조</span>「① 大丈夫？」를 따로 두지 않고 <b>0 総評</b>으로 합쳤다. 맨 위는 답이 달린 4칸 띠 대신 번호 목차 <span class="jp">「0 総評 · 1 どこで離れている？ · 2 どこがおかしい？ · 3 どうする？」</span>(0은 진한 바탕).</li>
+      <li><span class="tag">総評 문장</span>상사에게 그대로 전할 수 있는 한 문장: <span class="jp">「購入完了は増えています。ただ、いちばんの課題は「カートに追加 → 購入」（14.6%）。目安から外れた指標が 3 つあります。」</span> 문제가 없으면 「大きな問題はありません。」 아래에 숫자 3개.</li>
+      <li><span class="tag">번호</span>화면의 번호는 0〜3, 링크 앵커는 그대로(<code>#q0 · #q2 · #q3 · #q4</code>). 카드 끝의 다음 줄도 ①〜③.</li>
+      <li><span class="tag">見本ボード一覧</span>미리보기도 보드와 같은 이야기: 「総評」 문장과 같은 주황 구간. 7단이 카드 안에 다 들어간다(잘리지 않게).</li>
+      <li><span class="tag">詳しい数字</span>카테고리 아래 한 줄은 상자 없이 글자로(상자 안 상자 금지). 숫자는 표와 같은 「あと」(기준 범위 끝까지) — 「目安差」(범위 가운데와의 차)는 쓰지 않는다. 要注意 개수는 카테고리 이름 옆에만.</li>
+      <li><span class="tag">코드 정리</span>보드 뷰를 <code>board_bench · board_verdict · board_details · board_ctx</code>로, GA4 호출을 <code>report · overlay · flow · builder</code>로 나눔(<code>ga4/data.py</code>는 공개 창구). 쓰지 않던 home·first 화면 삭제. 자세한 위치는 SPEC.</li>
+    </ul>
     <h3>v6 — 스토리 (2026-11-05)</h3>
     <p class="note">「1~3이 부족하다」의 원인: ①의 「가장 큰 문제」(업계 기준으로 가장 나쁜 지표)와 ②의 「가장 많이 이탈하는 단」이 서로 달라서, 질문은 이어지는데 답이 이어지지 않았다. 「그래서 얼마나 중요한가」「그래서 무엇을 하나」도 없었다.</p>
     <table>
@@ -377,7 +386,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
       <li>보낸 메모는 이 브라우저에만 목록으로 남는다(최근 10개). 「閉じる ›」로 오른쪽 끝 탭으로 접히고, 열림·닫힘은 기억. 폭 1600 미만에서는 처음엔 접힌 채, 열면 화면 위에 겹쳐 뜬다.</li>
       <li>카드별 👍👎와 메뉴의 「ご意見を送る」를 대신한다. 랜딩(레일 없음)의 「ご意見」 대화상자는 그대로.</li>
     </ul>
-    <div class="frame-head"><span>v6 화면 (오른쪽 위 「設計の切り替え」로 見本 ↔ つないだ後 · ふつう ↔ 編集中)</span><a href="screens/03-board.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
+    <div class="frame-head"><span>v6.1 화면 (오른쪽 위 「設計の切り替え」로 見本 ↔ つないだ後 · ふつう ↔ 編集中)</span><a href="screens/03-board.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
     <div class="frame" data-w="1760" data-h="3600"><div class="frame-bar"><i></i><i></i><i></i><span>/live</span></div><div class="frame-box"><iframe src="screens/03-board.dc.html" title="03 ボード v6" loading="lazy"></iframe></div></div>
     <h3>v4에서 남은 것</h3>
     <ul class="dec">
@@ -755,6 +764,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table class="log">
       <thead><tr><th>날짜</th><th>내용</th></tr></thead>
       <tbody>
+        <tr><td>2026-11-12</td><td>v6.1: 커서 소스 정리(모듈 분리, 총평 + 목차) 반영. 見本ボード一覧 미리보기를 보드와 같은 이야기로, 詳しい数字 요약 상자 제거·「あと」로 통일, 「基準なし」 잘림 수정, 안 쓰는 스토리 문구 키 삭제.</td></tr>
         <tr><td>2026-11-05</td><td>v6 스토리: ① 大丈夫？ → ② どこで離れている？ → ③ どこがおかしい？ → ④ どうする？. 문제 하나를 끝까지(규칙), 대책 카탈로그(11종 × 3, 3개 언어), 기대 효과, 「✦ 自分の AI に聞く」(복사만), 흐름 단 높이 통일, 맨 위 띠·숫자 3개에 여유.</td></tr>
         <tr><td>2026-11-05</td><td>v5.1: FAQ 카드 높이 통일, 「業種を変える ▾」를 흐름 카드 머리에, 편집 중 카드에 파란 테두리, 보드 폭 최대 1360·가운데, 좁은 폭에서 흐름이 잘리던 버그 수정.</td></tr>
         <tr><td>2026-11-05</td><td>보드 v5(상자 안 상자·칩 없앰, 버튼은 파란 글자, 상단 탭·dnav 삭제, 仮 안내를 한 줄로, 「?」 동그라미, 詳しい数字 위 3개 열림 + › 아이콘, 判定 열 삭제, 유입 칩 버그 수정), 오른쪽 「メモ・ご意見」 패널(카드별 👍👎 · 메뉴 「ご意見を送る」 대체), 공개 데모 폐지 → 見本만(「例」 표시 · 노란 띠 · 見本에서 흐름 고치기·업종 바꾸기 해 보기).</td></tr>

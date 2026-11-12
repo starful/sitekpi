@@ -166,7 +166,9 @@ def _story(board: dict[str, Any], watch: list[dict[str, Any]], verdict: dict[str
 
 def verdict_scene(*, industry: str, data: dict[str, Any], benches_raw: dict[str, dict[str, Any]],
                   flow: dict[str, Any] | None, locale: str, prev: dict[str, Any] | None = None) -> dict[str, Any]:
-    """The board's いまの状態 (sentence + 3 tiles) without the page — used by the 見本ボード preview."""
+    """The board's 総評 (sentence + 3 tiles, same story as the board) without the page — for the 見本ボード preview.
+
+    It also marks the story's issue in ``flow`` (stage ``in_issue`` and link ``worst``)."""
     from sitekpi.packs import INDUSTRIES
 
     loc = normalize_locale(locale)
@@ -176,7 +178,13 @@ def verdict_scene(*, industry: str, data: dict[str, Any], benches_raw: dict[str,
         board = build_dense_board(industry=industry, period="28d", ind=INDUSTRIES[industry], data=data,
                                   benches_raw=benches_raw, locale=loc, prev=prev)
         _ACTIVE_BENCH.set(board["benches"])
-        return _verdict(board, _watch_items(board, loc), flow, loc)
+        watch = _watch_items(board, loc)
+        verdict = _verdict(board, watch, flow, loc)
+        # the same story as the board: its 総評 sentence, and the issue's stretch marked in the flow
+        story = _story(board, watch, verdict, flow, loc, industry=industry, site="", ind_label="", period_label="")
+        verdict["story_s1"] = story["s1"] if story else None
+        verdict["story_q0"] = story["q"]["q0"] if story else ""
+        return verdict
     finally:
         _ACTIVE_LOCALE.reset(loc_token)
         _ACTIVE_BENCH.reset(token)
