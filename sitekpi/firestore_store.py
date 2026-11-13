@@ -9,6 +9,7 @@ Layout (one top-level collection per site, like the other starful sites):
     {FIRESTORE_COLLECTION}/flow/rows/{scope}|{pack}             mapping, custom, branches
     {FIRESTORE_COLLECTION}/benchmarks/rows/{scope}|{pack}       metrics: {metric: {low, high, updated_at}}
     {FIRESTORE_COLLECTION}/feedback/rows/{auto id}              screen, vote, comment, locale, at
+    {FIRESTORE_COLLECTION}/onboarding/rows/{owner}               events: {event: at}, ttfv: {...}
 
 Sessions also carry ``expire_at`` (a timestamp) so a Firestore TTL policy on that field can
 delete old ones; nothing else depends on it.
@@ -253,3 +254,30 @@ class FirestoreFeedbackStore:
 
     def add(self, row: dict[str, Any]) -> None:
         self._rows.add(dict(row))
+
+
+# --- オンボーディング成功指標 (same interface as onboarding.OnboardingStore) -----------------
+
+
+class FirestoreOnboardingStore:
+    def __init__(self, client: Any | None = None) -> None:
+        self._rows = _Rows("onboarding", client)
+        self._lock = threading.Lock()
+
+    def log_first(self, owner: str, event: str) -> bool:
+        from sitekpi.onboarding import ttfv_from_events
+
+        with self._lock:
+            doc = self._rows.get(owner) or {"owner": owner, "events": {}}
+            events = dict(doc.get("events") or {})
+            if event in events:
+                return False
+            events[event] = int(time.time())
+            doc["events"] = events
+            doc["ttfv"] = ttfv_from_events(events)
+            self._rows.put(owner, doc)
+            return True
+
+    def ttfv(self, owner: str) -> dict[str, Any]:
+        doc = self._rows.get(owner) or {}
+        return dict(doc.get("ttfv") or {})

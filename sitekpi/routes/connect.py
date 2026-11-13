@@ -25,6 +25,7 @@ from sitekpi.ga4.oauth import (
 )
 from sitekpi.i18n import get_locale, t
 from sitekpi.i18n.pack_l10n import pack_text
+from sitekpi.onboarding import log_ga4_connected
 from sitekpi.routes.nav import nav_rail_context
 from sitekpi.flow import MAX_FLOW_STEPS
 from sitekpi.packs.flows import FLOW_STEPS
@@ -132,6 +133,7 @@ def connect_demo(request: Request, start: int = 0):
     request.session["ga4_email"] = "demo@kpistarter.local"
     if start:  # 「デモで試す」 from the start page: one click to a board
         request.session["ga4_property"] = DEMO_PROPERTIES[0]
+        log_ga4_connected(request.session)
         return _mark(RedirectResponse("/live", status_code=302), "demo_start.one_click", "demo")
     # leave property unset → show picker
     return _mark(RedirectResponse("/connect", status_code=302), "demo_start.connect", "demo")
@@ -227,6 +229,7 @@ def select_property(request: Request, property_id: str = Form(...)):
     if not chosen:
         return _page_from_request(request, error="選択した Property が見つかりません。")
     session["ga4_property"] = chosen
+    log_ga4_connected(session)
     # Numbers first: straight to the board (it guesses the flow if none is chosen yet)
     return RedirectResponse("/live", status_code=302)
 

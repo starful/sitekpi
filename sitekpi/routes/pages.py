@@ -22,6 +22,7 @@ from sitekpi.ga4.data import (
     saved_events,
 )
 from sitekpi.i18n import get_locale, set_locale
+from sitekpi.onboarding import log_board_view
 from sitekpi.routes.flow import sample_flow_context
 from sitekpi.routes.live_board import build_live_kwargs
 from sitekpi.routes.nav import nav_context, nav_rail_context
@@ -266,6 +267,8 @@ def _live(request: Request, period: str, *, fragment: bool = False):
     result = build_live_kwargs(request, period, fragment=fragment, live_pack=_live_pack)
     if isinstance(result, RedirectResponse):
         return result
+    if not fragment:  # /live/details is the slow-report fragment, not a new board view
+        log_board_view(request.session)
     return HTMLResponse(render_sample_dense(**result))
 
 
