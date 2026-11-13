@@ -863,6 +863,8 @@ form.period { margin: 0; }
 }
 .link-btn:hover { text-decoration: underline; }
 .top-help { min-height: 0; padding: 0; border: 0; background: none; color: var(--accent-ink); }
+.share-item { gap: 8px; }
+.share-msg { font-size: 0.75rem; font-weight: 700; color: var(--up); }
 .ex-wrap { padding: 12px 32px 0; max-width: 1360px; margin: 0 auto; box-sizing: border-box; }
 .content { padding: 16px 32px 56px; gap: 20px; max-width: 1360px; margin: 0 auto; box-sizing: border-box; }
 .content > section.card { border: 0; border-radius: 16px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(21, 32, 51, 0.06); }

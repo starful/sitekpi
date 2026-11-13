@@ -29,6 +29,31 @@ document.addEventListener("click", (e) => {
   if (table) table.hidden = !open;
 });
 
+/* 共有: native share sheet where available, else copy the current URL — never any GA4 data */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-board-share]");
+  if (!btn) return;
+  const url = location.href;
+  if (navigator.share) { navigator.share({ url: url, title: document.title }).catch(() => {}); return; }
+  const msg = btn.parentElement.querySelector("[data-board-share-msg]");
+  const done = (ok) => { if (msg) msg.textContent = ok ? msg.dataset.ok : msg.dataset.fail; };
+  const fallback = () => {
+    const ta = document.createElement("textarea");
+    ta.value = url;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (err) { ok = false; }
+    ta.remove();
+    done(ok);
+  };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(url).then(() => done(true), fallback);
+  else fallback();
+});
+
 /* 詳しい数字 loaded after the page (live GA4: the extra reports are the slow part) */
 (function () {
   const box = document.querySelector("[data-details][data-src]");

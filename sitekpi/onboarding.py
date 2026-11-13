@@ -160,7 +160,11 @@ def log_ga4_connected(session: MutableMapping[str, Any]) -> None:
     _log(session, EVENT_GA4_CONNECTED)
 
 
-def log_board_view(session: MutableMapping[str, Any]) -> None:
+def log_board_view(session: MutableMapping[str, Any], *, is_live: bool = True) -> None:
+    """``is_live=False`` is the GA4-demo/sample preview — only a real live view may flip
+    onboard_board_seen, or board.html's 3-step banner never fires after actually connecting."""
+    if is_live:
+        session["onboard_board_seen"] = True  # read by board.html's 3-step progress banner
     _log(session, EVENT_BOARD_VIEW)
 
 

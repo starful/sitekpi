@@ -2,7 +2,7 @@
 {% import "board/_macros.html" as m with context %}
 {% block title %}{{ page_title }}{% endblock %}
 {% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
-{% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" /><link rel="stylesheet" href="{{ static_url('css/helpcard.css') }}" />{% if editor %}<link rel="stylesheet" href="{{ static_url('css/setup.css') }}" />{% endif %}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" /><link rel="stylesheet" href="{{ static_url('css/helpcard.css') }}" />{% if editor %}<link rel="stylesheet" href="{{ static_url('css/setup.css') }}" />{% endif %}{% if onb_first_view %}<link rel="stylesheet" href="{{ static_url('css/onboarding-progress.css') }}" />{% endif %}{% endblock %}
 {% block main %}
       {#- v5 上のバー: site name (+ 例の数字) · 比べる業種 · 期間 · ? 見方 — all as text -#}
       <header class="top">
@@ -26,6 +26,11 @@
           </form>
           {% if bench and (is_sample or not industry_drawer) %}<button type="button" class="link-btn adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}
           <a class="link-btn top-help" href="/help#read">? {{ t("bx.how", loc) }}</a>
+          {%- set share_t = {"ja": {"btn": "共有", "ok": "リンクをコピーしました", "fail": "コピーできませんでした"}, "ko": {"btn": "공유", "ok": "링크를 복사했습니다", "fail": "복사하지 못했습니다"}}.get(loc, {"btn": "Share", "ok": "Link copied", "fail": "Couldn't copy"}) %}
+          <span class="top-item share-item">
+            <button type="button" class="link-btn" data-board-share data-track="board_share">{{ share_t.btn }}</button>
+            <span class="share-msg" data-board-share-msg data-ok="{{ share_t.ok }}" data-fail="{{ share_t.fail }}" role="status"></span>
+          </span>
         </div>
         {% if industry_drawer %}{% include "board/drawer_industry.html" %}{% endif %}
         {% if editor %}{% include "board/drawer_step.html" %}{% endif %}
@@ -34,6 +39,13 @@
       <div class="ex-wrap">{% with ex_b=t("sx.banner_b", loc), ex_text=t("sx.banner", loc), ex_others=True %}{% include "partials/ex_banner.html" %}{% endwith %}</div>
       {% endif %}
       <div class="content">
+
+        {% if onb_first_view %}
+        {#- first visit after connecting: confirm all 3 onboarding steps are done -#}
+        {% with step1_done=true, step2_done=true, step3_done=true %}
+        {% include "partials/onboarding_progress.html" %}
+        {% endwith %}
+        {% endif %}
 
         {#- v6 story: 0 総評 → ①〜④ (TOC). 総評 is the boss-repeatable line. -#}
         {% set S = story %}

@@ -268,7 +268,10 @@ def _live(request: Request, period: str, *, fragment: bool = False):
     if isinstance(result, RedirectResponse):
         return result
     if not fragment:  # /live/details is the slow-report fragment, not a new board view
-        log_board_view(request.session)
+        is_live_view = not request.session.get("ga4_demo")  # demo is a pre-connect sample preview
+        first_view = is_live_view and not request.session.get("onboard_board_seen")
+        log_board_view(request.session, is_live=is_live_view)
+        result["onb_first_view"] = first_view
     return HTMLResponse(render_sample_dense(**result))
 
 

@@ -35,6 +35,12 @@
     send("event", event, row);
   }
   window.SiteKPITrack = track;
+
+  // Activation funnel params: not wired to real data yet (no accounts/plan concept in the app, and
+  // the GA4 property id must never leave the browser — see the rule above). track() drops them when empty.
+  function funnelParams() {
+    return { site_id: document.body.dataset.siteId, plan: document.body.dataset.plan };
+  }
   // user properties (register ui_language and connection as user-scoped custom dimensions in GA4)
   send("set", "user_properties", { ui_language: lang, connection: connection });
 
@@ -44,9 +50,18 @@
     document.cookie = "sk_ev=; Max-Age=0; path=/; SameSite=Lax";
     queued.split(",").forEach((item) => {
       const [ev, arg] = item.split(".");
-      if (ev === "login") track("login", { method: "google" });
-      else if (ev === "oauth_error") track("oauth_error", { reason: arg || "other" });
-      else if (ev === "demo_start") track("demo_start", { location: arg });
+      if (ev === "login") {
+        track("login", { method: "google" });
+        // first Google sign-in on this browser = signup_complete (no separate account step in SiteKPI)
+        track("signup_complete", Object.assign({ method: "google" }, funnelParams()));
+      } else if (ev === "oauth_error") track("oauth_error", { reason: arg || "other" });
+      else if (ev === "demo_start") {
+        track("demo_start", { location: arg });
+        if (arg === "one_click") {
+          track("signup_complete", Object.assign({ method: "demo" }, funnelParams()));
+          track("ga4_connect_complete", Object.assign({ method: "demo" }, funnelParams()));
+        }
+      }
     });
   }
 
@@ -57,6 +72,7 @@
     let first = "true";
     try { first = sessionStorage.getItem("sk_bv") ? "false" : "true"; sessionStorage.setItem("sk_bv", "1"); } catch (e) { /* private mode */ }
     track("board_view", { mode: mode, period: sel ? sel.value : "28d", first_in_session: first });
+    if (first === "true") track("first_board_view", Object.assign({ mode: mode }, funnelParams()));
   }
 
   function paramsFrom(el) {
@@ -136,7 +152,10 @@
     if (!(f instanceof HTMLFormElement)) return;
     const action = f.getAttribute("action") || "";
     if (action === "/setup/keep") track("guess_confirm");
-    else if (action === "/connect/property") track("property_select");
+    else if (action === "/connect/property") {
+      track("property_select");
+      track("ga4_connect_complete", Object.assign({ method: "google" }, funnelParams()));
+    }
     else if (action === "/connect/disconnect") track("disconnect");
     else if (action === "/setup/industry") {
       const pick = f.querySelector("input[name=industry]:checked");

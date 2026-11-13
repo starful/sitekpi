@@ -1,0 +1,15 @@
+{#- 3-step onboarding progress: 가입 → GA4 연결 → 첫 보드 확인.
+    Params: step1_done / step2_done / step3_done (booleans). Completion is derived from
+    state already persisted in the session store (sessions table) and the onboarding
+    events table, so a step that shows done stays done across requests. -#}
+{% set ns = namespace(current=0) %}
+{% for n, key, done in [(1, "connect.step1", step1_done), (2, "connect.step2", step2_done), (3, "connect.step3_board", step3_done)] %}
+{% if not done and not ns.current %}{% set ns.current = n %}{% endif %}
+{% endfor %}
+<ol class="onb-progress" aria-label="{{ t('connect.title', loc) }}">
+  {% for n, key, done in [(1, "connect.step1", step1_done), (2, "connect.step2", step2_done), (3, "connect.step3_board", step3_done)] %}
+  <li class="{{ 'is-done' if done else ('is-current' if n == ns.current else '') }}"{% if n == ns.current %} aria-current="step"{% endif %}>
+    <span class="num">{{ '✓' if done else n }}</span><span class="txt">{{ t(key, loc) }}</span>
+  </li>
+  {% endfor %}
+</ol>

@@ -59,6 +59,7 @@ def _render_sample_dense(
     ind_name: str = "",
     meta_short: str = "",
     auto_open: str = "",
+    onb_first_view: bool = False,
 ) -> str:
     loc = normalize_locale(locale)
     if data is None or ind is None or benches_raw is None:
@@ -134,6 +135,7 @@ def _render_sample_dense(
         ind_name=ind_name,
         meta_short=meta_short,
         is_sample=is_sample,
+        onb_first_view=onb_first_view and board_kind == "live",
         notice=notice,
         bench=bench,
         flow=flow,

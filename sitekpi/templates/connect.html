@@ -1,18 +1,13 @@
 {% extends "base.html" %}
 {% block title %}SiteKPI · {{ t("connect.title", loc) }}{% endblock %}
-{% block css %}<link rel="stylesheet" href="{{ static_url('css/connect.css') }}" />{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/onboarding-progress.css') }}" /><link rel="stylesheet" href="{{ static_url('css/connect.css') }}" />{% endblock %}
 {% block main %}
-  {% set step = 3 if (connected and selected) else (2 if connected else 1) %}
   <main class="connect">
     <h1>{{ t("connect.title_x", loc) }}</h1>
     <p class="lead">{{ t("connect.lead", loc) }}</p>
-    <ol class="stepper" aria-label="{{ t('connect.title', loc) }}">
-      {% for n, key in [(1, "connect.step1"), (2, "connect.step2"), (3, "connect.step3_board")] %}
-      <li class="{{ 'is-done' if n < step or (n == 3 and ready) else ('is-current' if n == step else '') }}"{% if n == step %} aria-current="step"{% endif %}>
-        <span class="num">{{ '✓' if n < step or (n == 3 and ready) else n }}</span><span class="txt">{{ t(key, loc) }}</span>
-      </li>
-      {% endfor %}
-    </ol>
+    {% with step1_done=connected, step2_done=connected and selected, step3_done=connected and selected and ready %}
+    {% include "partials/onboarding_progress.html" %}
+    {% endwith %}
     {% if error %}<div class="banner err">{{ error }}</div>{% endif %}
 
     {% if not connected %}
