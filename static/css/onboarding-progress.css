@@ -1,0 +1,15 @@
+/* tokens: brand.css */
+/* 3-step onboarding progress: 가입 → GA4 연결 → 첫 보드 확인 (shared by /connect and /live) */
+.onb-progress { list-style: none; display: flex; gap: 8px; margin: 0 0 16px; padding: 0; flex-wrap: wrap; }
+.onb-progress li {
+  display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px;
+  background: #fff; border: 1px solid var(--line); color: var(--muted); font-size: 0.82rem; font-weight: 700;
+}
+.onb-progress .num {
+  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  background: #eef2f7; color: #64748b; font-size: 0.78rem; font-family: var(--font-num);
+}
+.onb-progress li.is-current { border-color: #bfd2f8; color: var(--ink); }
+.onb-progress li.is-current .num { background: var(--accent); color: #fff; }
+.onb-progress li.is-done { color: #166534; }
+.onb-progress li.is-done .num { background: #dcfce7; color: #166534; }

@@ -161,6 +161,7 @@ def log_ga4_connected(session: MutableMapping[str, Any]) -> None:
 
 
 def log_board_view(session: MutableMapping[str, Any]) -> None:
+    session["onboard_board_seen"] = True  # read by board.html's 3-step progress banner
     _log(session, EVENT_BOARD_VIEW)
 
 

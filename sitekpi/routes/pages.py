@@ -268,7 +268,9 @@ def _live(request: Request, period: str, *, fragment: bool = False):
     if isinstance(result, RedirectResponse):
         return result
     if not fragment:  # /live/details is the slow-report fragment, not a new board view
+        first_view = not request.session.get("onboard_board_seen")
         log_board_view(request.session)
+        result["onb_first_view"] = first_view
     return HTMLResponse(render_sample_dense(**result))
 
 
