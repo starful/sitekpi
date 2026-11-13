@@ -10,6 +10,8 @@ Layout (one top-level collection per site, like the other starful sites):
     {FIRESTORE_COLLECTION}/benchmarks/rows/{scope}|{pack}       metrics: {metric: {low, high, updated_at}}
     {FIRESTORE_COLLECTION}/feedback/rows/{auto id}              screen, vote, comment, locale, at
     {FIRESTORE_COLLECTION}/onboarding/rows/{owner}               events: {event: at}, ttfv: {...}
+    {FIRESTORE_COLLECTION}/visits/rows/{auto id}                 vid, at, e, p, path, ref, lang, exp (TTL 90d)
+    {FIRESTORE_COLLECTION}/survey/rows/{vid}                     answers, text, lang, at, exp (TTL 90d)
 
 Sessions also carry ``expire_at`` (a timestamp) so a Firestore TTL policy on that field can
 delete old ones; nothing else depends on it.
@@ -281,3 +283,50 @@ class FirestoreOnboardingStore:
     def ttfv(self, owner: str) -> dict[str, Any]:
         doc = self._rows.get(owner) or {}
         return dict(doc.get("ttfv") or {})
+
+
+# --- SiteKPI 自身の利用者ログ + 30秒アンケート (same interface as visitlog.SqliteVisitStore) ------
+
+
+def _since(col: Any, since: int) -> Any:
+    try:
+        from google.cloud.firestore_v1.base_query import FieldFilter
+
+        return col.where(filter=FieldFilter("at", ">=", since))
+    except ImportError:  # fake client in tests
+        return col.where("at", ">=", since)
+
+
+class FirestoreVisitStore:
+    """{root}/visits/rows/{auto id} and {root}/survey/rows/{vid}; ``exp`` = at + 90 days (TTL policy)."""
+
+    def __init__(self, client: Any | None = None) -> None:
+        self._events = _Rows("visits", client)
+        self._survey = _Rows("survey", client)
+
+    @staticmethod
+    def _exp(at: int) -> dt.datetime:
+        from sitekpi.visitlog import KEEP_DAYS
+
+        return dt.datetime.fromtimestamp(at + KEEP_DAYS * 86400, tz=dt.timezone.utc)
+
+    def add_events(self, rows: list[dict[str, Any]]) -> None:
+        for r in rows:
+            self._events.add({**r, "exp": self._exp(r["at"])})
+
+    def put_survey(self, row: dict[str, Any]) -> None:
+        self._survey.put(row["vid"], {**row, "exp": self._exp(row["at"])})
+
+    def _read(self, rows: _Rows, since: int) -> list[dict[str, Any]]:
+        out = []
+        for snap in _since(rows._col(), since).stream():
+            d = snap.to_dict() or {}
+            d.pop("exp", None)
+            out.append(d)
+        return sorted(out, key=lambda d: d.get("at", 0))
+
+    def events_since(self, since: int) -> list[dict[str, Any]]:
+        return self._read(self._events, since)
+
+    def surveys_since(self, since: int) -> list[dict[str, Any]]:
+        return self._read(self._survey, since)

@@ -51,3 +51,30 @@
   .memo:not(.is-closed) { width: min(92vw, 340px); }
 }
 .memo .fb-hp { position: absolute; left: -9999px; }
+
+/* 30秒アンケート: top of the panel, once (static/js/survey.js) */
+.sv { background: #f5f8ff; border: 1px solid #c9dbfb; border-radius: 12px; padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.sv[hidden], .sv-q[hidden], .sv-done[hidden], .sv-foot [hidden] { display: none; }
+.sv-top { display: flex; align-items: center; gap: 8px; }
+.sv-top b { font-size: 0.8125rem; color: var(--accent-ink, #1d4ed8); }
+.sv-step { font-size: 0.75rem; font-weight: 800; color: #5b6676; font-variant-numeric: tabular-nums; }
+.sv-bar { flex: 1 1 auto; height: 4px; border-radius: 99px; background: #dbe4f3; overflow: hidden; display: flex; }
+.sv-bar i { display: block; width: 20%; background: var(--accent, #2f6fed); transition: width 0.2s; }
+.sv-q { display: flex; flex-direction: column; gap: 10px; }
+.sv-text { margin: 0; font-size: 0.9375rem; font-weight: 800; line-height: 1.5; color: var(--ink, #152033); }
+.sv-opts { display: flex; flex-direction: column; gap: 6px; }
+.sv-opts button { font: inherit; font-size: 0.8125rem; font-weight: 600; text-align: left; padding: 9px 12px; min-height: 40px; border-radius: 10px; cursor: pointer; background: #fff; color: var(--ink, #152033); border: 1px solid #d5dce6; }
+.sv-opts button:hover { border-color: var(--accent, #2f6fed); }
+.sv-opts button[aria-pressed="true"] { background: var(--accent, #2f6fed); color: #fff; border-color: var(--accent, #2f6fed); font-weight: 800; }
+.sv-free { display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; color: #5b6676; }
+.sv-free textarea { font: inherit; font-size: 0.8125rem; padding: 8px 10px; border: 1px solid #d5dce6; border-radius: 8px; resize: vertical; color: var(--ink, #152033); }
+.sv-send { font: inherit; font-size: 0.8125rem; font-weight: 800; color: #fff; background: var(--accent, #2f6fed); border: 0; border-radius: 10px; min-height: 44px; cursor: pointer; }
+.sv-send:disabled { opacity: 0.55; cursor: default; }
+.sv-foot { display: flex; gap: 16px; }
+.sv-foot button { font: inherit; font-size: 0.75rem; font-weight: 700; color: #5b6676; background: none; border: 0; padding: 0; cursor: pointer; }
+.sv-foot [data-sv-back] { color: var(--accent-ink, #1d4ed8); }
+.sv-gap { flex: 1 1 auto; }
+.sv-done { margin: 0; padding: 12px 14px; border-radius: 12px; background: #ecfdf5; color: #0f766e; font-size: 0.8125rem; font-weight: 700; line-height: 1.6; }
+/* closed panel: only a blue dot on the tab */
+.memo.has-ask .memo-tab { position: relative; }
+.memo.has-ask .memo-tab::after { content: ""; position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent, #2f6fed); border: 2px solid #fff; }

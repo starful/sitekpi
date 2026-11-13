@@ -4,6 +4,31 @@
 <aside class="memo" id="memo" data-memo data-screen="{{ rail.active }}" aria-label="{{ t('memo.title', loc) }}">
   <button type="button" class="memo-tab" data-memo-toggle aria-controls="memo-body" aria-expanded="true"><span aria-hidden="true">✎</span> {{ t("memo.open", loc) }}</button>
   <div class="memo-body" id="memo-body">
+    {%- set _sq = [("source", ["search", "sns", "friend", "blog", "other"]), ("goal", ["judge", "report", "glossary", "setup", "browse"]),
+                   ("role", ["owner", "marketer", "agency", "engineer", "executive"]), ("pain", ["which", "judge", "report_time", "setup", "none"])] %}
+    <section class="sv" data-survey hidden aria-label="{{ t('survey.title', loc) }}" data-dot="{{ t('survey.dot', loc) }}">
+      <div class="sv-top"><b>{{ t("survey.title", loc) }}</b><span class="sv-step" data-sv-step>1 / 5</span><span class="sv-bar" aria-hidden="true"><i data-sv-bar></i></span></div>
+      {%- for q, opts in _sq %}
+      <div class="sv-q" data-sv-q="{{ q }}"{% if not loop.first %} hidden{% endif %}>
+        <p class="sv-text" id="sv-{{ q }}">{{ t("survey.q." ~ q, loc) }}</p>
+        <div class="sv-opts" role="group" aria-labelledby="sv-{{ q }}">
+          {%- for a in opts %}<button type="button" data-sv-a="{{ a }}" aria-pressed="false">{{ t("survey.a." ~ q ~ "." ~ a, loc) }}</button>{% endfor %}
+        </div>
+      </div>
+      {%- endfor %}
+      <div class="sv-q" data-sv-q="text" hidden>
+        <p class="sv-text">{{ t("survey.q.text", loc) }}</p>
+        <label class="sv-free">{{ t("survey.free", loc) }}<textarea data-sv-text rows="3" maxlength="200" placeholder="{{ t('survey.ph', loc) }}"></textarea></label>
+        <button type="button" class="sv-send" data-sv-send>{{ t("survey.send", loc) }}</button>
+      </div>
+      <div class="sv-foot">
+        <button type="button" data-sv-back hidden>{{ t("survey.back", loc) }}</button>
+        <span class="sv-gap"></span>
+        <button type="button" data-sv-later>{{ t("survey.later", loc) }}</button>
+        <button type="button" data-sv-never>{{ t("survey.never", loc) }}</button>
+      </div>
+    </section>
+    <p class="sv-done" data-sv-done role="status" hidden>{{ t("survey.thanks", loc) }}</p>
     <div class="memo-head">
       <b><span aria-hidden="true">✎</span> {{ t("memo.title", loc) }}</b>
       <button type="button" class="memo-close" data-memo-toggle aria-controls="memo-body" aria-expanded="true">{{ t("memo.close", loc) }} <span aria-hidden="true">›</span></button>
