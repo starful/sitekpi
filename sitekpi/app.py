@@ -23,6 +23,7 @@ from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 
 from sitekpi.routes.benchmarks import router as benchmarks_router  # noqa: E402
+from sitekpi.routes.billing import router as billing_router  # noqa: E402
 from sitekpi.routes.connect import router as connect_router  # noqa: E402
 from sitekpi.routes.flow import router as flow_router  # noqa: E402
 from sitekpi.routes.setup import router as setup_router  # noqa: E402
@@ -58,6 +59,7 @@ app.add_middleware(
 app.mount("/static", CachedStaticFiles(directory=str(ROOT / "static")), name="static")
 app.include_router(connect_router)
 app.include_router(benchmarks_router)
+app.include_router(billing_router)
 app.include_router(flow_router)
 app.include_router(setup_router)
 app.include_router(stickers_router)

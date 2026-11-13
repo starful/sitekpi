@@ -1204,6 +1204,12 @@ UI.update({
     },
     "connect.hero.title": {"ja": "Google アカウントでログイン", "en": "Sign in with your Google account", "ko": "Google 계정으로 로그인"},
     "connect.hero.meta": {"ja": "GA4 を見られるアカウントでログインしてください。", "en": "Use an account that can view your GA4.", "ko": "GA4를 볼 수 있는 계정으로 로그인하세요."},
+    # GA4 未接続でも先に見せる見本 KPI（接続すると自動的に消える）
+    "connect.sample.title": {"ja": "つなぐ前に、こんな見え方です", "en": "Here's what you'll see, before you connect", "ko": "연결하기 전에 이렇게 보여요"},
+    "connect.sample.clicks": {"ja": "クリック", "en": "Clicks", "ko": "클릭"},
+    "connect.sample.orders": {"ja": "注文", "en": "Orders", "ko": "주문"},
+    "connect.sample.commission": {"ja": "コミッション", "en": "Commission", "ko": "커미션"},
+    "connect.sample.cta": {"ja": "GA4 をつないで自分の数字を見る", "en": "Connect GA4 to see your own numbers", "ko": "GA4 연결하고 내 숫자 보기"},
     "connect.btn.demo_x": {"ja": "接続する前に 見本ボードを見る →", "en": "Before connecting, see the sample boards →", "ko": "연결하기 전에 샘플 보드 보기 →"},
     "connect.safe1": {"ja": "<b>読み取りだけ</b>。GA4 の設定やデータは変えません。", "en": "<b>Read-only</b>. Your GA4 settings and data are never changed.", "ko": "<b>읽기만</b> 합니다. GA4 설정이나 데이터는 바꾸지 않아요."},
     "connect.safe2": {"ja": "<b>パスワードは保存しません</b>。Google の画面で許可するだけです。", "en": "<b>No passwords stored</b>. You only approve on Google's screen.", "ko": "<b>비밀번호는 저장하지 않아요</b>. Google 화면에서 허용만 하면 됩니다."},

@@ -451,6 +451,18 @@ button.choice.ind-choice { padding: 14px 30px 14px 16px; }
 .ind-choice .choice-check { right: 8px; top: 12px; transform: none; }
 .ind-choice .choice-compare > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* 見本 KPI: GA4 未接続でも先に見せる — 接続すると自動的に消える */
+.cx-sample { padding: 20px 22px; }
+.cx-sample-head { display: flex; align-items: center; gap: 10px; }
+.cx-sample-head h2 { margin: 0; font-size: 1.1rem; }
+.sample-tag { font-size: 0.7rem; font-weight: 800; color: #fff; background: #b7791f; border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+.cx-sample-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 14px 0 18px; }
+.cx-sample-kpi { padding: 14px; border-radius: 12px; background: #f6f8fc; border: 1px solid var(--line); }
+.cx-sample-kpi span { display: block; font-size: 0.78rem; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+.cx-sample-kpi strong { font-family: "DM Sans", "Noto Sans JP", sans-serif; font-size: 1.4rem; font-weight: 800; }
+.cx-sample-cta { display: inline-flex; }
+@media (max-width: 560px) { .cx-sample-grid { grid-template-columns: 1fr; } }
+
 /* GA4 をつなぐ: login + reassurance side by side */
 .cx-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; padding: 28px; }
 .cx-login { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }

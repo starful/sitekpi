@@ -78,7 +78,7 @@ def robots() -> PlainTextResponse:
         "User-agent: *\n"
         "Allow: /$\nAllow: /policy\nAllow: /terms\nAllow: /static/\n"
         "Disallow: /live\nDisallow: /connect\nDisallow: /setup\nDisallow: /builder\n"
-        "Disallow: /feedback\nDisallow: /settings\n"
+        "Disallow: /feedback\nDisallow: /settings\nDisallow: /billing\n"
         f"\nSitemap: {base_url()}/sitemap.xml\n"
     )
 
