@@ -26,6 +26,11 @@
           </form>
           {% if bench and (is_sample or not industry_drawer) %}<button type="button" class="link-btn adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}
           <a class="link-btn top-help" href="/help#read">? {{ t("bx.how", loc) }}</a>
+          {%- set share_t = {"ja": {"btn": "共有", "ok": "リンクをコピーしました", "fail": "コピーできませんでした"}, "ko": {"btn": "공유", "ok": "링크를 복사했습니다", "fail": "복사하지 못했습니다"}}.get(loc, {"btn": "Share", "ok": "Link copied", "fail": "Couldn't copy"}) %}
+          <span class="top-item share-item">
+            <button type="button" class="link-btn" data-board-share data-track="board_share">{{ share_t.btn }}</button>
+            <span class="share-msg" data-board-share-msg data-ok="{{ share_t.ok }}" data-fail="{{ share_t.fail }}" role="status"></span>
+          </span>
         </div>
         {% if industry_drawer %}{% include "board/drawer_industry.html" %}{% endif %}
         {% if editor %}{% include "board/drawer_step.html" %}{% endif %}
