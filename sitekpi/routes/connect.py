@@ -228,6 +228,16 @@ def select_property(request: Request, property_id: str = Form(...)):
     chosen = next((p for p in props if p["id"] == property_id), None)
     if not chosen:
         return _page_from_request(request, error="選択した Property が見つかりません。")
+    existing = session.get("ga4_property")
+    already_connected = 1 if (isinstance(existing, dict) and existing.get("id") != chosen["id"]) else 0
+    if already_connected:
+        # Swapping to a *different* Property while one is still connected = a new-site
+        # connection request. No login/workspace id exists yet, so this always checks
+        # against the free limit (see sitekpi/billing.py).
+        from sitekpi.billing import check_site_limit
+
+        if check_site_limit(None, already_connected):
+            return _page_from_request(request, error=t("connect.err.site_limit", get_locale(session)))
     session["ga4_property"] = chosen
     log_ga4_connected(session)
     # Numbers first: straight to the board (it guesses the flow if none is chosen yet)
