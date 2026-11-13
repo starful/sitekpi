@@ -16,6 +16,19 @@
     {% if error %}<div class="banner err">{{ error }}</div>{% endif %}
 
     {% if not connected %}
+    {# 見本 KPI: GA4 未接続でも先に見せる。接続すると not connected が外れて自動的に消える #}
+    <section class="card cx-sample" aria-labelledby="cx-sample-title">
+      <div class="cx-sample-head">
+        <h2 id="cx-sample-title">{{ t("connect.sample.title", loc) }}</h2>
+        <span class="sample-tag">{{ t("sx.badge", loc) }}</span>
+      </div>
+      <div class="cx-sample-grid">
+        <div class="cx-sample-kpi"><span>{{ t("connect.sample.clicks", loc) }}</span><strong>1,284</strong></div>
+        <div class="cx-sample-kpi"><span>{{ t("connect.sample.orders", loc) }}</span><strong>86</strong></div>
+        <div class="cx-sample-kpi"><span>{{ t("connect.sample.commission", loc) }}</span><strong>¥61,200</strong></div>
+      </div>
+      <a class="btn primary cx-big cx-sample-cta" href="{{ '/connect/google' if oauth_ready else '/connect/demo' }}">{{ t("connect.sample.cta", loc) }}</a>
+    </section>
     {# ① Google #}
     <section class="card hero cx-hero">
       <div class="cx-login">
