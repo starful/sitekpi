@@ -19,6 +19,8 @@ if _redirect.startswith("http://") and not os.getenv("OAUTHLIB_INSECURE_TRANSPOR
 # If Google returns extra previously-granted scopes, don't fail the token exchange
 os.environ.setdefault("OAUTHLIB_RELAX_TOKEN_SCOPE", "1")
 
+from contextlib import asynccontextmanager  # noqa: E402
+
 from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 
@@ -46,7 +48,16 @@ ROOT = Path(__file__).resolve().parents[1]
 SESSION_MAX_AGE = 14 * 24 * 60 * 60
 _session = session_settings()
 
-app = FastAPI(title=BRAND_NAME)
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    from sitekpi.views.seo import ping_search_console
+
+    ping_search_console()  # best-effort GSC sitemap ping, once per deploy (new revision)
+    yield
+
+
+app = FastAPI(title=BRAND_NAME, lifespan=_lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.add_middleware(
     ServerSessionMiddleware,
