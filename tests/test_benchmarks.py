@@ -152,8 +152,12 @@ def connected(monkeypatch):
     monkeypatch.setattr(pages, "discover_event_names", lambda s, period, limit: ([], None))
     monkeypatch.setattr(pages, "fetch_pack_overlay", lambda s, **kw: (dict(DEMO["hr"]["28d"]), None))
     import sitekpi.routes.flow as flow_routes
+    import sitekpi.routes.setup as setup_routes
     monkeypatch.setattr(flow_routes, "fetch_flow", lambda s, **kw: (None, None))
     monkeypatch.setattr(flow_routes, "discover_event_names", lambda s, period, limit: ([], None))
+    # The board also asks for site basics. A fake grant must not reach Google:
+    # a failed refresh forgets the property, and the popover then has no name.
+    monkeypatch.setattr(setup_routes, "fetch_site_basics", lambda session, period="28d": {"uu": 10})
     pages._LIVE_PACK_CACHE._data.clear()
 
     def login() -> TestClient:
