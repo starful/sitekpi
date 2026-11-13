@@ -10,8 +10,8 @@ Layout (one top-level collection per site, like the other starful sites):
     {FIRESTORE_COLLECTION}/benchmarks/rows/{scope}|{pack}       metrics: {metric: {low, high, updated_at}}
     {FIRESTORE_COLLECTION}/feedback/rows/{auto id}              screen, vote, comment, locale, at
     {FIRESTORE_COLLECTION}/onboarding/rows/{owner}               events: {event: at}, ttfv: {...}
-    {FIRESTORE_COLLECTION}/visits/rows/{auto id}                 vid, at, e, p, path, ref, lang, exp (TTL 90d)
-    {FIRESTORE_COLLECTION}/survey/rows/{vid}                     answers, text, lang, at, exp (TTL 90d)
+    {FIRESTORE_COLLECTION}/visits/rows/{auto id}                 vid, at, e, p, path, ref, lang, expire_at (TTL 90d)
+    {FIRESTORE_COLLECTION}/survey/rows/{vid}                     answers, text, lang, at, expire_at (TTL 90d)
 
 Sessions also carry ``expire_at`` (a timestamp) so a Firestore TTL policy on that field can
 delete old ones; nothing else depends on it.
@@ -298,7 +298,7 @@ def _since(col: Any, since: int) -> Any:
 
 
 class FirestoreVisitStore:
-    """{root}/visits/rows/{auto id} and {root}/survey/rows/{vid}; ``exp`` = at + 90 days (TTL policy)."""
+    """{root}/visits/rows/{auto id} and {root}/survey/rows/{vid}; ``expire_at`` = at + 90 days (TTL on group rows)."""
 
     def __init__(self, client: Any | None = None) -> None:
         self._events = _Rows("visits", client)
@@ -312,16 +312,16 @@ class FirestoreVisitStore:
 
     def add_events(self, rows: list[dict[str, Any]]) -> None:
         for r in rows:
-            self._events.add({**r, "exp": self._exp(r["at"])})
+            self._events.add({**r, "expire_at": self._exp(r["at"])})
 
     def put_survey(self, row: dict[str, Any]) -> None:
-        self._survey.put(row["vid"], {**row, "exp": self._exp(row["at"])})
+        self._survey.put(row["vid"], {**row, "expire_at": self._exp(row["at"])})
 
     def _read(self, rows: _Rows, since: int) -> list[dict[str, Any]]:
         out = []
         for snap in _since(rows._col(), since).stream():
             d = snap.to_dict() or {}
-            d.pop("exp", None)
+            d.pop("expire_at", None)
             out.append(d)
         return sorted(out, key=lambda d: d.get("at", 0))
 

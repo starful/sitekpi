@@ -17,7 +17,7 @@
 | 환경 변수 | `.env.example` 참고. `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` · `GOOGLE_REDIRECT_URI` · `APP_BASE_URL` · `SESSION_SECRET` (데모 접속만이면 불필요). 선택: `SESSION_DB_PATH` · `SESSION_ENCRYPTION_KEY` · `APP_DB_PATH` · 로컬 http 전용 `OAUTHLIB_INSECURE_TRANSPORT` |
 | GA4 권한 | `analytics.readonly` 하나 (읽기 전용) |
 | 배포 | Cloud Run(`starful-258005`, us-central1, 서비스 `sitekpi-service`) · 도메인 `sitekpi.net`. 최초 1회 `scripts/gcp_setup.sh <client_secret.json>`(API·Artifact Registry·Secret Manager·IAM·Firestore TTL), 이후 `./deploy.sh`(Cloud Build: 테스트 → 빌드 → 배포), 도메인 연결 `scripts/gcp_setup.sh --domain`. OAuth 동의 화면·클라이언트는 별도 프로젝트 `sitekpi` |
-| 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `GA4_ID`(SiteKPI 자체 GA4 측정 ID `G-…`, gtag.js로 직접 전송. 비어 있으면 태그 없음 → 로컬은 측정 안 함) · `OPERATOR_NAME`(기본 starful) · `OPERATOR_ADDRESS` · `LEGAL_COURT`(선택, /policy·/terms 표기. 비면 중립 문구) · `DEMO_CONNECT`(운영에서는 비워 둔다. `1`이면 데모 연결을 연다 — 개발·테스트용). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` · `SITEKPI_HQ_TOKEN`(→ `HQ_API_TOKEN`, HQ가 이용자 로그를 읽는 Bearer. 없으면 `/hq/api/users`는 404) |
+| 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `GA4_ID`(SiteKPI 자체 GA4 측정 ID `G-…`, gtag.js로 직접 전송. 비어 있으면 태그 없음 → 로컬은 측정 안 함) · `OPERATOR_NAME`(기본 starful) · `OPERATOR_ADDRESS` · `LEGAL_COURT`(선택, /policy·/terms 표기. 비면 중립 문구) · `DEMO_CONNECT`(운영에서는 비워 둔다. `1`이면 데모 연결을 연다 — 개발·테스트용). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` (HQ가 이용자 로그를 읽는 Bearer는 따로 만들지 않는다: `visitlog.hq_token()` = `SESSION_SECRET`의 HMAC. HQ도 `SITEKPI_SESSION_SECRET`에서 같은 값을 만든다. `HQ_API_TOKEN`을 두면 그것을 우선) |
 | 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-12 기준 235개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
 
 ## 2. 디렉터리
@@ -86,7 +86,7 @@ tests/ · scripts/
 | GET `/builder` · `/builder/values` | 대시보드 만들기 · GA4 값(JSON) | |
 | GET/POST `/settings` | 언어 · 연결 사이트 | |
 | POST `/events` · `/survey` | 이용자 로그(track.js가 GA4와 같은 이벤트 + `pv`) · 30초 설문. 익명 쿠키 `sk_vid` | `sitekpi/visitlog.py` · `static/js/survey.js` |
-| GET `/hq/api/users?days=7\|30\|90` | HQ 「SiteKPI 이용자」 팝업용 JSON (Bearer `HQ_API_TOKEN`) | `visitlog.summarize` (순수 함수) |
+| GET `/hq/api/users?days=7\|30\|90` | HQ 「SiteKPI 이용자」 팝업용 JSON (Bearer `visitlog.hq_token()`) | `visitlog.summarize` (순수 함수) |
 | GET `/beginner` | 「はじめての5分」 견본 (메뉴에는 없음) | |
 | GET `/first` · `/sample` · `/b2c_membership` · `/content_media` | 옛 주소 → 리다이렉트 | |
 
@@ -169,7 +169,7 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | メモ・ご意見 | 같은 `/feedback`, `screen`(rail.active) · `section`(보고 있던 카드 이름, 60자) · `path` · 선택 `vote` | — |
 | 의견(메모 · 랜딩 「ご意見」) | 로컬 `.data/feedback.jsonl`, 운영 Firestore `sitekpi/feedback/rows` — 화면·위치(section)·👍/👎·의견·언어·연결 여부·시각 (IP·계정 없음) | — |
 | 측정 쿠키 | `sk_ev`(5분, 1회 이벤트 이름) · `sk_conn`(14일, none·demo·live). JS가 읽음(HttpOnly 아님), ID·GA4 값 없음 | — |
-| 이용자 로그 · 30초 설문 | 로컬 `.data/app.sqlite3` 테이블 `visit_events` · `visit_survey`, 운영 Firestore `sitekpi/visits/rows` · `sitekpi/survey/rows/{vid}` (`exp` TTL 90일). 쿠키 `sk_vid`(180일, HttpOnly, HTML 응답에서 발급 — `visitlog.vid_middleware`). 설문 표시 상태는 localStorage `sk_sv` · `sk_sv_boards`, sessionStorage `sk_sv_later` | — |
+| 이용자 로그 · 30초 설문 | 로컬 `.data/app.sqlite3` 테이블 `visit_events` · `visit_survey`, 운영 Firestore `sitekpi/visits/rows` · `sitekpi/survey/rows/{vid}` (`expire_at` — 세션과 같은 컬렉션 그룹 `rows`의 기존 TTL 정책으로 90일 뒤 삭제). 쿠키 `sk_vid`(180일, HttpOnly, HTML 응답에서 발급 — `visitlog.vid_middleware`). 설문 표시 상태는 localStorage `sk_sv` · `sk_sv_boards`, sessionStorage `sk_sv_later` | — |
 | 빌더 | 브라우저 localStorage `sitekpi.builder.v4` (v3 자동 이전) | — |
 
 ## 7. 기획서 화면 사본

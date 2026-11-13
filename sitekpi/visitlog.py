@@ -2,12 +2,12 @@
 
 - POST /events  — static/js/track.js mirrors every event it sends to GA4 here, plus a page view ("pv").
 - POST /survey  — the survey card (static/js/survey.js): four choices + one optional line.
-- GET  /hq/api/users?days=7 — Starful HQ's B1 Task Force popup. Bearer token from env HQ_API_TOKEN
-  (Secret Manager SITEKPI_HQ_TOKEN); without the env the route does not exist (404).
+- GET  /hq/api/users?days=7 — Starful HQ's B1 Task Force popup. Bearer = hq_token(): HMAC of SESSION_SECRET
+  (HQ reads Secret Manager SITEKPI_SESSION_SECRET and derives the same key), or HQ_API_TOKEN when set.
 
 Who: an anonymous visitor id in the cookie ``sk_vid`` (random, 180 days). Never stored: IP, Google
 account, anything read from the user's GA4 (property, numbers, event names). Rows are kept 90 days:
-the Firestore field ``exp`` (TTL policy) and a purge on write for the local SQLite file.
+the Firestore field ``expire_at`` (the existing TTL policy on collection group ``rows``) and a purge on write for the local SQLite file.
 """
 
 from __future__ import annotations
@@ -249,9 +249,21 @@ async def post_survey(request: Request) -> Response:
 
 # --- HQ read API --------------------------------------------------------------------------------------
 
+def hq_token(secret: str | None = None) -> str:
+    """The HQ read key: HQ_API_TOKEN if set, else derived from SESSION_SECRET (HQ derives the same from
+    Secret Manager SITEKPI_SESSION_SECRET, so no extra secret to create). Empty → the API is off."""
+    explicit = (os.getenv("HQ_API_TOKEN") or "").strip()
+    if explicit:
+        return explicit
+    base = (os.getenv("SESSION_SECRET") if secret is None else secret) or ""
+    if not base.strip():
+        return ""
+    return hmac.new(base.strip().encode(), b"sitekpi-hq-api-v1", "sha256").hexdigest()
+
+
 def _token_ok(request: Request) -> bool | None:
-    """None: the API is off (no HQ_API_TOKEN). True/False: the bearer token matches."""
-    want = (os.getenv("HQ_API_TOKEN") or "").strip()
+    """None: the API is off (no key). True/False: the bearer token matches."""
+    want = hq_token()
     if not want:
         return None
     got = (request.headers.get("authorization") or "").removeprefix("Bearer ").strip()

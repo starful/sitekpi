@@ -53,9 +53,19 @@ def test_survey_keeps_known_answers_and_one_line(client):
     assert client.post("/survey", json={"answers": {"goal": "nope"}}).status_code == 400
 
 
+def test_hq_key_comes_from_the_session_secret():
+    import hashlib
+    import hmac
+    want = hmac.new(b"abc", b"sitekpi-hq-api-v1", hashlib.sha256).hexdigest()
+    assert visitlog.hq_token("abc") == want and visitlog.hq_token("") == ""
+
+
 def test_hq_api_is_off_without_token_and_needs_the_bearer(client, monkeypatch):
     monkeypatch.delenv("HQ_API_TOKEN", raising=False)
+    monkeypatch.setenv("SESSION_SECRET", "")
     assert client.get("/hq/api/users").status_code == 404
+    monkeypatch.setenv("SESSION_SECRET", "test-secret")
+    assert client.get("/hq/api/users", headers={"Authorization": "Bearer " + visitlog.hq_token("test-secret")}).status_code == 200
     monkeypatch.setenv("HQ_API_TOKEN", "t0ken-for-tests")
     assert client.get("/hq/api/users").status_code == 401
     assert client.get("/hq/api/users", headers={"Authorization": "Bearer wrong"}).status_code == 401

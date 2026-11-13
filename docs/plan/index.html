@@ -729,7 +729,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>누구</td><td>익명 방문자 ID = 쿠키 <code>sk_vid</code>(무작위 24자, 180일, HttpOnly). HTML 페이지를 처음 열 때 서버가 준다. IP·Google 계정·이메일은 저장하지 않는다</td></tr>
         <tr><td>무엇</td><td><code>track.js</code>가 GA4로 보내는 이벤트를 <b>똑같이</b> <code>POST /events</code>에도 보낸다(1.5초 묶음, 페이지를 떠날 때 sendBeacon) + 페이지 열람 <code>pv</code>. 파라미터는 SiteKPI 키 목록(<code>visitlog.PARAM_KEYS</code>)만, 값 60자까지. 경로는 쿼리 없이, 유입은 다른 사이트의 <b>도메인만</b></td></tr>
         <tr><td>지키는 것</td><td>GA4와 같은 규칙: 사용자의 GA4 데이터(속성·숫자·이벤트 이름·채널 이름)는 보내지 않는다. 한 방문자 하루 600건까지. 자동 브라우저(webdriver)는 기록하지 않음</td></tr>
-        <tr><td>보관</td><td>90일. 운영 Firestore <code>sitekpi/visits/rows</code> · <code>sitekpi/survey/rows/{vid}</code>의 <code>exp</code> 필드 TTL 정책, 로컬 SQLite는 쓸 때 지움</td></tr>
+        <tr><td>보관</td><td>90일. 운영 Firestore <code>sitekpi/visits/rows</code> · <code>sitekpi/survey/rows/{vid}</code>의 <code>expire_at</code> 필드(세션과 같은 기존 TTL 정책), 로컬 SQLite는 쓸 때 지움</td></tr>
       </tbody>
     </table>
 
@@ -742,7 +742,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     </ul>
 
     <h3>HQ로 넘기는 API</h3>
-    <p><code>GET /hq/api/users?days=7|30|90</code>, <code>Authorization: Bearer</code> = 환경 변수 <code>HQ_API_TOKEN</code>(Secret Manager <code>SITEKPI_HQ_TOKEN</code>). 토큰이 없으면 404. 돌려주는 것: KPI 4개(방문자 · 보드를 본 사람 · GA4 연결 · 설문 응답, 이전 기간 방문자) · 흐름(랜딩 → 견본 보드 → 연결 시작 → 연결 완료 → 내 보드 → AI 프롬프트 복사)과 가장 많이 멈추는 곳 · 설문 집계 · 바라는 것 · 방문자 목록(짧은 ID · 처음 · 유입 · 왜 · 입장 · 한 것 · 방문 수 = 30분 간격 세션)과 각자의 타임라인(JST). 라벨은 한국어.</p>
+    <p><code>GET /hq/api/users?days=7|30|90</code>, <code>Authorization: Bearer</code> = <code>SESSION_SECRET</code>에서 만든 HMAC 키(HQ도 Secret Manager <code>SITEKPI_SESSION_SECRET</code>에서 같은 키를 만든다 — 새 비밀값 없음). <code>HQ_API_TOKEN</code>이 있으면 그것을 우선. 돌려주는 것: KPI 4개(방문자 · 보드를 본 사람 · GA4 연결 · 설문 응답, 이전 기간 방문자) · 흐름(랜딩 → 견본 보드 → 연결 시작 → 연결 완료 → 내 보드 → AI 프롬프트 복사)과 가장 많이 멈추는 곳 · 설문 집계 · 바라는 것 · 방문자 목록(짧은 ID · 처음 · 유입 · 왜 · 입장 · 한 것 · 방문 수 = 30분 간격 세션)과 각자의 타임라인(JST). 라벨은 한국어.</p>
   </section>
 
   <section class="block" id="open">
@@ -757,7 +757,6 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>업계 기준 출처(Databox 등)의 상업 이용 조건</td><td><span class="st check">확인 필요</span></td><td>공개 전에 확인</td></tr>
         <tr><td>처리방침·약관의 운영자명 · 소재지 · 관할 법원</td><td><span class="st check">확인 필요</span></td><td>지금은 중립 문구. 정해지면 <code>OPERATOR_NAME=… ./deploy.sh</code>. 문의는 Apps Script 폼</td></tr>
         <tr><td>처리방침의 운영 약속(ご意見 2년 보존 · 삭제 30일 이내 · 2단계 인증 · 종료 30일 전 공지)</td><td><span class="st check">확인 필요</span></td><td>실제로 지킬 수 있는지</td></tr>
-        <tr><td>이용자 로그: 비밀 <code>SITEKPI_HQ_TOKEN</code> 만들기 · Firestore TTL 정책(<code>visits</code>·<code>survey</code>의 <code>exp</code>)</td><td><span class="st check">배포 전 필요</span></td><td><a href="#visitlog">이용자 로그</a>. 비밀이 없으면 Cloud Run 배포가 실패한다</td></tr>
         <tr><td>GA4 속성 설정 (GTM 없음)</td><td><span class="st check">확인 필요</span></td><td><a href="#analytics">GA4 이벤트 설계</a>의 「설치」 표대로</td></tr>
         <tr><td>Apps Script 문의 폼 동작</td><td><span class="st check">확인 필요</span></td><td>브라우저에서 제출 시험</td></tr>
         <tr><td>휴대폰 화면</td><td><span class="st hold">보류</span></td><td>깨지지 않을 정도만</td></tr>
