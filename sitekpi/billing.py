@@ -31,6 +31,11 @@ STATUS_ACTIVE = "active"
 STATUS_PAST_DUE = "past_due"
 STATUS_CANCELED = "canceled"
 
+# How many sites a free (no active paid subscription) workspace may connect at once.
+# Paid plans can be given a higher per-row site_limit once pricing is final (not yet
+# decided — see docs/plan); until then every row defaults to the free limit.
+FREE_SITE_LIMIT = 1
+
 
 class SubscriptionStore:
     def __init__(self, path: Path) -> None:
@@ -45,8 +50,16 @@ class SubscriptionStore:
                 " user_id TEXT PRIMARY KEY, plan TEXT NOT NULL, status TEXT NOT NULL,"
                 " stripe_customer_id TEXT, stripe_subscription_id TEXT,"
                 " renewed_at INTEGER, retry_count INTEGER NOT NULL DEFAULT 0,"
+                f" site_limit INTEGER NOT NULL DEFAULT {FREE_SITE_LIMIT},"
                 " updated_at INTEGER NOT NULL)"
             )
+            # Migration for subscriptions.sqlite3 files that predate site_limit.
+            cols = {row[1] for row in db.execute("PRAGMA table_info(subscriptions)").fetchall()}
+            if "site_limit" not in cols:
+                db.execute(
+                    f"ALTER TABLE subscriptions ADD COLUMN site_limit INTEGER"
+                    f" NOT NULL DEFAULT {FREE_SITE_LIMIT}"
+                )
 
     def _connect(self) -> sqlite3.Connection:
         from sitekpi.sqlite_util import connect
@@ -57,14 +70,24 @@ class SubscriptionStore:
         with self._connect() as db:
             row = db.execute(
                 "SELECT user_id, plan, status, stripe_customer_id, stripe_subscription_id,"
-                " renewed_at, retry_count, updated_at FROM subscriptions WHERE user_id = ?",
+                " renewed_at, retry_count, site_limit, updated_at FROM subscriptions WHERE user_id = ?",
                 (user_id,),
             ).fetchone()
         if not row:
             return None
         keys = ("user_id", "plan", "status", "stripe_customer_id", "stripe_subscription_id",
-                "renewed_at", "retry_count", "updated_at")
+                "renewed_at", "retry_count", "site_limit", "updated_at")
         return dict(zip(keys, row))
+
+    def site_limit(self, user_id: str | None) -> int:
+        """How many sites this workspace may keep connected right now.
+
+        No row (never subscribed) or a lapsed subscription (past_due/canceled) both fall
+        back to the free limit; an active row uses its own site_limit."""
+        row = self.get(user_id) if user_id else None
+        if not row or row["status"] != STATUS_ACTIVE:
+            return FREE_SITE_LIMIT
+        return int(row["site_limit"] or FREE_SITE_LIMIT)
 
     def upsert(
         self,
@@ -163,3 +186,27 @@ def get_store() -> SubscriptionStore:
             path = Path(os.getenv("APP_DB_PATH") or (ROOT / ".data" / "app.sqlite3"))
             _store = SubscriptionStore(path)
         return _store
+
+
+def check_site_limit(user_id: str | None, current_site_count: int) -> dict[str, Any] | None:
+    """Would connecting one more site put this workspace over its plan's site_limit?
+
+    Call this right before a *new* site gets linked (``current_site_count`` = sites
+    already connected, not counting the new one). Returns an upgrade-prompt payload
+    to block the connection with, or ``None`` to let it through. No login/workspace
+    id exists yet (see module docstring), so ``user_id`` may be ``None`` — that's
+    just treated as a free workspace.
+    """
+    limit = get_store().site_limit(user_id)
+    if current_site_count < limit:
+        return None
+    return {
+        "blocked": True,
+        "reason": "site_limit",
+        "limit": limit,
+        "modal": {
+            "title_key": "billing.site_limit_modal.title",
+            "body_key": "billing.site_limit_modal.body",
+            "cta_key": "billing.site_limit_modal.cta",
+        },
+    }

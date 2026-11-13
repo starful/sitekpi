@@ -881,6 +881,11 @@ UI: dict[str, dict[str, str]] = {
         "en": "Failed to list Properties: {exc}",
         "ko": "Property 목록을 가져오지 못했습니다: {exc}",
     },
+    "connect.err.site_limit": {
+        "ja": "無料プランは 1 サイトまでです。別の Property に接続するには、今のサイトとの接続を解除するか、プランのアップグレードが必要です。",
+        "en": "The free plan connects up to 1 site. To connect a different Property, disconnect the current site first, or upgrade your plan.",
+        "ko": "무료 플랜은 사이트 1개까지 연결할 수 있습니다. 다른 Property에 연결하려면 지금 연결을 해제하거나 플랜을 업그레이드해야 합니다.",
+    },
     "connect.err.preview": {
         "ja": "プレビュー取得に失敗しました: {exc}",
         "en": "Failed to load preview: {exc}",
