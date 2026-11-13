@@ -47,13 +47,15 @@ def static_url(path: str) -> str:
     return f"/static/{path}?v={hit[1]}"
 
 
-_GTM_ID = re.compile(r"GTM-[A-Z0-9]{4,12}")
+_GA4_ID = re.compile(r"G-[A-Z0-9]{6,12}")
 
 
-def gtm_id() -> str:
-    """Google Tag Manager container from env GTM_ID (set on Cloud Run only, so local runs send nothing)."""
-    value = (os.getenv("GTM_ID") or "").strip().upper()
-    return value if _GTM_ID.fullmatch(value) else ""
+def ga4_id() -> str:
+    """SiteKPI's own GA4 measurement ID from env GA4_ID (G-…; set on Cloud Run only, so local runs send nothing).
+
+    Events go straight from static/js/track.js to GA4 with gtag.js — no Tag Manager container to maintain."""
+    value = (os.getenv("GA4_ID") or "").strip().upper()
+    return value if _GA4_ID.fullmatch(value) else ""
 
 
 def _nl2br(text: Any) -> Markup:
@@ -72,7 +74,7 @@ env = Environment(
     lstrip_blocks=True,
     auto_reload=True,
 )
-env.globals.update(t=t, html_lang=html_lang, static_url=static_url, brand_name=BRAND_NAME, gtm_id=gtm_id,
+env.globals.update(t=t, html_lang=html_lang, static_url=static_url, brand_name=BRAND_NAME, ga4_id=ga4_id,
                    contact_url=lambda: CONTACT_URL)
 env.filters["nl2br"] = _nl2br
 env.filters["num"] = _num

@@ -164,13 +164,16 @@ def test_robots_and_sitemap(client):
     assert x.status_code == 200 and x.text.count("<url>") == 12 and "/help?lang=ko" in x.text and "/policy?lang=en" in x.text
 
 
-def test_gtm_only_when_configured(client, monkeypatch):
-    monkeypatch.delenv("GTM_ID", raising=False)
+def test_ga4_tag_only_when_configured(client, monkeypatch):
+    """SiteKPI's own GA4 via gtag.js (no Tag Manager): only on Cloud Run, only a real measurement id."""
+    monkeypatch.delenv("GA4_ID", raising=False)
     assert "googletagmanager.com" not in client.get("/").text
-    monkeypatch.setenv("GTM_ID", "GTM-N957ZQB6")
-    for path in ("/", "/policy", "/glossary"):
-        assert "gtm.js?id=GTM-N957ZQB6" in client.get(path).text, path
-    monkeypatch.setenv("GTM_ID", "GTM-x\"><script>")  # not a container id → nothing rendered
+    monkeypatch.setenv("GA4_ID", "G-1MKNTCMQ13")
+    for path in ("/", "/policy", "/glossary", "/ec"):
+        html = client.get(path).text
+        assert "gtag/js?id=G-1MKNTCMQ13" in html and "gtag('config', 'G-1MKNTCMQ13')" in html, path
+        assert "gtm.js" not in html, path
+    monkeypatch.setenv("GA4_ID", "G-x\"><script>")  # not a measurement id → nothing rendered
     assert "googletagmanager.com" not in client.get("/").text
     en = client.get("/policy?lang=en").text
     assert "Google Analytics" in en and "We never send" in en

@@ -30,8 +30,9 @@ _DESC = {
 
 _OP_DEFAULT = {
     "name": {"ja": "SiteKPI 運営者", "en": "the SiteKPI operator", "ko": "SiteKPI 운영자"},
-    "address": {"ja": "ご請求があれば遅滞なく開示します", "en": "disclosed without delay on request",
-                "ko": "청구가 있으면 지체 없이 공개합니다"},
+    # an individual operator: name and address are given without delay on request (APPI art. 32 「本人の知り得る状態」)
+    "address": {"ja": "運営者の氏名・住所は、ご請求があれば遅滞なく開示します", "en": "the operator's legal name and address are disclosed without delay on request",
+                "ko": "운영자의 성명·주소는 청구가 있으면 지체 없이 공개합니다"},
     "court": {"ja": "運営者の住所地を管轄する地方裁判所", "en": "the district court having jurisdiction over the operator's address",
               "ko": "운영자의 주소지를 관할하는 지방법원"},
 }

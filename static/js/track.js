@@ -1,4 +1,4 @@
-/* GA4 events for SiteKPI itself → dataLayer (Google Tag Manager). Design: docs/plan #analytics.
+/* GA4 events for SiteKPI itself → gtag.js straight to GA4 (no Tag Manager). Design: docs/plan #analytics.
    Rule (Google API Limited Use): never send anything read from the user's GA4 — no property id or
    name, no metric values, no event names they picked, no channel names. Only SiteKPI's own keys
    (screen, button, metric / industry / goal catalog keys, period) and choices the user made. */
@@ -24,14 +24,19 @@
   const connection = cookie("sk_conn") || "none"; // none · demo · live (set by the server, no ids)
   const lang = (document.documentElement.lang || "ja").slice(0, 2);
 
+  // gtag.js is on the page only when GA4_ID is set (Cloud Run); elsewhere events stay in dataLayer for tests
+  function send(command, a, b) {
+    if (typeof window.gtag === "function") window.gtag(command, a, b);
+    else window.dataLayer.push(Object.assign({ event: command === "event" ? a : "set" }, b || {}));
+  }
   function track(event, params) {
-    const row = Object.assign({ event: event, screen: screen }, params || {});
+    const row = Object.assign({ screen: screen }, params || {});
     Object.keys(row).forEach((k) => { if (row[k] === undefined || row[k] === "") delete row[k]; });
-    window.dataLayer.push(row);
+    send("event", event, row);
   }
   window.SiteKPITrack = track;
-  // user properties (GTM: map to the Google tag's user_properties)
-  window.dataLayer.push({ ui_language: lang, connection: connection });
+  // user properties (register ui_language and connection as user-scoped custom dimensions in GA4)
+  send("set", "user_properties", { ui_language: lang, connection: connection });
 
   // one-shot events the server queued in a cookie: login · oauth_error.denied · demo_start.hero …
   const queued = cookie("sk_ev");

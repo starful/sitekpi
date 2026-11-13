@@ -17,7 +17,7 @@
 | 환경 변수 | `.env.example` 참고. `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` · `GOOGLE_REDIRECT_URI` · `APP_BASE_URL` · `SESSION_SECRET` (데모 접속만이면 불필요). 선택: `SESSION_DB_PATH` · `SESSION_ENCRYPTION_KEY` · `APP_DB_PATH` · 로컬 http 전용 `OAUTHLIB_INSECURE_TRANSPORT` |
 | GA4 권한 | `analytics.readonly` 하나 (읽기 전용) |
 | 배포 | Cloud Run(`starful-258005`, us-central1, 서비스 `sitekpi-service`) · 도메인 `sitekpi.net`. 최초 1회 `scripts/gcp_setup.sh <client_secret.json>`(API·Artifact Registry·Secret Manager·IAM·Firestore TTL), 이후 `./deploy.sh`(Cloud Build: 테스트 → 빌드 → 배포), 도메인 연결 `scripts/gcp_setup.sh --domain`. OAuth 동의 화면·클라이언트는 별도 프로젝트 `sitekpi` |
-| 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `OPERATOR_NAME` · `OPERATOR_ADDRESS` · `LEGAL_COURT`(선택, /policy·/terms 표기. 비면 중립 문구) · `GTM_ID`(Google 태그 관리자 컨테이너, `GTM-` 형식만 출력. 비어 있으면 태그 없음 → 로컬은 측정 안 함) · `DEMO_CONNECT`(운영에서는 비워 둔다. `1`이면 데모 연결을 연다 — 개발·테스트용). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` |
+| 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `GA4_ID`(SiteKPI 자체 GA4 측정 ID `G-…`, gtag.js로 직접 전송. 비어 있으면 태그 없음 → 로컬은 측정 안 함) · `OPERATOR_NAME`(기본 starful) · `OPERATOR_ADDRESS` · `LEGAL_COURT`(선택, /policy·/terms 표기. 비면 중립 문구) · `DEMO_CONNECT`(운영에서는 비워 둔다. `1`이면 데모 연결을 연다 — 개발·테스트용). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` |
 | 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-12 기준 235개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
 
 ## 2. 디렉터리
@@ -113,7 +113,7 @@ tests/ · scripts/
 | 07 설정 | `views/settings.py` | `settings.html` | `settings.css` |
 | 01 홈(랜딩) | `views/landing.py` (`landing_context`, 숫자는 카탈로그에서) · 문구 `i18n/landing_l10n.py` (ja/en/ko) | `landing.html` · `public.html`(공개 헤더·푸터) | `landing.css` · 이미지 `static/img/lp/{hero,state,flow,watch,notice,gloss}-{ja,en,ko}.webp`(데모 보드 캡처) |
 | 08·09 처리방침·약관 | `routes/legal.py` (`operator()` ← `OPERATOR_NAME`·`OPERATOR_ADDRESS`·`LEGAL_COURT`) | `legal.html` · `legal/{policy,terms}_{ja,en,ko}.html` | `legal.css` |
-| 측정(GA4) | `templating.gtm_id` (← `GTM_ID`) · `routes/connect._mark` (쿠키 `sk_ev` 1회 이벤트, `sk_conn` none·demo·live) | `base.html` (GTM 태그 · `track.js`) | `static/js/track.js` (`SiteKPITrack`, `data-track*` 속성, 화면별 위임 리스너) |
+| 측정(GA4) | `templating.ga4_id` (← `GA4_ID`, gtag.js 직접 — GTM 없음) · `routes/connect._mark` (쿠키 `sk_ev` 1회 이벤트, `sk_conn` none·demo·live) | `base.html` (gtag.js 태그 · `track.js` → `gtag('event', …)`) | `static/js/track.js` (`SiteKPITrack`, `data-track*` 속성, 화면별 위임 리스너) |
 | 공통 메뉴 | `routes/nav.py` (`nav_context`, `nav_rail_context`) | `partials/rail*.html` | `rail.js` · `rail.css` |
 
 「説明」 팝업 = `<template id="pop-…">` + `data-pop-open` (popover.js). 지표 「説明」 카드는 指標辞典과 같은 `partials/help_card.html`.
