@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Survey card</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&amp;family=DM+Sans:wght@700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1d4ed8}a:hover{color:#1e3a8a}
+</style>
+</helmet>
+<div style="font-family: 'IBM Plex Sans JP', system-ui, sans-serif; color: #152033; background: #eef2f7; width: 1440px; min-height: 1200px; box-sizing: border-box; padding: 40px 48px; display: flex; flex-direction: column; gap: 28px">
+
+  <header style="display: flex; flex-direction: column; gap: 6px">
+    <h1 style="margin: 0; font-size: 26px; font-weight: 800">30秒アンケート — メモ・ご意見パネルの上に、1回だけ</h1>
+    <p style="margin: 0; font-size: 15px; color: #5b6676">ボード（見本でも自分のでも）を一度見たあとに出る。1画面に1問・タップで答える・「あとで」「もう聞かない」でいつでも閉じられる。答えは行動ログと同じ匿名IDで保存（HQ の「SiteKPI 利用者」で見る）。</p>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(4, 320px); gap: 24px; align-items: start">
+
+    <sc-for list="{{states}}" as="s" hint-placeholder-count="4">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 13px; font-weight: 800; color: #5b6676">{{s.caption}}</span>
+        <aside aria-label="メモ・ご意見" style="width: 300px; box-sizing: border-box; background: #ffffff; border-left: 1px solid #e5eaf1; border-radius: 0 12px 12px 0; padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
+
+          <sc-if value="{{s.ask}}" hint-placeholder-val="{{ true }}">
+            <section aria-label="アンケート" style="background: #f5f8ff; border: 1px solid #c9dbfb; border-radius: 12px; padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <b style="font-size: 13px; color: #1d4ed8">30秒アンケート</b>
+                <span style="font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 800; color: #5b6676">{{s.step}}</span>
+                <span aria-hidden="true" style="flex-grow: 1; height: 4px; border-radius: 99px; background: #dbe4f3; overflow: hidden; display: flex"><i style="{{s.bar}}"></i></span>
+              </div>
+              <p style="margin: 0; font-size: 15px; font-weight: 800; line-height: 1.5">{{s.q}}</p>
+              <sc-if value="{{s.choice}}" hint-placeholder-val="{{ true }}">
+                <div role="group" aria-label="{{s.q}}" style="display: flex; flex-direction: column; gap: 6px">
+                  <sc-for list="{{s.opts}}" as="o" hint-placeholder-count="5">
+                    <button type="button" style="{{o.style}}">{{o.label}}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{s.free}}" hint-placeholder-val="{{ false }}">
+                <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #5b6676">任意・自由に
+                  <textarea rows="3" placeholder="例: 毎週のレポートをそのまま上司に送れたら使う" style="font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid #d5dce6; border-radius: 8px; resize: vertical; color: #152033"></textarea>
+                </label>
+                <button type="button" style="font: inherit; font-size: 14px; font-weight: 800; color: #ffffff; background: #2f6fed; border: 0; border-radius: 10px; min-height: 44px; cursor: pointer">送って終わる</button>
+              </sc-if>
+              <div style="display: flex; gap: 16px; font-size: 12px">
+                <button type="button" style="font: inherit; font-size: 12px; font-weight: 700; color: #1d4ed8; background: none; border: 0; padding: 0; cursor: pointer">{{s.back}}</button>
+                <span style="flex-grow: 1"></span>
+                <button type="button" style="font: inherit; font-size: 12px; font-weight: 700; color: #5b6676; background: none; border: 0; padding: 0; cursor: pointer">あとで</button>
+                <button type="button" style="font: inherit; font-size: 12px; font-weight: 700; color: #5b6676; background: none; border: 0; padding: 0; cursor: pointer">もう聞かない</button>
+              </div>
+            </section>
+          </sc-if>
+          <sc-if value="{{s.done}}" hint-placeholder-val="{{ false }}">
+            <p role="status" style="margin: 0; padding: 12px 14px; border-radius: 12px; background: #ecfdf5; color: #0f766e; font-size: 14px; font-weight: 700; line-height: 1.6">ありがとうございます。いただいた答えは、次にどこを良くするかを決めるのに使います。</p>
+          </sc-if>
+
+          <div style="display: flex; align-items: center; gap: 8px"><b style="font-size: 15px">✎ メモ・ご意見</b><span style="margin-left: auto; font-size: 12px; color: #8792a2">閉じる ›</span></div>
+          <p style="margin: 0; font-size: 13px; color: #5b6676; line-height: 1.6">気づいたこと・わかりにくいところを、思ったときに自由に。</p>
+          <div style="height: 96px; border: 1px solid #d5dce6; border-radius: 10px; background: #ffffff"></div>
+        </aside>
+      </div>
+    </sc-for>
+  </div>
+
+  <section aria-label="質問と選択肢" style="background: #ffffff; border-radius: 16px; padding: 22px 26px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 40px; box-shadow: 0 1px 2px rgba(21,32,51,0.06)">
+    <sc-for list="{{qs}}" as="q" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <b style="font-size: 14px">{{q.n}}. {{q.q}}</b>
+        <span style="font-size: 13px; color: #5b6676; line-height: 1.6">{{q.opts}}</span>
+      </div>
+    </sc-for>
+    <p style="grid-column: 1 / -1; margin: 0; padding-top: 12px; border-top: 1px dashed #e5eaf1; font-size: 13px; color: #5b6676; line-height: 1.6">出すとき: 最初のボード表示から 20 秒後、または 2 つ目のボードを開いたとき。答えた・「もう聞かない」を押した人には二度と出さない。「あとで」は次の訪問でもう一度。パネルを閉じているときは右端のタブに青い点だけ。保存するのは選んだ答え・自由記入・匿名ID・時刻・言語だけ（IP・アカウント・GA4 の数字は保存しない）。</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var Q = [
+      { q: 'SiteKPI をどこで知りましたか？', opts: ['検索', 'SNS', '知人・同僚', 'ブログ・記事', 'その他'] },
+      { q: '今日は何をしに来ましたか？', opts: ['自分のサイトの数字が良いか知りたい', '上司・お客さまへの報告に使いたい', '指標の意味を調べに', 'GA4 の設定で困っている', 'なんとなく見に来た'] },
+      { q: 'あなたの立場に近いのは？', opts: ['サイト運営者', 'マーケティング担当', '代理店・コンサル', 'エンジニア', '経営者'] },
+      { q: 'いま GA4 でいちばん困っていることは？', opts: ['どの数字を見ればいいか分からない', '良いか悪いか判断できない', 'レポート作りに時間がかかる', '設定が難しい', 'とくにない'] },
+      { q: 'これがあったら使い続ける、というものは？', opts: [] }
+    ];
+    function opts(list, picked) {
+      return list.map(function (label, i) {
+        var on = i === picked;
+        return { label: label, style: 'font: inherit; font-size: 14px; font-weight: ' + (on ? '800' : '600') + '; text-align: left; padding: 9px 12px; min-height: 40px; border-radius: 10px; cursor: pointer; ' + (on ? 'background: #2f6fed; color: #ffffff; border: 1px solid #2f6fed' : 'background: #ffffff; color: #152033; border: 1px solid #d5dce6') };
+      });
+    }
+    function st(caption, n, picked) {
+      var free = n === 5;
+      return { caption: caption, ask: true, done: false, step: n + ' / 5', q: Q[n - 1].q, choice: !free, free: free,
+        opts: opts(Q[n - 1].opts, picked), bar: 'display: block; width: ' + (n * 20) + '%; background: #2f6fed', back: n > 1 ? '← 前へ' : '' };
+    }
+    var states = [
+      st('① 1問目（ボードを見たあと）', 1, -1),
+      st('② 選ぶとすぐ次へ', 2, 1),
+      st('③ 最後だけ自由記入（任意）', 5, -1),
+      { caption: '④ 送ったあと（2秒で小さく）', ask: false, done: true, step: '', q: '', choice: false, free: false, opts: [], bar: '', back: '' }
+    ];
+    var qs = Q.map(function (x, i) { return { n: i + 1, q: x.q, opts: x.opts.length ? x.opts.join(' / ') : '自由記入（任意・200字まで）' }; });
+    return { states: states, qs: qs };
+  }
+}
+</script>
+</body>
+</html>

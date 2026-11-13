@@ -29,12 +29,41 @@
     if (typeof window.gtag === "function") window.gtag(command, a, b);
     else window.dataLayer.push(Object.assign({ event: command === "event" ? a : "set" }, b || {}));
   }
+  // SiteKPI's own visitor log (POST /events → HQ「SiteKPI 이용자」): the same events and params as GA4,
+  // with an anonymous id cookie set by the server (sk_vid). Batched; flushed on a short timer and on pagehide.
+  const queue = [];
+  let flushTimer = 0;
+  function flush() {
+    flushTimer = 0;
+    if (!queue.length) return;
+    const body = JSON.stringify({ events: queue.splice(0, 20), path: path, lang: lang });
+    try {
+      if (!(navigator.sendBeacon && navigator.sendBeacon("/events", new Blob([body], { type: "application/json" })))) {
+        fetch("/events", { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true }).catch(() => {});
+      }
+    } catch (e) { /* offline */ }
+    if (queue.length) flush();
+  }
+  function log(event, params, ref) {
+    if (navigator.webdriver && !window.SiteKPILogInTests) return; // headless checks don't count as visitors
+    queue.push(ref ? { e: event, p: params, ref: ref } : { e: event, p: params });
+    if (!flushTimer) flushTimer = setTimeout(flush, 1500);
+  }
+  addEventListener("pagehide", flush);
+  addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
+
   function track(event, params) {
     const row = Object.assign({ screen: screen }, params || {});
     Object.keys(row).forEach((k) => { if (row[k] === undefined || row[k] === "") delete row[k]; });
     send("event", event, row);
+    log(event, row);
   }
   window.SiteKPITrack = track;
+
+  // page view for the visitor log only (GA4 counts page_view itself); referrer: other sites only, host only
+  let ref = "";
+  try { const r = document.referrer ? new URL(document.referrer) : null; if (r && r.host !== location.host) ref = r.origin; } catch (e) { /* bad url */ }
+  log("pv", { screen: screen }, ref);
 
   // Activation funnel params: not wired to real data yet (no accounts/plan concept in the app, and
   // the GA4 property id must never leave the browser — see the rule above). track() drops them when empty.
