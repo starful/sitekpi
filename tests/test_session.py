@@ -117,3 +117,36 @@ def test_https_requires_real_secret(monkeypatch):
         session_settings()
     monkeypatch.setenv("SESSION_SECRET", "a" * 48)
     assert session_settings()["https_only"] is True
+
+
+@pytest.mark.parametrize("touch", ["changed", "sliding"])
+def test_overlapping_request_does_not_bring_back_a_disconnected_session(tmp_path, touch):
+    """The /events beacon leaves as the page unloads, so it can overlap POST /connect/disconnect:
+    it must not write the deleted session (with the GA4 grant) back and re-connect the browser."""
+    import time
+
+    from starlette.applications import Starlette
+    from starlette.responses import PlainTextResponse
+    from starlette.routing import Route
+
+    from sitekpi.session import ServerSessionMiddleware, SQLiteSessionStore
+
+    store = SQLiteSessionStore(tmp_path / "s.sqlite3", "k" * 40, 14 * 86400)
+    store.save("sid-1", {"ga4_credentials": {"refresh_token": "RT"}})
+    if touch == "sliding":  # a session from a few days ago: unchanged requests refresh its expiry
+        with sqlite3.connect(tmp_path / "s.sqlite3") as db:
+            db.execute("UPDATE sessions SET expires_at = ?", (int(time.time()) + 10 * 86400,))
+
+    async def beacon(request):
+        store.delete("sid-1")  # the disconnect finished while this request was in flight
+        if touch == "changed":
+            request.session["seen"] = 1
+        return PlainTextResponse("ok")
+
+    web = Starlette(routes=[Route("/events", beacon, methods=["POST"])])
+    web.add_middleware(ServerSessionMiddleware, store=store)
+    c = TestClient(web)
+    c.cookies.set("sitekpi_sid", "sid-1")
+    r = c.post("/events")
+    assert store.load("sid-1") is None
+    assert "Max-Age=0" in r.headers.get("set-cookie", "")
