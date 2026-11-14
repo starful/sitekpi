@@ -156,8 +156,13 @@ class ServerSessionMiddleware:
                     changed = json.dumps(session, sort_keys=True, default=str) != before
                     # sliding expiry, but write at most ~once a day when unchanged
                     if changed or expires_at - time.time() < self.store.max_age - 86400:
-                        self.store.save(sid, session)
-                        headers.append("Set-Cookie", self._cookie(sid))
+                        # A request that overlapped a disconnect / sign-out (e.g. the /events beacon sent
+                        # as the page unloads) must not write the deleted session back and re-connect it.
+                        if self.store.load(sid) is None:
+                            headers.append("Set-Cookie", self._cookie("", expire=True))
+                        else:
+                            self.store.save(sid, session)
+                            headers.append("Set-Cookie", self._cookie(sid))
                 for name in stale_legacy:
                     headers.append(
                         "Set-Cookie", f"{name}=; Path=/; Max-Age=0; HttpOnly; SameSite=lax"
