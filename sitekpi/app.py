@@ -23,6 +23,7 @@ from contextlib import asynccontextmanager  # noqa: E402
 
 from fastapi import FastAPI  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
+from sitekpi.i18n import BrowserLocaleMiddleware  # noqa: E402
 
 from sitekpi.routes.benchmarks import router as benchmarks_router  # noqa: E402
 from sitekpi.routes.billing import router as billing_router  # noqa: E402
@@ -60,6 +61,7 @@ async def _lifespan(_app: FastAPI):
 
 app = FastAPI(title=BRAND_NAME, lifespan=_lifespan)
 app.add_middleware(GZipMiddleware, minimum_size=1024)
+app.add_middleware(BrowserLocaleMiddleware)  # inside the session middleware (added after it = outer)
 app.add_middleware(
     ServerSessionMiddleware,
     store=(FirestoreSessionStore(_session["secret"], SESSION_MAX_AGE) if firestore_enabled()

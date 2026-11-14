@@ -104,3 +104,23 @@ main.glossary {
   height: calc(1.65em * 3);
 }
 .gl-card summary { min-height: 0; }
+
+/* Phones: search and kinds stay on top; each group opens 4 at a time (canvas SpGlossary) */
+.gl-more { display: none; }
+@media (max-width: 640px) {
+  main.glossary { gap: 16px; }
+  .gl-toolbar { position: sticky; top: 57px; z-index: 20; margin: 0 -16px; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--line); flex-direction: column; align-items: stretch; gap: 8px; }
+  .gl-search { flex: none; max-width: none; min-height: 44px; }
+  .gl-kinds { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px;
+    -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
+  .gl-kinds::-webkit-scrollbar { display: none; }
+  .gl-kind { flex: none; min-height: 36px; padding: 0 12px; }
+  .gl-group-desc { padding-left: 0; }
+  .gl-list { gap: 8px; }
+  .gl-card summary { min-height: 0; padding: 12px 14px; gap: 6px; }
+  .gl-card:not([open]) .gl-meaning { -webkit-line-clamp: 2; line-clamp: 2; height: calc(1.65em * 2); }
+  .gl-sticker { width: 44px; height: 44px; }
+  .glossary:not(.is-searching) .gl-group:not(.is-all) .gl-extra { display: none; }
+  .glossary:not(.is-searching) .gl-group:not(.is-all) .gl-more { display: flex; }
+  .gl-more { align-items: center; justify-content: center; min-height: 44px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--accent-ink); font: inherit; font-size: 0.8125rem; font-weight: 700; cursor: pointer; }
+}

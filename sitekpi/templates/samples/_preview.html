@@ -40,7 +40,7 @@
     <ol class="sp-bars">
       {% for s in cur.bars %}
       <li class="{{ 'is-worst' if s.worst else '' }}{{ ' is-issue' if s.issue else '' }}{{ ' is-last' if s.last else '' }}">
-        <div class="sp-bar"><i style="height: {{ s.height }}%"></i></div>
+        <div class="sp-bar"><i style="height: {{ s.height }}%; --w: {{ s.height }}%"></i></div>
         <span class="sp-bar-label">{{ s.label }}</span>
         <span class="sp-bar-users">{{ s.users }}{% if t("samplesx.people", loc) %} <small>{{ t("samplesx.people", loc) }}</small>{% endif %}</span>
         <span class="sp-bar-go">{{ t("samplesx.go", loc, go=s.go) if s.go else t("samplesx.entry", loc) }}</span>
@@ -50,3 +50,6 @@
   </div>
   <p class="sp-muted">{{ t("samplesx.note", loc) }}</p>
 </div>
+
+{#- phones: 「この見本をボードで開く」 stays at the bottom of the screen -#}
+<div class="sp-open-bar"><a class="sp-btn sp-btn-primary" href="{{ cur.open_href }}">{{ t("samplesx.open", loc) }}</a></div>

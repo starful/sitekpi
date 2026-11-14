@@ -22,9 +22,16 @@
     box.querySelectorAll("[data-memo-toggle]").forEach((b) => b.setAttribute("aria-expanded", open ? "true" : "false"));
     document.querySelector(".shell")?.classList.toggle("memo-open", open);
     if (save) set(KEY_OPEN, open ? "1" : "0");
+    document.querySelectorAll("[data-memo-open]").forEach((b) => b.setAttribute("aria-expanded", open ? "true" : "false"));
   }
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("[data-memo-open]")) return;
+    const open = box.classList.contains("is-closed");
+    setOpen(open, true);
+    if (open) text.focus({ preventScroll: true });
+  });
   const saved = get(KEY_OPEN);
-  setOpen(saved ? saved === "1" : window.innerWidth >= 1600, false); // wide screens start open
+  setOpen(window.innerWidth > 900 && (saved ? saved === "1" : window.innerWidth >= 1600), false); // wide screens start open; phones always start closed
   box.addEventListener("click", (e) => {
     const tg = e.target.closest("[data-memo-toggle]");
     if (tg) { const open = box.classList.contains("is-closed"); setOpen(open, true); if (open) text.focus({ preventScroll: true }); }

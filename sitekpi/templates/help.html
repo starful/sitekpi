@@ -9,7 +9,10 @@
     {% for id in ("start", "connect", "read", "words", "fix", "trouble", "contact") %}<a href="#{{ id }}">{{ g.toc[id] }}</a>{% endfor %}
   </aside>
   <main class="hp-main">
-    <div class="hp-head"><p class="hp-k">/help</p><h1>{{ g.title }}</h1><p>{{ g.lead }} <a href="/glossary">{{ t("nav.glossary", loc) }} →</a></p></div>
+    <div class="hp-head"><h1>{{ g.title }}</h1><p>{{ g.lead }} <a href="/glossary">{{ t("nav.glossary", loc) }} →</a></p></div>
+    <label class="hp-jump"><span>{{ g.toc_k }}</span>
+      <select data-hp-jump>{% for id in ("start", "connect", "read", "words", "fix", "trouble", "contact") %}<option value="{{ id }}">{{ g.toc[id] }}</option>{% endfor %}</select>
+    </label>
 
     <section id="start" class="hp-card"><h2>{{ g.toc.start }}</h2>
       <ol class="hp-steps">{% for k, v in g.start %}<li><b>{{ k }}</b><p>{{ v }}</p></li>{% endfor %}</ol>
@@ -53,4 +56,16 @@
     </section>
   </main>
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var sel = document.querySelector("[data-hp-jump]");
+  if (!sel) return;
+  sel.addEventListener("change", function () {
+    var el = document.getElementById(sel.value);
+    if (el) { el.scrollIntoView({ block: "start" }); history.replaceState(null, "", "#" + sel.value); }
+  });
+})();
+</script>
 {% endblock %}

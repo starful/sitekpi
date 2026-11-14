@@ -33,7 +33,7 @@
       </div>
       <div class="gl-list">
         {% for it in g.entries %}
-        <details class="gl-card kind-{{ g.id }}" id="{{ it.id }}" data-id="{{ it.id }}">
+        <details class="gl-card kind-{{ g.id }}{{ ' gl-extra' if loop.index > 4 else '' }}" id="{{ it.id }}" data-id="{{ it.id }}">
           <summary>
             <span class="gl-card-top">
               {{ hc.chip(g.id, g.short) }}
@@ -54,6 +54,9 @@
         </details>
         {% endfor %}
       </div>
+      {%- if g.entries|length > 4 %}
+      <button type="button" class="gl-more" data-gl-more>{{ t("gl.more", loc).format(n=g.entries|length - 4) }}</button>
+      {%- endif %}
     </section>
     {% endfor %}
     <p class="gl-empty" id="gl-empty" hidden>{{ search_empty }}</p>
@@ -81,10 +84,17 @@
       cards.forEach(function (c) { if (c !== card && c.open) c.open = false; });
     });
   });
+  /* phones: each group shows 4, the rest behind "show n more" */
+  document.querySelectorAll("[data-gl-more]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      btn.closest(".gl-group").classList.add("is-all");
+    });
+  });
   function openFromHash() {
     var id = decodeURIComponent(location.hash.slice(1));
     var card = id && document.getElementById(id);
     if (card && card.classList.contains("gl-card")) {
+      card.closest(".gl-group").classList.add("is-all");
       card.open = true;
       card.scrollIntoView({ block: "center" });
     }
@@ -107,6 +117,7 @@
       if (groupHit) any = true;
     });
     if (empty) empty.hidden = any;
+    document.querySelector("main.glossary").classList.toggle("is-searching", !!needle);
   }
   kindBtns.forEach(function (btn) {
     btn.addEventListener("click", function () {

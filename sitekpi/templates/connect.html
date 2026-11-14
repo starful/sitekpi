@@ -17,10 +17,12 @@
         <h2 id="cx-sample-title">{{ t("connect.sample.title", loc) }}</h2>
         <span class="sample-tag">{{ t("sx.badge", loc) }}</span>
       </div>
+      {#- a piece of the 見本 EC board (総評 + 3 numbers), the same as /samples — what SiteKPI actually shows -#}
+      <p class="cx-sample-lead">{{ t("connect.sample.lead", loc) }}</p>
       <div class="cx-sample-grid">
-        <div class="cx-sample-kpi"><span>{{ t("connect.sample.clicks", loc) }}</span><strong>1,284</strong></div>
-        <div class="cx-sample-kpi"><span>{{ t("connect.sample.orders", loc) }}</span><strong>86</strong></div>
-        <div class="cx-sample-kpi"><span>{{ t("connect.sample.commission", loc) }}</span><strong>¥61,200</strong></div>
+        <div class="cx-sample-kpi"><span>{{ t("connect.sample.k1", loc) }}</span><strong>1,580</strong></div>
+        <div class="cx-sample-kpi"><span>{{ t("connect.sample.k2", loc) }}</span><strong>2.3%</strong><em class="cx-j mid">{{ t("judge.mid", loc) }}</em></div>
+        <div class="cx-sample-kpi is-issue"><span>{{ t("connect.sample.k3", loc) }}</span><strong>14.6%</strong><em class="cx-j down">{{ t("judge.down", loc) }}</em></div>
       </div>
       <a class="btn primary cx-big cx-sample-cta" href="{{ '/connect/google' if oauth_ready else '/connect/demo' }}">{{ t("connect.sample.cta", loc) }}</a>
     </section>

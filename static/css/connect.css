@@ -448,7 +448,17 @@ button.choice.ind-choice { padding: 14px 30px 14px 16px; }
 .cx-sample-kpi span { display: block; font-size: 0.78rem; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
 .cx-sample-kpi strong { font-family: "DM Sans", "Noto Sans JP", sans-serif; font-size: 1.4rem; font-weight: 800; }
 .cx-sample-cta { display: inline-flex; }
-@media (max-width: 560px) { .cx-sample-grid { grid-template-columns: 1fr; } }
+.cx-sample-lead { margin: 12px 0 0; font-size: 0.9375rem; font-weight: 700; line-height: 1.6; }
+.cx-sample-kpi.is-issue strong { color: var(--down, #b45309); }
+.cx-j { display: inline-block; margin-top: 4px; font-style: normal; font-size: 0.75rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+.cx-j.mid { background: #eef1f5; color: var(--muted); }
+.cx-j.down { background: #fff4e5; color: var(--down, #b45309); }
+/* phones: three numbers stay on one row (as on the board); the 1-2-3 steps stay on one line */
+@media (max-width: 560px) {
+  .cx-sample-grid { gap: 6px; }
+  .cx-sample-kpi { padding: 10px; }
+  .cx-sample-kpi strong { font-size: 1.125rem; }
+}
 
 /* GA4 をつなぐ: login + reassurance side by side */
 .cx-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px; padding: 28px; }

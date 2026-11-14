@@ -114,3 +114,30 @@ body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font-
     box-shadow: 0 0 0 100vmax rgba(15, 23, 42, 0.32);
   }
 }
+
+/* Phones: 保存 sits in the top bar; removing a group is behind ⋯ (canvas SpBuilder) */
+.mb-save, .bx-sec-more { display: none; }
+@media (max-width: 900px) {
+  .mb-save {
+    display: inline-flex; align-items: center; margin-left: auto; min-height: 36px; padding: 0 14px;
+    border: 0; border-radius: 8px; background: var(--accent); color: #fff;
+    font: inherit; font-size: 0.8125rem; font-weight: 700; cursor: pointer;
+  }
+  .bx-save .bx-primary { display: none; }
+}
+@media (max-width: 640px) {
+  .bx-sec-del { display: none; }
+  .bx-sec-more { display: block; position: relative; margin-left: auto; }
+  .bx-sec-more summary {
+    list-style: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+    border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--muted); font-weight: 800; cursor: pointer;
+  }
+  .bx-sec-more summary::-webkit-details-marker { display: none; }
+  .bx-sec-more[open] summary { border-color: var(--accent); color: var(--accent-ink); }
+  .bx-sec-more-del {
+    position: absolute; right: 0; top: 42px; z-index: 5; white-space: nowrap; min-height: 40px; padding: 0 14px;
+    border: 1px solid var(--line); border-radius: 10px; background: #fff; box-shadow: 0 6px 20px rgba(21, 32, 51, 0.12);
+    color: #b91c1c; font: inherit; font-size: 0.8125rem; font-weight: 700; cursor: pointer;
+  }
+  .bx-tpls { grid-template-columns: 1fr 1fr; gap: 8px; }
+}

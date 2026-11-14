@@ -174,9 +174,9 @@
               <div class="wrow why-row watch-item tone-down" role="row"{% if r.bench_key %} data-metric="{{ r.bench_key }}"{% endif %}>
                 <span class="watch-name" role="rowheader"><span>{{ r.name }}</span>{% if r.bench_key %}{% for w in watch %}{% if w.bench_key == r.bench_key %}{{ m.pop_btn("watch-" ~ loop.index, r.name) }}{% endif %}{% endfor %}{% endif %}{% if r.step %}<span class="why-step">{{ r.step }}</span>{% endif %}</span>
                 <b class="num watch-value" role="cell">{{ r.now }}</b>
-                <span class="num prev-cell tone-{{ r.prev_tone }}" role="cell">{{ r.prev }}</span>
-                <span class="num rg-band" role="cell">{{ r.band }}</span>
-                <span class="num" role="cell">{% if r.rg %}{{ m.rg_gap(r.rg) }}{% elif r.bench_key %}—{% else %}<span class="muted">{{ t("bench_none", loc) }}</span>{% endif %}</span>
+                <span class="num prev-cell tone-{{ r.prev_tone }}" role="cell" data-k="{{ t('col.prev', loc) }}">{{ r.prev }}</span>
+                <span class="num rg-band" role="cell" data-k="{{ t('rg.ind', loc) }}">{{ r.band }}</span>
+                <span class="num why-gap" role="cell" data-k="{{ t('rg.left', loc) }}">{% if r.rg %}{{ m.rg_gap(r.rg) }}{% elif r.bench_key %}—{% else %}<span class="muted">{{ t("bench_none", loc) }}</span>{% endif %}</span>
               </div>
               {% endfor %}
             </div>
