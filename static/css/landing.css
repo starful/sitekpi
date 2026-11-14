@@ -205,3 +205,49 @@ a { color: var(--accent-ink); }
 }
 :lang(ko) .lp, :lang(ko) .legal-body { word-break: keep-all; }
 @media (max-width: 520px) { .lp-who img { width: 72px; height: 72px; border-radius: 14px; } }
+
+/* Phones: one column that reads top to bottom (canvas SpLanding) */
+.lp-acc-btn { all: unset; cursor: default; }
+.lp-sp-cta, .lp-rail-nav, .lp-faq-all { display: none; }
+@media (max-width: 640px) {
+  .lp-hero-shots .lp-shot:not(.lp-shot-front) { display: none; }
+  .lp-shot-front { margin-top: 0; }
+  #problem .lp-ga, #problem .lp-vs-us img { display: none; }
+  .lp-bar-labels { font-size: 0.75rem; }
+
+  /* features: accordion, text only */
+  .lp-feat { margin-top: 0; gap: 0; border-top: 1px solid var(--line); padding: 14px 0; }
+  .lp-feat > .lp-shot, .lp-feat > .lp-guess { display: none; }
+  .lp-feat-text h3 { margin: 0; font-size: 1.125rem; line-height: 1.5; }
+  .lp-acc-btn { display: flex; align-items: flex-start; gap: 10px; width: 100%; min-height: 44px; cursor: pointer; }
+  .lp-acc-btn::after { content: "+"; margin-left: auto; color: var(--muted); font-weight: 400; }
+  .lp-feat.is-open .lp-acc-btn::after { content: "−"; }
+  .lp-acc-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  .lp-feat:not(.is-open) .lp-feat-text > :not(.lp-feat-k):not(h3) { display: none; }
+
+  /* samples: one rail to swipe */
+  .lp-rail { display: flex; grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; margin-right: calc(-1 * clamp(16px, 4vw, 48px)); padding-right: 16px; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
+  .lp-rail.is-end { -webkit-mask-image: none; mask-image: none; }
+  .lp-rail::-webkit-scrollbar { display: none; }
+  .lp-rail > * { flex: none; width: 78%; scroll-snap-align: start; }
+  .lp-rail-nav { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 0.75rem; color: var(--muted); }
+  .lp-rail-dots { display: flex; gap: 5px; }
+  .lp-rail-dots i { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; }
+  .lp-rail-dots i.is-on { width: 16px; border-radius: 3px; background: var(--accent); }
+  .lp-rail-next { margin-left: auto; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--accent-ink); font: inherit; font-weight: 800; cursor: pointer; }
+
+  /* steps: text only */
+  .lp-mock, .lp-times { display: none; }
+
+  /* FAQ: first 8, then a button */
+  .lp-faq .lp-faq-more { display: none; }
+  .lp-faq-all { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px; margin-top: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--accent-ink); font: inherit; font-size: 0.875rem; font-weight: 700; cursor: pointer; }
+
+  /* connect bar stays at the bottom while the hero and final buttons are off screen */
+  .lp-sp-cta { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: rgba(255, 255, 255, 0.96); border-top: 1px solid var(--line); transition: transform 0.2s ease; }
+  .lp-sp-cta .lp-cta { width: 100%; justify-content: center; }
+  .lp-sp-cta.is-hidden { transform: translateY(110%); }
+  .pub-foot { padding-bottom: 72px; }
+}
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) { .lp-sp-cta { transition: none; } .lp-rail { scroll-behavior: auto; } }

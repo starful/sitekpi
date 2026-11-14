@@ -1092,3 +1092,48 @@ button.jt-none { font: inherit; font-size: inherit; color: var(--muted); font-we
 /* 「基準なし」 in tables: whole word, underline clear of the text */
 button.jt-none { white-space: nowrap; text-underline-offset: 3px; line-height: 1.6; }
 .dt-row .dt-gap { overflow: visible; }
+
+.dt-meta-sp { display: none; }
+/* 8週: the line's direction also as an arrow (not colour only) */
+.spark-dir { margin-left: 4px; font-size: 0.75rem; font-weight: 800; }
+.spark-dir.tone-up { color: var(--up); }
+.spark-dir.tone-down { color: var(--down); }
+
+/* ── phones (≤640px): the same cards, laid out for one hand — nothing hidden, nothing sideways ── */
+@media (max-width: 640px) {
+  /* 0 総評 · 1 · 2 · 3: one line that scrolls sideways, kept under the top bar */
+  .story-toc {
+    position: sticky; top: 57px; z-index: 20; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    margin: 0 -16px 12px; padding: 8px 16px; background: var(--bg); border-bottom: 1px solid var(--line);
+    -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent);
+  }
+  .story-toc::-webkit-scrollbar { display: none; }
+  .story-toc-step { flex: none; min-height: 36px; box-sizing: border-box; }
+  /* ② どこがおかしい？: name + value, then 前期比 · 業界 · あと on the next line */
+  .wtable { overflow: visible; }
+  .wtable .wrow.whead { display: none; }
+  .wrow.why-row, .wrow.watch-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; min-width: 0; padding: 12px 0 12px 12px; }
+  .wrow.why-row .watch-name, .wrow.watch-item .watch-name { flex: 1 1 60%; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; }
+  .wrow .watch-value { font-size: 1.125rem; }
+  .wrow.why-row > .num:not(.watch-value) { flex: none; text-align: left; font-size: 0.75rem; color: var(--muted); }
+  .wrow.why-row > .num:not(.watch-value)::before { content: attr(data-k) " "; color: var(--faint); font-weight: 400; }
+  .wrow.why-row > .prev-cell { flex-basis: auto; }
+  /* 詳しい数字: the name in full (wraps), ? right after it, value on the right; 前期比 · 業界 · あと + 8週 below */
+  .dtable { overflow: visible; padding-left: 10px; margin-left: 0; }
+  .dt-row.dt-head { display: none; }
+  .dt-row { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name value" "name trend"; gap: 2px 10px; padding: 11px 0; }
+  .dt-row .dt-name { grid-area: name; }
+  .dt-row .dt-value { grid-area: value; align-self: start; font-size: 1.125rem; font-weight: 800; }
+  .dt-row .ctr { grid-area: trend; justify-content: flex-end; align-items: center; }
+  .dt-row .ctr .spark { width: 56px; height: 20px; }
+  .dt-row > .prev-cell, .dt-row > .dt-bench, .dt-row > .dt-gap { display: none; }
+  .dt-row .dt-name { grid-row: span 2; }
+  .dt-meta-sp { display: block; flex-basis: 100%; font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .dt-meta-sp b { font-weight: 700; }
+  .dt-meta-sp .tone-up { color: var(--up); } .dt-meta-sp .tone-down { color: var(--down); }
+  /* tap targets: the ? keeps its look, the hit area grows to about 40px */
+  .help-btn.help-q { position: relative; }
+  .help-btn.help-q::after { content: ""; position: absolute; inset: -11px; }
+  .link-btn { min-height: 36px; display: inline-flex; align-items: center; }
+  .where-tools { display: flex; flex-wrap: wrap; gap: 0 14px; }
+}

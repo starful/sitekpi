@@ -22,12 +22,27 @@
         if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
       });
       if (push) history.pushState(null, "", url.pathname + url.search);
+      const on = document.querySelector("[data-goal].is-on .sp-goal-name");
+      const now = document.querySelector("[data-goal-now]");
+      if (on && now) now.textContent = on.textContent;
+      setPick(false);
     } catch (e) {
       location.href = href;
     } finally {
       if (mine === seq) pane.classList.remove("is-loading");
     }
   }
+
+  // phones: the goal list folds behind 「ゴール ▾」
+  const pick = document.querySelector("[data-goal-pick]");
+  const goals = document.getElementById("sp-goals");
+  function setPick(open) {
+    if (!pick || !goals) return;
+    goals.classList.toggle("is-folded", !open);
+    pick.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  setPick(false);
+  if (pick) pick.addEventListener("click", () => setPick(goals.classList.contains("is-folded")));
 
   document.addEventListener("click", (e) => {
     const a = e.target.closest("[data-goal], [data-ind]");

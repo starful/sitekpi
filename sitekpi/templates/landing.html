@@ -52,10 +52,10 @@
     <p class="lp-k">{{ c.features_kicker }}</p>
     <h2 id="features-t">{{ c.features_title }}</h2>
     {% for f in features %}
-    <div class="lp-feat{{ ' is-flip' if f.flip else '' }}">
+    <div class="lp-feat{{ ' is-flip' if f.flip else '' }}{{ ' is-open' if loop.first else '' }}" data-lp-acc>
       <div class="lp-feat-text">
         <p class="lp-feat-k">{{ f.num }}　{{ f.kicker }}</p>
-        <h3>{{ f.title }}</h3>
+        <h3><button type="button" class="lp-acc-btn" aria-expanded="{{ 'true' if loop.first else 'false' }}">{{ f.title }}</button></h3>
         <p>{{ f.body }}</p>
         <ul class="lp-checks">{% for p in f.points %}<li>{{ p }}</li>{% endfor %}</ul>
       </div>
@@ -91,7 +91,7 @@
       <div><p class="lp-k">{{ c.samples_kicker }}</p><h2 id="samples-t">{{ c.samples_title }}</h2><p class="lp-sec-lead">{{ c.samples_lead }}</p></div>
       <a class="lp-more" href="/samples" data-track="cta_click" data-track-cta="samples" data-track-location="samples">{{ c.samples_all }} →</a>
     </div>
-    <div class="lp-grid3">
+    <div class="lp-grid3 lp-rail" data-lp-rail data-hint="{{ t("lp.rail_hint", loc) }}">
       {% for s in samples %}
       <a class="lp-card lp-sample" href="{{ s.href }}" data-track="cta_click" data-track-cta="sample_card" data-track-location="samples" data-track-behavior="{{ s.b }}" data-track-industry="{{ s.i }}">
         <span class="lp-sample-ind">{{ s.ind }}</span>
@@ -149,8 +149,11 @@
     <p class="lp-k">{{ c.faq_kicker }}</p>
     <h2 id="faq-t">{{ c.faq_title }}</h2>
     <div class="lp-faq">
-      {% for qq, a in c.faq %}<details data-track-faq="q{{ '%02d' % loop.index }}"><summary><span class="lp-q">Q</span><span>{{ qq }}</span></summary><p>{{ a }}</p></details>{% endfor %}
+      {% for qq, a in c.faq %}<details{% if loop.index > 8 %} class="lp-faq-more"{% endif %} data-track-faq="q{{ '%02d' % loop.index }}"><summary><span class="lp-q">Q</span><span>{{ qq }}</span></summary><p>{{ a }}</p></details>{% endfor %}
     </div>
+    {%- if c.faq|length > 8 %}
+    <button type="button" class="lp-faq-all" data-lp-faq-all>{{ t("lp.faq_more", loc).format(n=c.faq|length - 8) }}</button>
+    {%- endif %}
   </div>
 </section>
 
@@ -163,4 +166,6 @@
   </div>
   <p class="lp-final-trust">{{ c.final_trust }}</p>
 </section>
+<div class="lp-sp-cta" data-lp-sp-cta><a class="lp-cta" href="/connect" data-track="cta_click" data-track-cta="connect" data-track-location="sp_bar">{{ c.cta_connect }}</a></div>
+<script src="{{ static_url('js/landing.js') }}" defer></script>
 {% endblock %}

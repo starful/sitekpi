@@ -31,6 +31,7 @@
   function open() {
     sv.hidden = false;
     box.classList.add("has-ask");
+    document.querySelectorAll("[data-memo-open]").forEach((b) => b.classList.add("has-ask"));
     const tab = box.querySelector(".memo-tab");
     if (tab && sv.dataset.dot) tab.title = sv.dataset.dot;
     show(0);
@@ -39,6 +40,7 @@
   function close(state) {
     sv.hidden = true;
     box.classList.remove("has-ask");
+    document.querySelectorAll("[data-memo-open]").forEach((b) => b.classList.remove("has-ask"));
     if (state === "later") sset("sk_sv_later", "1"); else lset("sk_sv", state);
   }
 

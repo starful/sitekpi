@@ -46,8 +46,7 @@
 }
 @media (max-width: 900px) {
   .shell.has-memo { grid-template-columns: 1fr; }
-  .memo.is-closed { position: fixed; right: 12px; bottom: 12px; top: auto; height: auto; width: auto; background: none; border: 0; }
-  .memo.is-closed .memo-tab { writing-mode: horizontal-tb; margin: 0; padding: 10px 14px; border-radius: 999px; box-shadow: 0 6px 18px rgba(21, 32, 51, 0.18); }
+  .memo.is-closed { display: none; } /* opened from the ✎ button in the top bar (partials/mobile_bar.html) */
   .memo:not(.is-closed) { width: min(92vw, 340px); }
 }
 .memo .fb-hp { position: absolute; left: -9999px; }

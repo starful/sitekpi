@@ -31,12 +31,14 @@
           {% if r.code %}<code class="row-name">{{ r.label }}</code>{% else %}<span class="row-name">{{ r.label }}</span>{% endif %}
           {% if r.help %}{{ m.help_btn(r.id, r.label) }}{% endif %}
           {% if r.sub %}<small class="dt-sub{{ ' is-warn' if r.sub_warn else '' }}">{{ r.sub }}</small>{% endif %}
+          {#- phones: the three columns on to the right are folded into this one line (board.css ≤640px) -#}
+          <small class="dt-meta-sp" aria-hidden="true">{{ t("col.prev", loc) }} <b class="tone-{{ r.delta_tone }}">{{ r.delta }}</b>{% if r.bench.kind == "judge" %} · {{ t("rg.ind", loc) }} {{ r.bench.band }} · {{ t("rg.left", loc) }} {{ m.rg_gap(r.bench.rg) }}{% endif %}</small>
         </span>
         <span class="num dt-value" role="cell">{{ r.value }}</span>
-        <span class="ctr" role="cell">{% if r.spark %}<svg class="spark tone-{{ r.spark.tone }}" width="76" height="26" viewBox="0 0 76 26" aria-hidden="true"><polyline points="{{ r.spark.points }}" /><circle cx="{{ r.spark.x }}" cy="{{ r.spark.y }}" r="2.5" /></svg>{% else %}<span class="muted">—</span>{% endif %}</span>
-        <span class="num prev-cell tone-{{ r.delta_tone }}" role="cell">{{ r.delta }}</span>
-        <span class="num dt-bench" role="cell">{% if r.bench.kind == "judge" %}{{ m.bench_value(r.bench, r.bench.band) }}{% else %}<span class="muted">—</span>{% endif %}</span>
-        <span class="num dt-gap" role="cell">{% if r.bench.kind == "judge" %}{{ m.rg_gap(r.bench.rg) }}{% elif r.bench.kind == "none" %}{{ m.judge_text(r.bench) }}{% else %}<span class="muted">—</span>{% endif %}</span>
+        <span class="ctr" role="cell">{% if r.spark %}<svg class="spark tone-{{ r.spark.tone }}" width="76" height="26" viewBox="0 0 76 26" aria-hidden="true"><polyline points="{{ r.spark.points }}" /><circle cx="{{ r.spark.x }}" cy="{{ r.spark.y }}" r="2.5" /></svg>{% if r.spark.tone in ("up", "down") %}<span class="spark-dir tone-{{ r.spark.tone }}" aria-hidden="true">{{ "↑" if r.spark.tone == "up" else "↓" }}</span>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</span>
+        <span data-k="{{ t('col.prev', loc) }}" class="num prev-cell tone-{{ r.delta_tone }}" role="cell">{{ r.delta }}</span>
+        <span data-k="{{ t('rg.ind', loc) }}" class="num dt-bench" role="cell">{% if r.bench.kind == "judge" %}{{ m.bench_value(r.bench, r.bench.band) }}{% else %}<span class="muted">—</span>{% endif %}</span>
+        <span data-k="{{ t('rg.left', loc) }}" class="num dt-gap" role="cell">{% if r.bench.kind == "judge" %}{{ m.rg_gap(r.bench.rg) }}{% elif r.bench.kind == "none" %}{{ m.judge_text(r.bench) }}{% else %}<span class="muted">—</span>{% endif %}</span>
       </div>
       {% endfor %}
     </div>

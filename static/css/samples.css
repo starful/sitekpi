@@ -115,3 +115,36 @@ body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font-
 .sp-bars li.is-issue .sp-bar-label { color: #92400e; }
 .sp-bar-label { overflow-wrap: anywhere; }
 @media (max-width: 860px) { .sp-bars { min-width: 560px; } }
+
+/* phones-only parts (hidden on PC) */
+.sp-only, .sp-goal-pick, .sp-open-bar { display: none; }
+@media (max-width: 640px) {
+  .pc-only { display: none; }
+  .sp-only { display: inline; }
+  .sp-head .sp-btn-ghost { display: none; }
+  .sp-split { flex-direction: column; align-items: stretch; gap: 12px; }
+  /* 「ゴール 買う ▾」 — the list opens under it */
+  .sp-goal-pick {
+    display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 0 14px; box-sizing: border-box;
+    font: inherit; font-size: 0.9375rem; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 12px; cursor: pointer;
+  }
+  .sp-goal-pick .sp-k { margin: 0; }
+  .sp-goal-pick > span[aria-hidden] { margin-left: auto; color: var(--muted); }
+  .sp-goals { flex: none; max-width: none; position: static; max-height: none; }
+  .sp-goals.is-folded { display: none; }
+  /* 3 numbers on one row, like the board */
+  .sp-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .sp-tile { border: 0 !important; padding: 0 !important; }
+  /* the 7 steps stacked: name · people, then the bar across — nothing off-screen */
+  .sp-scroll { overflow: visible; }
+  .sp-bars { flex-direction: column; align-items: stretch; gap: 0; min-width: 0; }
+  .sp-bars li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; padding: 9px 0; border-top: 1px solid #eef1f5; }
+  .sp-bar-label { min-height: 0; font-size: 0.8125rem; }
+  .sp-bar { grid-column: 1 / -1; order: 3; height: 6px; border-radius: 99px; align-items: stretch; }
+  .sp-bar i { width: var(--w) !important; height: 6px !important; border-radius: 99px; }
+  .sp-bar-go { grid-column: 1 / -1; order: 4; }
+  .sp-bars li.is-issue .sp-bar { box-shadow: none; }
+  .sp-card-head .sp-btn-primary { display: none; }
+  .sp-open-bar { display: block; position: sticky; bottom: 0; padding: 10px 0 12px; background: linear-gradient(rgba(244, 246, 250, 0), var(--bg) 30%); }
+  .sp-open-bar .sp-btn { display: flex; justify-content: center; min-height: 48px; }
+}

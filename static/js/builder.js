@@ -122,15 +122,25 @@
       head.appendChild(title);
       head.appendChild(el("span", "bx-sec-n", fill(L.n_metrics, { n: s.ids.length })));
       if (state.sections.length > 1) {
-        const del = el("button", "bx-sec-del", L.remove_section);
-        del.type = "button";
-        del.addEventListener("click", () => {
+        const removeSec = () => {
           state.sections.splice(si, 1);
           if (target !== null) closeDrawer();
           render();
           changed();
-        });
+        };
+        const del = el("button", "bx-sec-del", L.remove_section);
+        del.type = "button";
+        del.addEventListener("click", removeSec);
         head.appendChild(del);
+        /* phones: the same action sits behind a ⋯ menu so it is not hit by accident */
+        const more = el("details", "bx-sec-more");
+        const sum = el("summary", "", "⋯");
+        sum.setAttribute("aria-label", L.remove_section);
+        const del2 = el("button", "bx-sec-more-del", L.remove_section);
+        del2.type = "button";
+        del2.addEventListener("click", removeSec);
+        more.append(sum, del2);
+        head.appendChild(more);
       }
       sec.appendChild(head);
 
@@ -237,6 +247,14 @@
   }));
 
   /* ---------- save ---------- */
+  /* phones: a copy of 保存 in the top bar, so it is reachable while scrolling */
+  const bar = document.querySelector(".mobile-bar");
+  if (bar) {
+    const mb = el("button", "mb-save", $("btn-save").textContent);
+    mb.type = "button";
+    mb.addEventListener("click", () => $("btn-save").click());
+    bar.appendChild(mb);
+  }
   $("btn-save").addEventListener("click", () => {
     if (store.set(KEY, state)) setSaved(true);
   });

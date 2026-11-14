@@ -131,6 +131,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
   <div class="k">측정</div>
   <a href="#analytics">GA4 이벤트 설계</a>
   <a href="#visitlog">이용자 로그 · 30초 설문</a>
+  <a href="#mobile">휴대폰 화면</a>
   <div class="k">남은 일</div>
   <a href="#open">정할 것·확인할 것</a>
   <a href="#roadmap">로드맵</a>
@@ -194,7 +195,8 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
       <div class="rule"><b>상자 안에 상자를 넣지 않는다</b><p>카드는 3장(いまの状態 · どこで離れているか · 詳しい数字)만. 칩·태그 대신 색 글자, 버튼은 파란 글자(채운 버튼은 「保存」·「送る」만). 색은 5가지: 글자 · 회색 · 파랑(조작·기준) · 주황(課題) · 틸(개선).</p></div>
       <div class="rule"><b>공개하는 것은 見本뿐</b><p>데모 연결은 개발·테스트 전용(<code>DEMO_CONNECT=1</code> 또는 OAuth 미설정일 때만). 공개 화면의 숫자가 예일 때는 반드시 「例」 표시와 노란 띠.</p></div>
       <div class="rule"><b>언어는 세션에</b><p>랜딩·처리방침·약관·도움말의 <code>?lang=</code> / 언어 버튼은 세션에 저장. 연결 해제로 세션을 비워도 언어는 남긴다.</p></div>
-      <div class="rule"><b>휴대폰 화면은 일단 제외</b><p>PC(폭 1440)를 기준으로 설계한다. 좁은 화면은 깨지지 않을 정도만.</p></div>
+      <div class="rule"><b>휴대폰은 같은 이야기를 한 줄로</b><p>PC(폭 1440)를 기준으로 설계하고, 휴대폰(≤640)은 같은 내용을 위에서 아래로 한 줄에. 표는 「이름 + 값」 두 줄, 큰 그림·목업은 숨기고, 고르기는 접힌 버튼 하나로. 아래 「휴대폰 화면」 참고.</p></div>
+      <div class="rule"><b>처음 언어는 브라우저 언어</b><p>처음 온 사람(세션에 언어 없음, <code>?lang=</code> 없음)은 브라우저의 <code>Accept-Language</code>로 ja / en / ko를 정한다. IP는 쓰지 않는다. 검색 로봇은 기본 ja.</p></div>
     </div>
   </section>
 
@@ -745,6 +747,24 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <p><code>GET /hq/api/users?days=7|30|90</code>, <code>Authorization: Bearer</code> = <code>SESSION_SECRET</code>에서 만든 HMAC 키(HQ도 Secret Manager <code>SITEKPI_SESSION_SECRET</code>에서 같은 키를 만든다 — 새 비밀값 없음). <code>HQ_API_TOKEN</code>이 있으면 그것을 우선. 돌려주는 것: KPI 4개(방문자 · 보드를 본 사람 · GA4 연결 · 설문 응답, 이전 기간 방문자) · 흐름(랜딩 → 견본 보드 → 연결 시작 → 연결 완료 → 내 보드 → AI 프롬프트 복사)과 가장 많이 멈추는 곳 · 설문 집계 · 바라는 것 · 방문자 목록(짧은 ID · 처음 · 유입 · 왜 · 입장 · 한 것 · 방문 수 = 30분 간격 세션)과 각자의 타임라인(JST). 라벨은 한국어.</p>
   </section>
 
+  <section class="block" id="mobile">
+    <h2>휴대폰 화면 <span class="st done">2026-11-14 반영</span></h2>
+    <p class="note">지금 스타일 그대로, 폭 640px 이하에서만 바뀐다. 설계: 캔버스의 Sp* 아트보드(PC 오른쪽에 나란히).</p>
+    <table>
+      <thead><tr><th>화면</th><th>휴대폰에서</th></tr></thead>
+      <tbody>
+        <tr><td>공통</td><td>위 바에 「✎ メモ」 버튼(메모·의견 패널은 떠 있지 않고 버튼으로 연다, 설문이 있으면 파란 점). 처음 언어는 브라우저 언어(Accept-Language).</td></tr>
+        <tr><td>01 홈</td><td>히어로는 보드 상태 그림 한 장, 「GA4との違い」는 표·그림 없이 두 카드, 「できること」는 아코디언(첫 번째만 열림, 그림 없음), 見本은 옆으로 넘기는 한 줄(점 · → 버튼 · 「横にスクロール」), 使い方는 목업 없이 글만, FAQ는 8개 + 「ほかの質問（n 件）」, 아래에 고정 「GA4 を接続する」(히어로·마지막 버튼이 보일 때는 숨김).</td></tr>
+        <tr><td>02 연결</td><td>단계 표시를 한 줄(→). 「つなぐ前に」 예시는 SiteKPI 보드 그대로(購入完了 1,580 · 購入CVR 2.3% · カート→購入 14.6%) — 제휴 보수 숫자 제거(PC도 같음).</td></tr>
+        <tr><td>03 보드</td><td>목차는 위에 붙어 옆으로 스크롤. 「なぜ」·「見ておくこと」 표는 이름 + 값 두 줄(열 이름은 값 앞 작은 글자). 詳しい数字는 「이름 / 값 · 추이」 두 줄 + 「前期比 · 業界 · あと」 한 줄, 추이 옆에 ↑↓. 「?」 누르는 범위 44px.</td></tr>
+        <tr><td>04 지표 사전</td><td>검색과 분류 칩이 위에 고정(칩은 한 줄 옆 스크롤). 분류마다 4개 + 「ほか n 指標を表示」(검색 중에는 전부).</td></tr>
+        <tr><td>05 見本</td><td>목표 목록은 「ゴール 買う ▾」 버튼 하나로 접음, 숫자 3개는 3열, 흐름 막대는 가로로, 아래에 고정 「この見本をボードで開く」.</td></tr>
+        <tr><td>06 대시보드 만들기</td><td>「保存」은 위 바에. 「このまとまりを消す」는 ⋯ 메뉴 안. 템플릿은 2열.</td></tr>
+        <tr><td>10 도움말</td><td>왼쪽 목차 대신 「このページの中 ▾」 선택 하나(위에 고정). 제목 위 「/help」 글자 삭제(PC도 같음).</td></tr>
+      </tbody>
+    </table>
+  </section>
+
   <section class="block" id="open">
     <h2>정할 것·확인할 것</h2>
     <table>
@@ -792,6 +812,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table class="log">
       <thead><tr><th>날짜</th><th>내용</th></tr></thead>
       <tbody>
+        <tr><td>2026-11-14</td><td>휴대폰 화면(지금 스타일 그대로, ≤640): 홈 · 연결 · 보드 · 지표 사전 · 見本 · 대시보드 만들기 · 도움말. 위 바에 「✎ メモ」. 처음 언어를 브라우저 언어로(IP 아님). PC 버그: 연결 화면 예시의 제휴 숫자 → SiteKPI 보드 예시, 도움말 제목 위 「/help」 삭제.</td></tr>
         <tr><td>2026-11-14</td><td>이용자 로그(<code>/events</code>, 쿠키 <code>sk_vid</code>, 90일) · 30초 설문(메모 패널 맨 위, 보드에서 한 번) · HQ용 API <code>/hq/api/users</code>. 처리방침 3개 언어에 수집 항목·쿠키·보관 기간 추가.</td></tr>
         <tr><td>2026-11-13</td><td>측정: GTM을 빼고 gtag.js로 GA4에 직접 전송(<code>GA4_ID</code>). 운영자 표기: 이름 「starful」, 실명·주소는 청구 시 지체 없이 공개.</td></tr>
         <tr><td>2026-11-12</td><td>v6.1: 커서 소스 정리(모듈 분리, 총평 + 목차) 반영. 見本ボード一覧 미리보기를 보드와 같은 이야기로, 詳しい数字 요약 상자 제거·「あと」로 통일, 「基準なし」 잘림 수정, 안 쓰는 스토리 문구 키 삭제.</td></tr>

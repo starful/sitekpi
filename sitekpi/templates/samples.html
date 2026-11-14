@@ -7,12 +7,15 @@
     <div class="sp-head">
       <div>
         <h1>{{ t("samples.title", loc) }}</h1>
-        <p class="sp-lead">{{ t("samples.lead", loc) }}</p>
+        <p class="sp-lead"><span class="pc-only">{{ t("samples.lead", loc) }}</span><span class="sp-only">{{ t("samples.lead_sp", loc) }}</span></p>
       </div>
       <a class="sp-btn sp-btn-ghost" href="/connect">{{ t("samplesx.connect", loc) }}</a>
     </div>
     <div class="sp-split">
-      <nav class="sp-goals" aria-label="{{ t('samplesx.goals', loc) }}">
+      {#- phones: the list folds behind one row 「ゴール 買う ▾」 (samples.js); PC: the list is always there -#}
+      {%- set _sel = namespace(label="") %}{% for g in groups %}{% for b in g.goals %}{% if b.selected %}{% set _sel.label = b.label %}{% endif %}{% endfor %}{% endfor %}
+      <button type="button" class="sp-goal-pick" data-goal-pick aria-controls="sp-goals" aria-expanded="false"><span class="sp-k">{{ t("samplesx.goals", loc) }}</span><b data-goal-now>{{ _sel.label }}</b><span aria-hidden="true">▾</span></button>
+      <nav class="sp-goals" id="sp-goals" aria-label="{{ t('samplesx.goals', loc) }}">
         {% for g in groups %}
         <div class="sp-goal-group">
           <div class="sp-goal-k">{{ g.label }}</div>
