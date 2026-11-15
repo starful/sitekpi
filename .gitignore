@@ -12,3 +12,8 @@ __pycache__/
 # Google OAuth client files (secrets) — never commit
 client_secret*.json
 .claude_tmp/
+
+# X API keys (local only — use GitHub Actions secrets in CI)
+x-key
+x-key.*
+*.x-key
