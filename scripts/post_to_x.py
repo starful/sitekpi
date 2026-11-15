@@ -61,10 +61,15 @@ def load_x_key_file() -> None:
         return
     text = X_KEY_PATH.read_text(encoding="utf-8")
     mapping = {
-        "X_API_KEY": r"消費者\s*キー?\s*\n(\S+)",
-        "X_API_SECRET": r"Secret Key\s*\n(\S+)",
-        "X_ACCESS_TOKEN": r"액세스\s*토큰\s*\n(\S+)|アクセス\s*トークン\s*\n(\S+)",
-        "X_ACCESS_SECRET": r"액세스\s*토큰\s*시크릿\s*\n(\S+)|アクセス\s*トークン\s*シークレット\s*\n(\S+)",
+        "X_API_KEY": r"(?:소비자\s*키|消費者\s*キー?|API\s*Key|Consumer\s*Key)\s*\n(\S+)",
+        "X_API_SECRET": r"(?:Secret Key|API\s*Key\s*Secret|소비자\s*시크릿)\s*\n(\S+)",
+        "X_ACCESS_TOKEN": (
+            r"(?:액세스\s*토큰|アクセス\s*トークン|Access\s*Token)\s*\n(\S+)"
+        ),
+        "X_ACCESS_SECRET": (
+            r"(?:액세스\s*토큰\s*시크릿|アクセス\s*トークン\s*シークレット|"
+            r"Access\s*Token\s*Secret)\s*\n(\S+)"
+        ),
     }
     for env_name, pattern in mapping.items():
         if os.getenv(env_name):
