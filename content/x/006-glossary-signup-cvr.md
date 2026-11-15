@@ -4,6 +4,12 @@ url: https://sitekpi.net/glossary
 image: content/x/images/glossary-signup-cvr.jpg
 tags:
   - GA4
+  - アクセス解析
+  - Webマーケティング
+  - KPI
+  - CVR
+  - 登録
+  - コンバージョン
 ---
 📌 今日の指標：登録CVR
 

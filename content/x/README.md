@@ -6,6 +6,17 @@ Markdown drafts for the `@sitekpi` account. GitHub Actions (`.github/workflows/p
 
 **指標辞典 series** — one metric card image + a short hook. Do not pitch the product in the body; the CTA is “see your own numbers on SiteKPI”.
 
+## Hashtags (6–7)
+
+Always include the **common four**, then add **2–3 metric-specific** tags. Do not paste the same seven every time. Prefer searchable Japanese marketing terms; skip `#SiteKPI` until it has search volume.
+
+| Role | Tags |
+|---|---|
+| Common | `GA4` · `アクセス解析` · `Webマーケティング` · `KPI` |
+| Example: 登録CVR | `CVR` · `登録` · `コンバージョン` |
+| Example: 流入 | `流入` · `チャネル` · `サイト改善` |
+| Example: 業界目安 | `業界目安` · `ベンチマーク` · `サイト改善` |
+
 ## File format
 
 ```markdown
@@ -15,6 +26,12 @@ url: https://sitekpi.net/glossary
 image: content/x/images/glossary-signup-cvr.jpg
 tags:
   - GA4
+  - アクセス解析
+  - Webマーケティング
+  - KPI
+  - CVR
+  - 登録
+  - コンバージョン
 ---
 📌 今日の指標：登録CVR
 
@@ -27,7 +44,7 @@ tags:
 - `slug` (required): recorded in `data/posted_to_x.json`
 - `url` (optional): defaults to `https://sitekpi.net`
 - `image` (optional): repo-relative path — prefer a 1280×720 card (same layout as `verdict-cvr-21.jpg`)
-- `tags` (optional): keep to 0–1 tag (`GA4`)
+- `tags` (optional): 6–7 tags per the table above
 - Body: short; the card carries 意味 / 計算
 
 ## Local dry run / force one slug
