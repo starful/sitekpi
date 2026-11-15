@@ -147,6 +147,12 @@ def load_posts() -> list[dict]:
 
 
 def pick_post(posts: list[dict], recent: list[str]) -> dict:
+    force = (os.getenv("SLUG") or "").strip()
+    if force:
+        for p in posts:
+            if p["slug"] == force:
+                return p
+        raise SystemExit(f"SLUG not found: {force}")
     recent_set = set(recent)
     unused = [p for p in posts if p["slug"] not in recent_set]
     pool = unused or posts
