@@ -1,0 +1,38 @@
+---
+description: SiteKPI marketing — ads/X/Reddit roles; PLAN + PRODUCT docs
+globs: docs/marketing/**,content/x/**,content/reddit/**
+alwaysApply: false
+---
+
+# Marketing
+
+- Channels / cadence / Day-15 ads verdict: `docs/marketing/PLAN.md`
+- App backlog / status / measure checklist: `docs/marketing/PRODUCT.md`
+
+Update those files when strategy or product status changes; do not invent a new acquisition strategy in chat.
+
+## Channels (current window)
+
+1. **Search ads** — Japan search only, ¥500–800/day, 14 days then hard stop. Exact keywords in PLAN. No display/YouTube. Ads OFF until PRODUCT P0 checklist is done.
+2. **X** — Keep glossary cards (`content/x/`). Trust/education; one-line CTA max.
+3. **Reddit** — 2–3 comments/week. No SiteKPI/OKPy/blog links. No new posts until the account is trusted. Comments only for name-building.
+
+## Product changes
+
+- Prefer edits listed in PRODUCT.md (landing/connect copy, funnel leak fixes).
+- One funnel fix at a time during the ads window (P1-1).
+- Production demo = `/samples`, not `/connect/demo`.
+
+## Do not
+
+- Pitch product on Reddit in this window
+- Add channels (Discord, more social) without editing PLAN first
+- Treat content volume as the user-growth engine; ads = intent test, X/Reddit = trust
+- Extend ads past day 15 without the Day-15 verdict table in PLAN
+
+## Agent output
+
+- Reddit: copy-paste EN comments, no links
+- X: drafts under `content/x/` per existing README
+- Ads: copy/keywords only; no fake “users will scale” promises
+- After shipping product work: set status + date in PRODUCT.md Log/Status

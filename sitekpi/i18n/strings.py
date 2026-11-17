@@ -1045,7 +1045,11 @@ UI.update({
     "notice.why_default": {"ja": "まだ転換イベントが見つからないため", "en": "no conversion event found yet", "ko": "아직 전환 이벤트가 없어서"},
     "notice.fit": {"ja": "サイトに合わせる", "en": "Fit to my site", "ko": "내 사이트에 맞추기"},
     "notice.keep": {"ja": "このままでよい", "en": "Looks right", "ko": "이대로 좋음"},
-    "home.title": {"ja": "GA4 の数字を、5分で「良い・悪い」に。", "en": "Turn GA4 numbers into good / bad in 5 minutes.", "ko": "GA4 수치를 5분 만에 ‘좋다·나쁘다’로."},
+    "home.title": {
+        "ja": "GA4 の数字を、「今どうか」一画面で。",
+        "en": "Your GA4 numbers as “how are we doing?” — on one screen.",
+        "ko": "GA4 숫자를 「지금 어떤가」 한 화면에.",
+    },
     "home.lead": {"ja": "接続するとすぐ、前期と業界の2つの物差しで判定したボードが開きます。設定はあとからで大丈夫です。", "en": "Connect and your board opens at once, judged against your prior period and your industry. Setup can wait.", "ko": "연결하면 바로 전기와 업계라는 두 잣대로 판정한 보드가 열립니다. 설정은 나중에 해도 됩니다."},
     "home.cta_connect": {"ja": "GA4 を接続する", "en": "Connect GA4", "ko": "GA4 연결하기"},
     "home.cta_demo": {"ja": "見本ボードを見る", "en": "See sample boards", "ko": "샘플 보드 보기"},
@@ -1206,11 +1210,15 @@ UI.update({
 
 # GA4 をつなぐ — reassurance + property pick (Connect design)
 UI.update({
-    "connect.title_x": {"ja": "GA4 をつなぐ", "en": "Connect GA4", "ko": "GA4 연결"},
+    "connect.title_x": {
+        "ja": "GA4 をつないで、「今どうか」を見る",
+        "en": "Connect GA4 to see how you’re doing",
+        "ko": "GA4를 연결해 「지금 어떤가」 보기",
+    },
     "connect.lead": {
-        "ja": "Google でログインして、見たいサイト（プロパティ）を1つ選ぶだけ。選ぶとすぐボードが開きます。",
-        "en": "Sign in with Google and pick one site (property). The board opens right away.",
-        "ko": "Google로 로그인하고 보고 싶은 사이트(속성)를 하나 고르면 끝. 고르면 바로 보드가 열립니다.",
+        "ja": "Google でログインし、プロパティを1つ選ぶだけ。すぐボードが開き、前期比と業界目安の 2 つの物差しで判定します。",
+        "en": "Sign in with Google and pick one property. The board opens at once, judged against your previous period and industry benchmarks.",
+        "ko": "Google로 로그인하고 속성을 하나 고르면 끝. 바로 보드가 열리고, 전기 대비와 업계 기준 두 잣대로 판정합니다.",
     },
     "connect.hero.title": {"ja": "Google アカウントでログイン", "en": "Sign in with your Google account", "ko": "Google 계정으로 로그인"},
     "connect.hero.meta": {"ja": "GA4 を見られるアカウントでログインしてください。", "en": "Use an account that can view your GA4.", "ko": "GA4를 볼 수 있는 계정으로 로그인하세요."},
