@@ -1,3 +1,6 @@
+---
+lang: en
+---
 # SiteKPI marketing plan
 
 Living plan for acquisition. Edit this file when the plan changes; the Cursor rule `.cursor/rules/marketing.mdc` points here.
@@ -51,7 +54,7 @@ Do not mix: no SiteKPI links on Reddit; no display/YouTube ads; no new channels 
 
 ## Reddit (ongoing, light)
 
-- Account: `u/Basic_Command2455` (new; early r/analytics removals).
+- Account: new; early r/analytics removals.
 - **2–3 comments/week** (e.g. Mon/Wed/Fri). Max one comment that day.
 - Subs: `r/analytics`, `r/datascience`, `r/dataengineering` (active threads).
 - **No** SiteKPI / OKPy / blog links until the account is trusted.
@@ -85,5 +88,5 @@ Assets (later posts only): `content/reddit/images/`.
 
 | Date | Note |
 |------|------|
-| 2026-11-17 | Plan created: ads 14d + X keep + Reddit 2–3/week |
-| 2026-11-17 | Linked PRODUCT.md (measure + landing/connect copy before ads) |
+| 2026-11-15 | Plan created: ads 14d + X keep + Reddit 2–3/week |
+| 2026-11-16 | Linked PRODUCT.md (measure + landing/connect copy before ads) |
