@@ -36,6 +36,23 @@ STATUS_CANCELED = "canceled"
 # decided — see docs/plan); until then every row defaults to the free limit.
 FREE_SITE_LIMIT = 1
 
+# Plan tiers for feature gating. There is no ORM "Site.plan" — the workspace plan
+# lives in ``subscriptions`` (and is ``free`` when there is no active row).
+PLAN_FREE = "free"
+PLAN_PRO = "pro"
+
+# Stripe lookup_key / stored plan strings that count as Pro while status is active.
+_PRO_PLAN_KEYS = frozenset({
+    PLAN_PRO, "pro_monthly", "pro_yearly", "team_monthly", "team_yearly",
+})
+
+# Features that need an active paid plan. Do NOT put board / connect / disconnect /
+# setup here — free users must keep the current live path (HQ verify regressions).
+PRO_FEATURES = frozenset({
+    "advanced_report",  # future: GA4 advanced / export packs
+    "site_compare",     # future: multi-site compare
+})
+
 
 class SubscriptionStore:
     def __init__(self, path: Path) -> None:
@@ -210,3 +227,75 @@ def check_site_limit(user_id: str | None, current_site_count: int) -> dict[str, 
             "cta_key": "billing.site_limit_modal.cta",
         },
     }
+
+
+def normalize_plan(plan: str | None) -> str:
+    """Map a stored Stripe lookup_key / plan id to ``free`` or ``pro``."""
+    if not plan:
+        return PLAN_FREE
+    key = str(plan).strip().lower()
+    if key in _PRO_PLAN_KEYS or key.startswith("pro_") or key.startswith("team_"):
+        return PLAN_PRO
+    return PLAN_FREE
+
+
+def effective_plan(user_id: str | None) -> str:
+    """Workspace plan right now: ``pro`` only with an *active* subscription row."""
+    if not user_id:
+        return PLAN_FREE
+    row = get_store().get(user_id)
+    if not row or row.get("status") != STATUS_ACTIVE:
+        return PLAN_FREE
+    return normalize_plan(row.get("plan"))
+
+
+def plan_allows(user_id: str | None, feature: str) -> bool:
+    """True if this workspace may use ``feature``.
+
+    Unknown / free features always return True so accidental checks never lock the
+    board. Only names in ``PRO_FEATURES`` require an active Pro plan.
+    """
+    if feature not in PRO_FEATURES:
+        return True
+    return effective_plan(user_id) == PLAN_PRO
+
+
+def check_feature_access(user_id: str | None, feature: str) -> dict[str, Any] | None:
+    """None = allowed; otherwise an upgrade payload (same shape family as site_limit)."""
+    if plan_allows(user_id, feature):
+        return None
+    return {
+        "blocked": True,
+        "reason": "plan",
+        "need": PLAN_PRO,
+        "feature": feature,
+        "plan": effective_plan(user_id),
+        "modal": {
+            "title_key": "billing.plan_gate_modal.title",
+            "body_key": "billing.plan_gate_modal.body",
+            "cta_key": "billing.plan_gate_modal.cta",
+        },
+    }
+
+
+def require_plan(feature: str):
+    """FastAPI dependency factory: block with HTTP 402 when ``feature`` needs Pro.
+
+    Use only on future Pro routes. Never wrap ``/live``, ``/connect*``, or setup —
+    those must stay open for free (and for the demo session used in tests).
+    """
+    from fastapi import HTTPException, Request
+
+    def _dep(request: Request) -> None:
+        # Prefer an explicit billing id when login exists; until then demos stay free.
+        session = request.session
+        user_id = session.get("billing_user_id") or session.get("stripe_customer_id")
+        if isinstance(user_id, str):
+            uid: str | None = user_id
+        else:
+            uid = None
+        blocked = check_feature_access(uid, feature)
+        if blocked:
+            raise HTTPException(status_code=402, detail=blocked)
+
+    return _dep
