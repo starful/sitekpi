@@ -11,7 +11,17 @@ import time
 from fastapi.testclient import TestClient
 
 from main import app
-from sitekpi.billing import FREE_SITE_LIMIT, MAX_PAYMENT_RETRIES, check_site_limit, get_store
+from sitekpi.billing import (
+    FREE_SITE_LIMIT,
+    MAX_PAYMENT_RETRIES,
+    PLAN_FREE,
+    PLAN_PRO,
+    check_feature_access,
+    check_site_limit,
+    effective_plan,
+    get_store,
+    plan_allows,
+)
 
 SECRET = "whsec_test_secret"
 
@@ -103,3 +113,22 @@ def test_check_site_limit_allows_more_once_the_stored_limit_is_raised():
         db.execute("UPDATE subscriptions SET site_limit = 5 WHERE user_id = ?", (user_id,))
     assert check_site_limit(user_id, 1) is None
     assert check_site_limit(user_id, 5) is not None
+
+
+def test_effective_plan_is_free_without_an_active_subscription():
+    assert effective_plan(None) == PLAN_FREE
+    assert effective_plan("cus_never") == PLAN_FREE
+    get_store().upsert("cus_past", plan="pro_monthly", status="past_due")
+    assert effective_plan("cus_past") == PLAN_FREE
+
+
+def test_active_pro_allows_gated_features_and_free_does_not():
+    uid = "cus_plan_gate"
+    assert plan_allows(None, "advanced_report") is False
+    assert plan_allows(None, "board_live") is True  # unknown / free feature — never lock the board
+    assert check_feature_access(None, "site_compare")["need"] == PLAN_PRO
+
+    get_store().upsert(uid, plan="pro_monthly", status="active")
+    assert effective_plan(uid) == PLAN_PRO
+    assert plan_allows(uid, "advanced_report") is True
+    assert check_feature_access(uid, "site_compare") is None
