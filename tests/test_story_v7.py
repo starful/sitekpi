@@ -157,3 +157,41 @@ def test_fetch_story_x_reads_ga4(monkeypatch):
     assert sx["money"]["cur"]["revenue"] == 500000
     assert sx["nvr"]["new"]["users"] == 700
     assert sx["release"]["before"]["entry"] == 500 and sx["release"]["after"]["ev"]["add_to_cart"] == 120
+
+
+def test_chapter_two_uses_a_step_enough_people_reached_and_labels_do_not_overlap():
+    """A site with 10 conversions (the field report): rates come from a step with ≥ 30 people,
+    tiny channels are left out by name, and no two names sit on top of each other."""
+    from sitekpi.views.story_more import buyers
+
+    ch = [("ch_direct", "Direct", 6370), ("ch_org", "Organic Search", 640), ("ch_ref", "Referral", 400),
+          ("ch_social", "Organic Social", 80), ("ch_ai", "AI Assistant", 25)]
+    entry = sum(n for _, _, n in ch)
+    stages = [
+        {"label": "サイトに来た", "users": entry, "event": ""},
+        {"label": "しっかり見た", "users": 2100, "event": "user_engagement",
+         "ch_users": {"ch_direct": 1500, "ch_org": 420, "ch_ref": 70, "ch_social": 30, "ch_ai": 20}},
+        {"label": "外部リンクをクリック", "users": 10, "event": "click",
+         "ch_users": {"ch_direct": 2, "ch_org": 8, "ch_ref": 0, "ch_social": 0, "ch_ai": 0}},
+    ]
+    flow = {"stages": stages, "last_label": "外部リンクをクリック",
+            "channels": [{"id": i, "name": n, "entry": e} for i, n, e in ch]}
+    sx = {"nvr": {"new": {"users": 7100, "ev": {"user_engagement": 1900, "click": 8}},
+                  "returning": {"users": 135, "ev": {"user_engagement": 200, "click": 2}}, "prev_returning": 140}}
+    w = buyers(flow, sx, "ja")
+    assert "しっかり見た" in w["head"] and "外部リンク" not in w["head"]
+    m = w["map"]
+    names = [p["name"] for p in m["pts"]]
+    assert names == ["Direct", "Organic Search", "Referral"] and "AI Assistant" in m["small"]
+    assert all(p["r"] <= 18 for p in m["pts"])
+    boxes = []
+    for p in m["pts"]:
+        w_ = 7.5 * len(p["label"]) + 4
+        x0 = p["tx"] - w_ if p["anchor"] == "end" else p["tx"]
+        boxes.append((x0, p["ty"] - 16, x0 + w_, p["ty"] - 2))
+        assert x0 >= 0 and x0 + w_ <= m["r"] + 1, p
+    for i, a in enumerate(boxes):
+        for b in boxes[i + 1:]:
+            assert a[2] < b[0] or b[2] < a[0] or a[3] < b[1] or b[3] < a[1], (a, b)
+    # the new / returning bar never squeezes text into a 2% slice
+    assert w["nvr"]["users"]["narrow_ret"] and not w["nvr"]["users"]["narrow_new"]

@@ -28,7 +28,8 @@
   {% if C.segs %}
   <div class="x-split">
     <p class="x-split-k">{{ C.bar_k }}</p>
-    <div class="x-split-bar">{% for g in C.segs %}<span class="x-seg tone-{{ g.tone }} k-{{ g.key }}" style="flex: {{ g.flex }}"><span>{{ g.label }} {{ g.amount }}</span></span>{% endfor %}</div>
+    <div class="x-split-bar" aria-hidden="true">{% for g in C.segs %}<span class="x-seg tone-{{ g.tone }} k-{{ g.key }}" style="flex: {{ g.flex }}"></span>{% endfor %}</div>
+    <p class="x-split-list">{% for g in C.segs %}<span><i class="x-seg-dot tone-{{ g.tone }} k-{{ g.key }}"></i>{{ g.label }} <b class="num">{{ g.amount }}</b></span>{% endfor %}</p>
     {% if C.flat %}<p class="x-split-flat">{{ C.flat }}</p>{% endif %}
   </div>
   {% endif %}
@@ -45,6 +46,7 @@
   {% if W.map %}{% set M = W.map %}
   <div class="x-sub">
     <h3 class="x-sub-k">{{ W.map_k }} <small class="pc-only">{{ M.size_k }}</small><small class="sp-only">{{ M.list_k }}</small></h3>
+    <p class="x-legend x-map-legend pc-only"><span><i class="lg-q q-grow"></i>{{ M.q.grow }}</span><span><i class="lg-q q-core"></i>{{ M.q.core }}</span><span><i class="lg-q q-fix"></i>{{ M.q.fix }}</span><span><i class="lg-q q-watch"></i>{{ M.q.watch }}</span></p>
     <div class="x-map">
       <svg class="x-map-svg pc-only" viewBox="0 0 {{ M.w }} {{ M.h }}" role="img" aria-label="{{ W.map_k }}">
         <rect class="q-grow" x="{{ M.l }}" y="{{ M.t }}" width="{{ M.mx - M.l }}" height="{{ M.my - M.t }}"/>
@@ -56,21 +58,17 @@
         {% for x in M.xt %}<text class="x-tick" x="{{ x.x }}" y="{{ M.b + 16 }}" text-anchor="middle">{{ x.t }}</text>{% endfor %}
         {% for y in M.yt %}<text class="x-tick" x="{{ M.l - 8 }}" y="{{ y.y + 4 }}" text-anchor="end">{{ y.t }}</text>{% endfor %}
         <text class="x-axis-k" x="{{ (M.l + M.r) / 2 }}" y="{{ M.h - 2 }}" text-anchor="middle">{{ M.x_k }}</text>
-        <text class="x-q t-grow" x="{{ M.l + 6 }}" y="{{ M.t + 14 }}">{{ M.q.grow }}</text>
-        <text class="x-q t-core" x="{{ M.r - 6 }}" y="{{ M.t + 14 }}" text-anchor="end">{{ M.q.core }}</text>
-        <text class="x-q t-fix" x="{{ M.r - 6 }}" y="{{ M.b - 8 }}" text-anchor="end">{{ M.q.fix }}</text>
-        <text class="x-q t-watch" x="{{ M.l + 6 }}" y="{{ M.b - 8 }}">{{ M.q.watch }}</text>
         <text class="x-tick" x="{{ M.l + 6 }}" y="{{ M.my - 6 }}">{{ M.avg }}</text>
         {% for p in M.pts %}
         <circle class="x-dot q-{{ p.q }}" cx="{{ p.cx }}" cy="{{ p.cy }}" r="{{ p.r }}"/>
-        <text class="x-dot-k" x="{{ p.tx }}" y="{{ p.cy + 4 }}" text-anchor="{{ p.anchor }}">{{ p.label }}</text>
+        <text class="x-dot-k" x="{{ p.tx }}" y="{{ p.ty }}" text-anchor="{{ p.anchor }}">{{ p.label }}</text>
         {% endfor %}
       </svg>
       <div class="x-map-list sp-only" role="table" aria-label="{{ W.map_k }}">
         <div class="x-ml-row is-head" role="row"><span role="columnheader"></span><span role="columnheader">{{ M.col_share }}</span><span role="columnheader">{{ M.col_rate }}</span><span role="columnheader"></span></div>
         {% for p in M.pts %}<div class="x-ml-row" role="row"><b role="rowheader">{{ p.name }}</b><span class="num" role="cell">{{ p.share_fmt }}</span><b class="num{{ ' tone-down' if p.q == 'fix' else '' }}" role="cell">{{ p.rate_fmt }}</b><span class="x-ml-q q-{{ p.q }}" role="cell">{{ p.q_label }}</span></div>{% endfor %}
       </div>
-      {% if M.notes %}<div class="x-map-notes">{% for n in M.notes %}<p><b class="t-{{ n.q }}">{{ n.k }}</b>{{ n.t }}</p>{% endfor %}</div>{% endif %}
+      {% if M.notes or M.small %}<div class="x-map-notes">{% for n in M.notes %}<p><b class="t-{{ n.q }}">{{ n.k }}</b>{{ n.t }}</p>{% endfor %}{% if M.small %}<p class="q-foot">{{ M.small }}</p>{% endif %}</div>{% endif %}
     </div>
   </div>
   {% endif %}
@@ -78,8 +76,9 @@
   <div class="x-sub">
     <h3 class="x-sub-k">{{ W.nvr_k }}</h3>
     {% if N.lead %}<p class="x-sub-lead">{{ N.lead }}</p>{% endif %}
-    <div class="x-stack"><span class="x-stack-k">{{ N.k_users }}</span><span><span class="x-stack-bar"><span class="s-new" style="flex: {{ N.users.new }}">{{ N.new_k }} {{ N.users.new }}%</span><span class="s-ret" style="flex: {{ N.users.ret }}">{{ N.ret_k }} {{ N.users.ret }}%</span></span><small>{{ N.users.n }}</small></span></div>
-    {% if N.conv %}<div class="x-stack"><span class="x-stack-k">{{ N.k_conv }}</span><span><span class="x-stack-bar"><span class="s-new" style="flex: {{ N.conv.new }}">{{ N.new_k }} {{ N.conv.new }}%</span><span class="s-ret" style="flex: {{ N.conv.ret }}">{{ N.ret_k }} {{ N.conv.ret }}%</span></span><small>{{ N.conv.n }}</small></span></div>{% endif %}
+    {% for k, b in ((N.k_users, N.users), (N.k_conv, N.conv)) if b %}
+    <div class="x-stack"><span class="x-stack-k">{{ k }}</span><span><span class="x-stack-bar" aria-hidden="true"><span class="s-new" style="flex: {{ b.new }}"></span><span class="s-ret" style="flex: {{ b.ret }}"></span></span><small><i class="s-dot s-new"></i>{{ N.new_k }} {{ b.new }}% · <i class="s-dot s-ret"></i>{{ N.ret_k }} {{ b.ret }}% · {{ b.n }}</small></span></div>
+    {% endfor %}
     <div class="x-cards">{% for c in N.cards %}<div class="x-card"><span>{{ c.k }}</span><p><b class="num">{{ c.v }}</b>{% if c.d %}<span class="num tone-{{ c.tone }}">{{ c.d }}</span>{% endif %}</p></div>{% endfor %}</div>
     {% if N.note %}<p class="q-others">{{ N.note }}</p>{% endif %}
   </div>

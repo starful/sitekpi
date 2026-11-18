@@ -157,26 +157,53 @@ def changed(board: dict[str, Any], data: dict[str, Any], prev: dict[str, Any] | 
 
 # ---------------------------------------------------------------- 2 誰が買っている？
 
+def _target(stages: list[dict[str, Any]]) -> int | None:
+    """The deepest step that enough people reached — a rate over 10 people says nothing."""
+    for k in range(len(stages) - 1, 0, -1):
+        if float(stages[k].get("users") or 0) >= MIN_BASE:
+            return k
+    return None
+
+
+def _place_labels(pts: list[dict[str, Any]], W: float, top: float, bottom: float) -> None:
+    """Put each name next to its bubble without two names on top of each other (greedy, by size)."""
+    boxes: list[tuple[float, float, float, float]] = []
+    for p in sorted(pts, key=lambda q: -q["r"]):
+        w = 7.5 * len(p["label"]) + 4
+        p["anchor"] = "end" if p["cx"] + p["r"] + 5 + w > W else "start"
+        x0 = p["cx"] - p["r"] - 5 - w if p["anchor"] == "end" else p["cx"] + p["r"] + 5
+        y = p["cy"]
+        for step in (0, 16, -16, 32, -32, 48, -48, 64, -64):
+            yy = min(max(p["cy"] + step, top + 10), bottom - 4)
+            if all(x0 + w < bx0 or x0 > bx1 or yy - 12 > by1 or yy + 2 < by0 for bx0, by0, bx1, by1 in boxes):
+                y = yy
+                break
+        boxes.append((x0, y - 12, x0 + w, y + 2))
+        p["tx"] = round(p["cx"] - p["r"] - 5 if p["anchor"] == "end" else p["cx"] + p["r"] + 5, 1)
+        p["ty"] = round(y + 4, 1)
+
+
 def buyers(flow: dict[str, Any] | None, sx: dict[str, Any] | None, loc: str) -> dict[str, Any] | None:
     stages = (flow or {}).get("stages") or []
-    last_label = (flow or {}).get("last_label") or ""
-    if len(stages) < 2 or not last_label:
+    k = _target(stages) if len(stages) >= 2 else None
+    if k is None:
         return None
+    step_label = stages[k]["label"]
     chans = [c for c in (flow or {}).get("channels") or [] if c.get("entry")]
-    rates = {r["id"]: r.get("rate") for r in (flow or {}).get("ch_rows") or []}
     total = sum(c["entry"] for c in chans)
-    last = next((st for st in reversed(stages[1:]) if st.get("users")), None)
-    overall = _rate(float(stages[0].get("users") or 0), float((last or {}).get("users") or 0))
+    overall = _rate(float(stages[0].get("users") or 0), float(stages[k].get("users") or 0))
 
     chmap = None
     named = [c for c in chans if c["id"] != "fco"]  # 「その他」 is a bucket, not a channel to act on
-    if len(named) >= 3 and total and overall:
-        shares = sorted(100.0 * c["entry"] / total for c in named)
+    shown = [c for c in named if total and 100.0 * c["entry"] / total >= 3 and c["entry"] >= MIN_BASE]
+    small = [c["name"] for c in named if c not in shown]
+    if len(shown) >= 2 and overall:
+        shares = sorted(100.0 * c["entry"] / total for c in shown)
         mid = shares[len(shares) // 2] if len(shares) % 2 else (shares[len(shares) // 2 - 1] + shares[len(shares) // 2]) / 2
         pts = []
-        for c in named:
+        for c in shown:
             share = 100.0 * c["entry"] / total
-            r = rates.get(c["id"])
+            r = _rate(float(c["entry"]), float((stages[k].get("ch_users") or {}).get(c["id"], 0)))
             if r is None:
                 continue
             if share >= mid and r < overall * 0.85:
@@ -188,9 +215,9 @@ def buyers(flow: dict[str, Any] | None, sx: dict[str, Any] | None, loc: str) -> 
             else:
                 q = "watch"
             pts.append({"name": c["name"], "share": share, "rate": r, "q": q})
-        if len(pts) >= 3:
+        if len(pts) >= 2:
             xmax = max(10.0, math.ceil(max(p["share"] for p in pts) / 10) * 10)
-            ymax = max(p["rate"] for p in pts) * 1.15
+            ymax = max(max(p["rate"] for p in pts), overall) * 1.15
             ystep = _nice_step(ymax)
             ymax = math.ceil(ymax / ystep) * ystep
             W, H, L, R, T, B = 620, 320, 48, 16, 16, 36
@@ -198,13 +225,12 @@ def buyers(flow: dict[str, Any] | None, sx: dict[str, Any] | None, loc: str) -> 
             Y = lambda v: T + (ymax - v) / ymax * (H - T - B)
             for p in pts:
                 p["cx"], p["cy"] = round(X(p["share"]), 1), round(Y(p["rate"]), 1)
-                p["r"] = round(6 + p["share"] / 3, 1)
-                p["anchor"] = "end" if p["cx"] > W - 150 else "start"
-                p["tx"] = round(p["cx"] - p["r"] - 5 if p["anchor"] == "end" else p["cx"] + p["r"] + 5, 1)
+                p["r"] = round(6 + min(p["share"], 60) / 5, 1)
                 p["label"] = f"{p['name']} {_pct(p['rate'])}"
                 p["share_fmt"] = f"{p['share']:.0f}%"
                 p["rate_fmt"] = _pct(p["rate"])
                 p["q_label"] = _s(loc, "x_q_" + p["q"])
+            _place_labels(pts, W - R, T, H - B)
             xs = [0, xmax / 3, 2 * xmax / 3, xmax]
             chmap = {
                 "w": W, "h": H, "l": L, "r": W - R, "t": T, "b": H - B,
@@ -213,9 +239,10 @@ def buyers(flow: dict[str, Any] | None, sx: dict[str, Any] | None, loc: str) -> 
                 "yt": [{"y": round(Y(v), 1), "t": f"{v:g}%"} for v in _ticks(ymax, ystep)],
                 "pts": sorted(pts, key=lambda p: -p["share"]),
                 "avg": _s(loc, "x_who_avg", rate=_pct(overall)),
-                "q": {k: _s(loc, "x_q_" + k) for k in ("grow", "core", "fix", "watch")},
+                "q": {q: _s(loc, "x_q_" + q) for q in ("grow", "core", "fix", "watch")},
                 "x_k": _s(loc, "x_who_x"), "size_k": _s(loc, "x_who_size"), "list_k": _s(loc, "x_who_list_k", rate=_pct(overall)),
-                "col_share": _s(loc, "x_who_col_share"), "col_rate": _s(loc, "x_who_col_rate", step=last_label),
+                "col_share": _s(loc, "x_who_col_share"), "col_rate": _s(loc, "x_who_col_rate", step=step_label),
+                "small": _s(loc, "x_who_small", names="・".join(small)) if small else "",
             }
             notes = []
             grow = sorted([p for p in pts if p["q"] == "grow"], key=lambda p: -p["rate"])[:2]
@@ -235,27 +262,33 @@ def buyers(flow: dict[str, Any] | None, sx: dict[str, Any] | None, loc: str) -> 
 
     nvr = None
     raw = (sx or {}).get("nvr") or None
+    ev_k = stages[k].get("event") or ""
     if raw and raw["new"]["users"] and raw["returning"]["users"]:
         nu, ru = raw["new"]["users"], raw["returning"]["users"]
-        nc, rc = raw["new"]["conv"], raw["returning"]["conv"]
+        nc, rc = int((raw["new"].get("ev") or {}).get(ev_k, 0)), int((raw["returning"].get("ev") or {}).get(ev_k, 0))
         u_ret = 100 * ru / (nu + ru)
-        c_ret = 100 * rc / (nc + rc) if (nc + rc) else None
+        c_ret = 100 * rc / (nc + rc) if (nc + rc) >= MIN_BASE else None
         pr = raw.get("prev_returning") or 0
         d_ret = 100 * (ru / pr - 1) if pr else None
+
+        def bar(new: float, n: str) -> dict[str, Any]:
+            ret = round(100 - new, 1)
+            return {"new": round(new, 1), "ret": ret, "n": n, "narrow_new": new < 18, "narrow_ret": ret < 18}
+
         nvr = {
-            "users": {"new": round(100 - u_ret, 1), "ret": round(u_ret, 1), "n": fmt_int(nu + ru)},
-            "conv": {"new": round(100 - c_ret, 1), "ret": round(c_ret, 1), "n": fmt_int(nc + rc)} if c_ret is not None else None,
+            "users": bar(100 - u_ret, fmt_int(nu + ru)),
+            "conv": bar(100 - c_ret, fmt_int(nc + rc)) if c_ret is not None else None,
             "cards": [
-                {"k": _s(loc, "x_nvr_rate_new"), "v": _pct(_rate(nu, nc)), "d": "", "tone": "mid"},
-                {"k": _s(loc, "x_nvr_rate_ret"), "v": _pct(_rate(ru, rc)), "d": "", "tone": "mid"},
+                {"k": _s(loc, "x_nvr_rate_new"), "v": _pct(_rate(nu, nc)) if c_ret is not None else "—", "d": "", "tone": "mid"},
+                {"k": _s(loc, "x_nvr_rate_ret"), "v": _pct(_rate(ru, rc)) if c_ret is not None else "—", "d": "", "tone": "mid"},
                 {"k": _s(loc, "x_nvr_ret_users"), "v": fmt_int(ru) + _s(loc, "x_people_sfx"),
                  "d": _s(loc, "x_prev", d=_rel(d_ret)) if d_ret is not None else "",
                  "tone": "mid" if d_ret is None or abs(d_ret) < 1 else ("up" if d_ret > 0 else "down")},
             ],
-            "k_users": _s(loc, "x_nvr_users"), "k_conv": _s(loc, "x_nvr_conv", step=last_label),
+            "k_users": _s(loc, "x_nvr_users"), "k_conv": _s(loc, "x_nvr_conv", step=step_label),
             "new_k": _s(loc, "x_nvr_new"), "ret_k": _s(loc, "x_nvr_ret"),
         }
-        lead = _s(loc, "x_nvr_lead", step=last_label, ret=_pct(c_ret)) if c_ret is not None else ""
+        lead = _s(loc, "x_nvr_lead", step=step_label, ret=_pct(c_ret)) if c_ret is not None else ""
         if d_ret is not None and d_ret <= -1:
             lead += _s(loc, "x_nvr_lead_down", d=_rel(d_ret))
         nvr["lead"] = lead
@@ -266,10 +299,10 @@ def buyers(flow: dict[str, Any] | None, sx: dict[str, Any] | None, loc: str) -> 
     parts = []
     if nvr and nvr.get("c_ret") is not None:
         c = nvr["c_ret"]
-        parts.append(_s(loc, "x_who_h_ret" if c >= 50 else "x_who_h_new", step=last_label, pct=_pct(c if c >= 50 else 100 - c)))
+        parts.append(_s(loc, "x_who_h_ret" if c >= 50 else "x_who_h_new", step=step_label, pct=_pct(c if c >= 50 else 100 - c)))
     if chmap and chmap.get("fix"):
-        parts.append(_s(loc, "x_who_h_fix", name=chmap["fix"], step=last_label))
-    head = "".join(parts) or _s(loc, "x_who_h_none", step=last_label)
+        parts.append(_s(loc, "x_who_h_fix", name=chmap["fix"], step=step_label))
+    head = "".join(parts) or _s(loc, "x_who_h_none", step=step_label)
     return {"head": head, "map": chmap, "nvr": nvr, "map_k": _s(loc, "x_who_map_k"), "nvr_k": _s(loc, "x_who_nvr_k")}
 
 
