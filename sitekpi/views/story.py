@@ -87,9 +87,20 @@ def _gain(issue: dict[str, Any], stages: list[dict[str, Any]], info: dict[str, A
             "pct": f"+{extra / now * 100:.0f}%" if now else ""}
 
 
+CIRC = "⓪①②③④⑤⑥⑦⑧⑨"
+
+
+def _num(n: int, text: str) -> str:
+    """「③ …」: the chapter number in front of a bridge line (numbers move when a chapter has no data)."""
+    return f"{CIRC[n]} {text.lstrip(CIRC).lstrip()}"
+
+
 def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: dict[str, Any],
                 flow: dict[str, Any] | None, locale: str, bench_info: Any, site: str = "",
-                industry_label: str = "", behavior_label: str = "", period_label: str = "") -> dict[str, Any] | None:
+                industry_label: str = "", behavior_label: str = "", period_label: str = "",
+                data: dict[str, Any] | None = None, prev: dict[str, Any] | None = None,
+                story_x: dict[str, Any] | None = None, releases: list[dict[str, Any]] | None = None,
+                sample: bool = True) -> dict[str, Any] | None:
     """Everything the four cards and the AI prompt need. bench_info: views/board._bench_info."""
     loc = locale if locale in STORY else "ja"
     issue = pick_issue(board, watch, verdict, flow)
@@ -179,26 +190,55 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
     else:
         h4, calc = _s(loc, "do_h", a=A, b=B), ""
 
-    # 0 総評 (sentence + tiles). 1〜3 = where / why / do. 「大丈夫？」was absorbed into 0.
-    toc = [
-        {"n": 0, "q": _s(loc, "q0"), "href": "#q0"},
-        {"n": 1, "q": _s(loc, "q2"), "href": "#q2"},
-        {"n": 2, "q": _s(loc, "q3"), "href": "#q3"},
-        {"n": 3, "q": _s(loc, "q4"), "href": "#q4"},
-    ]
+    # v7 chapters: 0 総評 → 1 なぜ変わった？ → 2 誰が？ → where → why → do → 効いた？ (numbers skip a chapter without data)
+    from sitekpi.views import story_more as more
+
+    who = more.buyers(flow, story_x, loc)
+
+    def nums_for(has_ch: bool) -> dict[str, str]:
+        w = 1 + int(has_ch) + int(bool(who))
+        return {"where": CIRC[w], "span": f"{CIRC[w]}〜{CIRC[w + 2]}", "do": CIRC[w + 2]}
+
+    ch = more.changed(board, data or {}, prev, story_x, loc, nums_for(True))
+    nums = nums_for(bool(ch))
+    chapters = [("q0", "q0")] + ([("qch", "q1")] if ch else []) + ([("qb", "qb")] if who else []) + \
+        [("q2", "q2"), ("q3", "q3"), ("q4", "q4"), ("q5", "q5")]
+    n_of = {cid: n for n, (cid, _) in enumerate(chapters)}
+    toc = [{"n": n, "q": _s(loc, key), "href": f"#{cid}"} for n, (cid, key) in enumerate(chapters)]
+    ww = more.where_when(issue, stages, flow, story_x, info, loc, metric_label=metric["label"] if metric else "")
+    eff = more.effect(issue, stages, story_x, releases or [], acts, loc, sample=sample, nums=nums)
+    goods = more.goods(board, watch, loc)
+    nxt = {"qch": _s(loc, "next1"), "qb": _s(loc, "nextb"), "q2": _s(loc, "next2", a=A), "q3": _s(loc, "next3"),
+           "q4": _s(loc, "next4"), "q5": _s(loc, "next5")}
+
+    def next_of(cid: str) -> str:
+        i = [c for c, _ in chapters].index(cid)
+        if i + 1 >= len(chapters):
+            return ""
+        nid = chapters[i + 1][0]
+        return _num(n_of[nid], nxt[nid])
+
+    do_first = _s(loc, "x_do_first", names=_s(loc, "x_and").join(ww.get("focus") or [])) if ww.get("focus") else ""
 
     prompt = _prompt(loc=loc, site=site, ind=industry_label, beh=behavior_label, period=period_label,
                      verdict=verdict, stages=stages, a=A, b=B, rows=rows, gain=gain_txt, acts=acts, board=board,
                      bench_info=bench_info)
     return {
-        "q": {k: _s(loc, k) for k in ("q0", "q2", "q3", "q4", "ref", "ref_k", "toc", "why", "check",
-                                       "others", "others_more", "do_note", "go_edit", "go_ch", "go_gl")},
+        "q": {k: _s(loc, k) for k in ("q0", "q1", "qb", "q2", "q3", "q4", "q5_long", "ref", "ref_k", "toc", "why",
+                                       "check", "others", "others_more", "do_note", "go_edit", "go_ch", "go_gl",
+                                       "x_goods_k", "x_where_k", "x_when_k", "x_eff_act_k", "x_eff_own",
+                                       "x_eff_title_ph", "x_eff_date_k", "x_eff_save", "x_eff_del", "x_eff_sample",
+                                       "x_eff_empty", "x_eff_d")},
         "toc": toc,
         "s1": s1, "s2": s2, "note": note, "h3": h3, "rows": rows, "others": others, "none_off": none_off,
         "h4": h4, "calc": calc, "acts": acts, "kind": issue["kind"],
-        "next2": _s(loc, "next2", a=A), "next3": _s(loc, "next3"), "next4": _s(loc, "next4"),
+        "next0": next_of("q0"), "next1": next_of("qch") if ch else "", "nextb": next_of("qb") if who else "",
+        "next2": next_of("q2"), "next3": next_of("q3") + (f" — {do_first}" if do_first else ""), "next4": next_of("q4"),
+        "next5": "",
         # Display numbers on section headers (anchors stay #q2/#q3/#q4 for stable deep links)
-        "n_where": 1, "n_why": 2, "n_do": 3,
+        "n_ch": n_of.get("qch"), "n_who": n_of.get("qb"), "n_where": n_of["q2"], "n_why": n_of["q3"], "n_do": n_of["q4"],
+        "n_eff": n_of["q5"],
+        "goods": goods, "changed": ch, "who": who, "ww": ww, "eff": eff, "do_first": do_first,
         "ai": {k: _s(loc, k) for k in ("ai_btn", "ai_lead", "ai_ask_k", "ai_cause", "ai_ideas", "ai_report",
                                         "ai_anon", "ai_detail", "ai_copy", "ai_copied", "ai_copy_fail", "ai_note")},
         "prompt": prompt,

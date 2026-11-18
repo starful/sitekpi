@@ -1,0 +1,184 @@
+{#- Story v7 chapters (views/story_more.py shapes the numbers; board.css › "v7 story"). -#}
+
+{% macro goods(S) %}
+{%- if S.goods %}
+<div class="goods">
+  <span class="goods-k">{{ S.q.x_goods_k }}</span>
+  <ul>
+    {% for g in S.goods %}<li><span class="goods-ok" aria-hidden="true">✓</span><b>{{ g.label }}</b> <span class="num tone-up">{{ g.delta }}</span> <span class="goods-v">（{{ g.value }}）</span></li>{% endfor %}
+  </ul>
+</div>
+{%- endif %}
+{% endmacro %}
+
+{% macro changed(S) %}
+{%- set C = S.changed %}
+<section class="changed card" id="qch" aria-labelledby="qch-h" data-memo-where="{{ S.q.q1 }}">
+  <p class="qk"><span class="qn">{{ S.n_ch }}</span>{{ S.q.q1 }}</p>
+  <h2 id="qch-h" class="q-h">{{ C.head }}</h2>
+  <p class="q-note">{{ C.formula }}</p>
+  <div class="x-eq">
+    {% for x in C.terms %}
+    {% if not loop.first %}<span class="x-op" aria-hidden="true">×</span>{% endif %}
+    <div class="x-term"><span class="x-term-k">{{ x.label }}</span><span class="x-term-v"><b class="num">{{ x.value }}</b>{% if x.unit %}<small>{{ x.unit }}</small>{% endif %}</span><span class="num x-term-d tone-{{ x.tone }}">{{ x.delta }}</span></div>
+    {% endfor %}
+    <span class="x-op" aria-hidden="true">=</span>
+    <div class="x-term is-result"><span class="x-term-k">{{ C.result.label }}</span><span class="x-term-v"><b class="num">{{ C.result.value }}</b></span><span class="num x-term-d tone-{{ C.result.tone }}">{{ C.result.delta }}</span></div>
+  </div>
+  {% if C.segs %}
+  <div class="x-split">
+    <p class="x-split-k">{{ C.bar_k }}</p>
+    <div class="x-split-bar">{% for g in C.segs %}<span class="x-seg tone-{{ g.tone }} k-{{ g.key }}" style="flex: {{ g.flex }}"><span>{{ g.label }} {{ g.amount }}</span></span>{% endfor %}</div>
+    {% if C.flat %}<p class="x-split-flat">{{ C.flat }}</p>{% endif %}
+  </div>
+  {% endif %}
+  <p class="x-take tone-{{ C.take_tone }}">{{ C.take }}</p>
+  {% if S.next1 %}<p class="q-next">↓ {{ S.next1 }}</p>{% endif %}
+</section>
+{% endmacro %}
+
+{% macro who(S) %}
+{%- set W = S.who %}
+<section class="who card" id="qb" aria-labelledby="qb-h" data-memo-where="{{ S.q.qb }}">
+  <p class="qk"><span class="qn">{{ S.n_who }}</span>{{ S.q.qb }}</p>
+  <h2 id="qb-h" class="q-h">{{ W.head }}</h2>
+  {% if W.map %}{% set M = W.map %}
+  <div class="x-sub">
+    <h3 class="x-sub-k">{{ W.map_k }} <small class="pc-only">{{ M.size_k }}</small><small class="sp-only">{{ M.list_k }}</small></h3>
+    <div class="x-map">
+      <svg class="x-map-svg pc-only" viewBox="0 0 {{ M.w }} {{ M.h }}" role="img" aria-label="{{ W.map_k }}">
+        <rect class="q-grow" x="{{ M.l }}" y="{{ M.t }}" width="{{ M.mx - M.l }}" height="{{ M.my - M.t }}"/>
+        <rect class="q-fix" x="{{ M.mx }}" y="{{ M.my }}" width="{{ M.r - M.mx }}" height="{{ M.b - M.my }}"/>
+        <line class="x-guide" x1="{{ M.l }}" x2="{{ M.r }}" y1="{{ M.my }}" y2="{{ M.my }}"/>
+        <line class="x-guide" x1="{{ M.mx }}" x2="{{ M.mx }}" y1="{{ M.t }}" y2="{{ M.b }}"/>
+        <line class="x-axis" x1="{{ M.l }}" x2="{{ M.r }}" y1="{{ M.b }}" y2="{{ M.b }}"/>
+        <line class="x-axis" x1="{{ M.l }}" x2="{{ M.l }}" y1="{{ M.t }}" y2="{{ M.b }}"/>
+        {% for x in M.xt %}<text class="x-tick" x="{{ x.x }}" y="{{ M.b + 16 }}" text-anchor="middle">{{ x.t }}</text>{% endfor %}
+        {% for y in M.yt %}<text class="x-tick" x="{{ M.l - 8 }}" y="{{ y.y + 4 }}" text-anchor="end">{{ y.t }}</text>{% endfor %}
+        <text class="x-axis-k" x="{{ (M.l + M.r) / 2 }}" y="{{ M.h - 2 }}" text-anchor="middle">{{ M.x_k }}</text>
+        <text class="x-q t-grow" x="{{ M.l + 6 }}" y="{{ M.t + 14 }}">{{ M.q.grow }}</text>
+        <text class="x-q t-core" x="{{ M.r - 6 }}" y="{{ M.t + 14 }}" text-anchor="end">{{ M.q.core }}</text>
+        <text class="x-q t-fix" x="{{ M.r - 6 }}" y="{{ M.b - 8 }}" text-anchor="end">{{ M.q.fix }}</text>
+        <text class="x-q t-watch" x="{{ M.l + 6 }}" y="{{ M.b - 8 }}">{{ M.q.watch }}</text>
+        <text class="x-tick" x="{{ M.l + 6 }}" y="{{ M.my - 6 }}">{{ M.avg }}</text>
+        {% for p in M.pts %}
+        <circle class="x-dot q-{{ p.q }}" cx="{{ p.cx }}" cy="{{ p.cy }}" r="{{ p.r }}"/>
+        <text class="x-dot-k" x="{{ p.tx }}" y="{{ p.cy + 4 }}" text-anchor="{{ p.anchor }}">{{ p.label }}</text>
+        {% endfor %}
+      </svg>
+      <div class="x-map-list sp-only" role="table" aria-label="{{ W.map_k }}">
+        <div class="x-ml-row is-head" role="row"><span role="columnheader"></span><span role="columnheader">{{ M.col_share }}</span><span role="columnheader">{{ M.col_rate }}</span><span role="columnheader"></span></div>
+        {% for p in M.pts %}<div class="x-ml-row" role="row"><b role="rowheader">{{ p.name }}</b><span class="num" role="cell">{{ p.share_fmt }}</span><b class="num{{ ' tone-down' if p.q == 'fix' else '' }}" role="cell">{{ p.rate_fmt }}</b><span class="x-ml-q q-{{ p.q }}" role="cell">{{ p.q_label }}</span></div>{% endfor %}
+      </div>
+      {% if M.notes %}<div class="x-map-notes">{% for n in M.notes %}<p><b class="t-{{ n.q }}">{{ n.k }}</b>{{ n.t }}</p>{% endfor %}</div>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+  {% if W.nvr %}{% set N = W.nvr %}
+  <div class="x-sub">
+    <h3 class="x-sub-k">{{ W.nvr_k }}</h3>
+    {% if N.lead %}<p class="x-sub-lead">{{ N.lead }}</p>{% endif %}
+    <div class="x-stack"><span class="x-stack-k">{{ N.k_users }}</span><span><span class="x-stack-bar"><span class="s-new" style="flex: {{ N.users.new }}">{{ N.new_k }} {{ N.users.new }}%</span><span class="s-ret" style="flex: {{ N.users.ret }}">{{ N.ret_k }} {{ N.users.ret }}%</span></span><small>{{ N.users.n }}</small></span></div>
+    {% if N.conv %}<div class="x-stack"><span class="x-stack-k">{{ N.k_conv }}</span><span><span class="x-stack-bar"><span class="s-new" style="flex: {{ N.conv.new }}">{{ N.new_k }} {{ N.conv.new }}%</span><span class="s-ret" style="flex: {{ N.conv.ret }}">{{ N.ret_k }} {{ N.conv.ret }}%</span></span><small>{{ N.conv.n }}</small></span></div>{% endif %}
+    <div class="x-cards">{% for c in N.cards %}<div class="x-card"><span>{{ c.k }}</span><p><b class="num">{{ c.v }}</b>{% if c.d %}<span class="num tone-{{ c.tone }}">{{ c.d }}</span>{% endif %}</p></div>{% endfor %}</div>
+    {% if N.note %}<p class="q-others">{{ N.note }}</p>{% endif %}
+  </div>
+  {% endif %}
+  {% if S.nextb %}<p class="q-next">↓ {{ S.nextb }}</p>{% endif %}
+</section>
+{% endmacro %}
+
+{% macro where_when(S) %}
+{%- set X = S.ww %}
+{% if X.get('devs') or X.get('chs') %}
+<div class="x-sub">
+  <h3 class="x-sub-k">{{ S.q.x_where_k }}</h3>
+  <p class="x-sub-lead">{{ X.head }}</p>
+  <p class="x-legend">{% if X.band %}<span><i class="lg-band"></i>{{ X.band.k }}</span>{% else %}<span><i class="lg-ref"></i>{{ X.ref.k }}</span>{% endif %}<span><i class="lg-low"></i>{{ X.low_k }}</span></p>
+  <div class="x-bars">
+    {% for grp, rows in ((X.dev_k, X.devs), (X.ch_k, X.chs)) if rows %}
+    <div class="x-bars-col">
+      <b class="x-bars-k">{{ grp }}</b>
+      {% for r in rows %}
+      <div class="x-bar-row{{ ' is-low' if r.low else '' }}{{ ' is-few' if r.few else '' }}">
+        <span class="x-bar-name">{{ r.name }}<small>{{ r.base }}{% if r.few %} · {{ X.few_k }}{% endif %}</small></span>
+        <span class="x-bar-track">{% if X.band %}<i class="x-bar-band" style="left: {{ X.band.l }}%; width: {{ X.band.w }}%"></i>{% else %}<i class="x-bar-ref" style="left: {{ X.ref.l }}%"></i>{% endif %}<i class="x-bar-fill" style="width: {{ r.w }}%"></i></span>
+        <b class="num x-bar-v">{{ r.rate_fmt }}</b>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <p class="q-foot">{{ X.base_k }}</p>
+</div>
+{% endif %}
+{% if X.when %}{% set T = X.when %}
+<div class="x-sub">
+  <h3 class="x-sub-k">{{ S.q.x_when_k }}</h3>
+  <p class="x-sub-lead">{{ T.head }}</p>
+  <div class="x-when">
+    {% for g, cls in ((T.pc, "pc-only"), (T.sp, "sp-only")) %}
+    <svg class="x-when-svg {{ cls }}" viewBox="0 0 {{ g.w }} {{ g.h }}" role="img" aria-label="{{ T.aria }}">
+      {% if g.band %}<rect class="x-when-band" x="{{ g.l }}" y="{{ g.band.y }}" width="{{ g.r - g.l }}" height="{{ g.band.h }}"/>
+      <line class="x-when-low" x1="{{ g.l }}" x2="{{ g.r }}" y1="{{ g.band.ly }}" y2="{{ g.band.ly }}"/>
+      <text class="x-when-bk" x="{{ g.r }}" y="{{ g.band.ly - 6 }}" text-anchor="end">{{ g.band.t }}</text>{% endif %}
+      {% for y in g.yt %}<line class="x-grid" x1="{{ g.l }}" x2="{{ g.r }}" y1="{{ y.y }}" y2="{{ y.y }}"/><text class="x-tick" x="{{ g.l - 6 }}" y="{{ y.y + 4 }}" text-anchor="end">{{ y.t }}</text>{% endfor %}
+      <line class="x-guide" x1="{{ g.mid }}" x2="{{ g.mid }}" y1="{{ g.t }}" y2="{{ g.b }}"/>
+      <text class="x-tick" x="{{ g.mid - 6 }}" y="{{ g.b - 6 }}" text-anchor="end">{{ T.prev_avg }}</text>
+      <text class="x-tick" x="{{ g.mid + 6 }}" y="{{ g.b - 6 }}">{{ T.cur_avg }}</text>
+      <polyline class="x-when-line" points="{{ g.line }}"/>
+      {% for p in g.pts %}<circle class="x-when-pt{{ ' is-cur' if p.cur else '' }}" cx="{{ p.x }}" cy="{{ p.y }}" r="{{ 4 if p.cur else 3 }}"/>{% endfor %}
+      {% for x in g.xl %}<text class="x-tick" x="{{ x.x }}" y="{{ g.h - 6 }}" text-anchor="middle">{{ x.t }}</text>{% endfor %}
+      <text class="x-when-last" x="{{ g.last.x }}" y="{{ g.last.y - 10 }}" text-anchor="end">{{ g.last.t }}</text>
+    </svg>
+    {% endfor %}
+    {% if T.side %}<div class="x-when-side">{% for s in T.side %}<p class="ws-{{ s.tone }}"><b>{{ s.k }}</b>{{ s.t }}</p>{% endfor %}</div>{% endif %}
+  </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro effect(S, is_sample) %}
+{%- set E = S.eff %}
+<section class="effect card" id="q5" aria-labelledby="q5-h" data-memo-where="{{ S.q.q5_long }}">
+  <p class="qk"><span class="qn">{{ S.n_eff }}</span>{{ S.q.q5_long }}</p>
+  {% set R = E.result %}
+  <p class="q-note x-eff-lead">{{ E.lead }}</p>
+  <form class="x-eff-form" method="post" action="/story/release"{% if E.sample %} data-sample{% endif %}>
+    <label class="x-f x-f-wide"><span>{{ S.q.x_eff_act_k }}</span>
+      <select name="act" data-eff-act{% if E.sample %} disabled{% endif %}>
+        {% for o in E.opts %}<option value="{{ o.v }}">{{ o.t }}</option>{% endfor %}
+        <option value="own">{{ S.q.x_eff_own }}</option>
+      </select>
+    </label>
+    <label class="x-f x-f-wide" data-eff-own hidden><span>{{ S.q.x_eff_own }}</span><input type="text" name="title" maxlength="60" placeholder="{{ S.q.x_eff_title_ph }}"></label>
+    {% for o in E.opts %}<input type="hidden" name="act_title_{{ o.v }}" value="{{ o.t.split('. ', 1)[1] if '. ' in o.t else o.t }}">{% endfor %}
+    <label class="x-f"><span>{{ S.q.x_eff_date_k }}</span><input type="date" name="date" max="{{ E.today }}" required{% if E.sample %} disabled{% endif %}></label>
+    <button type="submit" class="x-f-btn"{% if E.sample %} disabled{% endif %}>{{ S.q.x_eff_save }}</button>
+  </form>
+  {% if E.sample %}<p class="q-foot">{{ S.q.x_eff_sample }}</p>{% endif %}
+  {% if E.releases %}
+  <ul class="x-rels">
+    {% for r in E.releases %}<li>{{ r.label }}{% if not E.sample %}<form method="post" action="/story/release/delete"><input type="hidden" name="idx" value="{{ r.idx }}"><button type="submit" class="x-rel-del" aria-label="{{ S.q.x_eff_del }}: {{ r.label }}">×</button></form>{% endif %}</li>{% endfor %}
+  </ul>
+  {% elif not E.sample %}<p class="q-foot">{{ S.q.x_eff_empty }}</p>{% endif %}
+  {% if R and R.get('wait') %}<p class="x-eff-wait">{{ R.wait }}</p>
+  {% elif R %}
+  <h2 id="q5-h" class="q-h x-eff-h">{{ R.head }}</h2>
+  <div class="x-eff-table" role="table" aria-labelledby="q5-h">
+    <div class="x-eff-row is-head" role="row"><span role="columnheader"></span><span role="columnheader">{{ R.before_k }}<small>{{ R.before_d }}</small></span><span role="columnheader">{{ R.after_k }}<small>{{ R.after_d }}</small></span><span role="columnheader">{{ S.q.x_eff_d }}</span><span aria-hidden="true"></span></div>
+    {% for r in R.rows %}
+    <div class="x-eff-row{{ ' is-ref' if r.ref else '' }}" role="row">
+      <b role="rowheader">{{ r.name }}</b>
+      <span class="num x-before" role="cell" data-k="{{ R.before_k }}">{{ r.before }}</span>
+      <b class="num" role="cell" data-k="{{ R.after_k }}">{{ r.after }}</b>
+      <b class="num tone-{{ r.tone }}" role="cell">{{ r.d }}</b>
+      <span class="x-pair" aria-hidden="true"><i style="width: {{ r.wx }}%"></i><i class="tone-{{ r.tone }}" style="width: {{ r.wy }}%"></i></span>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="x-take tone-mid">{{ R.next }}</p>
+  <p class="q-foot">{{ R.note }}</p>
+  {% else %}<span id="q5-h" hidden>{{ S.q.q5_long }}</span>{% endif %}
+</section>
+{% endmacro %}

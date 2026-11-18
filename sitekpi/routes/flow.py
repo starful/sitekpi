@@ -15,10 +15,10 @@ from sitekpi.flow import (
     get_mapping_store,
     load_branches,
     load_custom_flow,
-    step_keys,
     property_scope,
     resolved_steps,
     sample_flow,
+    step_keys,
     valid_event_name,
 )
 from sitekpi.ga4.data import connection_info, discover_event_names, fetch_flow
@@ -73,6 +73,89 @@ def live_flow_context(
             _FLOW_CACHE.set(key, flow)
     return flow_context(pack=pack, flow=flow, steps=steps, locale=locale, live=True,
                         event_options=site_events(request), error=err, branches=branches, max_branches=MAX_BRANCHES)
+
+
+_STORY_CACHE = TTLCache(maxsize=256, ttl=300.0)
+RELEASES_KEY = "story_releases"
+MAX_RELEASES = 10
+
+
+def load_releases(session: Any) -> list[dict[str, Any]]:
+    """Fixes the viewer shipped (直したら効いた？), oldest first — per GA4 property, in the session."""
+    scope = property_scope(session)
+    if not scope:
+        return []
+    rows = (session.get(RELEASES_KEY) or {}).get(scope) or []
+    return [r for r in rows if isinstance(r, dict) and r.get("date")]
+
+
+def live_story_x(request: Request, pack: str, period: str, mapping: dict[str, str]) -> dict[str, Any] | None:
+    """board/story_x.py numbers from GA4 (cached 5 min per property · period · flow · latest release)."""
+    from sitekpi.ga4.story import fetch_story_x
+
+    info = connection_info(request.session)
+    if not info:
+        return None
+    custom = load_custom_flow(request.session, pack)
+    steps = resolved_steps(pack, mapping, custom)
+    events = [s["event"] for s in steps if s.get("event")]
+    rels = load_releases(request.session)
+    release = rels[-1] if rels else None
+    key = f"{info['property_id']}|{period}|{pack}|{','.join(events)}|{(release or {}).get('date', '')}"
+    hit = _STORY_CACHE.get(key)
+    if hit is not None:
+        return hit
+    sx, _err = fetch_story_x(request.session, period=period, events=events, last=events[-1] if events else "",
+                            release=release)
+    if sx is not None:
+        _STORY_CACHE.set(key, sx)
+    return sx
+
+
+@router.post("/story/release")
+async def story_release(request: Request) -> Response:
+    """Save the day a fix went live (form: act · title · date) → the board compares 14 days before / after."""
+    from datetime import date
+
+    from sitekpi.board.story_x import today_jst
+
+    form = await request.form()
+    scope = property_scope(request.session)
+    if not scope:
+        return RedirectResponse("/live#q5", status_code=303)
+    try:
+        day = date.fromisoformat(str(form.get("date") or ""))
+    except ValueError:
+        return RedirectResponse("/live#q5", status_code=303)
+    if day > today_jst():
+        return RedirectResponse("/live#q5", status_code=303)
+    title = clean_label(str(form.get("title") or ""))
+    act = str(form.get("act") or "")
+    if not title and act.isdigit():
+        title = clean_label(str(form.get(f"act_title_{act}") or ""))
+    store = dict(request.session.get(RELEASES_KEY) or {})
+    rows = [r for r in store.get(scope) or [] if isinstance(r, dict)]
+    rows.append({"date": day.isoformat(), "act": act if act.isdigit() else "", "title": title})
+    rows.sort(key=lambda r: str(r.get("date")))
+    store[scope] = rows[-MAX_RELEASES:]
+    request.session[RELEASES_KEY] = store
+    return RedirectResponse("/live#q5", status_code=303)
+
+
+@router.post("/story/release/delete")
+async def story_release_delete(request: Request) -> Response:
+    form = await request.form()
+    scope = property_scope(request.session)
+    if scope:
+        store = dict(request.session.get(RELEASES_KEY) or {})
+        rows = list(store.get(scope) or [])
+        try:
+            rows.pop(int(str(form.get("idx") or "-1")))
+        except (ValueError, IndexError):
+            pass
+        store[scope] = rows
+        request.session[RELEASES_KEY] = store
+    return RedirectResponse("/live#q5", status_code=303)
 
 
 @router.post("/flow/mapping")

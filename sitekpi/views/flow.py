@@ -181,7 +181,7 @@ def flow_context(
         "sample": bool(flow.get("sample")),
         "error": error,
         "stages": stages,
-        "channels": [{"id": c["id"], "name": c["name"], "color": c["color"]} for c in channels],
+        "channels": [{"id": c["id"], "name": c["name"], "color": c["color"], "entry": c["entry"]} for c in channels],
         "ch_rows": ch_rows,
         "last_label": last["label"] if last else "",
         "insights": insights,

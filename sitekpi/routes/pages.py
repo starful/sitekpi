@@ -333,6 +333,8 @@ def legacy_content():
 def page_industry(request: Request, slug: str, period: str = Query(default="28d")):
     """Dense board for industry sample packs (DEMO only — live is /live)."""
     from sitekpi.board.extras import sample_extras
+    from sitekpi.board.story_x import sample_story_x
+    from sitekpi.flow import sample_flow
     from sitekpi.routes.setup import sample_setup
 
     if slug not in INDUSTRIES:
@@ -360,6 +362,7 @@ def page_industry(request: Request, slug: str, period: str = Query(default="28d"
             flow=_with_sessions(sample_flow_context(slug, data, get_locale(request.session)), data),
             prev=(prev := sample_prev(slug, period, data)),
             extras=sample_extras(slug, data, prev),
+            story_x=sample_story_x(slug, data, prev, sample_flow(slug, data)),
             editor=(try_ := sample_setup(request, slug, data) or {}).get("editor"),
             industry_drawer=try_.get("industry"),
             ind_name=try_.get("ind_name", ""),

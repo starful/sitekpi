@@ -60,6 +60,9 @@ def _render_sample_dense(
     meta_short: str = "",
     auto_open: str = "",
     onb_first_view: bool = False,
+    story_x: dict[str, Any] | None = None,
+    releases: list[dict[str, Any]] | None = None,
+    story_sample: bool = False,
 ) -> str:
     loc = normalize_locale(locale)
     if data is None or ind is None or benches_raw is None:
@@ -111,7 +114,8 @@ def _render_sample_dense(
                                    "bench": _bench_view(_bench_info(r.get("value_num"), r.get("bench")))}, loc))
     verdict = _verdict(board, watch, flow, loc)
     story = _story(board, watch, verdict, flow, loc, industry=industry, site=property_name or "",
-                   ind_label=ind_name or industry_label, period_label=period_label)
+                   ind_label=ind_name or industry_label, period_label=period_label, data=data, prev=prev,
+                   story_x=story_x, releases=releases, sample=is_sample or story_sample)
     worst = _worst_link(flow)
     return render(
         "board.html",
@@ -154,8 +158,10 @@ def _render_sample_dense(
 
 def _story(board: dict[str, Any], watch: list[dict[str, Any]], verdict: dict[str, Any],
            flow: dict[str, Any] | None, loc: str, *, industry: str, site: str, ind_label: str,
-           period_label: str) -> dict[str, Any] | None:
-    """0 総評 → 1 どこで？ → 2 どこがおかしい？ → 3 どうする？ (views/story.py)."""
+           period_label: str, data: dict[str, Any] | None = None, prev: dict[str, Any] | None = None,
+           story_x: dict[str, Any] | None = None, releases: list[dict[str, Any]] | None = None,
+           sample: bool = True) -> dict[str, Any] | None:
+    """0 総評 → なぜ変わった？ → 誰が？ → どこで？ → どこがおかしい？ → どうする？ → 効いた？ (views/story.py)."""
     from sitekpi.packs import INDUSTRIES
     from sitekpi.packs.behaviors import BEHAVIORS, behavior_label
     from sitekpi.views.story import build_story
@@ -163,7 +169,8 @@ def _story(board: dict[str, Any], watch: list[dict[str, Any]], verdict: dict[str
     cat = str((INDUSTRIES.get(industry) or {}).get("category") or "")
     beh = behavior_label(cat, loc) if cat in BEHAVIORS else ""
     return build_story(board=board, watch=watch, verdict=verdict, flow=flow, locale=loc, bench_info=_bench_info,
-                       site=site, industry_label=ind_label, behavior_label=beh, period_label=period_label)
+                       site=site, industry_label=ind_label, behavior_label=beh, period_label=period_label,
+                       data=data, prev=prev, story_x=story_x, releases=releases, sample=sample)
 
 
 def verdict_scene(*, industry: str, data: dict[str, Any], benches_raw: dict[str, dict[str, Any]],

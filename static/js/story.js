@@ -73,3 +73,19 @@
   window.addEventListener("resize", () => { clearTimeout(timer); timer = setTimeout(equal, 120); });
   document.addEventListener("board:flow-updated", equal);
 })();
+
+// ⑥ 直したら効いた？ — 「自分でやったこと」 shows a text box instead of the catalog title
+(function () {
+  "use strict";
+  const sel = document.querySelector("[data-eff-act]");
+  const own = document.querySelector("[data-eff-own]");
+  if (!sel || !own) return;
+  const sync = () => {
+    const on = sel.value === "own";
+    own.hidden = !on;
+    const input = own.querySelector("input");
+    if (input) input.required = on;
+  };
+  sel.addEventListener("change", sync);
+  sync();
+})();
