@@ -20,9 +20,9 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 os.environ["DEMO_CONNECT"] = "1"  # the demo connection is a test-only mode
 
 
-import pytest  # noqa: E402
-from google.auth.exceptions import RefreshError  # noqa: E402
-from google.oauth2.credentials import Credentials  # noqa: E402
+import pytest
+from google.auth.exceptions import RefreshError
+from google.oauth2.credentials import Credentials
 
 
 @pytest.fixture(autouse=True)
