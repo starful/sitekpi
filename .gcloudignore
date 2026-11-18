@@ -14,3 +14,7 @@ brand
 docs
 mac
 *.md
+# X API keys (scripts/post_to_x.py) — never upload to Cloud Build
+x-key
+x-key.*
+*.x-key
