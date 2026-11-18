@@ -193,3 +193,24 @@ document.addEventListener("click", (e) => {
   if (!open) document.querySelector('[data-flow-ch="all"]')?.click(); // back to 全体
   if (open && window.SiteKPITrack) window.SiteKPITrack("channel_filter");
 });
+
+/* Coming back to the board (saving the flow, changing the industry or period, a 「直す」 link) keeps
+   the reading position instead of jumping to the top. Hash links (#q3 …) still win. */
+(function () {
+  "use strict";
+  const KEY = "sk_board_y";
+  const here = location.pathname;
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(KEY) || "null");
+    sessionStorage.removeItem(KEY);
+    if (saved && saved.p === here && Date.now() - saved.t < 120000 && !location.hash && saved.y > 0) {
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+      const go = () => window.scrollTo(0, Math.min(saved.y, document.documentElement.scrollHeight));
+      go();
+      window.addEventListener("load", go, { once: true });
+    }
+  } catch (e) { /* storage blocked: the board still works, it just opens at the top */ }
+  window.addEventListener("pagehide", () => {
+    try { sessionStorage.setItem(KEY, JSON.stringify({ p: here, y: window.scrollY, t: Date.now() })); } catch (e) { /* ignore */ }
+  });
+})();

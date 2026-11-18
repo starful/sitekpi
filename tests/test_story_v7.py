@@ -39,10 +39,18 @@ def test_ec_sample_tells_all_seven_chapters():
     why = s.select_one("#q3")
     assert len(why.select(".x-bars-col")) == 2 and why.select(".x-bar-row")
     assert len(why.select(".x-when-svg.pc-only circle")) == 8
-    # 6: the sample shows a fix 14 days later, and saves nothing
-    eff = s.select_one("#q5")
+    # 5: the sample shows fix ① done 14+ days ago with its before / after, and saves nothing
+    do = s.select_one("#q4")
+    eff = do.select_one("#q5")
     assert eff.select_one("form[data-sample] button[disabled]") and eff.select(".x-eff-row:not(.is-head)")
     assert eff.select_one(".x-rels li") and not eff.select(".x-rel-del")
+    assert do.select_one(".act .act-rec.is-done") and do.select(".act [data-rec-pick]")
+    assert why.select(".x-when-svg.pc-only .x-mark")  # the fix is marked on いつから？
+    assert do.select_one(".ai-card [data-ai-copy]")  # the AI question is one click, not hidden
+    # 6: まとめ before 詳しい数字, four lines, copyable
+    sm = s.select_one("#qsum")
+    assert len(sm.select(".sum-rows div")) == 4 and sm.find_next_sibling("section")["id"] == "s-l2"
+    assert "まとめ" in s.select(".story-toc a")[-1].get_text()
 
 
 @pytest.mark.parametrize("lang", ["en", "ko"])
@@ -51,7 +59,8 @@ def test_v7_chapters_are_localized(lang):
     c.post("/settings", data={"locale": lang})
     s = _soup(c, "/ec")
     html = str(s.select_one(".content"))
-    for ja in ("なぜ変わった", "誰が成果", "どこで起きている", "いつから", "直したら効いた", "うまくいっていること"):
+    for ja in ("なぜ変わった", "誰が成果", "どこで起きている", "いつから", "やった日を記録", "うまくいっていること", "まとめ",
+               "質問文をコピー"):
         assert ja not in html, (lang, ja)
 
 
@@ -85,7 +94,7 @@ def test_release_is_saved_per_property_and_compared(monkeypatch):
     future = (today_jst() + timedelta(days=2)).isoformat()
     c.post("/story/release", data={"act": "1", "date": future})  # future dates are ignored
     s = _soup(c, "/live")  # the demo board shows the sample fix, never a form that saves
-    assert s.select_one("#q5 form[data-sample]")
+    assert s.select_one("#q4 #q5 form[data-sample]")
     assert rf.load_releases({"story_releases": {"prop:1": [{"date": day, "title": "x"}, {"title": "no date"}]}}) == [
         {"date": day, "title": "x"}]
 
@@ -157,3 +166,41 @@ def test_fetch_story_x_reads_ga4(monkeypatch):
     assert sx["money"]["cur"]["revenue"] == 500000
     assert sx["nvr"]["new"]["users"] == 700
     assert sx["release"]["before"]["entry"] == 500 and sx["release"]["after"]["ev"]["add_to_cart"] == 120
+
+
+def test_chapter_two_uses_a_step_enough_people_reached_and_labels_do_not_overlap():
+    """A site with 10 conversions (the field report): rates come from a step with ≥ 30 people,
+    tiny channels are left out by name, and no two names sit on top of each other."""
+    from sitekpi.views.story_more import buyers
+
+    ch = [("ch_direct", "Direct", 6370), ("ch_org", "Organic Search", 640), ("ch_ref", "Referral", 400),
+          ("ch_social", "Organic Social", 80), ("ch_ai", "AI Assistant", 25)]
+    entry = sum(n for _, _, n in ch)
+    stages = [
+        {"label": "サイトに来た", "users": entry, "event": ""},
+        {"label": "しっかり見た", "users": 2100, "event": "user_engagement",
+         "ch_users": {"ch_direct": 1500, "ch_org": 420, "ch_ref": 70, "ch_social": 30, "ch_ai": 20}},
+        {"label": "外部リンクをクリック", "users": 10, "event": "click",
+         "ch_users": {"ch_direct": 2, "ch_org": 8, "ch_ref": 0, "ch_social": 0, "ch_ai": 0}},
+    ]
+    flow = {"stages": stages, "last_label": "外部リンクをクリック",
+            "channels": [{"id": i, "name": n, "entry": e} for i, n, e in ch]}
+    sx = {"nvr": {"new": {"users": 7100, "ev": {"user_engagement": 1900, "click": 8}},
+                  "returning": {"users": 135, "ev": {"user_engagement": 200, "click": 2}}, "prev_returning": 140}}
+    w = buyers(flow, sx, "ja")
+    assert "しっかり見た" in w["head"] and "外部リンク" not in w["head"]
+    m = w["map"]
+    names = [p["name"] for p in m["pts"]]
+    assert names == ["Direct", "Organic Search", "Referral"] and "AI Assistant" in m["small"]
+    assert all(p["r"] <= 18 for p in m["pts"])
+    boxes = []
+    for p in m["pts"]:
+        w_ = 7.5 * len(p["label"]) + 4
+        x0 = p["tx"] - w_ if p["anchor"] == "end" else p["tx"]
+        boxes.append((x0, p["ty"] - 16, x0 + w_, p["ty"] - 2))
+        assert x0 >= 0 and x0 + w_ <= m["r"] + 1, p
+    for i, a in enumerate(boxes):
+        for b in boxes[i + 1:]:
+            assert a[2] < b[0] or b[2] < a[0] or a[3] < b[1] or b[3] < a[1], (a, b)
+    # the new / returning bar never squeezes text into a 2% slice
+    assert w["nvr"]["users"]["narrow_ret"] and not w["nvr"]["users"]["narrow_new"]

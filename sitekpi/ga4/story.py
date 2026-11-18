@@ -55,8 +55,7 @@ def fetch_story_x(session: dict[str, Any], *, period: str, events: list[str], la
         _req(cur_start, cur_end, ["totalUsers"], ["newVsReturning"], limit=5),
         _req(prev_start, prev_end, ["totalUsers"], ["newVsReturning"], limit=5),
     ]
-    if last:
-        reqs.append(_req(cur_start, cur_end, ["totalUsers"], ["newVsReturning"], _event_filter([last]), 5))
+    reqs.append(_req(cur_start, cur_end, ["totalUsers"], ["newVsReturning", "eventName"], filt, 3 * n_ev))
     rel_day = None
     rel_ranges = None
     if release and release.get("date"):
@@ -120,11 +119,15 @@ def fetch_story_x(session: dict[str, Any], *, period: str, events: list[str], la
         return {row.dimension_values[0].value: _i(_vals(row)[0]) for row in r.rows or []}
 
     users, p_users = nvr_map(rep[6]), nvr_map(rep[7])
-    conv = nvr_map(rep[8]) if last else {}
+    by_ev: dict[str, dict[str, int]] = {"new": {}, "returning": {}}
+    for row in rep[8].rows or []:
+        side = row.dimension_values[0].value
+        if side in by_ev:
+            by_ev[side][row.dimension_values[1].value] = _i(_vals(row)[0])
     nvr = None
     if users.get("new") and users.get("returning"):
-        nvr = {"new": {"users": users["new"], "conv": conv.get("new", 0)},
-               "returning": {"users": users["returning"], "conv": conv.get("returning", 0)},
+        nvr = {"new": {"users": users["new"], "ev": by_ev["new"]},
+               "returning": {"users": users["returning"], "ev": by_ev["returning"]},
                "prev_returning": p_users.get("returning", 0)}
 
     rel = None

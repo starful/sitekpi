@@ -354,7 +354,7 @@ _X: dict[str, dict[str, str]] = {
         "x_who_map_k": "どの流入に力を入れるか", "x_who_nvr_k": "新しく来た人と、また来た人",
         "x_who_x": "来た人の割合 →", "x_who_size": "円の大きさ = 来た人の数",
         "x_who_avg": "全体 {rate}", "x_who_list_k": "全体の {rate} より上か下か",
-        "x_who_col_share": "来た人", "x_who_col_rate": "{step}まで",
+        "x_who_col_share": "来た人", "x_who_small": "少ないため省略: {names}", "x_who_col_rate": "{step}まで",
         "x_q_grow": "伸ばす", "x_q_core": "柱", "x_q_fix": "直す", "x_q_watch": "様子見",
         "x_who_grow": "{names} は進む割合が高いのに、来る人は少ない。増やす価値があります。",
         "x_who_fix": "{name} は来る人の {share} を占めるのに、進む割合は {rate}（全体 {avg}）。着地ページと広告の中身を見直します。",
@@ -387,7 +387,7 @@ _X: dict[str, dict[str, str]] = {
         "x_when_check_k": "確かめること", "x_when_check": "{d} の週の前後に、サイト・広告・料金・フォームを変えていないか。",
         "x_when_band": "業界の目安 {low}〜", "x_when_prev": "前期 平均 {r}", "x_when_cur": "今期 平均 {r}",
         "x_when_aria": "「{a} → {b}」の 8 週の推移",
-        "x_eff_lead": "{do} の対策を出した日を入れると、その前後 {n} 日の数字を並べます。日付は何回でも足せます。",
+        "x_eff_lead": "対策をやった日を記録すると、その前後 {n} 日の数字をここに並べます（いつから？ のグラフにも印）。",
         "x_eff_act_k": "出した対策", "x_eff_own": "自分でやったこと（自由に書く）", "x_eff_title_ph": "例: 送料を商品ページに表示",
         "x_eff_date_k": "出した日（公開日）", "x_eff_save": "保存して比べる", "x_eff_del": "消す",
         "x_eff_sample": "見本なので保存はされません。GA4 をつなぐと、自分の対策の日付を入れられます。",
@@ -427,7 +427,7 @@ _X: dict[str, dict[str, str]] = {
         "x_who_map_k": "Which traffic to invest in", "x_who_nvr_k": "New and returning visitors",
         "x_who_x": "Share of visitors →", "x_who_size": "Circle size = visitors",
         "x_who_avg": "Overall {rate}", "x_who_list_k": "Above or below the overall {rate}",
-        "x_who_col_share": "Visitors", "x_who_col_rate": "To {step}",
+        "x_who_col_share": "Visitors", "x_who_small": "Left out (too few): {names}", "x_who_col_rate": "To {step}",
         "x_q_grow": "Grow", "x_q_core": "Core", "x_q_fix": "Fix", "x_q_watch": "Watch",
         "x_who_grow": "{names} carry people far but bring few. Worth growing.",
         "x_who_fix": "{name} brings {share} of visitors, but only {rate} go on (overall {avg}). Review its landing pages and ads.",
@@ -460,7 +460,7 @@ _X: dict[str, dict[str, str]] = {
         "x_when_check_k": "Check", "x_when_check": "Did anything change around the week of {d} — site, ads, prices, forms?",
         "x_when_band": "Industry standard {low}+", "x_when_prev": "Prev avg {r}", "x_when_cur": "This period avg {r}",
         "x_when_aria": "8 weeks of “{a} → {b}”",
-        "x_eff_lead": "Enter the day you shipped a fix from {do} to compare the {n} days before and after. Add as many dates as you like.",
+        "x_eff_lead": "Record the day you did a fix to compare the {n} days before and after here (also marked on the “Since when?” chart).",
         "x_eff_act_k": "Fix you shipped", "x_eff_own": "Something else (write it)", "x_eff_title_ph": "e.g. Shipping cost on product pages",
         "x_eff_date_k": "Shipped on", "x_eff_save": "Save and compare", "x_eff_del": "Remove",
         "x_eff_sample": "This is a sample, so nothing is saved. Connect GA4 to enter your own dates.",
@@ -500,7 +500,7 @@ _X: dict[str, dict[str, str]] = {
         "x_who_map_k": "어느 유입에 힘을 줄까", "x_who_nvr_k": "새로 온 사람과 다시 온 사람",
         "x_who_x": "방문자 비율 →", "x_who_size": "원 크기 = 방문자 수",
         "x_who_avg": "전체 {rate}", "x_who_list_k": "전체 {rate}보다 위인지 아래인지",
-        "x_who_col_share": "방문자", "x_who_col_rate": "{step}까지",
+        "x_who_col_share": "방문자", "x_who_small": "적어서 생략: {names}", "x_who_col_rate": "{step}까지",
         "x_q_grow": "늘리기", "x_q_core": "기둥", "x_q_fix": "고치기", "x_q_watch": "지켜보기",
         "x_who_grow": "{names}은(는) 진행 비율이 높은데 방문자가 적어요. 늘릴 가치가 있어요.",
         "x_who_fix": "{name}은(는) 방문자의 {share}를 차지하지만 진행 비율은 {rate}(전체 {avg}). 랜딩 페이지와 광고 내용을 다시 봐요.",
@@ -533,7 +533,7 @@ _X: dict[str, dict[str, str]] = {
         "x_when_check_k": "확인할 것", "x_when_check": "{d} 주 전후에 사이트·광고·가격·폼을 바꾸지 않았는지.",
         "x_when_band": "업계 기준 {low}〜", "x_when_prev": "전기 평균 {r}", "x_when_cur": "이번 기간 평균 {r}",
         "x_when_aria": "「{a} → {b}」의 8주 추이",
-        "x_eff_lead": "{do}의 대책을 낸 날을 넣으면 그 전후 {n}일의 숫자를 나란히 보여 줘요. 날짜는 몇 번이든 추가할 수 있어요.",
+        "x_eff_lead": "대책을 한 날을 기록하면 그 전후 {n}일의 숫자를 여기에 보여 줘요(「언제부터?」 그래프에도 표시).",
         "x_eff_act_k": "낸 대책", "x_eff_own": "직접 한 일(자유롭게 쓰기)", "x_eff_title_ph": "예: 상품 페이지에 배송비 표시",
         "x_eff_date_k": "낸 날(공개일)", "x_eff_save": "저장하고 비교", "x_eff_del": "지우기",
         "x_eff_sample": "견본이라 저장되지 않아요. GA4를 연결하면 직접 대책 날짜를 넣을 수 있어요.",
@@ -554,5 +554,8 @@ _X: dict[str, dict[str, str]] = {
         "x_eff_d": "차이",
     },
 }
+_X2: dict[str, dict[str, str]] = {'ja': {'qsum': 'まとめ', 'x_sum_h': '伸ばすには「{a} → {b}」を直す — まず ① から。', 'x_sum_now_k': 'いまの状態', 'x_sum_issue_k': 'いちばんの課題', 'x_sum_first_k': 'まずやること', 'x_sum_next_k': '次に確かめること', 'x_sum_issue': '「{a} → {b}」{rate}{band}。', 'x_sum_band': '（業界の目安 {band}）', 'x_sum_focus': '特に {names}。', 'x_sum_next': 'やったら {do} で日付を記録 → 14 日後、この画面で「やる前と後」を比べます。', 'x_sum_copy': '報告用にコピー', 'x_sum_copied': 'コピーしました', 'x_sum_ai': '✦ AI に続きを聞く', 'x_sum_below': '↓ この下は 詳しい数字（参考）', 'x_rec': '＋ やった日を記録', 'x_rec_done': '✓ {d} にやった', 'x_mark': '{n} {d}', 'x_ai_title': 'AI に、もっと具体的に聞く', 'x_ai_lead': 'この画面の数字を入れた質問文を作ります。ChatGPT・Claude・Gemini に貼るだけ。', 'x_ai_copy': '質問文をコピー', 'x_ai_open': '中身を見る', 'x_eff_res_k': '✓ {d} にやった「{title}」 · 前後 {n} 日で比べた結果', 'x_eff_form_k': 'やった日を記録'}, 'en': {'qsum': 'Summary', 'x_sum_h': 'To grow, fix “{a} → {b}” — start with ①.', 'x_sum_now_k': 'Where you stand', 'x_sum_issue_k': 'Biggest issue', 'x_sum_first_k': 'Do first', 'x_sum_next_k': 'Check next', 'x_sum_issue': '“{a} → {b}” {rate}{band}. ', 'x_sum_band': ' (industry standard {band})', 'x_sum_focus': 'Mostly on {names}.', 'x_sum_next': 'When you do it, record the date in {do} → after 14 days, compare before and after here.', 'x_sum_copy': 'Copy for a report', 'x_sum_copied': 'Copied', 'x_sum_ai': "✦ Ask AI what's next", 'x_sum_below': '↓ Below: all the numbers (reference)', 'x_rec': '+ Record the day you did it', 'x_rec_done': '✓ Done {d}', 'x_mark': '{n} {d}', 'x_ai_title': 'Ask AI for something more specific', 'x_ai_lead': "We write a question with this board's numbers. Paste it into ChatGPT, Claude or Gemini.", 'x_ai_copy': 'Copy the question', 'x_ai_open': 'See it', 'x_eff_res_k': '✓ “{title}” on {d} · {n} days before vs after', 'x_eff_form_k': 'Record the day you did it'}, 'ko': {'qsum': '정리', 'x_sum_h': '늘리려면 「{a} → {b}」를 고쳐요 — 먼저 ①부터.', 'x_sum_now_k': '지금 상태', 'x_sum_issue_k': '가장 큰 과제', 'x_sum_first_k': '먼저 할 일', 'x_sum_next_k': '다음에 확인할 것', 'x_sum_issue': '「{a} → {b}」 {rate}{band}. ', 'x_sum_band': '(업계 기준 {band})', 'x_sum_focus': '특히 {names}.', 'x_sum_next': '하고 나면 {do}에서 날짜를 기록 → 14일 뒤 이 화면에서 전후를 비교해요.', 'x_sum_copy': '보고용으로 복사', 'x_sum_copied': '복사했어요', 'x_sum_ai': '✦ AI에 이어서 묻기', 'x_sum_below': '↓ 아래는 자세한 수치(참고)', 'x_rec': '＋ 한 날 기록', 'x_rec_done': '✓ {d}에 함', 'x_mark': '{n} {d}', 'x_ai_title': 'AI에게 더 구체적으로 묻기', 'x_ai_lead': '이 화면의 숫자를 넣은 질문문을 만들어요. ChatGPT·Claude·Gemini에 붙여 넣기만 하면 돼요.', 'x_ai_copy': '질문문 복사', 'x_ai_open': '내용 보기', 'x_eff_res_k': '✓ {d}에 한 「{title}」 · 전후 {n}일 비교', 'x_eff_form_k': '한 날 기록'}}
+for _loc, _keys in _X2.items():
+    _X[_loc].update(_keys)
 for _loc, _keys in _X.items():
     STORY[_loc].update(_keys)

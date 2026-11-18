@@ -210,14 +210,24 @@
                 {%- elif x.link == "edit" and not is_sample %}<a class="link-btn" href="/live?edit=1">{{ S.q.go_edit }}</a>
                 {%- elif x.link == "ch" and f and f.channels %}<button type="button" class="link-btn" data-ch-toggle-go>{{ S.q.go_ch }}</button>
                 {%- elif x.link == "gl" %}<a class="link-btn" href="/glossary">{{ S.q.go_gl }}</a>{% endif -%}
+                {%- if x.rec %}<span class="act-rec is-done">{{ x.rec }}</span>
+                {%- else %}<button type="button" class="act-rec" data-rec-pick="{{ x.n }}">{{ S.q.x_rec }}</button>{% endif -%}
               </span>
             </li>
             {% endfor %}
           </ol>
+          {{ SX.effect(S) }}
           <p class="q-foot">{{ S.q.do_note }}</p>
-          <div class="ai" data-ai>
-            <button type="button" class="link-btn ai-open" data-ai-toggle aria-expanded="false" aria-controls="ai-box">{{ S.ai.ai_btn }} <span aria-hidden="true" class="caret">▾</span></button>
-            <span class="ai-lead">{{ S.ai.ai_lead }}</span>
+          <div class="ai" data-ai id="ai-card">
+            <div class="ai-card">
+              <span class="ai-icon" aria-hidden="true">✦</span>
+              <span class="ai-txt"><b>{{ S.q.x_ai_title }}</b><span class="ai-lead">{{ S.q.x_ai_lead }}</span></span>
+              <span class="ai-btns">
+                <button type="button" class="ai-copy" data-ai-copy>{{ S.q.x_ai_copy }}</button>
+                <button type="button" class="ai-open" data-ai-toggle aria-expanded="false" aria-controls="ai-box">{{ S.q.x_ai_open }} <span aria-hidden="true" class="caret">▾</span></button>
+              </span>
+              <span class="ai-msg" data-ai-msg role="status" data-ok="{{ S.ai.ai_copied }}" data-fail="{{ S.ai.ai_copy_fail }}"></span>
+            </div>
             <div class="ai-box" id="ai-box" hidden>
               <div class="ai-ask" role="group" aria-label="{{ S.ai.ai_ask_k }}"><b>{{ S.ai.ai_ask_k }}</b>
                 <button type="button" class="link-btn" data-ai-ask="cause" aria-pressed="true">{{ S.ai.ai_cause }}</button>
@@ -228,7 +238,7 @@
               <div class="ai-opts">
                 {% if S.prompt.has_site %}<label><input type="checkbox" data-ai-anon checked />{{ S.ai.ai_anon }}</label>{% endif %}
                 <label><input type="checkbox" data-ai-detail checked />{{ S.ai.ai_detail }}</label>
-                <span class="ai-copy-wrap"><span class="ai-msg" data-ai-msg role="status" data-ok="{{ S.ai.ai_copied }}" data-fail="{{ S.ai.ai_copy_fail }}"></span><button type="button" class="ai-copy" data-ai-copy>{{ S.ai.ai_copy }}</button></span>
+                <span class="ai-copy-wrap"><button type="button" class="ai-copy" data-ai-copy>{{ S.ai.ai_copy }}</button></span>
               </div>
               <p class="ai-note">{{ S.ai.ai_note }}</p>
             </div>
@@ -236,7 +246,7 @@
           </div>
           {% if S.next4 %}<p class="q-next">↓ {{ S.next4 }}</p>{% endif %}
         </section>
-        {{ SX.effect(S, is_sample) }}
+        {{ SX.summary(S) }}
         {% endif %}
 
         {# L2 — 詳しい数字: categories (top 3 open); loaded after the page when GA4 is slow #}

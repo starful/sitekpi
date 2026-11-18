@@ -7,8 +7,7 @@ Same shape for 見本 / demo boards (``sample_story_x``, deterministic) and live
     weeks:   {"entry": [8 users], "ev": {event: [8 users]}}          users who fired the event that week
     devices: {mobile|desktop|tablet: {"entry": users, "ev": {event: users}}}
     money:   {"cur": {"revenue": n}, "prev": {"revenue": n}} | None   (sites that sell)
-    nvr:     {"new": {"users", "conv"}, "returning": {"users", "conv"}, "prev_returning": users} | None
-             conv = users who reached the last step of the flow
+    nvr:     {"new": {"users", "ev": {event: users}}, "returning": {…}, "prev_returning": users} | None
     release: {"date", "days_after", "before": {"entry", "ev"}, "after": {"entry", "ev"}} | None
              14 days before the release date vs the 14 days from it (only when 14 days have passed)
 """
@@ -97,9 +96,13 @@ def sample_story_x(slug: str, data: dict[str, Any], prev: dict[str, Any] | None,
     nvr = None
     new_u, ret_u = int(data.get("new_users") or 0), int(data.get("returning_users") or 0)
     if new_u and ret_u and last:
-        conv = totals[last]
-        ret_conv = min(ret_u, round(conv * _jitter(tag + "rc", 0.58, 0.66)))
-        nvr = {"new": {"users": new_u, "conv": conv - ret_conv}, "returning": {"users": ret_u, "conv": ret_conv},
+        nev: dict[str, int] = {}
+        rev: dict[str, int] = {}
+        for n, ev in enumerate(events, start=1):  # returning visitors make up more of each deeper step
+            share = min(0.9, ret_u / (new_u + ret_u) + (0.62 - ret_u / (new_u + ret_u)) * n / len(events))
+            rev[ev] = min(ret_u, round(totals[ev] * share * _jitter(f"{tag}rc{ev}", 0.98, 1.02)))
+            nev[ev] = totals[ev] - rev[ev]
+        nvr = {"new": {"users": new_u, "ev": nev}, "returning": {"users": ret_u, "ev": rev},
                "prev_returning": round(ret_u * _jitter(tag + "pr", 1.02, 1.05))}
 
     rel = None

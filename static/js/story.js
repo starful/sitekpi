@@ -46,6 +46,7 @@
       }
     });
     box.addEventListener("change", (e) => { if (e.target.matches("[data-ai-anon], [data-ai-detail]")) build(); });
+    build(); // 「質問文をコピー」 works without opening the box
   }
 
   // ④ 「流入別に見る」: open the channel view in ② and go there
@@ -89,3 +90,29 @@
   sel.addEventListener("change", sync);
   sync();
 })();
+
+
+// どうする？: 「＋ やった日を記録」 next to an action opens the form with that action chosen
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-rec-pick]");
+  if (!b) return;
+  const box = document.querySelector("[data-eff-rec]");
+  if (!box) return;
+  box.open = true;
+  const sel = box.querySelector("[data-eff-act]");
+  if (sel && !sel.disabled) { sel.value = b.dataset.recPick; sel.dispatchEvent(new Event("change")); }
+  box.scrollIntoView({ block: "center", behavior: "smooth" });
+  box.querySelector("[data-eff-date]:not([disabled])")?.focus({ preventScroll: true });
+});
+
+// まとめ: 「報告用にコピー」 copies the four lines as plain text
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-sum-copy]");
+  if (!b) return;
+  const src = document.getElementById("sum-data");
+  const msg = document.querySelector("[data-sum-msg]");
+  if (!src) return;
+  const text = JSON.parse(src.textContent);
+  const done = () => { if (msg) msg.textContent = msg.dataset.ok; if (window.SiteKPITrack) window.SiteKPITrack("summary_copy"); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, () => {});
+});
