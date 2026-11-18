@@ -48,13 +48,14 @@ def test_board_reads_verdict_then_where_then_detail(client):
     """L0 いまの状態 (一言 + 3) → L1 どこ (行動フロー + 今見るべきこと) → L2 詳しい数字 (stacked)."""
     s = _soup(client, "/ec")
     order = [sec.get("class")[0] for sec in s.select(".content > section")]
-    assert order == ["verdict", "where", "why", "do", "detail"]
+    assert order == ["verdict", "changed", "who", "where", "why", "do", "effect", "detail"]
     # v6 story: 総評 names the issue + rate; ①〜④ is a TOC (no mini-answers)
     text = s.select_one(".verdict-text").get_text()
     assert "購入完了は増えています" in text and "カートに追加 → 購入" in text and "目安から外れた" in text
     assert [a.get_text(" ", strip=True) for a in s.select(".story-toc .story-toc-step")] == [
-        "0 総評", "1 どこで離れている？", "2 どこがおかしい？", "3 どうする？"]
-    assert [a["href"] for a in s.select(".story-toc a")] == ["#q0", "#q2", "#q3", "#q4"]
+        "0 総評", "1 なぜ変わった？", "2 誰が成果を出している？", "3 どこで離れている？", "4 どこがおかしい？",
+        "5 どうする？", "6 効いた？"]
+    assert [a["href"] for a in s.select(".story-toc a")] == ["#q0", "#qch", "#qb", "#q2", "#q3", "#q4", "#q5"]
     assert s.select_one(".story-toc-step.is-lede") and s.select_one("#q0")
     assert not s.select("#q1, .story-strip, .story-a")  # 「大丈夫？」absorbed into 総評
     tiles = s.select(".verdict .stat")
@@ -79,7 +80,8 @@ def test_board_reads_verdict_then_where_then_detail(client):
     assert s.select_one("[data-ch-toggle]") and all(x.has_attr("hidden") for x in s.select("[data-ch-part]"))
     # v5: メモ panel instead of 👍 👎 under each card; 「? 見方」 in the top bar; no page menu
     assert not s.select("[data-card-fb]") and s.select_one("aside.memo[data-memo] textarea[data-memo-text]")
-    assert [x["data-memo-where"] for x in s.select(".content > section")] == ["総評", "どこで離れている？", "どこがおかしい？", "どうする？", "詳しい数字"]
+    assert [x["data-memo-where"] for x in s.select(".content > section")] == [
+        "総評", "なぜ変わった？", "誰が成果を出している？", "どこで離れている？", "どこがおかしい？", "どうする？", "直したら効いた？", "詳しい数字"]
     assert s.select_one('.top a.top-help[href="/help#read"]')
     assert not s.select(".page-nav")
 

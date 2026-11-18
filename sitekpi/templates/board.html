@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "board/_macros.html" as m with context %}
+{% import "board/story_more.html" as SX with context %}
 {% block title %}{{ page_title }}{% endblock %}
 {% block fonts %}{% include "partials/fonts_full.html" %}{% endblock %}
 {% block css %}<link rel="stylesheet" href="{{ static_url('css/board.css') }}" /><link rel="stylesheet" href="{{ static_url('css/helpcard.css') }}" />{% if editor %}<link rel="stylesheet" href="{{ static_url('css/setup.css') }}" />{% endif %}{% if onb_first_view %}<link rel="stylesheet" href="{{ static_url('css/onboarding-progress.css') }}" />{% endif %}{% endblock %}
@@ -84,8 +85,10 @@
             </article>
             {% endfor %}
           </div>
-          {% if S %}<p class="q-next">↓ {{ S.next2 }}</p>{% endif %}
+          {% if S %}{{ SX.goods(S) }}<p class="q-next">↓ {{ S.next0 }}</p>{% endif %}
         </section>
+        {% if S and S.changed %}{{ SX.changed(S) }}{% endif %}
+        {% if S and S.who %}{{ SX.who(S) }}{% endif %}
 
         {# L1 — どこで離れているか: one line + flow + 今見るべきこと (+ 流入別) #}
         {% set f = flow %}
@@ -158,7 +161,7 @@
             </div>
             {% endif %}
           </div>
-          {% if S %}<p class="q-next">↓ {{ S.next3 }}</p>{% endif %}
+          {% if S %}<p class="q-next">↓ {{ S.next2 }}</p>{% endif %}
         </section>
 
         {% if S %}
@@ -187,7 +190,8 @@
             <p class="watch-ind">{{ t("watch.ind_nudge", loc, ind=ind_name or t("bx.ind_none", loc)) }} <button type="button" class="link-btn" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false">{{ t("watch.ind_change", loc) }} <span aria-hidden="true">▾</span></button></p>
             {% endif %}
           </div>
-          <p class="q-next">↓ {{ S.next4 }}</p>
+          {{ SX.where_when(S) }}
+          <p class="q-next">↓ {{ S.next3 }}</p>
         </section>
 
         {# ④ どうする？ — the 対策カタログ for the issue's step, and a prompt for the viewer's own AI #}
@@ -195,6 +199,7 @@
           <p class="qk"><span class="qn">{{ S.n_do }}</span>{{ S.q.q4 }}</p>
           <h2 id="q4-h" class="q-h">{{ S.h4 }}</h2>
           {% if S.calc %}<p class="q-note">{{ S.calc }}</p>{% else %}<div class="q-note-gap"></div>{% endif %}
+          {% if S.do_first %}<p class="x-first">{{ S.do_first }}</p>{% endif %}
           <ol class="acts" data-story-kind="{{ S.kind }}">
             {% for x in S.acts %}
             <li class="act">
@@ -229,7 +234,9 @@
             </div>
             <script type="application/json" id="ai-data">{{ S.prompt|tojson }}</script>
           </div>
+          {% if S.next4 %}<p class="q-next">↓ {{ S.next4 }}</p>{% endif %}
         </section>
+        {{ SX.effect(S, is_sample) }}
         {% endif %}
 
         {# L2 — 詳しい数字: categories (top 3 open); loaded after the page when GA4 is slow #}

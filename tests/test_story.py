@@ -39,12 +39,15 @@ def test_step_kinds(event, kind):
 
 @pytest.mark.parametrize("cat", list(BEHAVIORS))
 def test_every_behaviour_sample_tells_one_story(cat):
-    """Every 目的 has ①〜④ with one issue: its steps are the orange stretch, ④ lists three actions."""
+    """Every 目的 tells the v7 story around one issue: its steps are the orange stretch, どうする？ lists three actions."""
     s = _soup(TestClient(app), f"/type-{cat}")
-    assert len(s.select(".story-toc .story-toc-step")) == 4, cat
+    toc = [a["href"] for a in s.select(".story-toc .story-toc-step")]
+    assert toc[0] == "#q0" and toc[-4:] == ["#q2", "#q3", "#q4", "#q5"], (cat, toc)
+    assert [int(a.select_one(".qn").get_text()) for a in s.select(".story-toc .story-toc-step")] == list(range(len(toc)))
     assert s.select_one(".story-toc-step.is-lede"), cat
     assert s.select_one(".verdict-text .v-issue"), cat
-    assert not s.select_one("#q1"), cat
+    for href in toc:
+        assert s.select_one(href), (cat, href)
 
     stretch = s.select("#flow .flow-stage.is-issue")
     assert len(stretch) >= 2, cat
@@ -88,7 +91,7 @@ def test_story_localized(loc, q):
     c.post("/settings", data={"locale": loc})
     s = _soup(c, "/ec")
     assert s.select(".story-toc .story-toc-step")[0].get_text(" ", strip=True) in ("0 Overview", "0 총평")
-    assert s.select(".story-toc .story-toc-step")[3].get_text(" ", strip=True) == f"3 {q}"
+    assert any(a.get_text(" ", strip=True).endswith(q) for a in s.select(".story-toc .story-toc-step"))
     html = str(s.select_one(".content"))
     assert "大丈夫？" not in html and "どうする？" not in html
     assert "있어요. ." not in html and ". . " not in s.select_one(".verdict-text").get_text()

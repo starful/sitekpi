@@ -6,8 +6,8 @@ pages._live stays thin: call build_live_kwargs → render_sample_dense (or redir
 
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from fastapi import Request
@@ -20,7 +20,12 @@ from sitekpi.i18n import get_locale, t
 from sitekpi.metrics.help import PERIODS
 from sitekpi.packs import INDUSTRIES
 from sitekpi.packs.behaviors import behavior_label
-from sitekpi.routes.flow import live_flow_context, sample_flow_context
+from sitekpi.routes.flow import (
+    live_flow_context,
+    live_story_x,
+    load_releases,
+    sample_flow_context,
+)
 from sitekpi.routes.nav import nav_context
 from sitekpi.selection import (
     auto_notice,
@@ -82,10 +87,12 @@ def build_live_kwargs(
     )
 
     # Board numbers and the 行動フロー are independent GA4 calls → fetch side by side
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         flow_job = pool.submit(live_flow_context, request, pack_slug, period, mapping, loc)
+        story_job = None if fragment else pool.submit(live_story_x, request, pack_slug, period, mapping)
         data, live, err, prop = live_pack(request, pack_slug, period, mapping)
         live_flow = flow_job.result()
+        story_x = story_job.result() if story_job else None
 
     prev = data.pop("_prev", None) if live else sample_prev(pack_slug, period, data)
     if live and mapping:
@@ -93,6 +100,11 @@ def build_live_kwargs(
         if prev:
             prev = apply_mapping(prev, pack_slug, mapping, primary=primary_ev)
     flow = live_flow if live else sample_flow_context(pack_slug, data, loc)
+    if not live and not fragment:
+        from sitekpi.board.story_x import sample_story_x
+        from sitekpi.flow import sample_flow
+
+        story_x = sample_story_x(pack_slug, data, prev, sample_flow(pack_slug, data))
 
     label = extras["connected"]["name"]
     pack_label = selection_label(sel, loc)
@@ -173,6 +185,9 @@ def build_live_kwargs(
         "extras": extras_x,
         "details_src": details_src,
         "fragment": fragment,
+        "story_x": story_x,
+        "releases": load_releases(request.session) if live and not is_demo else None,
+        "story_sample": is_demo or not live,
         "editor": (setup_ctx or {}).get("editor"),
         "industry_drawer": (setup_ctx or {}).get("industry"),
         "ind_name": (setup_ctx or {}).get("ind_name", ""),
