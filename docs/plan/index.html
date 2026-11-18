@@ -203,7 +203,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
   <section class="block" id="process">
     <h2>진행 방식</h2>
     <ol class="steps">
-      <li><b><i>1</i>고친다</b>화면은 디자인 캔버스(「SiteKPI 新デザイン」)에서, 규칙·결정은 이 기획서에서 고친다.</li>
+      <li><b><i>1</i>고친다</b>화면은 디자인 캔버스(「SiteKPI 新デザイン」)에서, 규칙·결정은 이 기획서에서 고친다. <b>바꾸는 부분만 따로 그리지 않고, 그 화면의 아트보드(PC와 휴대폰) 전체를 고친다</b> — 페이지 전체를 봐야 판단할 수 있다. 새로 넣은 곳에는 「＋ 追加」 표시, 아트보드 제목에는 🟡 未反映(반영하면 지운다).</li>
       <li><b><i>2</i>「반영해줘」</b>코드에 반영하고, 같은 때에 캔버스 화면을 <code>screens/</code>로 복사·결정을 해당 화면에 ✓ 한 줄 추가. 테스트·SPEC.md 도 함께.</li>
       <li><b><i>3</i>스크린샷으로 확인</b>구현 화면을 기획서 화면과 나란히 보고 다시 1로.</li>
     </ol>
@@ -812,6 +812,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table class="log">
       <thead><tr><th>날짜</th><th>내용</th></tr></thead>
       <tbody>
+        <tr><td>2026-11-18</td><td>진행 방식 규칙: 캔버스에서는 바꾸는 부분만 따로 그리지 않고 화면 전체(PC·휴대폰)를 고친다.</td></tr>
         <tr><td>2026-11-14</td><td>휴대폰 화면(지금 스타일 그대로, ≤640): 홈 · 연결 · 보드 · 지표 사전 · 見本 · 대시보드 만들기 · 도움말. 위 바에 「✎ メモ」. 처음 언어를 브라우저 언어로(IP 아님). PC 버그: 연결 화면 예시의 제휴 숫자 → SiteKPI 보드 예시, 도움말 제목 위 「/help」 삭제.</td></tr>
         <tr><td>2026-11-14</td><td>이용자 로그(<code>/events</code>, 쿠키 <code>sk_vid</code>, 90일) · 30초 설문(메모 패널 맨 위, 보드에서 한 번) · HQ용 API <code>/hq/api/users</code>. 처리방침 3개 언어에 수집 항목·쿠키·보관 기간 추가.</td></tr>
         <tr><td>2026-11-13</td><td>측정: GTM을 빼고 gtag.js로 GA4에 직접 전송(<code>GA4_ID</code>). 운영자 표기: 이름 「starful」, 실명·주소는 청구 시 지체 없이 공개.</td></tr>
