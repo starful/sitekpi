@@ -39,10 +39,18 @@ def test_ec_sample_tells_all_seven_chapters():
     why = s.select_one("#q3")
     assert len(why.select(".x-bars-col")) == 2 and why.select(".x-bar-row")
     assert len(why.select(".x-when-svg.pc-only circle")) == 8
-    # 6: the sample shows a fix 14 days later, and saves nothing
-    eff = s.select_one("#q5")
+    # 5: the sample shows fix ① done 14+ days ago with its before / after, and saves nothing
+    do = s.select_one("#q4")
+    eff = do.select_one("#q5")
     assert eff.select_one("form[data-sample] button[disabled]") and eff.select(".x-eff-row:not(.is-head)")
     assert eff.select_one(".x-rels li") and not eff.select(".x-rel-del")
+    assert do.select_one(".act .act-rec.is-done") and do.select(".act [data-rec-pick]")
+    assert why.select(".x-when-svg.pc-only .x-mark")  # the fix is marked on いつから？
+    assert do.select_one(".ai-card [data-ai-copy]")  # the AI question is one click, not hidden
+    # 6: まとめ before 詳しい数字, four lines, copyable
+    sm = s.select_one("#qsum")
+    assert len(sm.select(".sum-rows div")) == 4 and sm.find_next_sibling("section")["id"] == "s-l2"
+    assert "まとめ" in s.select(".story-toc a")[-1].get_text()
 
 
 @pytest.mark.parametrize("lang", ["en", "ko"])
@@ -51,7 +59,8 @@ def test_v7_chapters_are_localized(lang):
     c.post("/settings", data={"locale": lang})
     s = _soup(c, "/ec")
     html = str(s.select_one(".content"))
-    for ja in ("なぜ変わった", "誰が成果", "どこで起きている", "いつから", "直したら効いた", "うまくいっていること"):
+    for ja in ("なぜ変わった", "誰が成果", "どこで起きている", "いつから", "やった日を記録", "うまくいっていること", "まとめ",
+               "質問文をコピー"):
         assert ja not in html, (lang, ja)
 
 
@@ -85,7 +94,7 @@ def test_release_is_saved_per_property_and_compared(monkeypatch):
     future = (today_jst() + timedelta(days=2)).isoformat()
     c.post("/story/release", data={"act": "1", "date": future})  # future dates are ignored
     s = _soup(c, "/live")  # the demo board shows the sample fix, never a form that saves
-    assert s.select_one("#q5 form[data-sample]")
+    assert s.select_one("#q4 #q5 form[data-sample]")
     assert rf.load_releases({"story_releases": {"prop:1": [{"date": day, "title": "x"}, {"title": "no date"}]}}) == [
         {"date": day, "title": "x"}]
 

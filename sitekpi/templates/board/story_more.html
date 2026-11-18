@@ -129,6 +129,7 @@
       {% for p in g.pts %}<circle class="x-when-pt{{ ' is-cur' if p.cur else '' }}" cx="{{ p.x }}" cy="{{ p.y }}" r="{{ 4 if p.cur else 3 }}"/>{% endfor %}
       {% for x in g.xl %}<text class="x-tick" x="{{ x.x }}" y="{{ g.h - 6 }}" text-anchor="middle">{{ x.t }}</text>{% endfor %}
       <text class="x-when-last" x="{{ g.last.x }}" y="{{ g.last.y - 10 }}" text-anchor="end">{{ g.last.t }}</text>
+      {% for mk in g.marks %}<line class="x-mark" x1="{{ mk.x }}" x2="{{ mk.x }}" y1="{{ g.t }}" y2="{{ g.b }}"/><text class="x-mark-k" x="{{ mk.x - 4 }}" y="{{ mk.y }}" text-anchor="end">{{ mk.t }}</text>{% endfor %}
     </svg>
     {% endfor %}
     {% if T.side %}<div class="x-when-side">{% for s in T.side %}<p class="ws-{{ s.tone }}"><b>{{ s.k }}</b>{{ s.t }}</p>{% endfor %}</div>{% endif %}
@@ -137,47 +138,68 @@
 {% endif %}
 {% endmacro %}
 
-{% macro effect(S, is_sample) %}
-{%- set E = S.eff %}
-<section class="effect card" id="q5" aria-labelledby="q5-h" data-memo-where="{{ S.q.q5_long }}">
-  <p class="qk"><span class="qn">{{ S.n_eff }}</span>{{ S.q.q5_long }}</p>
-  {% set R = E.result %}
-  <p class="q-note x-eff-lead">{{ E.lead }}</p>
-  <form class="x-eff-form" method="post" action="/story/release"{% if E.sample %} data-sample{% endif %}>
-    <label class="x-f x-f-wide"><span>{{ S.q.x_eff_act_k }}</span>
-      <select name="act" data-eff-act{% if E.sample %} disabled{% endif %}>
-        {% for o in E.opts %}<option value="{{ o.v }}">{{ o.t }}</option>{% endfor %}
-        <option value="own">{{ S.q.x_eff_own }}</option>
-      </select>
-    </label>
-    <label class="x-f x-f-wide" data-eff-own hidden><span>{{ S.q.x_eff_own }}</span><input type="text" name="title" maxlength="60" placeholder="{{ S.q.x_eff_title_ph }}"></label>
-    {% for o in E.opts %}<input type="hidden" name="act_title_{{ o.v }}" value="{{ o.t.split('. ', 1)[1] if '. ' in o.t else o.t }}">{% endfor %}
-    <label class="x-f"><span>{{ S.q.x_eff_date_k }}</span><input type="date" name="date" max="{{ E.today }}" required{% if E.sample %} disabled{% endif %}></label>
-    <button type="submit" class="x-f-btn"{% if E.sample %} disabled{% endif %}>{{ S.q.x_eff_save }}</button>
-  </form>
-  {% if E.sample %}<p class="q-foot">{{ S.q.x_eff_sample }}</p>{% endif %}
-  {% if E.releases %}
-  <ul class="x-rels">
-    {% for r in E.releases %}<li>{{ r.label }}{% if not E.sample %}<form method="post" action="/story/release/delete"><input type="hidden" name="idx" value="{{ r.idx }}"><button type="submit" class="x-rel-del" aria-label="{{ S.q.x_eff_del }}: {{ r.label }}">×</button></form>{% endif %}</li>{% endfor %}
-  </ul>
-  {% elif not E.sample %}<p class="q-foot">{{ S.q.x_eff_empty }}</p>{% endif %}
+{% macro effect(S) %}
+{#- 直したら効いた？ lives inside どうする？: the result of the last recorded fix, then the form to record one -#}
+{%- set E = S.eff %}{% set R = E.result %}
+<div class="x-eff" id="q5">
   {% if R and R.get('wait') %}<p class="x-eff-wait">{{ R.wait }}</p>
   {% elif R %}
-  <h2 id="q5-h" class="q-h x-eff-h">{{ R.head }}</h2>
-  <div class="x-eff-table" role="table" aria-labelledby="q5-h">
-    <div class="x-eff-row is-head" role="row"><span role="columnheader"></span><span role="columnheader">{{ R.before_k }}<small>{{ R.before_d }}</small></span><span role="columnheader">{{ R.after_k }}<small>{{ R.after_d }}</small></span><span role="columnheader">{{ S.q.x_eff_d }}</span><span aria-hidden="true"></span></div>
-    {% for r in R.rows %}
-    <div class="x-eff-row{{ ' is-ref' if r.ref else '' }}" role="row">
-      <b role="rowheader">{{ r.name }}</b>
-      <span class="num x-before" role="cell" data-k="{{ R.before_k }}">{{ r.before }}</span>
-      <b class="num" role="cell" data-k="{{ R.after_k }}">{{ r.after }}</b>
-      <b class="num tone-{{ r.tone }}" role="cell">{{ r.d }}</b>
-      <span class="x-pair" aria-hidden="true"><i style="width: {{ r.wx }}%"></i><i class="tone-{{ r.tone }}" style="width: {{ r.wy }}%"></i></span>
+  <div class="x-eff-res">
+    <p class="x-eff-k">{{ R.k }}</p>
+    <div class="x-eff-table" role="table" aria-label="{{ R.k }}">
+      <div class="x-eff-row is-head" role="row"><span role="columnheader"></span><span role="columnheader">{{ R.before_k }}<small>{{ R.before_d }}</small></span><span role="columnheader">{{ R.after_k }}<small>{{ R.after_d }}</small></span><span role="columnheader">{{ S.q.x_eff_d }}</span></div>
+      {% for r in R.rows %}
+      <div class="x-eff-row{{ ' is-ref' if r.ref else '' }}" role="row">
+        <span role="rowheader">{{ r.name }}</span>
+        <span class="num x-before" role="cell" data-k="{{ R.before_k }}">{{ r.before }}</span>
+        <b class="num" role="cell" data-k="{{ R.after_k }}">{{ r.after }}</b>
+        <b class="num tone-{{ r.tone }}" role="cell">{{ r.d }}</b>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
+    <p class="x-eff-h"><b>{{ R.head }}</b> {{ R.next }}</p>
+    <p class="q-foot">{{ R.note }}</p>
   </div>
-  <p class="x-take tone-mid">{{ R.next }}</p>
-  <p class="q-foot">{{ R.note }}</p>
-  {% else %}<span id="q5-h" hidden>{{ S.q.q5_long }}</span>{% endif %}
+  {% endif %}
+  <details class="x-eff-rec"{% if not E.releases and not E.sample %} open{% endif %} data-eff-rec>
+    <summary>{{ S.q.x_eff_form_k }}</summary>
+    <p class="q-foot">{{ E.lead }}</p>
+    <form class="x-eff-form" method="post" action="/story/release"{% if E.sample %} data-sample{% endif %}>
+      <label class="x-f x-f-wide"><span>{{ S.q.x_eff_act_k }}</span>
+        <select name="act" data-eff-act{% if E.sample %} disabled{% endif %}>
+          {% for o in E.opts %}<option value="{{ o.v }}">{{ o.t }}</option>{% endfor %}
+          <option value="own">{{ S.q.x_eff_own }}</option>
+        </select>
+      </label>
+      <label class="x-f x-f-wide" data-eff-own hidden><span>{{ S.q.x_eff_own }}</span><input type="text" name="title" maxlength="60" placeholder="{{ S.q.x_eff_title_ph }}"></label>
+      {% for o in E.opts %}<input type="hidden" name="act_title_{{ o.v }}" value="{{ o.t.split('. ', 1)[1] if '. ' in o.t else o.t }}">{% endfor %}
+      <label class="x-f"><span>{{ S.q.x_eff_date_k }}</span><input type="date" name="date" max="{{ E.today }}" required data-eff-date{% if E.sample %} disabled{% endif %}></label>
+      <button type="submit" class="x-f-btn"{% if E.sample %} disabled{% endif %}>{{ S.q.x_eff_save }}</button>
+    </form>
+    {% if E.sample %}<p class="q-foot">{{ S.q.x_eff_sample }}</p>{% endif %}
+    {% if E.releases %}
+    <ul class="x-rels">
+      {% for r in E.releases %}<li>{{ r.label }}{% if not E.sample %}<form method="post" action="/story/release/delete"><input type="hidden" name="idx" value="{{ r.idx }}"><button type="submit" class="x-rel-del" aria-label="{{ S.q.x_eff_del }}: {{ r.label }}">×</button></form>{% endif %}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </details>
+</div>
+{% endmacro %}
+
+{% macro summary(S) %}
+{%- set M = S.summary %}
+<section class="sum card" id="qsum" aria-labelledby="qsum-h" data-memo-where="{{ S.q.qsum }}">
+  <p class="qk"><span class="qn">{{ S.n_sum }}</span>{{ S.q.qsum }}</p>
+  <h2 id="qsum-h" class="q-h">{{ M.head }}</h2>
+  <dl class="sum-rows">
+    {% for r in M.rows %}<div><dt>{{ r.k }}</dt><dd>{{ r.v }}</dd></div>{% endfor %}
+  </dl>
+  <div class="sum-acts">
+    <button type="button" class="sum-btn" data-sum-copy>{{ S.q.x_sum_copy }}</button>
+    <a class="sum-btn is-ai" href="#ai-card">{{ S.q.x_sum_ai }}</a>
+    <span class="sum-msg" data-sum-msg role="status" data-ok="{{ S.q.x_sum_copied }}"></span>
+    <span class="sum-below">{{ S.q.x_sum_below }}</span>
+  </div>
+  <script type="application/json" id="sum-data">{{ M.text|tojson }}</script>
 </section>
 {% endmacro %}

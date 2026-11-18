@@ -459,14 +459,14 @@ def _when(issue: dict[str, Any], stages: list[dict[str, Any]], sx: dict[str, Any
              "xl": [{"x": round(X(k), 1), "t": dl[k]} for k in range(8)],
              "yt": [{"y": round(Y(v), 1), "t": f"{v:g}%"} for v in ticks],
              "mid": round((X(3) + X(4)) / 2, 1),
-             "last": {"x": pts[-1]["x"], "y": pts[-1]["y"], "t": _pct(vals[-1])}, "band": None}
+             "last": {"x": pts[-1]["x"], "y": pts[-1]["y"], "t": _pct(vals[-1])}, "band": None, "marks": []}
         if band:
             g["band"] = {"y": T, "h": round(max(Y(band[0]) - T, 0), 1), "ly": round(Y(band[0]), 1),
                          "t": _s(loc, "x_when_band", low=f"{band[0]:g}%")}
         return g
 
     return {"head": head, "side": side, "pc": geo(640, 200, 44), "sp": geo(326, 190, 36),
-            "prev_avg": _s(loc, "x_when_prev", r=_pct(p_avg)), "cur_avg": _s(loc, "x_when_cur", r=_pct(c_avg)),
+            "w0": w0.isoformat(), "prev_avg": _s(loc, "x_when_prev", r=_pct(p_avg)), "cur_avg": _s(loc, "x_when_cur", r=_pct(c_avg)),
             "aria": _s(loc, "x_when_aria", a=stages[issue["i"]]["label"], b=stages[issue["j"]]["label"])}
 
 
@@ -478,6 +478,7 @@ def effect(issue: dict[str, Any], stages: list[dict[str, Any]], sx: dict[str, An
     today = today or today_jst()
     opts = [{"v": str(x["n"]), "t": f"{x['n']}. {x['title']}"} for x in acts]
     out: dict[str, Any] = {"opts": opts, "today": today.isoformat(), "sample": sample, "releases": [], "result": None,
+                           "recorded": [],
                            "lead": _s(loc, "x_eff_lead", n=WINDOW, do=nums["do"])}
     rel = (sx or {}).get("release")
     shown = None
@@ -489,9 +490,12 @@ def effect(issue: dict[str, Any], stages: list[dict[str, Any]], sx: dict[str, An
         rel = _sample_release("story|", {"date": day.isoformat(), "focus": issue["j"]}, int(stages[0].get("users") or 0),
                               {k: int(v) for k, v in events.items()}, list(events), today=today)
         out["releases"] = [{"label": _rel_label(shown, loc), "idx": 0}]
+        out["recorded"] = [{"act": "1", "md": _md(day), "date": day.isoformat(), "title": title}]
     elif releases:
         shown = releases[-1]
         out["releases"] = [{"label": _rel_label(r, loc), "idx": n} for n, r in enumerate(releases)]
+        out["recorded"] = [{"act": str(r.get("act") or ""), "md": _md(date.fromisoformat(str(r["date"]))),
+                            "date": str(r["date"]), "title": str(r.get("title") or "")} for r in releases]
     if not shown:
         return out
     name = f"「{shown['title']}」" if shown.get("title") else _rel_label(shown, loc)
@@ -556,6 +560,7 @@ def effect(issue: dict[str, Any], stages: list[dict[str, Any]], sx: dict[str, An
     d0 = date.fromisoformat(shown["date"])
     out["result"] = {
         "head": head, "next": nxt, "rows": rows,
+        "k": _s(loc, "x_eff_res_k", d=_md(d0), title=shown.get("title") or "", n=WINDOW),
         "before_k": _s(loc, "x_eff_before", n=WINDOW), "after_k": _s(loc, "x_eff_after", n=WINDOW),
         "before_d": f"{_md(d0 - timedelta(days=WINDOW))}–{_md(d0 - timedelta(days=1))}",
         "after_d": f"{_md(d0)}–{_md(d0 + timedelta(days=WINDOW - 1))}",
@@ -575,3 +580,47 @@ def _rel_label(r: dict[str, Any], loc: str) -> str:
         d = str(r.get("date") or "")
     title = str(r.get("title") or "").strip()
     return f"{d} {title}" if title else d
+
+
+def mark_releases(ww: dict[str, Any], eff: dict[str, Any], loc: str) -> None:
+    """A dashed line on いつから？ for each recorded fix inside the 8 weeks."""
+    when = ww.get("when")
+    if not when:
+        return
+    w0 = date.fromisoformat(when["w0"])
+    for g in (when["pc"], when["sp"]):
+        g["marks"] = []
+        for n, r in enumerate(eff.get("recorded") or []):
+            k = (date.fromisoformat(r["date"]) - w0).days / 7
+            if 0 <= k <= 7.99:
+                x = round(g["l"] + min(k, 7) * (g["r"] - g["l"]) / 7, 1)
+                label = _s(loc, "x_mark", n=_circ(r.get("act")), d=r["md"])
+                g["marks"].append({"x": x, "t": label, "y": g["t"] + 12 + 14 * (n % 2)})
+
+
+def _circ(act: Any) -> str:
+    s = str(act or "")
+    return "⓪①②③④⑤⑥⑦⑧⑨"[int(s)] if s.isdigit() and int(s) < 10 else "✓"
+
+
+def summary(loc: str, *, a: str, b: str, head_now: str, metric: dict[str, Any] | None, ww: dict[str, Any],
+            first: dict[str, Any] | None, gain: str, eff: dict[str, Any], do: str) -> dict[str, Any]:
+    """まとめ: the board in four lines, before 詳しい数字 (and as text for a report)."""
+    band = _s(loc, "x_sum_band", band=metric["band"]) if metric and metric.get("band") and metric["band"] != "—" else ""
+    issue = _s(loc, "x_sum_issue", a=a, b=b, rate=metric["value"] if metric else "", band=band)
+    if ww.get("focus"):
+        issue += _s(loc, "x_sum_focus", names=_s(loc, "x_and").join(ww["focus"]))
+    if (ww.get("when") or {}).get("head"):
+        issue += ww["when"]["head"]
+    first_t = ""
+    if first:
+        first_t = f"① {first['title']}" + (f" — {gain}" if gain else "")
+    res = eff.get("result") or {}
+    nxt = res.get("head") if res.get("head") else _s(loc, "x_sum_next", do=do)
+    rows = [{"k": _s(loc, "x_sum_now_k"), "v": head_now}, {"k": _s(loc, "x_sum_issue_k"), "v": issue}]
+    if first_t:
+        rows.append({"k": _s(loc, "x_sum_first_k"), "v": first_t})
+    rows.append({"k": _s(loc, "x_sum_next_k"), "v": nxt})
+    head = _s(loc, "x_sum_h", a=a, b=b)
+    text = head + "\n" + "\n".join(f"・{r['k']}: {r['v']}" for r in rows)
+    return {"head": head, "rows": rows, "text": text}

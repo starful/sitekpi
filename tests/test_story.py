@@ -42,7 +42,7 @@ def test_every_behaviour_sample_tells_one_story(cat):
     """Every 目的 tells the v7 story around one issue: its steps are the orange stretch, どうする？ lists three actions."""
     s = _soup(TestClient(app), f"/type-{cat}")
     toc = [a["href"] for a in s.select(".story-toc .story-toc-step")]
-    assert toc[0] == "#q0" and toc[-4:] == ["#q2", "#q3", "#q4", "#q5"], (cat, toc)
+    assert toc[0] == "#q0" and toc[-4:] == ["#q2", "#q3", "#q4", "#qsum"], (cat, toc)
     assert [int(a.select_one(".qn").get_text()) for a in s.select(".story-toc .story-toc-step")] == list(range(len(toc)))
     assert s.select_one(".story-toc-step.is-lede"), cat
     assert s.select_one(".verdict-text .v-issue"), cat

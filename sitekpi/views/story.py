@@ -202,14 +202,18 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
     ch = more.changed(board, data or {}, prev, story_x, loc, nums_for(True))
     nums = nums_for(bool(ch))
     chapters = [("q0", "q0")] + ([("qch", "q1")] if ch else []) + ([("qb", "qb")] if who else []) + \
-        [("q2", "q2"), ("q3", "q3"), ("q4", "q4"), ("q5", "q5")]
+        [("q2", "q2"), ("q3", "q3"), ("q4", "q4"), ("qsum", "qsum")]
     n_of = {cid: n for n, (cid, _) in enumerate(chapters)}
     toc = [{"n": n, "q": _s(loc, key), "href": f"#{cid}"} for n, (cid, key) in enumerate(chapters)]
     ww = more.where_when(issue, stages, flow, story_x, info, loc, metric_label=metric["label"] if metric else "")
     eff = more.effect(issue, stages, story_x, releases or [], acts, loc, sample=sample, nums=nums)
+    more.mark_releases(ww, eff, loc)
+    for x in acts:  # 「やった日を記録」 / 「✓ 11/3 にやった」 next to each action
+        done = [r for r in eff.get("recorded") or [] if r.get("act") == str(x["n"])]
+        x["rec"] = _s(loc, "x_rec_done", d=done[-1]["md"]) if done else ""
     goods = more.goods(board, watch, loc)
     nxt = {"qch": _s(loc, "next1"), "qb": _s(loc, "nextb"), "q2": _s(loc, "next2", a=A), "q3": _s(loc, "next3"),
-           "q4": _s(loc, "next4"), "q5": _s(loc, "next5")}
+           "q4": _s(loc, "next4"), "qsum": _s(loc, "qsum")}
 
     def next_of(cid: str) -> str:
         i = [c for c, _ in chapters].index(cid)
@@ -220,6 +224,10 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
 
     do_first = _s(loc, "x_do_first", names=_s(loc, "x_and").join(ww.get("focus") or [])) if ww.get("focus") else ""
 
+    summary = more.summary(loc, a=A, b=B, head_now=(ch or {}).get("head") or Markup(s1).striptags(),
+                           metric=metric, ww=ww, first=acts[0] if acts else None, gain=gain_txt, eff=eff,
+                           do=nums["do"])
+
     prompt = _prompt(loc=loc, site=site, ind=industry_label, beh=behavior_label, period=period_label,
                      verdict=verdict, stages=stages, a=A, b=B, rows=rows, gain=gain_txt, acts=acts, board=board,
                      bench_info=bench_info)
@@ -228,7 +236,9 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
                                        "check", "others", "others_more", "do_note", "go_edit", "go_ch", "go_gl",
                                        "x_goods_k", "x_where_k", "x_when_k", "x_eff_act_k", "x_eff_own",
                                        "x_eff_title_ph", "x_eff_date_k", "x_eff_save", "x_eff_del", "x_eff_sample",
-                                       "x_eff_empty", "x_eff_d")},
+                                       "x_eff_empty", "x_eff_d", "qsum", "x_rec", "x_ai_title", "x_ai_lead",
+                                       "x_ai_copy", "x_ai_open", "x_eff_form_k", "x_sum_copy", "x_sum_copied",
+                                       "x_sum_ai", "x_sum_below")},
         "toc": toc,
         "s1": s1, "s2": s2, "note": note, "h3": h3, "rows": rows, "others": others, "none_off": none_off,
         "h4": h4, "calc": calc, "acts": acts, "kind": issue["kind"],
@@ -237,7 +247,7 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
         "next5": "",
         # Display numbers on section headers (anchors stay #q2/#q3/#q4 for stable deep links)
         "n_ch": n_of.get("qch"), "n_who": n_of.get("qb"), "n_where": n_of["q2"], "n_why": n_of["q3"], "n_do": n_of["q4"],
-        "n_eff": n_of["q5"],
+        "n_sum": n_of["qsum"], "summary": summary,
         "goods": goods, "changed": ch, "who": who, "ww": ww, "eff": eff, "do_first": do_first,
         "ai": {k: _s(loc, k) for k in ("ai_btn", "ai_lead", "ai_ask_k", "ai_cause", "ai_ideas", "ai_report",
                                         "ai_anon", "ai_detail", "ai_copy", "ai_copied", "ai_copy_fail", "ai_note")},
