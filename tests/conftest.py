@@ -18,3 +18,25 @@ os.environ["GOOGLE_REDIRECT_URI"] = "http://127.0.0.1:8766/connect/callback"
 os.environ["APP_BASE_URL"] = "http://127.0.0.1:8766"
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 os.environ["DEMO_CONNECT"] = "1"  # the demo connection is a test-only mode
+
+
+import pytest  # noqa: E402
+from google.auth.exceptions import RefreshError  # noqa: E402
+from google.oauth2.credentials import Credentials  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _google_rejects_test_tokens(monkeypatch):
+    """Like Cloud Build (which has network): Google rejects the fake test tokens. Without this, a GA4
+    call a test forgot to fake passes here (no network → TransportError) but disconnects there."""
+    def rejected(self, request):
+        raise RefreshError("invalid_grant (test token)")
+    monkeypatch.setattr(Credentials, "refresh", rejected)
+
+
+@pytest.fixture(autouse=True)
+def _no_story_ga4(monkeypatch):
+    """The story's extra GA4 reports (ga4/story.py) are faked per test (tests/test_story_v7.py)."""
+    from sitekpi.routes import live_board
+
+    monkeypatch.setattr(live_board, "live_story_x", lambda *a, **k: None)
