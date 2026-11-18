@@ -15,13 +15,13 @@ Same shape for 見本 / demo boards (``sample_story_x``, deterministic) and live
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from sitekpi.board.prev import _jitter
 
 WEEKS = 8
+JST = timezone(timedelta(hours=9))  # fixed offset: slim images have no tz database
 DEVICES = ("mobile", "desktop", "tablet")
 WINDOW = 14  # days compared before / after a release
 _STEP_IN = (0, 0, 0, 0, 0.15, 1, 1, 1)  # sample: when the weekly drift kicks in
@@ -32,7 +32,7 @@ _DEV_LIFT = {"mobile": 0.78, "desktop": 1.45, "tablet": 1.0}
 
 def today_jst() -> date:
     """GA4 dates ("yesterday", nthWeek) follow the property's time zone; SiteKPI's users are in Japan."""
-    return datetime.now(ZoneInfo("Asia/Tokyo")).date()
+    return datetime.now(JST).date()
 
 
 def week0(today: date | None = None) -> date:
