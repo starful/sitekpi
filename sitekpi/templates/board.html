@@ -261,6 +261,7 @@
             <div class="skeleton" aria-hidden="true">{% for _ in range(6) %}<i></i>{% endfor %}</div>
             {% endif %}
           </div>
+          {% if S %}{{ SX.pages_table(S) }}{% endif %}
         </section>
       </div>
 {% endblock %}

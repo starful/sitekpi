@@ -68,7 +68,7 @@ def test_board_reads_verdict_then_where_then_detail(client):
     assert not s.select(".verdict .judge, .verdict .tile-tag, .tiles")
     assert s.select_one(".where #flow, #flow.where") and s.select_one("#q3 .wtable")
     groups = [g["id"] for g in s.select(".dgroup")]
-    assert groups == ["g-funnel", "g-revenue", "g-engage", "g-channels", "g-device", "g-audience", "g-events", "g-biz"]
+    assert groups == ["g-funnel", "g-revenue", "g-engage", "g-channels", "g-device", "g-audience", "g-events", "g-biz", "g-pages"]
     assert not s.select(".dnav")
     # v5: the first three categories are open, the rest closed; a chevron, no 開く / 閉じる text
     assert not s.select("#dt-funnel[hidden], #dt-revenue[hidden], #dt-engage[hidden]")
