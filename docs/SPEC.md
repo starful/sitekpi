@@ -157,6 +157,7 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 흐름 계산 (인원 · %) | `views/flow.flow_context` · `flow.sample_flow` |
 | 지표 목록 | `metrics/help.py` `HELP` (+ `i18n/help_l10n.py`) |
 | 보드 v7 장 (なぜ変わった？ · 誰が？ · どこで起きている？ · いつから？ · 効いた？(どうする？ 안) · まとめ `story_more.summary`) | `views/story_more.py` (숫자·그래프 좌표) ← `views/story.build_story` (장 번호·다음 줄) · 마크업 `templates/board/story_more.html` · CSS `board.css` 「v7 story」 · 설명 접기 매크로 `story_more.more(label)` (v7.2b, 닫힌 `details.x-more`) · 문구 `i18n/story_l10n._X` · 숫자 `board/story_x.py` (모양 문서 + 見本 `sample_story_x`) / GA4 `ga4/story.fetch_story_x` (`routes/flow.live_story_x`, 5분 캐시, 흐름과 나란히) · 대책 공개일 `POST /story/release` · `/story/release/delete` (세션 `story_releases`, 속성별 10개) |
+| 보드 v7.3 페이지별 숫자 (② 入口ページ別 · ④ どのページで？ · 詳しい数字 › ページ別) | `views/story_pages.py` (`entry_pages` · `issue_rows`/`issue_head` ← `story_more.where_when` 같은 자 · `table`) · 숫자 `board/story_pages.py` (모양 문서 · `path_key` · `strip_site_tail` · `from_ga4` · 見本 `sample_pages`) · GA4 `ga4/story.fetch_story_x` 보고서 3개 추가 (`landingPage` 사용자·참여율 / `landingPage`×`eventName` / `pagePath`×`pageTitle` 조회수, 큰 순 60개) · 마크업 `story_more.html` (`who` 안 `.x-pg`, `where_when` 안 `.x-pgw`, `pages_table` 매크로 → `board.html` 詳しい数字 끝) · 정렬·더 보기 `static/js/story.js` · 권한 추가 없음 (`analytics.readonly`) |
 | 처음 언어 = 브라우저 언어 | `i18n.BrowserLocaleMiddleware` (`browser_locale`): GET · 세션에 언어 없음 · `?lang=` 없음 · 로봇 아님 → `Accept-Language`의 en/ko를 세션에 저장(ja는 기본). IP 안 씀. `app.py`에서 세션 미들웨어 안쪽 |
 | 휴대폰 화면 (≤640) | 각 CSS 끝의 `@media (max-width: 640px)` 블록: `landing.css`(+ `static/js/landing.js`: 아코디언 · 見本 레일 점/→ · FAQ 더보기 · 아래 고정 버튼) · `board.css`(목차 고정, 표 두 줄 `data-k`, `.dt-meta-sp`) · `glossary.css`(+ `.gl-extra` · `[data-gl-more]`) · `samples.css`(+ `samples.js` `setPick`) · `builder.css`(+ `builder.js` `.mb-save` · `.bx-sec-more`) · `help.css`(`[data-hp-jump]`). 위 바의 「✎ メモ」 = `partials/mobile_bar.html` `[data-memo-open]` (`memo.js`) |
 
@@ -192,6 +193,7 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | `test_events_live.py` · `test_ga4_batch.py` | GA4 응답 처리 (가짜 클라이언트) |
 | `test_oauth_state.py` · `test_session.py` · `test_multiuser.py` | OAuth state · 세션 암호화 · 사용자 분리 |
 | `test_nav.py` · `test_templates.py` · `test_prev.py` | 메뉴 · 템플릿 전수 렌더 · 前期 |
+| `test_story_pages.py` | v7.3 경로 정리·사이트 이름 꼬리 · 見本 합계 = 흐름 · 3곳 표시(3개 언어) · 표 정렬·10행 · 페이지 없으면 숨김 |
 | `test_story_v7.py` | v7 7장(見本 EC) · 3개 언어 · 1장 내역 합계 · 공개일 저장·14일 대기 · GA4 응답 읽기(가짜 클라이언트) · v7.2b 설명만 접힘(3개 언어) · 기록 표시와 目安 글자 겹침 |
 | `test_mobile.py` | 브라우저 언어(Accept-Language · `?lang` 우선 · 로봇 제외) · 휴대폰 부품(홈 · 메모 버튼 · 지표 사전 접기 · 見本 · 도움말 선택) · 연결 예시에 제휴 숫자 없음 |
 | `test_visitlog.py` | 이용자 로그 파라미터 걸러내기 · 하루 상한 · 설문 저장 · HQ API 토큰 · 집계(흐름·설문·타임라인) |

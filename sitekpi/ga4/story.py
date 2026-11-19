@@ -1,6 +1,6 @@
 """GA4 fetch for the story chapters (board/story_x.py documents the shape).
 
-Up to 11 small reports, sent as batches of 5 side by side, so the page waits for about one round trip.
+Up to 14 small reports, sent as batches of 5 side by side, so the page waits for about one round trip.
 """
 
 from __future__ import annotations
@@ -12,6 +12,8 @@ from typing import Any
 from sitekpi.board.story_x import DEVICES, WEEKS, WINDOW, today_jst, week0
 from sitekpi.ga4.report import PERIOD_RANGE, _event_filter, _f, _i, _req, _vals
 
+PAGES = 60  # landing / viewed pages asked for (the board shows the top ones, the table up to 30)
+
 
 def _req2(ranges: list[tuple[str, str]], metrics: list[str], dimensions: list[str] | None = None,
           dimension_filter: Any | None = None, limit: int | None = None) -> Any:
@@ -22,6 +24,14 @@ def _req2(ranges: list[tuple[str, str]], metrics: list[str], dimensions: list[st
     del req.date_ranges[:]
     for n, (a, b) in enumerate(ranges):
         req.date_ranges.append(DateRange(start_date=a, end_date=b, name=f"r{n}"))
+    return req
+
+
+def _ordered(req: Any, metric: str) -> Any:
+    """Biggest first (GA4 does not promise an order otherwise, and the list is cut at the limit)."""
+    from sitekpi.ga4.report import OrderBy
+
+    req.order_bys.append(OrderBy(metric=OrderBy.MetricOrderBy(metric_name=metric), desc=True))
     return req
 
 
@@ -56,6 +66,10 @@ def fetch_story_x(session: dict[str, Any], *, period: str, events: list[str], la
         _req(prev_start, prev_end, ["totalUsers"], ["newVsReturning"], limit=5),
     ]
     reqs.append(_req(cur_start, cur_end, ["totalUsers"], ["newVsReturning", "eventName"], filt, 3 * n_ev))
+    # v7.3 pages: where visits start (and how far they get), and the most viewed pages
+    reqs.append(_ordered(_req(cur_start, cur_end, ["totalUsers", "engagementRate"], ["landingPage"], limit=PAGES), "totalUsers"))
+    reqs.append(_ordered(_req(cur_start, cur_end, ["totalUsers"], ["landingPage", "eventName"], filt, 10000), "totalUsers"))
+    reqs.append(_ordered(_req(cur_start, cur_end, ["screenPageViews"], ["pagePath", "pageTitle"], limit=PAGES), "screenPageViews"))
     rel_day = None
     rel_ranges = None
     if release and release.get("date"):
@@ -130,6 +144,18 @@ def fetch_story_x(session: dict[str, Any], *, period: str, events: list[str], la
                "returning": {"users": users["returning"], "ev": by_ev["returning"]},
                "prev_returning": p_users.get("returning", 0)}
 
+    pages = None
+    try:
+        from sitekpi.board.story_pages import from_ga4
+
+        pages = from_ga4(
+            [(r.dimension_values[0].value, _i(_vals(r)[0]), round(100 * _f(_vals(r)[1]), 1)) for r in rep[9].rows or []],
+            [(r.dimension_values[0].value, r.dimension_values[1].value, _i(_vals(r)[0])) for r in rep[10].rows or []],
+            [(r.dimension_values[0].value, r.dimension_values[1].value, _i(_vals(r)[0])) for r in rep[11].rows or []],
+            int(getattr(rep[11], "row_count", 0) or 0), events)
+    except (IndexError, ValueError):
+        pages = None
+
     rel = None
     if rel_day:
         rel = {"date": rel_day.isoformat(), "days_after": (today_jst() - rel_day).days, "before": None, "after": None}
@@ -145,4 +171,4 @@ def fetch_story_x(session: dict[str, Any], *, period: str, events: list[str], la
                     sides[k]["ev"][r.dimension_values[0].value] = _i(_vals(r)[0])
             rel["before"], rel["after"] = sides["r0"], sides["r1"]
     return {"week0": week0().isoformat(), "weeks": {"entry": wk_entry, "ev": wk_ev}, "devices": devices,
-            "money": money, "nvr": nvr, "release": rel}, None
+            "money": money, "nvr": nvr, "release": rel, "pages": pages}, None

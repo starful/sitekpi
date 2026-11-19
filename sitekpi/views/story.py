@@ -194,6 +194,12 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
     from sitekpi.views import story_more as more
 
     who = more.buyers(flow, story_x, loc)
+    from sitekpi.views import story_pages
+
+    pg_who = story_pages.entry_pages(flow, story_x, loc)
+    if pg_who:  # v7.3 ② 入口ページ別
+        who = dict(who, pages=pg_who) if who else {"head": pg_who["head"], "map": None, "nvr": None, "pages": pg_who}
+    ptable = story_pages.table(flow, story_x, loc)
 
     def nums_for(has_ch: bool) -> dict[str, str]:
         w = 1 + int(has_ch) + int(bool(who))
@@ -222,7 +228,11 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
         nid = chapters[i + 1][0]
         return _num(n_of[nid], nxt[nid])
 
-    do_first = _s(loc, "x_do_first", names=_s(loc, "x_and").join(ww.get("focus") or [])) if ww.get("focus") else ""
+    focus = list(ww.get("focus") or [])
+    page_focus = ((ww.get("pages") or {}).get("name") or "")
+    if focus and page_focus:  # v7.3: where those people start
+        focus[-1] += _s(loc, "x_do_first_page", name=page_focus)
+    do_first = _s(loc, "x_do_first", names=_s(loc, "x_and").join(focus)) if focus else ""
 
     summary = more.summary(loc, a=A, b=B, head_now=(ch or {}).get("head") or Markup(s1).striptags(),
                            metric=metric, ww=ww, first=acts[0] if acts else None, gain=gain_txt, eff=eff,
@@ -239,7 +249,7 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
                                        "x_eff_empty", "x_eff_d", "qsum", "x_rec", "x_ai_title", "x_ai_lead",
                                        "x_ai_copy", "x_ai_open", "x_eff_form_k", "x_sum_copy", "x_sum_copied",
                                        "x_sum_ai", "x_sum_below", "x_read", "x_nvr_more", "x_others_more",
-                                       "x_when_more", "x_check_more")},
+                                       "x_when_more", "x_check_more", "x_people_sfx", "x_pgw_low_k", "x_pgw_check_k")},
         "toc": toc,
         "s1": s1, "s2": s2, "note": note, "h3": h3, "rows": rows, "others": others, "none_off": none_off,
         "h4": h4, "calc": calc, "acts": acts, "kind": issue["kind"],
@@ -249,7 +259,7 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
         # Display numbers on section headers (anchors stay #q2/#q3/#q4 for stable deep links)
         "n_ch": n_of.get("qch"), "n_who": n_of.get("qb"), "n_where": n_of["q2"], "n_why": n_of["q3"], "n_do": n_of["q4"],
         "n_sum": n_of["qsum"], "summary": summary,
-        "goods": goods, "changed": ch, "who": who, "ww": ww, "eff": eff, "do_first": do_first,
+        "goods": goods, "changed": ch, "who": who, "ww": ww, "eff": eff, "do_first": do_first, "ptable": ptable,
         "ai": {k: _s(loc, k) for k in ("ai_btn", "ai_lead", "ai_ask_k", "ai_cause", "ai_ideas", "ai_report",
                                         "ai_anon", "ai_detail", "ai_copy", "ai_copied", "ai_copy_fail", "ai_note")},
         "prompt": prompt,

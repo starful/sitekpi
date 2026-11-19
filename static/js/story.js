@@ -59,6 +59,32 @@
     if (list) list.classList.toggle("show-check", on);
   });
 
+  // 詳しい数字 › ページ別: sort by a heading, show the rest
+  document.addEventListener("click", (e) => {
+    const more = e.target.closest("[data-pt-more]");
+    if (more) {
+      document.querySelectorAll(".x-pt-more").forEach((r) => { r.hidden = false; });
+      more.remove();
+      return;
+    }
+    const b = e.target.closest("[data-pt-sort]");
+    if (!b) return;
+    const table = b.closest("[data-pt-table]");
+    const key = b.dataset.ptSort;
+    const asc = b.getAttribute("aria-sort") === "descending" && true;
+    table.querySelectorAll("[data-pt-sort]").forEach((x) => x.removeAttribute("aria-sort"));
+    b.setAttribute("aria-sort", asc ? "ascending" : "descending");
+    const body = table.tBodies[0];
+    const rows = [...body.rows];
+    const val = (r) => (b.dataset.type === "text" ? r.dataset[key] || "" : parseFloat(r.dataset[key]));
+    rows.sort((x, y) => {
+      const a = val(x), c = val(y);
+      const d = typeof a === "string" ? a.localeCompare(c) : a - c;
+      return asc ? d : -d;
+    });
+    rows.forEach((r) => body.appendChild(r));
+  });
+
   // ④ 「流入別に見る」: open the channel view in ② and go there
   document.addEventListener("click", (e) => {
     if (!e.target.closest("[data-ch-toggle-go]")) return;

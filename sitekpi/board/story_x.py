@@ -10,6 +10,7 @@ Same shape for 見本 / demo boards (``sample_story_x``, deterministic) and live
     nvr:     {"new": {"users", "ev": {event: users}}, "returning": {…}, "prev_returning": users} | None
     release: {"date", "days_after", "before": {"entry", "ev"}, "after": {"entry", "ev"}} | None
              14 days before the release date vs the 14 days from it (only when 14 days have passed)
+    pages:   landing pages and most viewed pages | None — board/story_pages.py documents the shape (v7.3)
 """
 
 from __future__ import annotations
@@ -108,8 +109,10 @@ def sample_story_x(slug: str, data: dict[str, Any], prev: dict[str, Any] | None,
     rel = None
     if release and release.get("date"):
         rel = _sample_release(tag, release, entry, totals, events, today=today)
+    from sitekpi.board.story_pages import sample_pages
+
     return {"week0": week0(today).isoformat(), "weeks": {"entry": wk_entry, "ev": wk_ev}, "devices": devices,
-            "money": money, "nvr": nvr, "release": rel}
+            "money": money, "nvr": nvr, "release": rel, "pages": sample_pages(slug, entry, totals, events)}
 
 
 def _sample_release(tag: str, release: dict[str, Any], entry: int, totals: dict[str, int], events: list[str],

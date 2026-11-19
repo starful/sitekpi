@@ -365,11 +365,15 @@ def where_when(issue: dict[str, Any], stages: list[dict[str, Any]], flow: dict[s
         r = row(c["name"], a, b) if a else None
         if r:
             ch_rows.append(r)
+    from sitekpi.views.story_pages import issue_head, issue_rows
+
+    pg_rows = issue_rows(issue, stages, sx, row, loc)
     rows = dev_rows + ch_rows
     if rows:
         top = max([r["rate"] for r in rows] + ([band[1]] if band else []) + ([overall] if overall else []))
         top = top * 1.08 or 1.0
-        for r in rows:
+        top = max([top] + [r["rate"] * 1.08 for r in pg_rows])
+        for r in rows + pg_rows:
             r["w"] = round(100 * r["rate"] / top, 1)
         if band:
             bk = (_s(loc, "x_band_k", band=f"{band[0]:g}–{band[1]:g}%") if info.get("hib") else
@@ -394,6 +398,9 @@ def where_when(issue: dict[str, Any], stages: list[dict[str, Any]], flow: dict[s
         out.update({"head": head, "devs": dev_rows, "chs": ch_rows, "focus": [r["name"] for r in named],
                     "dev_k": _s(loc, "x_dev_k"), "ch_k": _s(loc, "x_ch_k"), "low_k": _s(loc, "x_low_k"),
                     "base_k": _s(loc, "x_base_k", a=A), "few_k": _s(loc, "x_few_k")})
+        ph = issue_head(pg_rows, A, B, loc) if pg_rows else None
+        if ph:
+            out["pages"] = dict(ph, rows=pg_rows, k=_s(loc, "x_pgw_k"), base_k=_s(loc, "x_pgw_base", a=A))
     out["when"] = _when(issue, stages, sx, band, loc)
     return out
 

@@ -22,6 +22,7 @@ try:
         Filter,
         FilterExpression,
         Metric,
+        OrderBy,
         RunReportRequest,
     )
 except ImportError:  # pragma: no cover

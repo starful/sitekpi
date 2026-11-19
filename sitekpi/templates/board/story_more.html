@@ -86,6 +86,25 @@
     {% endcall %}
   </div>
   {% endif %}
+  {% if W.get('pages') %}{% set P = W.pages %}
+  <div class="x-sub x-pg">
+    <h3 class="x-sub-k">{{ P.k }} <small>{{ P.sub }}</small></h3>
+    <p class="x-sub-lead">{{ P.head }}</p>
+    <div class="x-pg-list" role="table" aria-label="{{ P.k }}">
+      <div class="x-pg-row is-head" role="row"><span role="columnheader">{{ P.col_page }}</span><span role="columnheader">{{ P.col_share }}</span><span role="columnheader" class="num">{{ P.col_rate }}</span><span role="columnheader"></span></div>
+      {% for r in P.rows %}
+      <div class="x-pg-row" role="row">
+        <span class="x-pg-name" role="rowheader">{{ r.title }}<small>{{ r.path }}</small></span>
+        <span class="x-pg-vol" role="cell"><span class="x-pg-track" aria-hidden="true"><i style="width: {{ r.w }}%"></i></span><small class="num">{{ r.users }}{{ S.q.x_people_sfx }} · {{ r.share }}</small></span>
+        <b class="num x-pg-rate{{ ' tone-down' if r.low else '' }}" role="cell">{{ r.rate }}</b>
+        <span class="x-ml-q q-{{ r.q }}" role="cell">{{ r.q_label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="q-foot">{{ P.foot }}</p>
+    {% if P.notes %}{% call more(S.q.x_read) %}<div class="x-map-notes">{% for n in P.notes %}<p><b class="t-{{ n.q }}">{{ n.k }}</b>{{ n.t }}</p>{% endfor %}</div>{% endcall %}{% endif %}
+  </div>
+  {% endif %}
   {% if S.nextb %}<p class="q-next">↓ {{ S.nextb }}</p>{% endif %}
 </section>
 {% endmacro %}
@@ -113,6 +132,23 @@
   </div>
   <p class="q-foot">{{ X.base_k }}</p>
 </div>
+{% if X.get('pages') %}{% set G = X.pages %}
+<div class="x-sub x-pgw">
+  <h3 class="x-sub-k">{{ G.k }}</h3>
+  <p class="x-sub-lead">{{ G.head }}</p>
+  <div class="x-pgw-rows">
+    {% for r in G.rows %}
+    <div class="x-bar-row{{ ' is-low' if r.low else '' }}{{ ' is-few' if r.few else '' }}{{ ' is-worst' if r.name == G.name else '' }}">
+      <span class="x-bar-name">{{ r.name }}<small>{% if r.path %}{{ r.path }} · {% endif %}{{ r.base }}{{ S.q.x_people_sfx }}{% if r.few %} · {{ X.few_k }}{% endif %}</small></span>
+      <span class="x-bar-track">{% if X.band %}<i class="x-bar-band" style="left: {{ X.band.l }}%; width: {{ X.band.w }}%"></i>{% else %}<i class="x-bar-ref" style="left: {{ X.ref.l }}%"></i>{% endif %}<i class="x-bar-fill" style="width: {{ r.w }}%"></i></span>
+      <b class="num x-bar-v">{{ r.rate_fmt }}</b>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="q-foot">{{ G.base_k }}</p>
+  {% if G.t %}{% call more(S.q.x_read) %}<div class="x-map-notes"><p><b class="t-fix">{{ S.q.x_pgw_low_k }}</b>{{ G.t }}</p><p><b>{{ S.q.x_pgw_check_k }}</b>{{ G.check }}</p></div>{% endcall %}{% endif %}
+</div>
+{% endif %}
 {% endif %}
 {% if X.when %}{% set T = X.when %}
 <div class="x-sub">
@@ -205,4 +241,37 @@
   </div>
   <script type="application/json" id="sum-data">{{ M.text|tojson }}</script>
 </section>
+{% endmacro %}
+
+{% macro pages_table(S) %}
+{%- set T = S.get('ptable') %}
+{% if T %}
+<div class="dgroups x-pt">
+  <div class="dgroup" id="g-pages">
+    <h3 class="dgroup-head"><button type="button" class="dgroup-toggle" data-dgroup-toggle aria-expanded="false" aria-controls="dt-pages">
+      <span class="chev" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1.5 L7 5 L3 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <b>{{ T.k }}</b><span class="dgroup-n">{{ T.n }}</span>
+    </button></h3>
+    <div class="x-pt-body" id="dt-pages" hidden>
+      <p class="x-pt-lead">{{ T.lead }}<span class="pc-only">{{ T.sort }}</span></p>
+      <div class="x-pt-scroll">
+      <table class="x-pt-table" data-pt-table>
+        <thead><tr>{% for key, label, kind in T.cols %}<th scope="col" class="{{ 'num' if kind == 'num' else '' }}"><button type="button" data-pt-sort="{{ key }}" data-type="{{ kind }}"{% if key == 'views' %} aria-sort="descending"{% endif %}>{{ label }}</button></th>{% endfor %}</tr></thead>
+        <tbody>
+          {% for r in T.rows + T.more %}
+          <tr{% if loop.index > T.rows|length %} class="x-pt-more" hidden{% endif %} data-title="{{ r.title }}" data-views="{{ r.views_n }}" data-entry="{{ r.entry_n }}" data-eng="{{ r.eng_n }}" data-conv="{{ r.conv_n }}" data-rate="{{ r.rate_n }}">
+            <th scope="row" class="x-pt-name">{{ r.title }}<small>{{ r.path }}</small></th>
+            <td class="num" data-k="{{ T.cols[1][1] }}"><b>{{ r.views }}</b></td><td class="num" data-k="{{ T.cols[2][1] }}">{{ r.entry }}</td><td class="num" data-k="{{ T.cols[3][1] }}">{{ r.eng }}</td>
+            {% if T.cols|length > 4 %}<td class="num" data-k="{{ T.cols[4][1] }}">{{ r.conv }}</td><td class="num" data-k="{{ T.cols[5][1] }}">{{ r.rate }}</td>{% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      {% if T.more_k %}<button type="button" class="x-more-btn" data-pt-more>{{ T.more_k }}</button>{% endif %}
+      <p class="x-pt-note">{{ T.note }}</p>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endmacro %}
