@@ -1,5 +1,7 @@
 {#- Story v7 chapters (views/story_more.py shapes the numbers; board.css › "v7 story"). -#}
 
+{% macro pagelink(S, r) %}{% if r.url %}<a class="x-pg-a" href="{{ r.url }}" target="_blank" rel="noopener noreferrer">{{ caller() }}<span class="x-pg-ext" aria-hidden="true">↗</span><span class="sr-only">{{ S.q.x_pg_open }}</span></a>{% else %}{{ caller() }}{% endif %}{% endmacro %}
+
 {% macro more(label) %}<details class="x-more"><summary><span class="x-more-c" aria-hidden="true">▾</span>{{ label }}</summary><div class="x-more-b">{{ caller() }}</div></details>{% endmacro %}
 
 {% macro goods(S) %}
@@ -94,7 +96,7 @@
       <div class="x-pg-row is-head" role="row"><span role="columnheader">{{ P.col_page }}</span><span role="columnheader">{{ P.col_share }}</span><span role="columnheader" class="num">{{ P.col_rate }}</span><span role="columnheader"></span></div>
       {% for r in P.rows %}
       <div class="x-pg-row" role="row">
-        <span class="x-pg-name" role="rowheader">{{ r.title }}<small>{{ r.path }}</small></span>
+        <span class="x-pg-name" role="rowheader">{% call pagelink(S, r) %}{{ r.title }}{% endcall %}<small>{{ r.path }}</small></span>
         <span class="x-pg-vol" role="cell"><span class="x-pg-track" aria-hidden="true"><i style="width: {{ r.w }}%"></i></span><small class="num">{{ r.users }}{{ S.q.x_people_sfx }} · {{ r.share }}</small></span>
         <b class="num x-pg-rate{{ ' tone-down' if r.low else '' }}" role="cell">{{ r.rate }}</b>
         <span class="x-ml-q q-{{ r.q }}" role="cell">{{ r.q_label }}</span>
@@ -139,7 +141,7 @@
   <div class="x-pgw-rows">
     {% for r in G.rows %}
     <div class="x-bar-row{{ ' is-low' if r.low else '' }}{{ ' is-few' if r.few else '' }}{{ ' is-worst' if r.name == G.name else '' }}">
-      <span class="x-bar-name">{{ r.name }}<small>{% if r.path %}{{ r.path }} · {% endif %}{{ r.base }}{{ S.q.x_people_sfx }}{% if r.few %} · {{ X.few_k }}{% endif %}</small></span>
+      <span class="x-bar-name">{% call pagelink(S, r) %}{{ r.name }}{% endcall %}<small>{% if r.path %}{{ r.path }} · {% endif %}{{ r.base }}{{ S.q.x_people_sfx }}{% if r.few %} · {{ X.few_k }}{% endif %}</small></span>
       <span class="x-bar-track">{% if X.band %}<i class="x-bar-band" style="left: {{ X.band.l }}%; width: {{ X.band.w }}%"></i>{% else %}<i class="x-bar-ref" style="left: {{ X.ref.l }}%"></i>{% endif %}<i class="x-bar-fill" style="width: {{ r.w }}%"></i></span>
       <b class="num x-bar-v">{{ r.rate_fmt }}</b>
     </div>
@@ -260,7 +262,7 @@
         <tbody>
           {% for r in T.rows + T.more %}
           <tr{% if loop.index > T.rows|length %} class="x-pt-more" hidden{% endif %} data-title="{{ r.title }}" data-views="{{ r.views_n }}" data-entry="{{ r.entry_n }}" data-eng="{{ r.eng_n }}" data-conv="{{ r.conv_n }}" data-rate="{{ r.rate_n }}">
-            <th scope="row" class="x-pt-name">{{ r.title }}<small>{{ r.path }}</small></th>
+            <th scope="row" class="x-pt-name">{% call pagelink(S, r) %}{{ r.title }}{% endcall %}<small>{{ r.path }}</small></th>
             <td class="num" data-k="{{ T.cols[1][1] }}"><b>{{ r.views }}</b></td><td class="num" data-k="{{ T.cols[2][1] }}">{{ r.entry }}</td><td class="num" data-k="{{ T.cols[3][1] }}">{{ r.eng }}</td>
             {% if T.cols|length > 4 %}<td class="num" data-k="{{ T.cols[4][1] }}">{{ r.conv }}</td><td class="num" data-k="{{ T.cols[5][1] }}">{{ r.rate }}</td>{% endif %}
           </tr>

@@ -6,6 +6,7 @@ Shape (``story_x["pages"]``, read only by views/story_pages.py):
            users = people whose visit started there; ev = those of them who fired the event in that visit;
            eng = engagement rate of those visits (%, or None)
     views: [{"path", "title", "views"}]                                  most viewed pages
+    url on both lists: "https://{host}{path}" — the host GA4 saw most for that path (live only; samples have none)
     n_pages: how many pages GA4 saw in the period
 
 Titles: GA4 page titles with the site-name tail most titles share taken off; a dict {ja, en, ko} for samples.
@@ -63,26 +64,50 @@ def strip_site_tail(titles: dict[str, str]) -> dict[str, str]:
 _NOT_PAGE = re.compile(r"^\(not set\)$|^\(other\)$", re.I)
 
 
+_HOST = re.compile(r"^[a-z0-9.-]+\.[a-z]{2,}(:\d+)?$", re.I)
+
+
+def _url(host: str, path: str) -> str:
+    """A link only for a real public host (not localhost, an IP-less name or (not set))."""
+    return f"https://{host}{path}" if host and _HOST.match(host) and not host.startswith("localhost") else ""
+
+
 def from_ga4(entry_rows: list[tuple[str, int, float | None]], ev_rows: list[tuple[str, str, int]],
-             view_rows: list[tuple[str, str, int]], n_pages: int, events: list[str]) -> dict[str, Any] | None:
-    """Merge the three GA4 reports (rows already read) into the shape above, paths normalised."""
+             view_rows: list[tuple[Any, ...]], n_pages: int, events: list[str]) -> dict[str, Any] | None:
+    """Merge the three GA4 reports (rows already read) into the shape above, paths normalised.
+
+    view_rows: (pagePath, pageTitle, views[, hostName])."""
     titles: dict[str, str] = {}
     views: dict[str, int] = {}
     best: dict[str, int] = {}
-    for path, title, v in view_rows:
+    host_v: dict[str, dict[str, int]] = {}
+    for row in view_rows:
+        path, title, v = row[0], row[1], row[2]
+        host = str(row[3]).strip().lower() if len(row) > 3 else ""
         if _NOT_PAGE.match(path or ""):
             continue
         k = path_key(path)
         views[k] = views.get(k, 0) + v
+        if host and not _NOT_PAGE.match(host):
+            host_v.setdefault(k, {})[host] = host_v.setdefault(k, {}).get(host, 0) + v
         if title and not _NOT_PAGE.match(title) and v > best.get(k, -1):
             titles[k], best[k] = title, v
     titles = strip_site_tail(titles)
+    totals_h: dict[str, int] = {}
+    for hv in host_v.values():
+        for h, v in hv.items():
+            totals_h[h] = totals_h.get(h, 0) + v
+    site = max(totals_h, key=lambda h: totals_h[h]) if totals_h else ""
+
+    def url(k: str) -> str:
+        hv = host_v.get(k)
+        return _url(max(hv, key=lambda h: hv[h]) if hv else site, k)
     entry: dict[str, dict[str, Any]] = {}
     for path, users, eng in entry_rows:
         if not path or _NOT_PAGE.match(path):
             continue
         k = path_key(path)
-        e = entry.setdefault(k, {"path": k, "title": titles.get(k, ""), "users": 0, "eng": eng, "ev": {}})
+        e = entry.setdefault(k, {"path": k, "title": titles.get(k, ""), "users": 0, "eng": eng, "ev": {}, "url": url(k)})
         e["users"] += users
     for path, name, users in ev_rows:
         k = path_key(path)
@@ -92,7 +117,8 @@ def from_ga4(entry_rows: list[tuple[str, int, float | None]], ev_rows: list[tupl
         return None
     return {
         "entry": sorted(entry.values(), key=lambda e: -e["users"]),
-        "views": [{"path": k, "title": titles.get(k, ""), "views": v} for k, v in sorted(views.items(), key=lambda kv: -kv[1])],
+        "views": [{"path": k, "title": titles.get(k, ""), "views": v, "url": url(k)}
+                  for k, v in sorted(views.items(), key=lambda kv: -kv[1])],
         "n_pages": max(n_pages, len(views)),
     }
 

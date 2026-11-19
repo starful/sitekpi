@@ -71,3 +71,16 @@ def test_no_pages_no_blocks():
                      "views": [{"path": "/", "title": "Home", "views": 300}], "n_pages": 1}}
     assert entry_pages(flow, one, "ja") is None  # one page says nothing about pages
     assert table(flow, one, "ja")["rows"][0]["rate"] == "40.0%"
+
+
+def test_live_pages_link_to_the_site_and_samples_do_not():
+    from sitekpi.views.story_pages import entry_pages, table
+
+    flow = {"stages": [{"label": "来た", "users": 1000, "event": ""}, {"label": "買った", "users": 100, "event": "purchase"}]}
+    pg = {"entry": [{"path": "/", "title": "Home", "users": 600, "eng": 50.0, "ev": {"purchase": 70}, "url": "https://a.jp/"},
+                    {"path": "/b", "title": "B", "users": 400, "eng": 40.0, "ev": {"purchase": 30}, "url": "https://a.jp/b"}],
+          "views": [{"path": "/", "title": "Home", "views": 900, "url": "https://a.jp/"}], "n_pages": 2}
+    assert [r["url"] for r in entry_pages(flow, {"pages": pg}, "ja")["rows"]] == ["https://a.jp/", "https://a.jp/b"]
+    assert table(flow, {"pages": pg}, "ja")["rows"][0]["url"] == "https://a.jp/"
+    s = _soup("ja")  # the sample site is made up: page names stay plain text
+    assert not s.select(".x-pg a.x-pg-a, .x-pgw a.x-pg-a, #g-pages a.x-pg-a")

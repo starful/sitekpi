@@ -69,7 +69,7 @@ def fetch_story_x(session: dict[str, Any], *, period: str, events: list[str], la
     # v7.3 pages: where visits start (and how far they get), and the most viewed pages
     reqs.append(_ordered(_req(cur_start, cur_end, ["totalUsers", "engagementRate"], ["landingPage"], limit=PAGES), "totalUsers"))
     reqs.append(_ordered(_req(cur_start, cur_end, ["totalUsers"], ["landingPage", "eventName"], filt, 10000), "totalUsers"))
-    reqs.append(_ordered(_req(cur_start, cur_end, ["screenPageViews"], ["pagePath", "pageTitle"], limit=PAGES), "screenPageViews"))
+    reqs.append(_ordered(_req(cur_start, cur_end, ["screenPageViews"], ["pagePath", "pageTitle", "hostName"], limit=PAGES), "screenPageViews"))
     rel_day = None
     rel_ranges = None
     if release and release.get("date"):
@@ -151,7 +151,8 @@ def fetch_story_x(session: dict[str, Any], *, period: str, events: list[str], la
         pages = from_ga4(
             [(r.dimension_values[0].value, _i(_vals(r)[0]), round(100 * _f(_vals(r)[1]), 1)) for r in rep[9].rows or []],
             [(r.dimension_values[0].value, r.dimension_values[1].value, _i(_vals(r)[0])) for r in rep[10].rows or []],
-            [(r.dimension_values[0].value, r.dimension_values[1].value, _i(_vals(r)[0])) for r in rep[11].rows or []],
+            [(r.dimension_values[0].value, r.dimension_values[1].value, _i(_vals(r)[0]), r.dimension_values[2].value)
+             for r in rep[11].rows or []],
             int(getattr(rep[11], "row_count", 0) or 0), events)
     except (IndexError, ValueError):
         pages = None

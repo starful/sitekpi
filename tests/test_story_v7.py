@@ -147,12 +147,12 @@ class _FakeClient:
             elif dims == ["landingPage", "eventName"]:
                 rows = [self._row([p_, e], [n]) for p_, e, n in (("/", "purchase", 15), ("/lp/sale", "purchase", 3),
                                                                   ("/lp/sale?utm=x", "purchase", 1), ("/", "add_to_cart", 60))]
-            elif dims == ["pagePath", "pageTitle"]:
-                rows = [self._row(["/", "Home | Shop"], [2000]), self._row(["/lp/sale", "Sale | Shop"], [900]),
-                        self._row(["/item/1", "Coat - Shop"], [700])]
+            elif dims == ["pagePath", "pageTitle", "hostName"]:
+                rows = [self._row(["/", "Home | Shop", "shop.example.jp"], [2000]), self._row(["/lp/sale", "Sale | Shop", "shop.example.jp"], [900]),
+                        self._row(["/item/1", "Coat - Shop", "localhost"], [700])]
             elif not dims:
                 rows = [self._row([], [1000, 500000])]
-            out.append(SimpleNamespace(rows=rows, row_count=len(rows) + 40 if dims == ["pagePath", "pageTitle"] else len(rows)))
+            out.append(SimpleNamespace(rows=rows, row_count=len(rows) + 40 if dims == ["pagePath", "pageTitle", "hostName"] else len(rows)))
         return SimpleNamespace(reports=out)
 
 
@@ -177,6 +177,8 @@ def test_fetch_story_x_reads_ga4(monkeypatch):
     pg = sx["pages"]  # v7.3: paths merged without 「?…」 and the trailing 「/」, (not set) dropped, site tail off
     assert [(e["path"], e["title"], e["users"], e["eng"]) for e in pg["entry"]] == [("/", "Home", 600, 50.0), ("/lp/sale", "Sale", 300, 31.0)]
     assert pg["entry"][1]["ev"]["purchase"] == 4 and pg["views"][2]["title"] == "Coat" and pg["n_pages"] == 43
+    # links go to the site's own pages (the host GA4 saw), never to localhost
+    assert pg["entry"][1]["url"] == "https://shop.example.jp/lp/sale" and pg["views"][2]["url"] == ""
 
 
 def test_chapter_two_uses_a_step_enough_people_reached_and_labels_do_not_overlap():
