@@ -185,7 +185,7 @@
             </div>
             {% endif %}
             {% if S.none_off %}<p class="q-others watch-none">{{ t("watch.none", loc) }}</p>{% endif %}
-            {% if S.others %}<p class="q-others">{{ S.q.others }} {% for w in S.others %}{{ w.label }} {{ w.value }}{% if w.band %}（{{ t("rg.ind", loc) }} {{ w.band }}）{% endif %}{% if not loop.last %} · {% endif %}{% endfor %} <a class="link-btn" href="#s-l2">{{ S.q.others_more }}</a></p>{% endif %}
+            {% if S.others %}{% call SX.more(S.q.x_others_more) %}<p class="q-others">{{ S.q.others }} {% for w in S.others %}{{ w.label }} {{ w.value }}{% if w.band %}（{{ t("rg.ind", loc) }} {{ w.band }}）{% endif %}{% if not loop.last %} · {% endif %}{% endfor %} <a class="link-btn" href="#s-l2">{{ S.q.others_more }}</a></p>{% endcall %}{% endif %}
             {% if industry_drawer and not is_sample and watch and (watch | selectattr("far") | list or watch | selectattr("tone", "equalto", "down") | list | length >= 2) %}
             <p class="watch-ind">{{ t("watch.ind_nudge", loc, ind=ind_name or t("bx.ind_none", loc)) }} <button type="button" class="link-btn" data-drawer-open="industry" aria-haspopup="dialog" aria-expanded="false">{{ t("watch.ind_change", loc) }} <span aria-hidden="true">▾</span></button></p>
             {% endif %}
@@ -204,7 +204,7 @@
             {% for x in S.acts %}
             <li class="act">
               <b class="act-n">{{ x.n }}</b>
-              <span><b class="act-t">{{ x.title }}</b><span class="act-l"><b>{{ S.q.why }}</b>{{ x.why }}</span><span class="act-l"><b>{{ S.q.check }}</b>{{ x.check }}</span></span>
+              <span><b class="act-t">{{ x.title }}</b><span class="act-l"><b>{{ S.q.why }}</b>{{ x.why }}</span><span class="act-l act-check"><b>{{ S.q.check }}</b>{{ x.check }}</span></span>
               <span class="act-go">
                 {%- if x.link == "edit" and editor %}<button type="button" class="link-btn" data-edit-open>{{ S.q.go_edit }}</button>
                 {%- elif x.link == "edit" and not is_sample %}<a class="link-btn" href="/live?edit=1">{{ S.q.go_edit }}</a>
@@ -216,6 +216,7 @@
             </li>
             {% endfor %}
           </ol>
+          <button type="button" class="x-more-btn" data-check-toggle aria-expanded="false"><span class="x-more-c" aria-hidden="true">▾</span>{{ S.q.x_check_more }}</button>
           {{ SX.effect(S) }}
           <p class="q-foot">{{ S.q.do_note }}</p>
           <div class="ai" data-ai id="ai-card">
