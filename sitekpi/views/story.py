@@ -249,7 +249,7 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
                                        "x_eff_empty", "x_eff_d", "qsum", "x_rec", "x_ai_title", "x_ai_lead",
                                        "x_ai_copy", "x_ai_open", "x_eff_form_k", "x_sum_copy", "x_sum_copied",
                                        "x_sum_ai", "x_sum_below", "x_read", "x_nvr_more", "x_others_more",
-                                       "x_when_more", "x_check_more", "x_people_sfx", "x_pgw_low_k", "x_pgw_check_k")},
+                                       "x_when_more", "x_check_more", "x_people_sfx", "x_pgw_low_k", "x_pgw_check_k", "x_pg_open")},
         "toc": toc,
         "s1": s1, "s2": s2, "note": note, "h3": h3, "rows": rows, "others": others, "none_off": none_off,
         "h4": h4, "calc": calc, "acts": acts, "kind": issue["kind"],

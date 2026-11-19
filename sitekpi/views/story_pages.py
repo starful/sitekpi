@@ -55,7 +55,7 @@ def entry_pages(flow: dict[str, Any] | None, sx: dict[str, Any] | None, loc: str
         share = 100.0 * e["users"] / total
         r = _rate(float(e["users"]), float((e.get("ev") or {}).get(ev, 0))) or 0.0
         q = _quad(share, r, mid, overall)
-        rows.append({"title": _title(e.get("title"), loc) or e["path"], "path": e["path"], "users": fmt_int(e["users"]),
+        rows.append({"title": _title(e.get("title"), loc) or e["path"], "path": e["path"], "url": e.get("url") or "", "users": fmt_int(e["users"]),
                      "share": f"{share:.0f}%", "w": round(100 * share / top_share, 1), "rate": _pct(r), "r": r,
                      "q": q, "q_label": _s(loc, "x_q_" + q), "low": q == "fix"})
     rest = [e for e in entry if e not in shown]
@@ -105,7 +105,7 @@ def issue_rows(issue: dict[str, Any], stages: list[dict[str, Any]], sx: dict[str
         if len(out) < SHOW and a >= MIN_BASE:
             r = row(_title(e.get("title"), loc) or e["path"], a, b)
             if r:
-                r["path"] = e["path"]
+                r["path"], r["url"] = e["path"], e.get("url") or ""
                 out.append(r)
                 continue
         rest_a, rest_b, rest_n = rest_a + a, rest_b + b, rest_n + 1
@@ -113,7 +113,7 @@ def issue_rows(issue: dict[str, Any], stages: list[dict[str, Any]], sx: dict[str
     if out and rest_a:
         r = row(_s(loc, "x_pgw_other", n=fmt_int(rest_n)), rest_a, rest_b)
         if r:
-            r["path"], r["rest"] = "", True
+            r["path"], r["url"], r["rest"] = "", "", True
             out.append(r)
     return out if len([r for r in out if not r.get("rest")]) >= 2 else []
 
@@ -148,7 +148,7 @@ def table(flow: dict[str, Any] | None, sx: dict[str, Any] | None, loc: str) -> d
         u = int(e.get("users") or 0)
         c = int((e.get("ev") or {}).get(ev, 0)) if ev and e else None
         r = _rate(float(u), float(c)) if u >= MIN_BASE and c is not None else None
-        rows.append({"title": _title(v.get("title"), loc) or v["path"], "path": v["path"],
+        rows.append({"title": _title(v.get("title"), loc) or v["path"], "path": v["path"], "url": v.get("url") or "",
                      "views": fmt_int(v["views"]), "views_n": v["views"],
                      "entry": fmt_int(u) if u else "—", "entry_n": u,
                      "eng": _pct(e.get("eng")) if e.get("eng") is not None and u else "—", "eng_n": e.get("eng") if u else -1,
@@ -156,7 +156,7 @@ def table(flow: dict[str, Any] | None, sx: dict[str, Any] | None, loc: str) -> d
                      "rate": _pct(r) if r is not None else "—", "rate_n": r if r is not None else -1})
     n = int(pg.get("n_pages") or len(pg["views"]))
     return {
-        "k": _s(loc, "x_pt_k"), "n": _s(loc, "x_pt_n", n=fmt_int(n)), "lead": _s(loc, "x_pt_lead"), "sort": _s(loc, "x_pt_sort"),
+        "k": _s(loc, "x_pt_k"), "n": _s(loc, "x_pt_n", n=fmt_int(n)), "lead": _s(loc, "x_pt_lead") + (_s(loc, "x_pt_open") if any(r["url"] for r in rows) else ""), "sort": _s(loc, "x_pt_sort"),
         "cols": [("title", _s(loc, "x_pt_page"), "text"), ("views", _s(loc, "x_pt_views"), "num"),
                  ("entry", _s(loc, "x_pt_entry"), "num"), ("eng", _s(loc, "x_pt_eng"), "num")]
         + ([("conv", step, "num"), ("rate", _s(loc, "x_who_col_rate", step=step), "num")] if ev else []),
