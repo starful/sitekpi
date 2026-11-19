@@ -555,7 +555,20 @@ _X: dict[str, dict[str, str]] = {
     },
 }
 _X2: dict[str, dict[str, str]] = {'ja': {'qsum': 'まとめ', 'x_sum_h': '伸ばすには「{a} → {b}」を直す — まず ① から。', 'x_sum_now_k': 'いまの状態', 'x_sum_issue_k': 'いちばんの課題', 'x_sum_first_k': 'まずやること', 'x_sum_next_k': '次に確かめること', 'x_sum_issue': '「{a} → {b}」{rate}{band}。', 'x_sum_band': '（業界の目安 {band}）', 'x_sum_focus': '特に {names}。', 'x_sum_next': 'やったら {do} で日付を記録 → 14 日後、この画面で「やる前と後」を比べます。', 'x_sum_copy': '報告用にコピー', 'x_sum_copied': 'コピーしました', 'x_sum_ai': '✦ AI に続きを聞く', 'x_sum_below': '↓ この下は 詳しい数字（参考）', 'x_rec': '＋ やった日を記録', 'x_rec_done': '✓ {d} にやった', 'x_mark': '{n} {d}', 'x_ai_title': 'AI に、もっと具体的に聞く', 'x_ai_lead': 'この画面の数字を入れた質問文を作ります。ChatGPT・Claude・Gemini に貼るだけ。', 'x_ai_copy': '質問文をコピー', 'x_ai_open': '中身を見る', 'x_eff_res_k': '✓ {d} にやった「{title}」 · 前後 {n} 日で比べた結果', 'x_eff_form_k': 'やった日を記録'}, 'en': {'qsum': 'Summary', 'x_sum_h': 'To grow, fix “{a} → {b}” — start with ①.', 'x_sum_now_k': 'Where you stand', 'x_sum_issue_k': 'Biggest issue', 'x_sum_first_k': 'Do first', 'x_sum_next_k': 'Check next', 'x_sum_issue': '“{a} → {b}” {rate}{band}. ', 'x_sum_band': ' (industry standard {band})', 'x_sum_focus': 'Mostly on {names}.', 'x_sum_next': 'When you do it, record the date in {do} → after 14 days, compare before and after here.', 'x_sum_copy': 'Copy for a report', 'x_sum_copied': 'Copied', 'x_sum_ai': "✦ Ask AI what's next", 'x_sum_below': '↓ Below: all the numbers (reference)', 'x_rec': '+ Record the day you did it', 'x_rec_done': '✓ Done {d}', 'x_mark': '{n} {d}', 'x_ai_title': 'Ask AI for something more specific', 'x_ai_lead': "We write a question with this board's numbers. Paste it into ChatGPT, Claude or Gemini.", 'x_ai_copy': 'Copy the question', 'x_ai_open': 'See it', 'x_eff_res_k': '✓ “{title}” on {d} · {n} days before vs after', 'x_eff_form_k': 'Record the day you did it'}, 'ko': {'qsum': '정리', 'x_sum_h': '늘리려면 「{a} → {b}」를 고쳐요 — 먼저 ①부터.', 'x_sum_now_k': '지금 상태', 'x_sum_issue_k': '가장 큰 과제', 'x_sum_first_k': '먼저 할 일', 'x_sum_next_k': '다음에 확인할 것', 'x_sum_issue': '「{a} → {b}」 {rate}{band}. ', 'x_sum_band': '(업계 기준 {band})', 'x_sum_focus': '특히 {names}.', 'x_sum_next': '하고 나면 {do}에서 날짜를 기록 → 14일 뒤 이 화면에서 전후를 비교해요.', 'x_sum_copy': '보고용으로 복사', 'x_sum_copied': '복사했어요', 'x_sum_ai': '✦ AI에 이어서 묻기', 'x_sum_below': '↓ 아래는 자세한 수치(참고)', 'x_rec': '＋ 한 날 기록', 'x_rec_done': '✓ {d}에 함', 'x_mark': '{n} {d}', 'x_ai_title': 'AI에게 더 구체적으로 묻기', 'x_ai_lead': '이 화면의 숫자를 넣은 질문문을 만들어요. ChatGPT·Claude·Gemini에 붙여 넣기만 하면 돼요.', 'x_ai_copy': '질문문 복사', 'x_ai_open': '내용 보기', 'x_eff_res_k': '✓ {d}에 한 「{title}」 · 전후 {n}일 비교', 'x_eff_form_k': '한 날 기록'}}
+_X3: dict[str, dict[str, str]] = {  # v7.2b: only the explaining prose folds
+    "ja": {"x_read": "説明を読む", "x_nvr_more": "新規・再訪の割合と説明を読む",
+           "x_others_more": "ほかに目安から外れている指標", "x_when_more": "グラフの読み方（もともと · さらに · 確かめること）",
+           "x_check_more": "それぞれの「確かめ方」を見る"},
+    "en": {"x_read": "Read the explanation", "x_nvr_more": "New vs returning shares and what they mean",
+           "x_others_more": "Other metrics outside the standard", "x_when_more": "How to read the chart (before · since · what to check)",
+           "x_check_more": "See how to check each one"},
+    "ko": {"x_read": "설명 읽기", "x_nvr_more": "신규·재방문 비율과 설명 읽기",
+           "x_others_more": "그 밖에 기준에서 벗어난 지표", "x_when_more": "그래프 읽는 법(원래 · 더 · 확인할 것)",
+           "x_check_more": "각각의 「확인 방법」 보기"},
+}
 for _loc, _keys in _X2.items():
+    _X[_loc].update(_keys)
+for _loc, _keys in _X3.items():
     _X[_loc].update(_keys)
 for _loc, _keys in _X.items():
     STORY[_loc].update(_keys)

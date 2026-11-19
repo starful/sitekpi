@@ -596,6 +596,9 @@ def mark_releases(ww: dict[str, Any], eff: dict[str, Any], loc: str) -> None:
                 x = round(g["l"] + min(k, 7) * (g["r"] - g["l"]) / 7, 1)
                 label = _s(loc, "x_mark", n=_circ(r.get("act")), d=r["md"])
                 g["marks"].append({"x": x, "t": label, "y": g["t"] + 12 + 14 * (n % 2)})
+        # a mark on the right half would sit on the band's label (drawn at the right end) → move that label left
+        if g.get("band"):
+            g["band"]["at_left"] = any(mk["x"] > (g["l"] + g["r"]) / 2 for mk in g["marks"])
 
 
 def _circ(act: Any) -> str:

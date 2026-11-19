@@ -49,6 +49,16 @@
     build(); // 「質問文をコピー」 works without opening the box
   }
 
+  // どうする？: one toggle shows every 「確かめ方」 line
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-check-toggle]");
+    if (!b) return;
+    const list = document.querySelector(".acts");
+    const on = b.getAttribute("aria-expanded") !== "true";
+    b.setAttribute("aria-expanded", on ? "true" : "false");
+    if (list) list.classList.toggle("show-check", on);
+  });
+
   // ④ 「流入別に見る」: open the channel view in ② and go there
   document.addEventListener("click", (e) => {
     if (!e.target.closest("[data-ch-toggle-go]")) return;

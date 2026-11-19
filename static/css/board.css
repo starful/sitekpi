@@ -1374,3 +1374,16 @@ button.jt-none { white-space: nowrap; text-underline-offset: 3px; line-height: 1
   .sum-btn { justify-content: center; min-height: 44px; }
   .sum-below { grid-column: 1 / -1; margin-left: 0; }
 }
+
+/* v7.2b — pictures and numbers stay open; only the explaining prose folds (「説明を読む ▾」) */
+.x-more { margin-top: 10px; }
+.x-more > summary, .x-more-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; font-size: 0.8125rem; font-weight: 700; color: #1d4ed8; list-style: none; }
+.x-more > summary::-webkit-details-marker { display: none; }
+.x-more-c { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; background: #eef4ff; font-size: 0.75rem; transition: transform 0.15s; }
+.x-more[open] > summary .x-more-c, .x-more-btn[aria-expanded="true"] .x-more-c { transform: rotate(180deg); }
+.x-more > summary:focus-visible, .x-more-btn:focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; border-radius: 6px; }
+.x-more-b > :first-child { margin-top: 6px; }
+.x-more .x-map-notes { margin-top: 6px; }
+.acts:not(.show-check) .act-check { display: none; }
+.x-more-btn { margin-top: 6px; }
+@media (prefers-reduced-motion: reduce) { .x-more-c { transition: none; } }

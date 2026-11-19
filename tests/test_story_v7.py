@@ -204,3 +204,37 @@ def test_chapter_two_uses_a_step_enough_people_reached_and_labels_do_not_overlap
             assert a[2] < b[0] or b[2] < a[0] or a[3] < b[1] or b[3] < a[1], (a, b)
     # the new / returning bar never squeezes text into a 2% slice
     assert w["nvr"]["users"]["narrow_ret"] and not w["nvr"]["users"]["narrow_new"]
+
+
+@pytest.mark.parametrize("lang", ["ja", "en", "ko"])
+def test_v7_2b_only_prose_folds(lang):
+    """Pictures and numbers stay open; the explaining prose sits under 「説明を読む ▾」 (closed)."""
+    s = _soup(TestClient(app, headers={"Accept-Language": lang}), f"/ec?lang={lang}")
+    folds = s.select("details.x-more")
+    assert folds and all(not d.has_attr("open") and d.select_one("summary").get_text().strip() for d in folds)
+    ch = s.select_one("#qch")
+    assert ch.select_one(".x-eq") and not ch.select_one(".x-eq").find_parent("details")  # the tiles stay
+    assert ch.select_one(".x-take").find_parent("details")
+    assert not ch.select_one(".q-note")  # the formula line is gone (the tiles say it)
+    who = s.select_one("#qb")
+    assert not who.select_one(".x-map").find_parent("details") and who.select_one(".x-map-notes").find_parent("details")
+    assert who.select_one(".x-stack") and not who.select_one(".x-stack").find_parent("details")
+    assert who.select_one(".x-cards").find_parent("details")
+    why = s.select_one("#q3")
+    assert not why.select_one(".x-bars").find_parent("details") and not why.select_one(".x-when-svg").find_parent("details")
+    assert why.select_one(".x-when-side").find_parent("details")
+    do = s.select_one("#q4")
+    assert do.select(".act-check") and do.select_one("[data-check-toggle]")["aria-expanded"] == "false"
+    assert do.select_one("#ai-box").has_attr("hidden")  # the AI box is visible, its contents start closed
+    assert s.select("#s-l2")  # 詳しい数字 still follows
+
+
+def test_release_mark_does_not_sit_on_the_band_label():
+    from sitekpi.views.story_more import mark_releases
+
+    g = {"l": 40, "r": 600, "t": 10, "band": {"y": 20, "h": 30, "ly": 50, "t": "x"}}
+    ww = {"when": {"w0": "2026-09-01", "pc": dict(g, band=dict(g["band"])), "sp": dict(g, band=dict(g["band"]))}}
+    mark_releases(ww, {"recorded": [{"date": "2026-10-20", "act": "1", "md": "10/20"}]}, "ja")
+    assert ww["when"]["pc"]["marks"] and ww["when"]["pc"]["band"]["at_left"]
+    mark_releases(ww, {"recorded": [{"date": "2026-09-03", "act": "1", "md": "9/3"}]}, "ja")
+    assert ww["when"]["sp"]["marks"] and not ww["when"]["sp"]["band"]["at_left"]

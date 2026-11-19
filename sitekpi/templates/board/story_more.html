@@ -1,5 +1,7 @@
 {#- Story v7 chapters (views/story_more.py shapes the numbers; board.css › "v7 story"). -#}
 
+{% macro more(label) %}<details class="x-more"><summary><span class="x-more-c" aria-hidden="true">▾</span>{{ label }}</summary><div class="x-more-b">{{ caller() }}</div></details>{% endmacro %}
+
 {% macro goods(S) %}
 {%- if S.goods %}
 <div class="goods">
@@ -16,7 +18,6 @@
 <section class="changed card" id="qch" aria-labelledby="qch-h" data-memo-where="{{ S.q.q1 }}">
   <p class="qk"><span class="qn">{{ S.n_ch }}</span>{{ S.q.q1 }}</p>
   <h2 id="qch-h" class="q-h">{{ C.head }}</h2>
-  <p class="q-note">{{ C.formula }}</p>
   <div class="x-eq">
     {% for x in C.terms %}
     {% if not loop.first %}<span class="x-op" aria-hidden="true">×</span>{% endif %}
@@ -33,7 +34,7 @@
     {% if C.flat %}<p class="x-split-flat">{{ C.flat }}</p>{% endif %}
   </div>
   {% endif %}
-  <p class="x-take tone-{{ C.take_tone }}">{{ C.take }}</p>
+  {% call more(S.q.x_read) %}<p class="x-take tone-{{ C.take_tone }}">{{ C.take }}</p>{% endcall %}
   {% if S.next1 %}<p class="q-next">↓ {{ S.next1 }}</p>{% endif %}
 </section>
 {% endmacro %}
@@ -68,7 +69,7 @@
         <div class="x-ml-row is-head" role="row"><span role="columnheader"></span><span role="columnheader">{{ M.col_share }}</span><span role="columnheader">{{ M.col_rate }}</span><span role="columnheader"></span></div>
         {% for p in M.pts %}<div class="x-ml-row" role="row"><b role="rowheader">{{ p.name }}</b><span class="num" role="cell">{{ p.share_fmt }}</span><b class="num{{ ' tone-down' if p.q == 'fix' else '' }}" role="cell">{{ p.rate_fmt }}</b><span class="x-ml-q q-{{ p.q }}" role="cell">{{ p.q_label }}</span></div>{% endfor %}
       </div>
-      {% if M.notes or M.small %}<div class="x-map-notes">{% for n in M.notes %}<p><b class="t-{{ n.q }}">{{ n.k }}</b>{{ n.t }}</p>{% endfor %}{% if M.small %}<p class="q-foot">{{ M.small }}</p>{% endif %}</div>{% endif %}
+      {% if M.notes or M.small %}{% call more(S.q.x_read) %}<div class="x-map-notes">{% for n in M.notes %}<p><b class="t-{{ n.q }}">{{ n.k }}</b>{{ n.t }}</p>{% endfor %}{% if M.small %}<p class="q-foot">{{ M.small }}</p>{% endif %}</div>{% endcall %}{% endif %}
     </div>
   </div>
   {% endif %}
@@ -79,8 +80,10 @@
     {% for k, b in ((N.k_users, N.users), (N.k_conv, N.conv)) if b %}
     <div class="x-stack"><span class="x-stack-k">{{ k }}</span><span><span class="x-stack-bar" aria-hidden="true"><span class="s-new" style="flex: {{ b.new }}"></span><span class="s-ret" style="flex: {{ b.ret }}"></span></span><small><i class="s-dot s-new"></i>{{ N.new_k }} {{ b.new }}% · <i class="s-dot s-ret"></i>{{ N.ret_k }} {{ b.ret }}% · {{ b.n }}</small></span></div>
     {% endfor %}
+    {% call more(S.q.x_nvr_more) %}
     <div class="x-cards">{% for c in N.cards %}<div class="x-card"><span>{{ c.k }}</span><p><b class="num">{{ c.v }}</b>{% if c.d %}<span class="num tone-{{ c.tone }}">{{ c.d }}</span>{% endif %}</p></div>{% endfor %}</div>
     {% if N.note %}<p class="q-others">{{ N.note }}</p>{% endif %}
+    {% endcall %}
   </div>
   {% endif %}
   {% if S.nextb %}<p class="q-next">↓ {{ S.nextb }}</p>{% endif %}
@@ -120,7 +123,7 @@
     <svg class="x-when-svg {{ cls }}" viewBox="0 0 {{ g.w }} {{ g.h }}" role="img" aria-label="{{ T.aria }}">
       {% if g.band %}<rect class="x-when-band" x="{{ g.l }}" y="{{ g.band.y }}" width="{{ g.r - g.l }}" height="{{ g.band.h }}"/>
       <line class="x-when-low" x1="{{ g.l }}" x2="{{ g.r }}" y1="{{ g.band.ly }}" y2="{{ g.band.ly }}"/>
-      <text class="x-when-bk" x="{{ g.r }}" y="{{ g.band.ly - 6 }}" text-anchor="end">{{ g.band.t }}</text>{% endif %}
+      <text class="x-when-bk" x="{{ g.l + 6 if g.band.get('at_left') else g.r }}" y="{{ g.band.ly - 6 }}" text-anchor="{{ 'start' if g.band.get('at_left') else 'end' }}">{{ g.band.t }}</text>{% endif %}
       {% for y in g.yt %}<line class="x-grid" x1="{{ g.l }}" x2="{{ g.r }}" y1="{{ y.y }}" y2="{{ y.y }}"/><text class="x-tick" x="{{ g.l - 6 }}" y="{{ y.y + 4 }}" text-anchor="end">{{ y.t }}</text>{% endfor %}
       <line class="x-guide" x1="{{ g.mid }}" x2="{{ g.mid }}" y1="{{ g.t }}" y2="{{ g.b }}"/>
       <text class="x-tick" x="{{ g.mid - 6 }}" y="{{ g.b - 6 }}" text-anchor="end">{{ T.prev_avg }}</text>
@@ -132,7 +135,7 @@
       {% for mk in g.marks %}<line class="x-mark" x1="{{ mk.x }}" x2="{{ mk.x }}" y1="{{ g.t }}" y2="{{ g.b }}"/><text class="x-mark-k" x="{{ mk.x - 4 }}" y="{{ mk.y }}" text-anchor="end">{{ mk.t }}</text>{% endfor %}
     </svg>
     {% endfor %}
-    {% if T.side %}<div class="x-when-side">{% for s in T.side %}<p class="ws-{{ s.tone }}"><b>{{ s.k }}</b>{{ s.t }}</p>{% endfor %}</div>{% endif %}
+    {% if T.side %}{% call more(S.q.x_when_more) %}<div class="x-when-side">{% for s in T.side %}<p class="ws-{{ s.tone }}"><b>{{ s.k }}</b>{{ s.t }}</p>{% endfor %}</div>{% endcall %}{% endif %}
   </div>
 </div>
 {% endif %}
