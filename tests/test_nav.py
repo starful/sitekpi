@@ -142,3 +142,19 @@ def test_connected_property_appears_on_every_page(client):
         html = client.get(path).text
         assert "Demo Shop JP（デモ）" in html, path
         assert "買う × EC・小売" in html, path  # 行動 × 業種 under the property
+
+
+def test_glossary_has_the_2026_11_20_words_in_three_languages():
+    from sitekpi.metrics.help import HELP, get_help, ordered_keys
+
+    new = ["checkout_abandonment", "site_search_rate", "zero_result_rate", "lcp", "inp", "cls", "return_interval",
+           "search_impressions", "search_ctr", "avg_position", "email_open_rate", "email_ctr", "unsubscribe_rate",
+           "cpl", "view_through_conv", "gross_margin", "csat", "time_to_value", "cohort", "ab_test"]
+    keys = ordered_keys()
+    for k in new:
+        assert k in HELP and k in keys and HELP[k]["palette"] is False  # glossary only, no invented numbers
+        titles = {loc: get_help(k, loc)["title"] for loc in ("ja", "en", "ko")}
+        assert len(set(titles.values())) >= 2 or k in {"cpl"}, (k, titles)
+        for loc in ("en", "ko"):
+            h = get_help(k, loc)
+            assert h["meaning"] != HELP[k]["meaning"] and h["tip"] != HELP[k]["tip"] and h["hint"], (k, loc)
