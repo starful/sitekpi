@@ -221,6 +221,24 @@ def page_help(request: Request, lang: str = Query(default="")):
     ))
 
 
+@router.get("/updates", response_class=HTMLResponse)
+def page_updates(request: Request, lang: str = Query(default="")):
+    """更新情報: what changed for people using SiteKPI, newest first (docs/plan s12)."""
+    from sitekpi.i18n import set_locale
+    from sitekpi.i18n.updates_l10n import updates
+    from sitekpi.templating import render
+    from sitekpi.views.seo import seo_context
+
+    if lang:
+        set_locale(request.session, lang)
+    loc = get_locale(request.session)
+    u = updates(loc)
+    return HTMLResponse(render(
+        "updates.html", loc=loc, u=u, rail=nav_rail_context(request, "updates"),
+        seo=seo_context(path="/updates", loc=loc, title=f"{u['title']} | SiteKPI", description=u["meta_desc"]),
+    ))
+
+
 @router.get("/sample", response_class=HTMLResponse)
 def page_sample_dense():
     # Dense board template — default vertical is 人事
