@@ -87,6 +87,7 @@ UI: dict[str, dict[str, str]] = {
         "ko": "스티커 의미",
     },
     "nav.help": {"ja": "使い方・ヘルプ", "en": "How to use · Help", "ko": "사용법·도움말"},
+    "nav.updates": {"ja": "更新情報", "en": "What's new", "ko": "업데이트 소식"},
     "nav.about": {"ja": "SiteKPI について（ホーム）", "en": "About SiteKPI (home)", "ko": "SiteKPI 소개 (홈)"},
     "nav.contact": {"ja": "お問い合わせ", "en": "Contact", "ko": "문의"},
     "nav.samples_all": {"ja": "見本ボード一覧", "en": "All sample boards", "ko": "샘플 보드 목록"},

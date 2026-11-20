@@ -89,7 +89,7 @@ def sitemap() -> Response:
     from sitekpi.views.seo import LANGS, lang_url
 
     urls = []
-    for path in ("/", "/help", "/policy", "/terms"):
+    for path in ("/", "/help", "/updates", "/policy", "/terms"):
         links = "".join(f'<xhtml:link rel="alternate" hreflang="{lg}" href="{lang_url(path, lg)}"/>' for lg in LANGS)
         for lg in LANGS:
             urls.append(f"<url><loc>{lang_url(path, lg)}</loc>{links}</url>")

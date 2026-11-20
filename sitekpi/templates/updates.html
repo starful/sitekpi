@@ -1,0 +1,26 @@
+{#- 更新情報 (/updates): docs/plan s12 · screens/12-updates.dc.html. Copy: i18n/updates_l10n.py -#}
+{% extends "base.html" %}
+{% block title %}{{ u.title }} | SiteKPI{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/help.css') }}" />{% endblock %}
+{% block main %}
+<div class="hp up">
+  <aside class="hp-toc" aria-label="{{ u.toc_k }}">
+    <p>{{ u.toc_k }}</p>
+    {% for e in u.entries %}<a href="#{{ e.id }}"><span class="up-toc-v">{{ e.ver }}</span>{{ e.date[5:] | replace("-", "/") }}</a>{% endfor %}
+  </aside>
+  <main class="hp-main">
+    <div class="hp-head"><h1>{{ u.title }}</h1><p>{{ u.lead }}</p>
+      <p class="up-legend">{% for k in ("new", "better", "fix") %}<span class="up-k up-k-{{ k }}">{{ u.kinds[k] }}</span>{% endfor %}<span class="hp-small">{{ u.legend }}</span></p>
+    </div>
+    {% for e in u.entries %}
+    <section id="{{ e.id }}" class="hp-card up-card{{ ' is-new' if e.new else '' }}">
+      <p class="up-meta"><time datetime="{{ e.date }}">{{ e.date }}</time><span class="up-ver">{{ e.ver }}</span>{% if e.new %}<span class="up-new">{{ u.new }}</span>{% endif %}</p>
+      <h2>{{ e.title }}</h2>
+      <ul class="up-list">{% for it in e["items"] %}<li><span class="up-k up-k-{{ it.k }}">{{ it.label }}</span><span>{{ it.t }}</span></li>{% endfor %}</ul>
+      {% if e.link %}<p class="hp-small up-try"><a href="{{ e.link }}">{{ u.try }}</a></p>{% endif %}
+    </section>
+    {% endfor %}
+    <p class="hp-small up-dev">{{ u.dev | replace("{link}", '<a href="' ~ u.releases_url ~ '" target="_blank" rel="noopener">GitHub Releases</a>') | safe }}</p>
+  </main>
+</div>
+{% endblock %}
