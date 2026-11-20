@@ -5,9 +5,9 @@
   const box = document.querySelector("[data-ai]");
   if (box) {
     const P = JSON.parse(document.getElementById("ai-data").textContent);
-    const panel = box.querySelector("#ai-box");
+    const dlg = document.getElementById("ai-dialog");
     const text = box.querySelector("[data-ai-text]");
-    const msg = box.querySelector("[data-ai-msg]");
+    const msgs = Array.from(box.querySelectorAll("[data-ai-msg]"));
     const anon = box.querySelector("[data-ai-anon]");
     const detail = box.querySelector("[data-ai-detail]");
     let ask = "cause";
@@ -17,17 +17,41 @@
       if (!detail || detail.checked) parts.push(P.details);
       parts.push(P.ask_k + "\n" + P.asks[ask] + "\n" + P.tail);
       text.value = parts.join("\n\n");
-      msg.textContent = "";
+      msgs.forEach((m) => { m.textContent = ""; });
+    }
+    let opener = null;
+    function openAi(from) {
+      opener = from || null;
+      build();
+      if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+      document.documentElement.classList.add("ai-dlg-on");
+      if (window.SiteKPITrack) window.SiteKPITrack("ai_prompt_open", { from: from && from.classList.contains("ai-top") ? "top" : "card" });
+    }
+    function closeAi() {
+      if (dlg.open) { if (dlg.close) dlg.close(); else dlg.removeAttribute("open"); }
+    }
+    dlg.addEventListener("close", () => {
+      document.documentElement.classList.remove("ai-dlg-on");
+      if (opener && document.contains(opener)) opener.focus();
+    });
+    // a click on the dim area around the popup closes it
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) closeAi(); });
+    document.addEventListener("click", (e) => {
+      const o = e.target.closest("[data-ai-open]");
+      if (o) { e.preventDefault(); openAi(o); }
+    });
+    // phones: the same button sits in the top bar next to 「✎ メモ」
+    const top = document.querySelector(".ai-top");
+    const bar = document.querySelector(".mobile-bar");
+    if (top && bar && !bar.querySelector(".ai-top")) {
+      const b = top.cloneNode(true);
+      b.classList.add("ai-top-m");
+      b.innerHTML = '<span aria-hidden="true">✦</span> ' + (top.dataset.aiShort || "AI");
+      b.setAttribute("aria-label", top.textContent.replace("✦", "").trim());
+      bar.insertBefore(b, bar.querySelector(".memo-open-btn"));
     }
     box.addEventListener("click", (e) => {
-      const tg = e.target.closest("[data-ai-toggle]");
-      if (tg) {
-        const open = panel.hidden;
-        panel.hidden = !open;
-        tg.setAttribute("aria-expanded", open ? "true" : "false");
-        if (open) build();
-        return;
-      }
+      if (e.target.closest("[data-ai-close]")) { closeAi(); return; }
       const a = e.target.closest("[data-ai-ask]");
       if (a) {
         ask = a.dataset.aiAsk;
@@ -37,7 +61,7 @@
       }
       if (e.target.closest("[data-ai-copy]")) {
         const done = (ok) => {
-          msg.textContent = ok ? msg.dataset.ok : msg.dataset.fail;
+          msgs.forEach((m) => { m.textContent = ok ? m.dataset.ok : m.dataset.fail; });
           if (ok && window.SiteKPITrack) window.SiteKPITrack("ai_prompt_copy", { purpose: ask, details: !detail || detail.checked ? "true" : "false" });
         };
         const fallback = () => { text.focus(); text.select(); let ok = false; try { ok = document.execCommand("copy"); } catch (err) { ok = false; } done(ok); };

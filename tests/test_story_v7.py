@@ -238,7 +238,8 @@ def test_v7_2b_only_prose_folds(lang):
     assert why.select_one(".x-when-side").find_parent("details")
     do = s.select_one("#q4")
     assert do.select(".act-check") and do.select_one("[data-check-toggle]")["aria-expanded"] == "false"
-    assert do.select_one("#ai-box").has_attr("hidden")  # the AI box is visible, its contents start closed
+    dlg = do.select_one("dialog#ai-dialog")  # the AI card is visible, the question opens in a popup (v7.4)
+    assert dlg and not dlg.has_attr("open") and dlg.select_one("#ai-box")
     assert s.select("#s-l2")  # 詳しい数字 still follows
 
 
@@ -251,3 +252,31 @@ def test_release_mark_does_not_sit_on_the_band_label():
     assert ww["when"]["pc"]["marks"] and ww["when"]["pc"]["band"]["at_left"]
     mark_releases(ww, {"recorded": [{"date": "2026-09-03", "act": "1", "md": "9/3"}]}, "ja")
     assert ww["when"]["sp"]["marks"] and not ww["when"]["sp"]["band"]["at_left"]
+
+
+
+@pytest.mark.parametrize("lang,top", [("ja", "AI に聞く"), ("en", "Ask AI"), ("ko", "AI에게 묻기")])
+def test_v7_4_ai_question_opens_in_a_popup(lang, top):
+    """「✦ AI に聞く」 in the top bar and 「開いて見る」 on the card open the same dialog (docs/plan s03 v7.4)."""
+    s = _soup(TestClient(app, headers={"Accept-Language": lang}), f"/ec?lang={lang}")
+    btn = s.select_one("header.top .ai-top[data-ai-open]")
+    assert btn and top in btn.get_text() and btn["aria-controls"] == "ai-dialog" and btn["aria-haspopup"] == "dialog"
+    card = s.select_one("#q4 .ai-card")
+    assert card.select_one("[data-ai-copy]") and card.select_one("[data-ai-open]")["aria-controls"] == "ai-dialog"
+    assert not s.select("[data-ai-toggle]")  # no more fold-out under the card
+    dlg = s.select_one("dialog#ai-dialog")
+    assert dlg.select_one("#ai-dlg-t") and dlg["aria-labelledby"] == "ai-dlg-t" and dlg.select_one("[data-ai-close][aria-label]")
+    assert [b["data-ai-ask"] for b in dlg.select("[data-ai-ask]")] == ["cause", "ideas", "report"]
+    assert dlg.select_one("textarea[data-ai-text][readonly]") and dlg.select_one("[data-ai-copy]") and dlg.select_one("[data-ai-msg]")
+    assert dlg.find_parent(attrs={"data-ai": True})  # inside the [data-ai] box, so the same script drives it
+
+
+
+@pytest.mark.parametrize("path", ["/ec", "/glossary", "/samples"])
+def test_lang_query_works_on_every_page(path):
+    """?lang= used to be read only by a few routes; /ec?lang=en came out in Japanese."""
+    import re
+
+    for lang in ("en", "ko", "ja"):
+        r = TestClient(app, headers={"Accept-Language": "ja"}).get(f"{path}?lang={lang}")
+        assert re.search(r'<html lang="(\w+)"', r.text).group(1) == lang, (path, lang)

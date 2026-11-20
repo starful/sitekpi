@@ -247,7 +247,7 @@ def build_story(*, board: dict[str, Any], watch: list[dict[str, Any]], verdict: 
                                        "x_goods_k", "x_where_k", "x_when_k", "x_eff_act_k", "x_eff_own",
                                        "x_eff_title_ph", "x_eff_date_k", "x_eff_save", "x_eff_del", "x_eff_sample",
                                        "x_eff_empty", "x_eff_d", "qsum", "x_rec", "x_ai_title", "x_ai_lead",
-                                       "x_ai_copy", "x_ai_open", "x_eff_form_k", "x_sum_copy", "x_sum_copied",
+                                       "x_ai_copy", "x_ai_open", "x_ai_top", "x_ai_top_s", "x_ai_close", "x_eff_form_k", "x_sum_copy", "x_sum_copied",
                                        "x_sum_ai", "x_sum_below", "x_read", "x_nvr_more", "x_others_more",
                                        "x_when_more", "x_check_more", "x_people_sfx", "x_pgw_low_k", "x_pgw_check_k", "x_pg_open")},
         "toc": toc,
