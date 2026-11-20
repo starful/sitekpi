@@ -124,3 +124,18 @@ main.glossary {
   .glossary:not(.is-searching) .gl-group:not(.is-all) .gl-more { display: flex; }
   .gl-more { align-items: center; justify-content: center; min-height: 44px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--accent-ink); font: inherit; font-size: 0.8125rem; font-weight: 700; cursor: pointer; }
 }
+
+/* NEW: words added in the last 30 days (metrics/help_added.py) */
+.gl-news { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 14px 0 0; padding: 10px 14px; background: #eef4ff; border: 1px solid #c9dbfb; border-radius: 12px; font-size: 0.875rem; }
+.gl-news-when { font-size: 0.8125rem; color: var(--muted); }
+.gl-news-btn { font: inherit; font-size: 0.8125rem; font-weight: 700; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid #2f6fed; background: #fff; color: #1d4ed8; cursor: pointer; }
+.gl-news-btn[aria-pressed="true"] { background: #2f6fed; color: #fff; }
+.gl-news-btn:focus-visible, .gl-news-link:focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; }
+.gl-news-link { margin-left: auto; font-size: 0.8125rem; font-weight: 700; text-decoration: none; }
+.gl-chips { display: inline-flex; align-items: center; gap: 6px; }
+.gl-new { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: 999px; background: #2f6fed; color: #fff; font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.02em; }
+@media (max-width: 640px) {
+  .gl-news-when { flex-basis: 100%; order: 2; }
+  .gl-news-btn { order: 3; }
+  .gl-news-link { order: 4; }
+}

@@ -22,6 +22,13 @@
         {% endfor %}
       </nav>
     </div>
+    {% if news %}
+    <div class="gl-news">
+      <span class="gl-new">{{ news.badge }}</span><b>{{ news.k }}</b><span class="gl-news-when">{{ news.when }}</span>
+      <button type="button" class="gl-news-btn" data-gl-new aria-pressed="false" data-on="{{ news.all }}" data-off="{{ news.only }}">{{ news.only }}</button>
+      <a class="gl-news-link" href="/updates">{{ news.updates }}</a>
+    </div>
+    {% endif %}
 
     {% for g in groups %}
     <section class="gl-group" data-group="{{ g.id }}" aria-labelledby="gl-h-{{ g.id }}">
@@ -33,10 +40,10 @@
       </div>
       <div class="gl-list">
         {% for it in g.entries %}
-        <details class="gl-card kind-{{ g.id }}{{ ' gl-extra' if loop.index > 4 else '' }}" id="{{ it.id }}" data-id="{{ it.id }}">
+        <details class="gl-card kind-{{ g.id }}{{ ' gl-extra' if loop.index > 4 else '' }}" id="{{ it.id }}" data-id="{{ it.id }}"{% if it.new %} data-new="1"{% endif %}>
           <summary>
             <span class="gl-card-top">
-              {{ hc.chip(g.id, g.short) }}
+              <span class="gl-chips">{{ hc.chip(g.id, g.short) }}{% if it.new %}<span class="gl-new">{{ news.badge }}</span>{% endif %}</span>
               <span class="gl-caret" aria-hidden="true"></span>
             </span>
             <span class="gl-card-main">
@@ -68,6 +75,8 @@
   var q = document.getElementById("gl-q");
   var empty = document.getElementById("gl-empty");
   var kind = "";
+  var newOnly = false;
+  var newBtn = document.querySelector("[data-gl-new]");
   var kindBtns = document.querySelectorAll(".gl-kind");
   var cards = document.querySelectorAll(".gl-card");
 
@@ -109,7 +118,8 @@
       var kindOk = !kind || kind === sec.getAttribute("data-group");
       var groupHit = false;
       sec.querySelectorAll(".gl-card").forEach(function (card) {
-        var hit = kindOk && (!needle || (card.textContent || "").toLowerCase().indexOf(needle) >= 0);
+        var hit = kindOk && (!newOnly || card.hasAttribute("data-new")) &&
+          (!needle || (card.textContent || "").toLowerCase().indexOf(needle) >= 0);
         card.hidden = !hit;
         if (hit) groupHit = true;
       });
@@ -117,7 +127,7 @@
       if (groupHit) any = true;
     });
     if (empty) empty.hidden = any;
-    document.querySelector("main.glossary").classList.toggle("is-searching", !!needle);
+    document.querySelector("main.glossary").classList.toggle("is-searching", !!needle || newOnly);
   }
   kindBtns.forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -131,6 +141,12 @@
     });
   });
   if (q) q.addEventListener("input", apply);
+  if (newBtn) newBtn.addEventListener("click", function () {
+    newOnly = !newOnly;
+    newBtn.setAttribute("aria-pressed", newOnly ? "true" : "false");
+    newBtn.textContent = newOnly ? newBtn.getAttribute("data-on") : newBtn.getAttribute("data-off");
+    apply();
+  });
 })();
 </script>
 {% endblock %}

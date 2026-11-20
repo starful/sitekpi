@@ -39,7 +39,7 @@ def test_page_and_links(lang, title):
     cards = s.select(".up-card")
     assert len(cards) == len(_ENTRIES) and "is-new" in cards[0]["class"] and not s.select(".up-card.is-new")[1:]
     assert [c_.select_one(".up-ver").get_text() for c_ in cards] == [v for _, _, v, _ in _ENTRIES]
-    assert cards[0].select_one(".up-try a")["href"] == "/glossary" and cards[1].select_one(".up-try a")["href"] == "/ec"
+    assert cards[0].select_one(".up-try a")["href"] == "/glossary" and cards[2].select_one(".up-try a")["href"] == "/ec"
     assert s.select_one('.up-dev a[href="https://github.com/starful/sitekpi/releases"]')
     assert [a["href"] for a in s.select(".hp-toc a")] == [f"#{e['id']}" for e in updates(lang)["entries"]]
     assert s.select('a[href="/updates"]')  # the menu

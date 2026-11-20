@@ -12,6 +12,7 @@ RELEASES_URL = "https://github.com/starful/sitekpi/releases"
 
 # (anchor, date, version, link to try it or "")
 _ENTRIES = [
+    ("v0-7-5", "2026-11-20", "v0.7.5", "/glossary"),
     ("v0-7-4", "2026-11-20", "v0.7.4", "/glossary"),
     ("v0-7-3", "2026-11-20", "v0.7.3", "/ec"),
     ("v0-7-2", "2026-11-19", "v0.7.2", ""),
@@ -28,6 +29,9 @@ _TEXT: dict[str, dict[str, Any]] = {
         "legend": "新しくできること · 使いやすくなったこと · 直した不具合",
         "dev": "開発者向けのくわしい記録（変更したコードの一覧）は {link} にあります。",
         "entries": [
+            ("指標辞典で新しい言葉がすぐわかるように", [
+                ("better", "追加してから 30 日の言葉に「NEW」。いちばん上に「最近追加した言葉」と「NEW だけ見る」ボタン。"),
+            ]),
             ("指標辞典に 20 語を追加", [
                 ("new", "表示の速さ（LCP · INP · CLS）、サイト内検索（利用率 · 結果ゼロ率）、購入手続き離脱率、再訪までの日数。"),
                 ("new", "Google 検索（表示回数 · クリック率 · 平均掲載順位）、メール（開封率 · クリック率 · 配信停止率）、CPL、ビュースルーコンバージョン。"),
@@ -64,6 +68,9 @@ _TEXT: dict[str, dict[str, Any]] = {
         "legend": "Something new you can do · easier to use · a bug fixed",
         "dev": "The detailed record for developers (every code change) is on {link}.",
         "entries": [
+            ("Spot the new words in the glossary", [
+                ("better", "Words added in the last 30 days carry “NEW”, with a “recently added” line and a “Show NEW only” button at the top."),
+            ]),
             ("20 more words in the metric glossary", [
                 ("new", "Page speed (LCP · INP · CLS), site search (usage · zero results), checkout abandonment and days to return."),
                 ("new", "Google search (impressions · click rate · average position), email (open · click · unsubscribe rates), CPL and view-through conversions."),
@@ -100,6 +107,9 @@ _TEXT: dict[str, dict[str, Any]] = {
         "legend": "새로 할 수 있는 것 · 쓰기 편해진 것 · 고친 문제",
         "dev": "개발자용 자세한 기록(바뀐 코드 목록)은 {link}에 있어요.",
         "entries": [
+            ("지표 사전에서 새 말을 바로 알 수 있게", [
+                ("better", "추가한 지 30일 안 된 말에 「NEW」. 맨 위에 「최근 추가한 말」과 「NEW만 보기」 버튼."),
+            ]),
             ("지표 사전에 20개 추가", [
                 ("new", "표시 속도(LCP · INP · CLS), 사이트 내 검색(이용률 · 결과 0건 비율), 구매 절차 이탈률, 재방문까지의 일수."),
                 ("new", "Google 검색(노출 수 · 클릭률 · 평균 게재 순위), 메일(오픈율 · 클릭률 · 수신 거부율), CPL, 뷰스루 전환."),
