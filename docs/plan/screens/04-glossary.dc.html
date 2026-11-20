@@ -17,21 +17,21 @@ button{font-family:inherit}
 .card:hover{border-color:#9db8ea}
 </style>
 </helmet>
-<div style="font-family: 'IBM Plex Sans JP', 'Noto Sans JP', system-ui, sans-serif; color: #152033; background: #f4f6fa; min-height: 2600px; display: flex; flex-wrap: wrap; align-items: stretch">
+<div style="font-family: 'IBM Plex Sans JP', 'Noto Sans JP', system-ui, sans-serif; color: #152033; background: #f4f6fa; min-height: 1400px; display: flex; flex-wrap: wrap; align-items: stretch">
 
   <nav aria-label="メニュー" style="flex: 0 1 248px; min-width: 220px; box-sizing: border-box; background: #ffffff; border-right: 1px solid #e5eaf1; padding: 20px 12px; display: flex; flex-direction: column; gap: 2px; font-size: 14px">
-    <a href="Home.dc.html" style="text-decoration: none; color: #152033; font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-weight: 800; font-size: 22px; padding: 0 8px 16px">Site<span style="color: #2f6fed">KPI</span></a>
+    <a href="01-home.dc.html" style="text-decoration: none; color: #152033; font-family: 'DM Sans', 'IBM Plex Sans JP', sans-serif; font-weight: 800; font-size: 22px; padding: 0 8px 16px">Site<span style="color: #2f6fed">KPI</span></a>
     <div style="font-size: 12px; font-weight: 700; color: #5b6676; padding: 6px 10px 4px">マイサイト</div>
-    <a href="Connect.dc.html" style="text-decoration: none; color: #1d4ed8; border: 1px solid #c9dbfb; background: #eef4ff; border-radius: 8px; padding: 9px 10px; font-weight: 700; text-align: center">＋ GA4 を接続</a>
+    <a href="02-connect.dc.html" style="text-decoration: none; color: #1d4ed8; border: 1px solid #c9dbfb; background: #eef4ff; border-radius: 8px; padding: 9px 10px; font-weight: 700; text-align: center">＋ GA4 を接続</a>
     <div style="font-size: 12px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">見本（例の数字）</div>
-    <a href="SamplesB.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">見本ボード一覧</a>
+    <a href="05-samples.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">見本ボード一覧</a>
     <div style="font-size: 12px; font-weight: 700; color: #5b6676; padding: 14px 10px 4px">ツール</div>
-    <a href="BuilderB.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">ダッシュボードを作る</a>
+    <a href="06-builder.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">ダッシュボードを作る</a>
     <a href="#top" style="text-decoration: none; color: #1d4ed8; background: #eef4ff; padding: 8px 10px; border-radius: 8px; font-weight: 700">指標辞典</a>
     <div style="flex-grow: 1; min-height: 24px"></div>
-    <a href="Help.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">使い方・ヘルプ</a>
-    <a href="Home.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">SiteKPI について</a>
-    <a href="Settings.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">設定</a>
+    <a href="10-help.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">使い方・ヘルプ</a>
+    <a href="01-home.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">SiteKPI について</a>
+    <a href="07-settings.dc.html" style="text-decoration: none; color: #3d4a5c; padding: 8px 10px; font-weight: 600">設定</a>
     <p style="margin: 8px 10px 0; font-size: 12px; color: #8792a2">ポリシー · 規約 · お問い合わせ</p>
   </nav>
 
@@ -53,10 +53,9 @@ button{font-family:inherit}
       </div>
     </div>
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 14px; background: #eef4ff; border: 1px solid #c9dbfb; border-radius: 12px; font-size: 14px">
-      <span style="display: inline-flex; align-items: center; font-size: 11px; font-weight: 800; color: #ffffff; background: #2f6fed; border-radius: 999px; padding: 1px 8px">NEW</span><b>最近追加した言葉 40 語</b><span style="font-size: 13px; color: #5b6676">11/20 に 20 語 · 11/04 に 20 語</span>
+      <span style="display: inline-flex; align-items: center; font-size: 11px; font-weight: 800; color: #ffffff; background: #2f6fed; border-radius: 999px; padding: 1px 8px">NEW</span><b>最近追加した言葉 40 語</b><span style="font-size: 13px; color: #5b6676">11/20 に 20 語 · 11/4 に 20 語</span>
       <button type="button" onClick="{{toggleNew}}" aria-pressed="{{newPressed}}" style="{{newBtn}}">{{newLabel}}</button>
-      <a href="Updates.dc.html" style="margin-left: auto; font-size: 13px; font-weight: 700; text-decoration: none">更新情報 →</a>
-     
+      <a href="12-updates.dc.html" style="margin-left: auto; font-size: 13px; font-weight: 700; text-decoration: none">更新情報 →</a>
     </div>
 
     <sc-for list="{{sections}}" as="sec" hint-placeholder-count="3">
@@ -75,13 +74,8 @@ button{font-family:inherit}
                   <span style="display: inline-flex; align-items: center; gap: 6px"><span style="{{c.kindStyle}}">{{c.kindLabel}}</span><sc-if value="{{c.isNew}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; font-size: 11px; font-weight: 800; color: #ffffff; background: #2f6fed; border-radius: 999px; padding: 1px 8px">NEW</span></sc-if></span>
                   <span aria-hidden="true" style="{{c.caret}}"></span>
                 </span>
-                <span style="display: flex; align-items: flex-start; gap: 10px">
-                  <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px">
-                    <b style="font-size: 17px; line-height: 1.35; text-align: left">{{c.title}}</b>
-                    <code style="align-self: flex-start; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #475569; background: #f1f5f9; border-radius: 4px; padding: 1px 6px">{{c.id}}</code>
-                  </span>
-                  <img src="{{c.img}}" alt="" width="56" height="56" style="flex: none; width: 56px; height: 56px; object-fit: contain">
-                </span>
+                <b style="font-size: 17px; line-height: 1.35; text-align: left">{{c.title}}</b>
+                <code style="align-self: flex-start; font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #475569; background: #f1f5f9; border-radius: 4px; padding: 1px 6px">{{c.id}}</code>
                 <span style="font-size: 13px; line-height: 1.65; color: #334155; text-align: left">{{c.meaning}}</span>
               </button>
               <sc-if value="{{c.open}}" hint-placeholder-val="{{ false }}">
@@ -96,7 +90,7 @@ button{font-family:inherit}
                   </div>
                   <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
                     <span style="{{c.benchStyle}}">{{c.bench}}</span>
-                    <a href="Main.dc.html" style="font-size: 13px; font-weight: 700; text-decoration: none">ボードで見る →</a>
+                    <a href="03-board.dc.html" style="font-size: 13px; font-weight: 700; text-decoration: none">ボードで見る →</a>
                   </div>
                 </div>
               </sc-if>
@@ -111,7 +105,7 @@ button{font-family:inherit}
   </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2600}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -119,7 +113,6 @@ class Component extends DCLogic {
   }
   renderVals() {
     var self = this, st = this.state;
-    var STK = {uu: '/_blob/24f772e314bd08b24da30b8dd0829c66', sessions: '/_blob/b3480fc344a353f57bdf68bcb6e9ec1f', engaged: '/_blob/62d5a40f94ed0866f751cc927f32ff37', pages_session: '/_blob/c77eb025496664788ddc77f31af4114e', signup_cvr: '/_blob/b7b5a77c42905748ad7a628f86cfc841', purchase_cvr: '/_blob/1f64bf37fc7b88a8cc7945069db07550', ch_organic_search: '/_blob/b0a9a86c08b53ab1f829c16c323f66ad', ch_paid_search: '/_blob/d65ba69db766b7c7f5ffaf4b1116813d', ch_paid_social: '/_blob/ec4cccf312f1a330308c53ceb2066143', ev_purchase: '/_blob/bf3e9822a3d8e81555eb6f4f8a312040', ev_add_to_cart: '/_blob/e141c619630855b039e02c8be1181795', ev_form_submit: '/_blob/5199f1c80b78b2782f960c5ea4d43909', mrr: '/_blob/651ae768abbd95fa892ca27b25cd3ace', churn_rate: '/_blob/3d7e52cf2018328fd36c5684203dba6a', benchmark: '/_blob/b55341557b599857191e2adb0d881177', lcp: '/_blob/8fb363a937554f1fa34af0cce0806a57', ab_test: '/_blob/ebf48128b8a21671194082124930a27f', csat: '/_blob/712f077c82b010b5033d5ab4b259cbd3', roas: '/_blob/d17ae690234c38dfe50759f53d0058e9'};
     var T = [
       ['uu', 'digital', 'UU（ユニークユーザー）', '選んだ期間にサイトを開いた「ブラウザ」の数です。', 'GA4: activeUsers（期間）', 'UUが増えても登録や売上が伸びないときは、「来ただけで動かない」状態です。流入チャネルや最初の画面を疑います。', false],
       ['sessions', 'digital', 'セッション', '訪問の回数です。1回サイトを開いて見る流れを1セッションと数えます。', 'GA4: sessions（期間合計）', 'UUよりセッションが大きいほど、同じ人が何度も来ています。', false],
@@ -164,7 +157,7 @@ class Component extends DCLogic {
       }).map(function (t) {
         var open = st.open === t[0];
         return {
-          id: t[0], img: STK[t[0]], isNew: !!t[7], title: t[2], meaning: t[3], formula: t[4], tip: t[5], open: open, expanded: open ? 'true' : 'false',
+          id: t[0], isNew: !!t[7], title: t[2], meaning: t[3], formula: t[4], tip: t[5], open: open, expanded: open ? 'true' : 'false',
           kindLabel: K[k][0], kindStyle: 'font-size: 11px; font-weight: 800; border-radius: 999px; padding: 2px 8px; background: ' + K[k][2] + '; color: ' + K[k][3],
           toggle: function () { self.setState({ open: open ? null : t[0] }); },
           wrap: 'background: #ffffff; border-radius: 14px; border: 1px solid ' + (open ? '#9db8ea' : '#e5eaf1') + '; overflow: hidden; ' + (open ? 'grid-column: 1 / -1' : ''),
