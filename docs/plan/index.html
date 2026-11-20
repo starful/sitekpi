@@ -470,6 +470,8 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
       <li>닫힘 = 종류 · 이름 · ID · 뜻. 열림 = 계산 · 見るポイント · 業界目安 유무 · 「ボードで見る」. 한 번에 하나만 열림, <code>#id</code>로 바로 열기.</li>
       <li>종류별 섹션 + 검색 + 종류 칩.</li>
       <li>스티커(분류 표시)는 구현할 때 남긴다.</li>
+      <li><span class="tag">NEW (2026-11-20)</span>추가한 지 30일 안 된 말에 「NEW」. 맨 위에 「最近追加した言葉 N 語」(묶음별 날짜·개수) + 「NEW だけ見る」 + 「更新情報 →」. 30일 안의 말이 없으면 이 줄은 안 나온다.</li>
+      <li><span class="tag">결정</span>카드에 추가 날짜는 쓰지 않는다 — 사전은 찾아보는 곳이라 날짜가 정보만 늘리고, 시간이 지나면 「오래된 설명」처럼 보인다. 날짜는 <code>metrics/help_added.py</code>에만(묶음마다 한 줄, NEW 판단용).</li>
     </ul>
     <div class="frame-head"><span>1440 × 1000 (안에서 스크롤)</span><a href="screens/04-glossary.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
     <div class="frame" data-w="1440" data-h="1000"><div class="frame-bar"><i></i><i></i><i></i><span>/glossary</span></div><div class="frame-box"><iframe src="screens/04-glossary.dc.html" title="04 指標辞典" loading="lazy"></iframe></div></div>
@@ -876,6 +878,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table class="log">
       <thead><tr><th>날짜</th><th>내용</th></tr></thead>
       <tbody>
+        <tr><td>2026-11-20</td><td><code>v0.7.5</code> 지표 사전 NEW: 30일 안에 추가한 말에 NEW · 「最近追加した言葉」 줄 · 「NEW だけ見る」. 새 20개 스티커(3개는 글자 지움).</td></tr>
         <tr><td>2026-11-20</td><td><code>v0.7.4</code> 지표 사전 20개 추가(167항목, 해설만 · 보드 숫자 없음): LCP · INP · CLS · 사이트 내 검색 이용률 · 결과 0건 비율 · 구매 절차 이탈률 · 재방문까지의 일수 · 검색 노출 수 · 검색 클릭률 · 평균 게재 순위 · 메일 오픈율 · 클릭률 · 수신 거부율 · CPL · 뷰스루 전환 · 매출 총이익률 · CSAT · 가치를 느끼기까지의 시간 · 코호트 · A/B 테스트. 스티커는 아직 없음(없으면 레이아웃 그대로).</td></tr>
         <tr><td>2026-11-20</td><td>12 更新情報 <code>/updates</code> 추가 (ja/en/ko, 메뉴·푸터·사이트맵). 제품 버전을 <code>v0.7.x</code>로 정리(보드 v7 = v0.7.0), GitHub Releases는 <code>docs/releases/</code> + 워크플로(PR #43, 사람이 병합).</td></tr>
         <tr><td>2026-11-20</td><td>보드 v7.3: 페이지별 숫자 — ② 입구 페이지별 · ④ 「どのページで？」 · 詳しい数字 › ページ別(정렬·카드) · 페이지 이름은 사이트의 실제 페이지로 링크(GA4 hostName) · 권한 추가 없음.</td></tr>
