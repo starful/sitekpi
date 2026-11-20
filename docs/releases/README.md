@@ -4,7 +4,7 @@ One file per release: `vX.Y.md`, front matter first.
 
 ```
 ---
-tag: v7.3
+tag: v0.7.3
 target: <full commit sha that went live>
 title: "Numbers by page"
 date: 2026-11-20
