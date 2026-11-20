@@ -158,3 +158,25 @@ def test_glossary_has_the_2026_11_20_words_in_three_languages():
         for loc in ("en", "ko"):
             h = get_help(k, loc)
             assert h["meaning"] != HELP[k]["meaning"] and h["tip"] != HELP[k]["tip"] and h["hint"], (k, loc)
+
+
+def test_glossary_new_badge_for_30_days():
+    from datetime import date
+
+    from bs4 import BeautifulSoup
+
+    from sitekpi.metrics.help import HELP
+    from sitekpi.metrics.help_added import ADDED
+    from sitekpi.views.glossary import render_glossary
+
+    assert set(ADDED) <= set(HELP)
+    for day, n, when in ((date(2026, 11, 20), 40, "11/20 に 20 語 · 11/4 に 20 語"), (date(2026, 12, 10), 20, "11/20 に 20 語")):
+        s = BeautifulSoup(render_glossary(locale="ja", rail={}, today=day), "html.parser")
+        assert len(s.select(".gl-card[data-new]")) == n == len(s.select(".gl-card .gl-new"))
+        box = s.select_one(".gl-news")
+        assert f"{n} 語" in box.get_text() and when in box.get_text()
+        assert box.select_one("[data-gl-new]")["aria-pressed"] == "false" and box.select_one('a[href="/updates"]')
+    s = BeautifulSoup(render_glossary(locale="ko", rail={}, today=date(2027, 1, 1)), "html.parser")
+    assert not s.select(".gl-news") and not s.select(".gl-card[data-new]")
+    en = BeautifulSoup(render_glossary(locale="en", rail={}, today=date(2026, 11, 21)), "html.parser")
+    assert "40 words added recently" in en.select_one(".gl-news").get_text()

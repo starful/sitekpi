@@ -17,8 +17,12 @@ BENCHED = frozenset({
 })
 
 
-def render_glossary(*, locale: str, rail: dict[str, Any]) -> str:
+def render_glossary(*, locale: str, rail: dict[str, Any], today: Any = None) -> str:
+    from sitekpi.board.story_x import today_jst
+    from sitekpi.metrics.help_added import recent
+
     loc = normalize_locale(locale)
+    new_keys, batches = recent(today or today_jst())
     kinds = localized_kinds(loc)
     by_kind: dict[str, list[dict[str, Any]]] = {k: [] for k in kinds}
     for key in ordered_keys():
@@ -39,6 +43,7 @@ def render_glossary(*, locale: str, rail: dict[str, Any]) -> str:
             "sticker": sticker_for(key),
             "bench": key in BENCHED,
             "kind": kind,
+            "new": key in new_keys,
         }
         by_kind.setdefault(kind, []).append(entry)
     groups = []
@@ -56,8 +61,18 @@ def render_glossary(*, locale: str, rail: dict[str, Any]) -> str:
             "entries": items,
             "count": len(items),
         })
+    n_new = sum(1 for g in groups for e in g["entries"] if e["new"])
+    news = None
+    if n_new:
+        news = {
+            "k": t("glossary.recent_k", loc).format(n=n_new),
+            "when": " · ".join(t("glossary.recent_batch", loc).format(md=f"{d.month}/{d.day}", n=n) for d, n in batches),
+            "only": t("glossary.new_only", loc), "all": t("glossary.new_all", loc),
+            "updates": t("glossary.to_updates", loc), "badge": t("glossary.new", loc),
+        }
     return render(
         "glossary.html",
+        news=news,
         loc=loc,
         rail=rail,
         groups=groups,
