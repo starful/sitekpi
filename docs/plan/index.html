@@ -120,6 +120,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
   <a href="#s08">08 プライバシーポリシー</a>
   <a href="#s09">09 利用規約</a>
   <a href="#s10">10 使い方・ヘルプ</a>
+  <a href="#s12">12 更新情報</a>
   <div class="k">제품 규칙</div>
   <a href="#terms">용어</a>
   <a href="#guess">첫 추측 (숫자 먼저)</a>
@@ -226,6 +227,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>08</td><td><a href="#s08" class="jp">プライバシーポリシー</a></td><td><code>/policy</code></td><td>무엇을 모으고·어디에 얼마나 두고·어떻게 지우는지. Google OAuth 심사 필수 페이지</td></tr>
         <tr><td>09</td><td><a href="#s09" class="jp">利用規約</a></td><td><code>/terms</code></td><td>이용 조건(무료·읽기 전용·業界目安의 성격·면책·금지 사항·준거법)</td></tr>
         <tr><td>10</td><td><a href="#s10" class="jp">使い方・ヘルプ</a></td><td><code>/help</code></td><td>Google 「확인되지 않은 앱」 화면 안내 · 보드 읽는 법 · 판정 용어 · 자주 하는 조작 · 막혔을 때 (SEO 대상)</td></tr>
+        <tr><td>12</td><td><a href="#s12" class="jp">更新情報</a></td><td><code>/updates</code></td><td>새 기능·개선·수정을 최신순으로 (사용자용, ja/en/ko · SEO 대상)</td></tr>
       </tbody>
     </table>
   </section>
@@ -540,6 +542,19 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     </ul>
     <div class="frame-head"><span>1440 × 2650</span><a href="screens/10-help.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
     <div class="frame" data-w="1440" data-h="2650"><div class="frame-bar"><i></i><i></i><i></i><span>/help</span></div><div class="frame-box"><iframe src="screens/10-help.dc.html" title="10 使い方・ヘルプ" loading="lazy"></iframe></div></div>
+  </section>
+
+  <section class="block" id="s12">
+    <h2><span class="num">12</span><span class="jp">更新情報</span><span class="url">/updates</span></h2>
+    <ul class="dec">
+      <li>사용자가 읽는 릴리스 소식. 릴리스마다 카드 하나: 날짜 + 버전(<code>v0.7.3</code> 등) · 한 줄 제목 · 항목마다 「新機能 / 改善 / 修正」 칩. 최신 카드에 NEW와 「見本ボードで見る →」.</li>
+      <li>메뉴(레일)의 「使い方・ヘルプ」 아래 · 공개 페이지 푸터 · 사이트맵. ja/en/ko, 문구는 <code>i18n/updates_l10n.py</code>.</li>
+      <li><span class="tag">결정</span>버전은 제품 버전 <code>v0.x</code>(정식 출시 전). 기획서의 「보드 v7」 같은 설계 번호와는 다르다 — 보드 v7 = <code>v0.7.0</code>, v7.1~v7.3 = <code>v0.7.1</code>~<code>v0.7.3</code>. <code>pyproject.toml</code>도 같은 번호.</li>
+      <li><span class="tag">결정</span>개발자용 기록은 GitHub Releases. 노트는 <code>docs/releases/vX.Y.Z.md</code>(영어)에 두고, main에 들어오면 워크플로가 태그와 릴리스를 만든다. 이 화면은 같은 번호·날짜로 사용자용 쉬운 말을 따로 쓴다(테스트가 번호·날짜 일치를 확인).</li>
+      <li><span class="tag">릴리스 순서</span>배포 → <code>docs/releases/</code>에 파일 1개 → <code>updates_l10n.py</code>에 카드 1개(3개 언어) → 기획서 변경 이력.</li>
+    </ul>
+    <div class="frame-head"><span>1440 × 1600</span><a href="screens/12-updates.dc.html" target="_blank">새 창에서 열기 ↗</a></div>
+    <div class="frame" data-w="1440" data-h="1600"><div class="frame-bar"><i></i><i></i><i></i><span>/updates</span></div><div class="frame-box"><iframe src="screens/12-updates.dc.html" title="12 更新情報" loading="lazy"></iframe></div></div>
   </section>
 
   <section class="block" id="terms">
@@ -861,6 +876,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table class="log">
       <thead><tr><th>날짜</th><th>내용</th></tr></thead>
       <tbody>
+        <tr><td>2026-11-20</td><td>12 更新情報 <code>/updates</code> 추가 (ja/en/ko, 메뉴·푸터·사이트맵). 제품 버전을 <code>v0.7.x</code>로 정리(보드 v7 = v0.7.0), GitHub Releases는 <code>docs/releases/</code> + 워크플로(PR #43, 사람이 병합).</td></tr>
         <tr><td>2026-11-20</td><td>보드 v7.3: 페이지별 숫자 — ② 입구 페이지별 · ④ 「どのページで？」 · 詳しい数字 › ページ別(정렬·카드) · 페이지 이름은 사이트의 실제 페이지로 링크(GA4 hostName) · 권한 추가 없음.</td></tr>
         <tr><td>2026-11-19</td><td>보드 v7.2: 그림·숫자는 열어 두고 설명 문장만 「説明を読む ▾」로 접음 · 1장 공식 줄 삭제 · 「確かめ方」 한 번에 열기 · 詳しい数字 위 3그룹 열림 · 「いつから？」 글자 겹침 수정.</td></tr>
         <tr><td>2026-11-19</td><td>보드 v7.1: 6 まとめ(결론 + 4줄, 보고용 복사) · 효과 확인을 どうする？의 각 대책 안으로(「やった日を記録」, 그래프 표시) · AI 상자를 보이게 · 유입 지도 글자 겹침 / 막대 글자 잘림 / 화면이 맨 위로 가는 문제 수정.</td></tr>
