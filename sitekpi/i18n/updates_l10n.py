@@ -12,6 +12,7 @@ RELEASES_URL = "https://github.com/starful/sitekpi/releases"
 
 # (anchor, date, version, link to try it or "")
 _ENTRIES = [
+    ("v0-7-4", "2026-11-20", "v0.7.4", "/glossary"),
     ("v0-7-3", "2026-11-20", "v0.7.3", "/ec"),
     ("v0-7-2", "2026-11-19", "v0.7.2", ""),
     ("v0-7-1", "2026-11-19", "v0.7.1", ""),
@@ -22,11 +23,16 @@ _TEXT: dict[str, dict[str, Any]] = {
     "ja": {
         "title": "更新情報", "lead": "SiteKPI に加わった機能と、直したところ。新しい順です。",
         "meta_desc": "SiteKPI の更新情報。新しくできること・使いやすくなったこと・直した不具合を、新しい順にまとめています。",
-        "toc_k": "このページの中", "new": "NEW", "try": "見本ボードで見る →",
+        "toc_k": "このページの中", "new": "NEW", "try": "見本ボードで見る →", "try_glossary": "指標辞典を開く →",
         "kinds": {"new": "新機能", "better": "改善", "fix": "修正"},
         "legend": "新しくできること · 使いやすくなったこと · 直した不具合",
         "dev": "開発者向けのくわしい記録（変更したコードの一覧）は {link} にあります。",
         "entries": [
+            ("指標辞典に 20 語を追加", [
+                ("new", "表示の速さ（LCP · INP · CLS）、サイト内検索（利用率 · 結果ゼロ率）、購入手続き離脱率、再訪までの日数。"),
+                ("new", "Google 検索（表示回数 · クリック率 · 平均掲載順位）、メール（開封率 · クリック率 · 配信停止率）、CPL、ビュースルーコンバージョン。"),
+                ("new", "粗利率 · CSAT · 価値を感じるまでの時間 · コホート · A/Bテスト。"),
+            ]),
             ("「どのページを直す？」がわかるように", [
                 ("new", "「誰が成果を出している？」に、入口ページ別の表。最初に開いたページごとに、来た人と購入まで進んだ割合がわかります。"),
                 ("new", "「どこがおかしい？」に「どのページで？」。いちばん離れている段を入口ページ別に並べ、いちばん低いページを枠で囲みます。"),
@@ -53,11 +59,16 @@ _TEXT: dict[str, dict[str, Any]] = {
     "en": {
         "title": "What's new", "lead": "New features and fixes in SiteKPI, newest first.",
         "meta_desc": "What's new in SiteKPI: new features, improvements and fixes, newest first.",
-        "toc_k": "On this page", "new": "NEW", "try": "See it on a sample board →",
+        "toc_k": "On this page", "new": "NEW", "try": "See it on a sample board →", "try_glossary": "Open the metric glossary →",
         "kinds": {"new": "New", "better": "Better", "fix": "Fixed"},
         "legend": "Something new you can do · easier to use · a bug fixed",
         "dev": "The detailed record for developers (every code change) is on {link}.",
         "entries": [
+            ("20 more words in the metric glossary", [
+                ("new", "Page speed (LCP · INP · CLS), site search (usage · zero results), checkout abandonment and days to return."),
+                ("new", "Google search (impressions · click rate · average position), email (open · click · unsubscribe rates), CPL and view-through conversions."),
+                ("new", "Gross margin · CSAT · time to value · cohorts · A/B tests."),
+            ]),
             ("See which page to fix", [
                 ("new", "“Who converts?” now has a table by landing page: for each first page of a visit, how many came and how many went on to buy."),
                 ("new", "“What is off?” now asks “On which page?”: the step people leave most, split by landing page, with the lowest page outlined."),
@@ -84,11 +95,16 @@ _TEXT: dict[str, dict[str, Any]] = {
     "ko": {
         "title": "업데이트 소식", "lead": "SiteKPI에 새로 생긴 기능과 고친 점. 최신순이에요.",
         "meta_desc": "SiteKPI 업데이트 소식: 새 기능, 개선, 고친 문제를 최신순으로 정리했어요.",
-        "toc_k": "이 페이지 안", "new": "NEW", "try": "견본 보드에서 보기 →",
+        "toc_k": "이 페이지 안", "new": "NEW", "try": "견본 보드에서 보기 →", "try_glossary": "지표 사전 열기 →",
         "kinds": {"new": "새 기능", "better": "개선", "fix": "수정"},
         "legend": "새로 할 수 있는 것 · 쓰기 편해진 것 · 고친 문제",
         "dev": "개발자용 자세한 기록(바뀐 코드 목록)은 {link}에 있어요.",
         "entries": [
+            ("지표 사전에 20개 추가", [
+                ("new", "표시 속도(LCP · INP · CLS), 사이트 내 검색(이용률 · 결과 0건 비율), 구매 절차 이탈률, 재방문까지의 일수."),
+                ("new", "Google 검색(노출 수 · 클릭률 · 평균 게재 순위), 메일(오픈율 · 클릭률 · 수신 거부율), CPL, 뷰스루 전환."),
+                ("new", "매출 총이익률 · CSAT · 가치를 느끼기까지의 시간 · 코호트 · A/B 테스트."),
+            ]),
             ("「어느 페이지를 고칠까?」를 알 수 있게", [
                 ("new", "「누가 성과를 내나?」에 입구 페이지별 표. 처음 연 페이지마다 방문자와 구매까지 간 비율을 알 수 있어요."),
                 ("new", "「어디가 이상한가?」에 「어느 페이지에서?」. 가장 많이 빠지는 단계를 입구 페이지별로 나누고, 가장 낮은 페이지에 테두리를 쳐요."),

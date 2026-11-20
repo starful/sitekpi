@@ -17,7 +17,7 @@
       <p class="up-meta"><time datetime="{{ e.date }}">{{ e.date }}</time><span class="up-ver">{{ e.ver }}</span>{% if e.new %}<span class="up-new">{{ u.new }}</span>{% endif %}</p>
       <h2>{{ e.title }}</h2>
       <ul class="up-list">{% for it in e["items"] %}<li><span class="up-k up-k-{{ it.k }}">{{ it.label }}</span><span>{{ it.t }}</span></li>{% endfor %}</ul>
-      {% if e.link %}<p class="hp-small up-try"><a href="{{ e.link }}">{{ u.try }}</a></p>{% endif %}
+      {% if e.link %}<p class="hp-small up-try"><a href="{{ e.link }}">{{ u.try_glossary if e.link == "/glossary" else u.try }}</a></p>{% endif %}
     </section>
     {% endfor %}
     <p class="hp-small up-dev">{{ u.dev | replace("{link}", '<a href="' ~ u.releases_url ~ '" target="_blank" rel="noopener">GitHub Releases</a>') | safe }}</p>
