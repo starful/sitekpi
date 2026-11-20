@@ -12,6 +12,7 @@ RELEASES_URL = "https://github.com/starful/sitekpi/releases"
 
 # (anchor, date, version, link to try it or "")
 _ENTRIES = [
+    ("v0-7-6", "2026-11-21", "v0.7.6", "/ec"),
     ("v0-7-5", "2026-11-20", "v0.7.5", "/glossary"),
     ("v0-7-4", "2026-11-20", "v0.7.4", "/glossary"),
     ("v0-7-3", "2026-11-20", "v0.7.3", "/ec"),
@@ -29,6 +30,11 @@ _TEXT: dict[str, dict[str, Any]] = {
         "legend": "新しくできること · 使いやすくなったこと · 直した不具合",
         "dev": "開発者向けのくわしい記録（変更したコードの一覧）は {link} にあります。",
         "entries": [
+            ("AI への質問文をすぐ開けるように", [
+                ("better", "ボードの上のバーに「✦ AI に聞く」。押すと、この画面の数字を入れた質問文がポップアップで開きます（スマホは下から）。"),
+                ("better", "「どうする？」の AI のカードを目立つ色に。「開いて見る」でも同じポップアップが開きます。"),
+                ("fix", "URL に ?lang=en などを付けても、見本ボードや指標辞典が日本語のままだったのを直しました。"),
+            ]),
             ("指標辞典で新しい言葉がすぐわかるように", [
                 ("better", "追加してから 30 日の言葉に「NEW」。いちばん上に「最近追加した言葉」と「NEW だけ見る」ボタン。"),
             ]),
@@ -68,6 +74,11 @@ _TEXT: dict[str, dict[str, Any]] = {
         "legend": "Something new you can do · easier to use · a bug fixed",
         "dev": "The detailed record for developers (every code change) is on {link}.",
         "entries": [
+            ("Open the AI question in one click", [
+                ("better", "“✦ Ask AI” in the board's top bar opens the question with this screen's numbers in a popup (a sheet from the bottom on phones)."),
+                ("better", "The AI card in “What to do?” now stands out, and “Open” shows the same popup."),
+                ("fix", "Sample boards and the glossary now follow ?lang=en / ?lang=ko in the URL (they stayed in Japanese)."),
+            ]),
             ("Spot the new words in the glossary", [
                 ("better", "Words added in the last 30 days carry “NEW”, with a “recently added” line and a “Show NEW only” button at the top."),
             ]),
@@ -107,6 +118,11 @@ _TEXT: dict[str, dict[str, Any]] = {
         "legend": "새로 할 수 있는 것 · 쓰기 편해진 것 · 고친 문제",
         "dev": "개발자용 자세한 기록(바뀐 코드 목록)은 {link}에 있어요.",
         "entries": [
+            ("AI 질문문을 바로 열 수 있게", [
+                ("better", "보드 위쪽 바에 「✦ AI에게 묻기」. 누르면 이 화면의 숫자를 넣은 질문문이 팝업으로 열려요(스마트폰은 아래에서)."),
+                ("better", "「어떻게 할까?」의 AI 카드를 눈에 띄는 색으로. 「열어 보기」로도 같은 팝업이 열려요."),
+                ("fix", "URL에 ?lang=en 등을 붙여도 견본 보드와 지표 사전이 일본어로 나오던 문제를 고쳤어요."),
+            ]),
             ("지표 사전에서 새 말을 바로 알 수 있게", [
                 ("better", "추가한 지 30일 안 된 말에 「NEW」. 맨 위에 「최근 추가한 말」과 「NEW만 보기」 버튼."),
             ]),

@@ -642,7 +642,14 @@ _X4: dict[str, dict[str, str]] = {  # v7.3: page-level numbers
         "x_pt_note": "입구가 됨 = 그 페이지에서 방문을 시작한 사람. {step}·비율·참여율 = 그 페이지로 들어온 방문의 숫자. 페이지 이름은 GA4 페이지 제목(사이트 이름 부분은 뺌), 없으면 URL. URL은 「?」 뒤와 끝의 「/」를 빼고 합쳐요.",
     },
 }
+_X5: dict[str, dict[str, str]] = {  # v7.4: the AI question opens in a popup, also from the top bar
+    "ja": {"x_ai_open": "開いて見る", "x_ai_top": "AI に聞く", "x_ai_top_s": "AI", "x_ai_close": "閉じる"},
+    "en": {"x_ai_open": "Open", "x_ai_top": "Ask AI", "x_ai_top_s": "AI", "x_ai_close": "Close"},
+    "ko": {"x_ai_open": "열어 보기", "x_ai_top": "AI에게 묻기", "x_ai_top_s": "AI", "x_ai_close": "닫기"},
+}
 for _loc, _keys in _X3.items():
+    _X[_loc].update(_keys)
+for _loc, _keys in _X5.items():
     _X[_loc].update(_keys)
 for _loc, _keys in _X4.items():
     _X[_loc].update(_keys)

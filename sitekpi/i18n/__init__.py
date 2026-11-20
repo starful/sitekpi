@@ -84,6 +84,11 @@ class BrowserLocaleMiddleware:
         if scope.get("type") == "http" and scope.get("method") == "GET" and "session" in scope:
             session = scope["session"]
             qs = scope.get("query_string", b"").decode("latin-1")
+            from urllib.parse import parse_qs
+
+            asked = (parse_qs(qs).get("lang") or [""])[0]
+            if asked in LOCALES:
+                session[SESSION_KEY] = asked  # ?lang= wins on every page, not only on routes that read it
             if not session.get(SESSION_KEY) and "lang=" not in qs and not scope.get("path", "").startswith(("/static", "/stk", "/events")):
                 headers = {k.decode("latin-1").lower(): v.decode("latin-1") for k, v in scope.get("headers", [])}
                 ua = headers.get("user-agent", "").lower()

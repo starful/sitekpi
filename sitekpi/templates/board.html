@@ -27,6 +27,7 @@
           </form>
           {% if bench and (is_sample or not industry_drawer) %}<button type="button" class="link-btn adjust-link" data-pop-open="bench-all">{{ t("bench_adjust", loc) }}</button>{% endif %}
           <a class="link-btn top-help" href="/help#read">? {{ t("bx.how", loc) }}</a>
+          {% if story %}<button type="button" class="ai-top" data-ai-open aria-haspopup="dialog" aria-controls="ai-dialog" data-ai-short="{{ story.q.x_ai_top_s }}" data-track="ai_open_top"><span aria-hidden="true">✦</span> {{ story.q.x_ai_top }}</button>{% endif %}
           {%- set share_t = {"ja": {"btn": "共有", "ok": "リンクをコピーしました", "fail": "コピーできませんでした"}, "ko": {"btn": "공유", "ok": "링크를 복사했습니다", "fail": "복사하지 못했습니다"}}.get(loc, {"btn": "Share", "ok": "Link copied", "fail": "Couldn't copy"}) %}
           <span class="top-item share-item">
             <button type="button" class="link-btn" data-board-share data-track="board_share">{{ share_t.btn }}</button>
@@ -225,24 +226,32 @@
               <span class="ai-txt"><b>{{ S.q.x_ai_title }}</b><span class="ai-lead">{{ S.q.x_ai_lead }}</span></span>
               <span class="ai-btns">
                 <button type="button" class="ai-copy" data-ai-copy>{{ S.q.x_ai_copy }}</button>
-                <button type="button" class="ai-open" data-ai-toggle aria-expanded="false" aria-controls="ai-box">{{ S.q.x_ai_open }} <span aria-hidden="true" class="caret">▾</span></button>
+                <button type="button" class="ai-open" data-ai-open aria-haspopup="dialog" aria-controls="ai-dialog">{{ S.q.x_ai_open }} <span aria-hidden="true">↗</span></button>
               </span>
               <span class="ai-msg" data-ai-msg role="status" data-ok="{{ S.ai.ai_copied }}" data-fail="{{ S.ai.ai_copy_fail }}"></span>
             </div>
-            <div class="ai-box" id="ai-box" hidden>
-              <div class="ai-ask" role="group" aria-label="{{ S.ai.ai_ask_k }}"><b>{{ S.ai.ai_ask_k }}</b>
-                <button type="button" class="link-btn" data-ai-ask="cause" aria-pressed="true">{{ S.ai.ai_cause }}</button>
-                <button type="button" class="link-btn" data-ai-ask="ideas" aria-pressed="false">{{ S.ai.ai_ideas }}</button>
-                <button type="button" class="link-btn" data-ai-ask="report" aria-pressed="false">{{ S.ai.ai_report }}</button>
+            {#- v7.4: the question opens over the board (top bar 「✦ AI に聞く」 or 「開いて見る」) -#}
+            <dialog class="ai-dlg" id="ai-dialog" aria-labelledby="ai-dlg-t">
+              <div class="ai-dlg-head">
+                <span class="ai-icon" aria-hidden="true">✦</span>
+                <span class="ai-dlg-txt"><b id="ai-dlg-t">{{ S.q.x_ai_title }}</b><span>{{ S.q.x_ai_lead }}</span></span>
+                <button type="button" class="ai-x" data-ai-close aria-label="{{ S.q.x_ai_close }}">×</button>
               </div>
-              <textarea class="ai-text" data-ai-text readonly aria-label="{{ S.ai.ai_btn }}"></textarea>
-              <div class="ai-opts">
-                {% if S.prompt.has_site %}<label><input type="checkbox" data-ai-anon checked />{{ S.ai.ai_anon }}</label>{% endif %}
-                <label><input type="checkbox" data-ai-detail checked />{{ S.ai.ai_detail }}</label>
-                <span class="ai-copy-wrap"><button type="button" class="ai-copy" data-ai-copy>{{ S.ai.ai_copy }}</button></span>
+              <div class="ai-box" id="ai-box">
+                <div class="ai-ask" role="group" aria-label="{{ S.ai.ai_ask_k }}"><b>{{ S.ai.ai_ask_k }}</b>
+                  <button type="button" class="link-btn" data-ai-ask="cause" aria-pressed="true">{{ S.ai.ai_cause }}</button>
+                  <button type="button" class="link-btn" data-ai-ask="ideas" aria-pressed="false">{{ S.ai.ai_ideas }}</button>
+                  <button type="button" class="link-btn" data-ai-ask="report" aria-pressed="false">{{ S.ai.ai_report }}</button>
+                </div>
+                <textarea class="ai-text" data-ai-text readonly aria-label="{{ S.ai.ai_btn }}"></textarea>
+                <div class="ai-opts">
+                  {% if S.prompt.has_site %}<label><input type="checkbox" data-ai-anon checked />{{ S.ai.ai_anon }}</label>{% endif %}
+                  <label><input type="checkbox" data-ai-detail checked />{{ S.ai.ai_detail }}</label>
+                  <span class="ai-copy-wrap"><span class="ai-msg" data-ai-msg role="status" data-ok="{{ S.ai.ai_copied }}" data-fail="{{ S.ai.ai_copy_fail }}"></span><button type="button" class="ai-copy" data-ai-copy>{{ S.ai.ai_copy }}</button></span>
+                </div>
+                <p class="ai-note">{{ S.ai.ai_note }}</p>
               </div>
-              <p class="ai-note">{{ S.ai.ai_note }}</p>
-            </div>
+            </dialog>
             <script type="application/json" id="ai-data">{{ S.prompt|tojson }}</script>
           </div>
           {% if S.next4 %}<p class="q-next">↓ {{ S.next4 }}</p>{% endif %}
