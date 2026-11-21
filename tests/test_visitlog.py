@@ -104,3 +104,46 @@ def test_board_pages_carry_the_survey_card_and_policy_mentions_the_cookie(client
     assert "data-survey" in html and "js/survey.js" in html
     for lang, word in (("ja", "sk_vid"), ("en", "sk_vid"), ("ko", "sk_vid")):
         assert word in client.get(f"/policy?lang={lang}").text
+
+
+def test_summarize_story_reach_and_feedback():
+    """HQ sees how far board viewers read (story_reach) and the メモ・ご意見 by screen and card."""
+    now = int(time.time())
+    ev = lambda vid, t, e, **p: {"vid": vid, "at": now - t, "e": e, "p": p, "path": "/ec", "ref": "", "lang": "ja"}
+    a, b, c = "a1" * 12, "b2" * 12, "c3" * 12
+    events = [
+        ev(a, 90, "board_view", mode="sample"), ev(a, 80, "story_reach", step="q0"), ev(a, 70, "story_reach", step="q2"),
+        ev(b, 60, "board_view", mode="live"), ev(b, 50, "story_reach", step="q0"),
+        ev(c, 40, "pv", screen="home"), ev(c, 30, "story_reach", step="q0"),  # no board_view → not counted
+    ]
+    fb = [
+        {"screen": "board", "section": "どうする？", "vote": "down", "comment": "対策が一般的すぎる", "at": now - 20,
+         "locale": "ja", "connected": "live"},
+        {"screen": "board", "section": "どうする？", "vote": "up", "comment": "", "at": now - 10, "locale": "ja", "connected": "none"},
+        {"screen": "glossary", "section": "", "vote": "up", "comment": "", "at": now - 5, "locale": "en", "connected": "none"},
+    ]
+    out = visitlog.summarize(events, [], days=7, now=now, feedback=fb)
+    reach = {r["step"]: r for r in out["story"]}
+    assert reach["q0"]["n"] == 2 and reach["q0"]["pct"] == "100%"
+    assert reach["q2"]["n"] == 1 and reach["q2"]["pct"] == "50%" and reach["qsum"]["n"] == 0
+    assert [r["step"] for r in out["story"]][0] == "q0" and out["story"][-1]["step"] == "details"
+    f = out["feedback"]
+    assert (f["total"], f["up"], f["down"]) == (3, 2, 1)
+    assert f["by_screen"][0] == {"name": "보드", "up": 1, "down": 1, "notes": 1}
+    assert f["by_section"][0]["name"] == "どうする？"
+    assert f["notes"] == [{"at": f["notes"][0]["at"], "screen": "보드", "section": "どうする？", "vote": "down",
+                           "text": "対策が一般的すぎる", "connected": "live", "lang": "ja"}]
+
+
+def test_feedback_read_since_local_jsonl(tmp_path, monkeypatch):
+    import json
+
+    from sitekpi import feedback
+
+    monkeypatch.setattr(feedback, "ROOT", tmp_path)
+    assert feedback.read_since(0) == []
+    (tmp_path / ".data").mkdir()
+    (tmp_path / ".data" / "feedback.jsonl").write_text(
+        json.dumps({"at": 5, "comment": "old"}) + "\nnot json\n" + json.dumps({"at": 20, "comment": "new"}) + "\n",
+        encoding="utf-8")
+    assert [r["comment"] for r in feedback.read_since(10)] == ["new"]

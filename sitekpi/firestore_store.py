@@ -257,6 +257,10 @@ class FirestoreFeedbackStore:
     def add(self, row: dict[str, Any]) -> None:
         self._rows.add(dict(row))
 
+    def since(self, since: int) -> list[dict[str, Any]]:
+        out = [snap.to_dict() or {} for snap in _since(self._rows._col(), since).stream()]
+        return sorted(out, key=lambda d: d.get("at", 0))
+
 
 # --- オンボーディング成功指標 (same interface as onboarding.OnboardingStore) -----------------
 

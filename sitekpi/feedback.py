@@ -38,6 +38,25 @@ def _save(row: dict[str, Any]) -> None:
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
+def read_since(since: int) -> list[dict[str, Any]]:
+    """Feedback rows with at >= since, oldest first (for the HQ read API)."""
+    if firestore_store.enabled():
+        return firestore_store.FirestoreFeedbackStore().since(since)
+    path = ROOT / ".data" / "feedback.jsonl"
+    if not path.exists():
+        return []
+    out = []
+    with _lock, path.open(encoding="utf-8") as f:
+        for line in f:
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(row, dict) and int(row.get("at") or 0) >= since:
+                out.append(row)
+    return sorted(out, key=lambda r: int(r.get("at") or 0))
+
+
 @router.post("/feedback")
 async def feedback(request: Request) -> JSONResponse:
     try:

@@ -64,6 +64,10 @@ FUNNEL: tuple[tuple[str, Any], ...] = (
     ("내 보드", lambda r: r["e"] == "board_view" and r["p"].get("mode") in ("live", "demo")),
     ("AI 프롬프트 복사", lambda r: r["e"] == "ai_prompt_copy"),
 )
+# story_reach (track.js): the board's chapters in reading order → HQ label
+STORY_KO = (("q0", "0 総評"), ("qch", "なぜ変わった"), ("qb", "誰が"), ("q2", "どこで離れている"),
+            ("q3", "どこがおかしい"), ("q4", "どうする"), ("q5", "効いた？"), ("qsum", "まとめ"),
+            ("details", "詳しい数字"))
 SCREEN_KO = {"home": "랜딩", "connect": "연결 화면", "glossary": "지표 사전", "samples": "견본 보드 목록",
              "builder": "대시보드 만들기", "settings": "설정", "policy": "개인정보 처리방침", "terms": "이용약관",
              "board": "보드", "help": "도움말", "other": "페이지"}
@@ -284,8 +288,11 @@ def hq_users(request: Request, days: int = 7) -> Response:
     prev_since = since - days * 86400
     events = store.events_since(prev_since)
     surveys = store.surveys_since(now - KEEP_DAYS * 86400)
+    from sitekpi.feedback import read_since
+
     return JSONResponse(summarize([r for r in events if r["at"] >= since], surveys, days=days, now=now,
-                                  prev_visitors=len({r["vid"] for r in events if r["at"] < since})))
+                                  prev_visitors=len({r["vid"] for r in events if r["at"] < since}),
+                                  feedback=read_since(since)))
 
 
 def _short(vid: str) -> str:
@@ -322,6 +329,8 @@ def _what(r: dict[str, Any]) -> tuple[str, str, str]:
         "glossary_filter": ("사전 분류", p.get("category", ""), ""), "benchmark_save": ("자사 목표 저장", p.get("metric", ""), "key"),
         "guess_confirm": ("업종 확인", "", ""), "lang_change": ("언어 바꿈", p.get("language", ""), ""), "demo_start": ("데모 시작", "", ""), "channel_filter": ("유입별 보기", "", ""),
         "contact_click": ("문의", "", ""), "faq_open": ("FAQ 열기", p.get("faq_id", ""), ""),
+        "story_reach": ("보드 읽음", dict(STORY_KO).get(p.get("step", ""), p.get("step", "")), ""),
+        "em_help_open": ("향상된 측정 안내", "", ""),
     }
     return labels.get(e, (e, "", ""))
 
@@ -343,8 +352,40 @@ def _sessions(ats: Iterable[int]) -> int:
     return n
 
 
+def story_reach(by_vid: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    """How many board viewers reached each chapter (story_reach), in reading order."""
+    viewers = [rows for rows in by_vid.values() if any(r["e"] == "board_view" for r in rows)]
+    out = []
+    for step, label in STORY_KO:
+        n = sum(1 for rows in viewers if any(r["e"] == "story_reach" and r["p"].get("step") == step for r in rows))
+        out.append({"step": step, "label": label, "n": n,
+                    "pct": f"{round(n / len(viewers) * 100)}%" if viewers else "—"})
+    return out
+
+
+def feedback_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """メモ・ご意見 for HQ: 👍/👎 and notes per screen and per card (section), newest notes first."""
+    def bucket(key: str) -> list[dict[str, Any]]:
+        acc: dict[str, dict[str, Any]] = {}
+        for r in rows:
+            k = str(r.get(key) or "") or "—"
+            a = acc.setdefault(k, {"name": SCREEN_KO.get(k, k) if key == "screen" else k, "up": 0, "down": 0, "notes": 0})
+            a["up"] += r.get("vote") == "up"
+            a["down"] += r.get("vote") == "down"
+            a["notes"] += bool(r.get("comment"))
+        return sorted(acc.values(), key=lambda a: -(a["up"] + a["down"] + a["notes"]))
+
+    notes = [{"at": _md_hm(int(r.get("at") or 0)), "screen": SCREEN_KO.get(str(r.get("screen") or ""), r.get("screen") or ""),
+              "section": r.get("section") or "", "vote": r.get("vote") or "", "text": r["comment"],
+              "connected": r.get("connected") or "", "lang": r.get("locale") or ""}
+             for r in sorted(rows, key=lambda r: -int(r.get("at") or 0)) if r.get("comment")][:30]
+    return {"total": len(rows), "up": sum(r.get("vote") == "up" for r in rows),
+            "down": sum(r.get("vote") == "down" for r in rows),
+            "by_screen": bucket("screen"), "by_section": bucket("section")[:15], "notes": notes}
+
+
 def summarize(events: list[dict[str, Any]], surveys: list[dict[str, Any]], *, days: int, now: int,
-              prev_visitors: int = 0) -> dict[str, Any]:
+              prev_visitors: int = 0, feedback: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     """Everything the HQ popup shows (labels in Korean, times in JST). Pure: easy to test."""
     by_vid: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for r in events:
@@ -410,4 +451,5 @@ def summarize(events: list[dict[str, Any]], surveys: list[dict[str, Any]], *, da
         })
     return {"days": days, "generated_at": _md_hm(now), "kpis": kpis, "funnel": funnel, "stuck": stuck,
             "survey": survey, "answered": len(in_period_survey), "wishes": wishes, "visitors": people,
+            "story": story_reach(by_vid), "feedback": feedback_summary(feedback or []),
             "keep_days": KEEP_DAYS}
