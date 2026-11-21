@@ -28,8 +28,24 @@ def _trend(r: dict[str, Any], locale: str) -> dict[str, str] | None:
     return {"text": delta, "tone": tone, "word": t(word, locale)}
 
 
-def _watch_items(board: dict[str, Any], locale: str) -> list[dict[str, Any]]:
-    """Metrics furthest outside their 業界目安: worse ones first, then better ones."""
+def behavior_of(industry: str) -> tuple[str, str]:
+    """(訪問者の行動, its group) for a pack slug: type-<behavior> packs, else the industry pack's category."""
+    from sitekpi.packs import INDUSTRIES
+    from sitekpi.packs.behaviors import BEHAVIORS, PREFIX
+
+    beh = industry[len(PREFIX):] if industry.startswith(PREFIX) else str(
+        (INDUSTRIES.get(industry) or {}).get("category") or "")
+    return (beh, str(BEHAVIORS[beh]["group"])) if beh in BEHAVIORS else ("", "")
+
+
+def _watch_items(board: dict[str, Any], locale: str, *, industry: str = "") -> list[dict[str, Any]]:
+    """Metrics furthest outside their 業界目安: worse ones first, then better ones.
+
+    A bad row's 見るポイント comes from the visitor behavior (i18n/watch_tips_l10n.py) when there is one,
+    else from the metric's common tip."""
+    from sitekpi.i18n.watch_tips_l10n import watch_tip
+
+    behavior, group = behavior_of(industry) if industry else ("", "")
     seen: set[str] = set()
     scored: list[tuple[int, float, dict[str, Any]]] = []
     for r in board["summary"] + board["funnel"] + board["engage"] + board["audience"]:
@@ -47,7 +63,7 @@ def _watch_items(board: dict[str, Any], locale: str) -> list[dict[str, Any]]:
         if bad:
             title = t("watch.bad", locale, label=r["label"],
                       dir=t("watch.dir_high" if v > high else "watch.dir_low", locale))
-            tip = str((r.get("help") or {}).get("tip") or "")
+            tip = watch_tip(behavior, group, key, locale) or str((r.get("help") or {}).get("tip") or "")
         else:
             title = t("watch.good", locale, label=r["label"])
             tip = t("watch.keep", locale)

@@ -102,7 +102,7 @@ def _render_sample_dense(
     if fragment:
         return render("board/details.html", loc=loc, details=details)
 
-    watch = _watch_items(board, loc)
+    watch = _watch_items(board, loc, industry=industry)
     help_items = board["summary"] + board["funnel"] + board["engage"] + board["audience"]
     seen: set[str] = set()
     dialogs = []
@@ -187,7 +187,7 @@ def verdict_scene(*, industry: str, data: dict[str, Any], benches_raw: dict[str,
         board = build_dense_board(industry=industry, period="28d", ind=INDUSTRIES[industry], data=data,
                                   benches_raw=benches_raw, locale=loc, prev=prev)
         _ACTIVE_BENCH.set(board["benches"])
-        watch = _watch_items(board, loc)
+        watch = _watch_items(board, loc, industry=industry)
         verdict = _verdict(board, watch, flow, loc)
         # the same story as the board: its 総評 sentence, and the issue's stretch marked in the flow
         story = _story(board, watch, verdict, flow, loc, industry=industry, site="", ind_label="", period_label="")
