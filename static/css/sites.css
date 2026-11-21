@@ -1,0 +1,57 @@
+/* tokens: brand.css */
+/* マイサイト一覧 (/sites): one row per GA4 property — 総評 + 3 tiles. Font sizes: the six steps only */
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--font-ui); background: var(--bg); }
+.main { min-width: 0; }
+.ss { padding: 40px clamp(16px, 3vw, 44px) 64px; display: flex; flex-direction: column; gap: 16px; max-width: 1180px; }
+.ss-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.ss h1 { margin: 0; font-size: 1.625rem; font-weight: 700; }
+.ss-lead { margin: 6px 0 0; font-size: 0.8125rem; line-height: 1.7; color: var(--muted); max-width: 62ch; }
+.ss-period { display: flex; align-items: center; gap: 8px; font-size: 0.8125rem; font-weight: 700; color: var(--muted); }
+.ss-period select { font: inherit; min-height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+.ss-error, .ss-empty, .ss-more { margin: 0; font-size: 0.8125rem; color: var(--muted); }
+.ss-error { color: #be123c; font-weight: 700; }
+.ss-pro {
+  display: flex; flex-direction: column; gap: 4px; padding: 14px 18px; border-radius: 12px;
+  background: #f5f8fe; border: 1px solid #c7d6ee; font-size: 0.8125rem; line-height: 1.6;
+}
+.ss-pro b { color: var(--accent-ink); }
+.ss-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.ss-row {
+  display: grid; grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) auto; gap: 18px; align-items: center;
+  background: #fff; border: 1px solid var(--line); border-left: 4px solid #cbd5e1; border-radius: 12px; padding: 16px 18px;
+}
+.ss-row.tone-down { border-left-color: var(--down); }
+.ss-row.tone-up { border-left-color: var(--up); }
+.ss-row.is-current { box-shadow: 0 0 0 1.5px var(--accent) inset; }
+.ss-site { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ss-name { font-size: 0.9375rem; font-weight: 800; overflow-wrap: anywhere; }
+.ss-cur { font-size: 0.75rem; font-weight: 700; color: var(--accent-ink); }
+.ss-sub { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+.ss-guess { padding: 0 6px; border-radius: 999px; background: #fef3c7; color: #92400e; font-weight: 700; }
+.ss-body { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.ss-verdict { margin: 0; font-size: 0.9375rem; font-weight: 700; line-height: 1.6; }
+.ss-verdict .v-issue { color: var(--down); }
+.ss-locked { margin: 0; font-size: 0.8125rem; color: var(--faint); }
+.ss-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+.ss-tile { display: flex; flex-direction: column; gap: 2px; padding: 0 14px; border-left: 1px solid var(--line); min-width: 0; }
+.ss-tile:first-child { padding-left: 0; border-left: 0; }
+.ss-tile-label { font-size: 0.75rem; color: var(--muted); }
+.ss-tile-value { font-size: 1.125rem; font-weight: 800; }
+.ss-tile.is-issue .ss-tile-value { color: var(--down); }
+.ss-tile-note { font-size: 0.75rem; color: var(--muted); }
+.tone-up { color: var(--up); } .tone-down { color: var(--down); } .tone-mid { color: #475569; } .tone-na { color: var(--faint); }
+.jt { font-weight: 800; font-style: normal; white-space: nowrap; }
+.jt-up { color: var(--up); } .jt-mid { color: #1e40af; } .jt-down { color: #b45309; }
+.ss-open button {
+  font: inherit; font-size: 0.8125rem; font-weight: 800; min-height: 40px; padding: 0 14px; border-radius: 10px; cursor: pointer;
+  border: 1px solid #cbd5e1; background: #fff; color: var(--accent-ink); white-space: nowrap;
+}
+.ss-open button:hover { background: #f3f7fe; }
+@media (max-width: 640px) {
+  .ss { padding: 24px 14px 48px; }
+  .ss-row { grid-template-columns: 1fr; gap: 12px; }
+  .ss-tiles { grid-template-columns: 1fr; gap: 8px; }
+  .ss-tile { padding: 0; border-left: 0; }
+  .ss-open button { width: 100%; }
+}

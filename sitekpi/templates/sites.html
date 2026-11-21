@@ -1,0 +1,68 @@
+{#- マイサイト一覧 (/sites): sitekpi/routes/sites.py · sitekpi/portfolio.py -#}
+{% extends "base.html" %}
+{% block title %}SiteKPI · {{ t("sites.title", loc) }}{% endblock %}
+{% block css %}<link rel="stylesheet" href="{{ static_url('css/sites.css') }}" />{% endblock %}
+{% block main %}
+<main class="ss">
+  <div class="ss-head">
+    <div>
+      <h1>{{ t("sites.title", loc) }}</h1>
+      <p class="ss-lead">{{ t("sites.lead", loc) }}</p>
+    </div>
+    <form method="get" action="/sites" class="ss-period">
+      <label for="ss-period">{{ t("sites.period", loc) }}</label>
+      <select id="ss-period" name="period" onchange="this.form.submit()">
+        <option value="28d"{% if period == "28d" %} selected{% endif %}>{{ t("period.28d", loc) }}</option>
+        <option value="7d"{% if period == "7d" %} selected{% endif %}>{{ t("period.7d", loc) }}</option>
+      </select>
+      <noscript><button type="submit">{{ t("sites.apply", loc) }}</button></noscript>
+    </form>
+  </div>
+
+  {% if not ok %}
+  <p class="ss-error" role="alert">{{ t("sites.err", loc) }} <a href="/connect">{{ t("sites.reconnect", loc) }}</a></p>
+  {% elif not rows %}
+  <p class="ss-empty">{{ t("sites.none", loc) }}</p>
+  {% else %}
+  {% if locked %}
+  <aside class="ss-pro" data-track="cta_click" data-track-cta="sites_pro">
+    <b>{{ t("sites.pro_k", loc) }}</b>
+    <span>{{ t("sites.pro_body", loc, n=locked) }}</span>
+  </aside>
+  {% endif %}
+  <ul class="ss-list">
+    {% for r in rows %}
+    <li class="ss-row tone-{{ r.get('tone') or 'neutral' }}{{ ' is-current' if r.current else '' }}{{ ' is-locked' if r.locked else '' }}">
+      <div class="ss-site">
+        <span class="ss-name">{{ r.name }}{% if r.current %} <small class="ss-cur">{{ t("sites.current", loc) }}</small>{% endif %}</span>
+        <span class="ss-sub">{{ r.account }}{% if r.get("behavior_label") %} · {{ r.behavior_label }}{% if r.get("industry_label") %} × {{ r.industry_label }}{% endif %}{% if r.get("guessed") %} <span class="ss-guess" title="{{ t('sites.guess_help', loc) }}">{{ t("sites.guess", loc) }}</span>{% endif %}{% endif %}</span>
+      </div>
+      <div class="ss-body">
+        {% if r.locked %}
+        <p class="ss-locked">{{ t("sites.locked", loc) }}</p>
+        {% elif r.get("error") %}
+        <p class="ss-locked">{{ t("sites.row_err", loc) }}</p>
+        {% elif r.get("verdict") %}
+        <p class="ss-verdict">{{ r.verdict.story_s1 or r.verdict.short_html or r.verdict.short or r.verdict.text }}</p>
+        <div class="ss-tiles">
+          {% for k in r.verdict.tiles %}
+          <div class="ss-tile{{ ' is-issue' if k.issue else '' }}">
+            <span class="ss-tile-label">{{ k.label }}</span>
+            <b class="ss-tile-value">{{ k.value }}</b>
+            <span class="ss-tile-note">{% if k.prev.text %}<span class="tone-{{ k.prev.tone }}">{{ t("bx.prev", loc, d=k.prev.text) }}</span>{% endif %}{% if k.bench.kind == "judge" and k.bench.judge %} <b class="jt jt-{{ k.bench.judge }}">{{ t("judge." ~ k.bench.judge, loc) }}</b>{% endif %}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <form method="post" action="/sites/open" class="ss-open">
+        <input type="hidden" name="property_id" value="{{ r.id }}" />
+        <button type="submit" data-track="cta_click" data-track-cta="sites_open">{{ t("sites.open_cur" if r.current else "sites.open", loc) }} →</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if more %}<p class="ss-more">{{ t("sites.more", loc, n=more) }}</p>{% endif %}
+  {% endif %}
+</main>
+{% endblock %}

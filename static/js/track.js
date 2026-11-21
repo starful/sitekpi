@@ -18,6 +18,7 @@
     : path.startsWith("/samples") ? "samples"
     : path.startsWith("/builder") ? "builder"
     : path.startsWith("/settings") ? "settings"
+    : path.startsWith("/sites") ? "sites"
     : path.startsWith("/policy") ? "policy"
     : path.startsWith("/terms") ? "terms"
     : isBoard ? "board" : "other";

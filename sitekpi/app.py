@@ -34,6 +34,7 @@ from sitekpi.routes.pages import router as pages_router  # noqa: E402
 from sitekpi.static_files import CachedStaticFiles  # noqa: E402
 from sitekpi.stickers import router as stickers_router  # noqa: E402
 from sitekpi.feedback import router as feedback_router  # noqa: E402
+from sitekpi.routes.sites import router as sites_router  # noqa: E402
 from sitekpi.onboarding import router as onboarding_router  # noqa: E402
 from sitekpi.visitlog import router as visitlog_router, vid_middleware  # noqa: E402
 from sitekpi.routes.legal import router as legal_router  # noqa: E402
@@ -79,6 +80,7 @@ app.include_router(flow_router)
 app.include_router(setup_router)
 app.include_router(stickers_router)
 app.include_router(feedback_router)
+app.include_router(sites_router)
 app.include_router(onboarding_router)
 app.include_router(visitlog_router)
 app.middleware("http")(vid_middleware)

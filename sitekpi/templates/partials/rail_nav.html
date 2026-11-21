@@ -7,6 +7,7 @@
 </a>
 <a href="/live?edit=1" class="nav-indent{{ ' is-on' if rail.active == 'setup' else '' }}">{{ t("nav.setup", loc) }}</a>
 <a href="/connect" class="nav-indent{{ ' is-on' if rail.active == 'connect' else '' }}">{{ t("nav.connect_manage", loc) }}</a>
+<a href="/sites" class="nav-indent{{ ' is-on' if rail.active == 'sites' else '' }}">{{ t("nav.sites", loc) }}</a>
 {% else %}
 <a href="/connect" class="nav-cta{{ ' is-on' if rail.active == 'connect' else '' }}">＋ {{ t("nav.add_ga4", loc) }}</a>
 {% endif %}
