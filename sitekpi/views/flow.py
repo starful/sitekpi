@@ -39,6 +39,21 @@ def _group_channels(flow: dict[str, Any], loc: str) -> list[dict[str, Any]]:
     return groups
 
 
+# GA4 拡張計測機能 (enhanced measurement) records these without any tagging — when a step built on one of
+# them shows 未計測, the fix is a switch in GA4, not an event mapping. Value = the switch (strings.py em.sw.*).
+ENHANCED = {
+    "scroll": "scroll", "click": "outbound", "view_search_results": "search",
+    "video_start": "video", "video_progress": "video", "video_complete": "video",
+    "file_download": "download", "form_start": "form", "form_submit": "form",
+}
+EM_HELP = "https://support.google.com/analytics/answer/9216061?hl={hl}"
+
+
+def enhanced_switch(event: str) -> str:
+    """The 拡張計測機能 switch that records ``event`` ("" when it is not an enhanced-measurement event)."""
+    return ENHANCED.get(str(event or ""), "")
+
+
 def flow_context(
     *,
     max_branches: int = 0,
@@ -83,6 +98,7 @@ def flow_context(
             "key": s["step"], "event": ev, "step": s["step"],
             "label": s.get("label") or (step_label(s["step"], loc, pack) if s["step"] in std else ev),
             "mapped": s["step"] in std and ev != s["step"], "users": users, "missing": users <= 0,
+            "em": enhanced_switch(ev) if users <= 0 else "",
             "above": [], "below": [],
             "users_fmt": {"all": _int(users), **{cid: _int(v) for cid, v in ch_users.items()}},
             "reach_pct": reach or 0.0,
@@ -171,13 +187,19 @@ def flow_context(
         insights.append(t("flow.insight_channel", loc, step=last["label"], best=best["name"],
                           best_pct=best["rate_fmt"], low=low["name"], low_pct=low["rate_fmt"]))
     missing = [st for st in stages[1:] if st["missing"]]
-    if missing:
+    em = [st for st in missing if st.get("em")]
+    if missing and len(em) < len(missing):
         insights.append(t("flow.insight_missing_live" if live else "flow.insight_missing", loc,
-                          steps="・".join(st["label"] for st in missing)))
+                          steps="・".join(st["label"] for st in missing if not st.get("em"))))
+    if em and live:
+        switches = list(dict.fromkeys(t("em.sw." + st["em"], loc) for st in em))
+        insights.append(t("flow.insight_em", loc, steps="・".join(st["label"] for st in em),
+                          switches="・".join(switches)))
 
     return {
         "pack": pack,
         "live": live,
+        "em_help": EM_HELP.format(hl={"ja": "ja", "ko": "ko"}.get(loc, "en")),
         "sample": bool(flow.get("sample")),
         "error": error,
         "stages": stages,

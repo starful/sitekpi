@@ -27,6 +27,9 @@
         <span class="flow-label">{{ st.label }}</span>
         {% if st.missing %}
         <span class="flow-missing">{{ t("flow.missing", loc) }}</span>
+        {% if st.get("em") %}
+        <a class="flow-em" href="{{ f.get("em_help") or "https://support.google.com/analytics/answer/9216061" }}" target="_blank" rel="noopener noreferrer" data-track="em_help_open" title="{{ t('em.how', loc, switch=t("em.sw." ~ st.em, loc)) }}">{{ t("em.badge", loc) }}</a>
+        {% endif %}
         {% if editor and st.key != "entry" %}
         <span class="flow-nudge">{{ t("flow.nudge", loc) }}</span>
         <button type="button" class="nudge-btn" data-edit-step="{{ st.key }}"><span aria-hidden="true">✎</span>{{ t("flow.fix_step", loc) }}</button>

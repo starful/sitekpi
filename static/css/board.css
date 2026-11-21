@@ -219,6 +219,8 @@ button.flow-node:hover, button.flow-node[aria-expanded="true"] { border-color: #
 .flow-src { font-size: 0.75rem; color: #475569; line-height: 1.4; }
 .flow-node .flow-src { display: none; }  /* visits / sources: in 流入別 and 詳しい数字 */
 .flow-missing { margin-top: 6px; font-size: 0.8125rem; font-weight: 800; color: var(--faint); }
+.flow-em { margin-top: 4px; font-size: 0.75rem; font-weight: 700; color: var(--accent); line-height: 1.4; }
+.flow-em::after { content: " ↗"; }
 .flow-cta { font-size: 0.75rem; font-weight: 700; color: var(--accent-ink); }
 .flow-stage.is-missing .flow-node { border: 1px dashed #cbd5e1; }
 .flow-stage.is-missing .flow-bar { background: repeating-linear-gradient(135deg, #f1f4f8 0 6px, #fff 6px 12px); }

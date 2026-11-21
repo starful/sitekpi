@@ -486,3 +486,22 @@ def test_industry_step_compares_the_site_with_each_industry(live, monkeypatch):
     assert any("あなた 48.0%" in r.get_text() for r in rows)
     data = json.loads(soup.select_one("#ind-data").get_text())
     assert len(data["previews"]) > 20 and all(isinstance(v, list) for v in data["previews"].values())
+
+
+def test_untracked_enhanced_measurement_step_points_to_the_ga4_switch():
+    """A 未計測 step built on scroll / form_start / … is a GA4 switch, not a mapping problem."""
+    f = {"entry": 1000, "entry_by": {"Direct": 1000}, "sample": False,
+         "totals": {"session_start": 990, "user_engagement": 700, "scroll": 0, "form_start": 0, "form_submit": 30},
+         "by_channel": {"Direct": {"form_submit": 30}}}
+    steps = [{"step": "scroll", "event": "scroll"}, {"step": "form_start", "event": "form_start"},
+             {"step": "form_submit", "event": "form_submit"}]
+    for loc, word in (("ja", "拡張計測"), ("en", "enhanced measurement"), ("ko", "향상된 측정")):
+        ctx = flow_context(pack="b2b", flow=f, steps=steps, locale=loc, live=True)
+        st = {s["key"]: s for s in ctx["stages"]}
+        assert st["scroll"]["em"] == "scroll" and st["form_start"]["em"] == "form" and not st["form_submit"]["em"]
+        em_lines = [i for i in ctx["insights"] if word in i]
+        assert len(em_lines) == 1
+        assert "support.google.com/analytics/answer/9216061" in ctx["em_help"]
+    ctx = flow_context(pack="b2b", flow=f, steps=steps, locale="ja", live=True)
+    # no generic 「記録がありません」 line when every missing step is an enhanced-measurement one
+    assert not any("記録がありません" in i for i in ctx["insights"])
