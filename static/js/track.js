@@ -94,8 +94,37 @@
     });
   }
 
+  // story_reach: how far down the board people read. Once per chapter per page load, when its top reaches the
+  // upper 60% of the screen. step = the chapter's own anchor (SiteKPI's keys, never content): q0 総評 · qch なぜ変わった
+  // · qb 誰が · q2 どこで · q3 どこがおかしい · q4 どうする · q5 効いた · qsum まとめ · details 詳しい数字.
+  const STORY_STEPS = ["q0", "qch", "qb", "q2", "q3", "q4", "q5", "qsum"];
+  function watchStory() {
+    if (!("IntersectionObserver" in window)) return;
+    const mode = path === "/live" ? (connection === "demo" ? "demo" : "live") : "sample";
+    const seen = new Set();
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return;
+        const step = en.target.dataset.storyStep;
+        io.unobserve(en.target);
+        if (seen.has(step)) return;
+        seen.add(step);
+        track("story_reach", { step: step, mode: mode });
+      });
+    }, { rootMargin: "0px 0px -40% 0px", threshold: 0 }); // top of the chapter in the upper 60% (tall cards too)
+    STORY_STEPS.forEach((id) => {
+      const mark = document.getElementById(id);
+      // q0 / q2 are empty anchors: watch the card they start
+      const el = mark && (mark.classList.contains("story-mark") ? mark.closest("section, .card") || mark.parentElement : mark);
+      if (el && !el.dataset.storyStep) { el.dataset.storyStep = id; io.observe(el); }
+    });
+    const details = document.getElementById("s-l2");
+    if (details) { details.dataset.storyStep = "details"; io.observe(details); }
+  }
+
   // board_view: once per page load; first_in_session marks the activation (mode: live · sample; demo is dev only)
   if (isBoard) {
+    watchStory();
     const mode = path === "/live" ? (connection === "demo" ? "demo" : "live") : "sample";
     const sel = document.querySelector("form[data-period] select[name=period]");
     let first = "true";
