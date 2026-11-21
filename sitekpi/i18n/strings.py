@@ -1468,4 +1468,5 @@ UI.update({
     "survey.dot": {"ja": "アンケートがあります", "en": "A short survey is waiting", "ko": "설문이 있어요"},
     "legal.policy": {"ja": "プライバシーポリシー", "en": "Privacy Policy", "ko": "개인정보 처리방침"},
     "legal.terms": {"ja": "利用規約", "en": "Terms of Use", "ko": "이용약관"},
+    "bench_src.checked": {"ja": "{date} 確認", "en": "checked {date}", "ko": "{date} 확인"},
 })

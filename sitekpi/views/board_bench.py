@@ -48,6 +48,8 @@ def _source_text(spec: dict[str, Any], locale: str) -> str:
             text += " · " + t("bench_rule.pt", locale, n=n)
         elif kind == "rel":
             text += " · " + t("bench_rule.rel", locale, n=f"{float(n) * 100:g}")
+        if src.get("checked"):
+            text += " · " + t("bench_src.checked", locale, date=src["checked"])
         return text
     return t("bench_src.provisional", locale)
 

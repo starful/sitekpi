@@ -132,6 +132,7 @@ def source_of(spec: dict[str, Any]) -> dict[str, str]:
             "label": str(src["label"]),
             "url": str(src.get("url") or ""),
             "rule": str(src.get("rule") or ""),
+            "checked": str(src.get("checked") or ""),
         }
     return {"kind": "provisional", "label": "", "url": "", "rule": ""}
 

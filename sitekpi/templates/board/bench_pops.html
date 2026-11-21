@@ -33,7 +33,8 @@
     <p class="pop-meta">
       <span>{{ t("bench_edit.col.default", loc) }} {{ r.default }}</span>
       {% if r.source.kind == "cited" and r.source.url %}
-      <a class="src-btn{{ ' is-all' if r.all_industries else '' }}" href="{{ r.source.url }}" target="_blank" rel="noopener noreferrer" title="{{ r.source.label }}">{{ t("bench_src.button_all" if r.all_industries else "bench_src.button", loc) }}</a>
+      <span class="src-grp"><a class="src-btn{{ ' is-all' if r.all_industries else '' }}" href="{{ r.source.url }}" target="_blank" rel="noopener noreferrer" title="{{ r.source.label }}">{{ t("bench_src.button_all" if r.all_industries else "bench_src.button", loc) }}</a>
+      {% if r.source.checked %}<span class="src-checked">{{ t("bench_src.checked", loc, date=r.source.checked) }}</span>{% endif %}</span>
       {% elif r.source.kind == "blend" %}
       <span class="src-none src-blend" title="{{ t('bench_src.blend', loc, label=r.source.label) }}">{{ t("bench_src.blend_short", loc) }}</span>
       {% endif %}

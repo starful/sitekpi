@@ -14,22 +14,28 @@ from __future__ import annotations
 
 from typing import Any
 
+# "checked" (YYYY-MM-DD) is shown next to 出典 on the board. When you re-check a page,
+# update its date here (and the figures, if they changed).
 SOURCES: dict[str, dict[str, str]] = {
     "databox_ga4": {
         "label": "Databox — GA4 Industry Benchmarks (Aug 2023, median)",
         "url": "https://databox.com/google-analytics-4-industry-benchmarks",
+        "checked": "2026-10-23",  # last time the figures were compared with the page
     },
     "fps_b2b": {
         "label": "First Page Sage — B2B Conversion Rates by Industry (visitor-to-lead, Jan 2022–Aug 2025)",
         "url": "https://firstpagesage.com/reports/b2b-conversion-rates-by-industry/",
+        "checked": "2026-10-23",  # last time the figures were compared with the page
     },
     "dynamic_yield": {
         "label": "Dynamic Yield 2024 via Smart Insights — ecommerce conversion rate per user",
         "url": "https://www.smartinsights.com/ecommerce/ecommerce-analytics/ecommerce-conversion-rates/",
+        "checked": "2026-10-23",  # last time the figures were compared with the page
     },
     "baymard": {
         "label": "Baymard Institute — cart abandonment 70.22% (50 studies, updated Sep 2025); cart→purchase = 100 − 70.22",
         "url": "https://baymard.com/lists/cart-abandonment-rate",
+        "checked": "2026-10-22",  # last time the figures were compared with the page
     },
 }
 
@@ -146,5 +152,6 @@ def apply_sources(slug: str, benchmarks: dict[str, dict[str, Any]]) -> dict[str,
             "label": f"{src['label']} — {segment}: {value:g}{spec.get('unit', '')}",
             "url": src["url"],
             "rule": f"{rule[0]}:{rule[1]:g}",
+            "checked": src.get("checked", ""),
         }
     return out

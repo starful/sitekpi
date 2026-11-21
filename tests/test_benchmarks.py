@@ -214,3 +214,14 @@ def test_added_industries_cite_their_own_published_figures():
     for slug in DERIVED:
         r = _client().get(f"/{slug}")
         assert r.status_code == 200 and DERIVED[slug]["label"]["ja"] in r.text
+
+
+def test_cited_source_shows_checked_date():
+    """出典 carries the date the figures were last compared with the page (all three languages)."""
+    from sitekpi.packs.sources import SOURCES
+
+    assert all(s.get("checked") for s in SOURCES.values())
+    for lang, word in (("ja", "確認"), ("en", "checked"), ("ko", "확인")):
+        html = _client().get(f"/ec?lang={lang}").text
+        assert 'class="src-checked"' in html
+        assert f"{SOURCES['databox_ga4']['checked']} {word}" in html or f"{word} {SOURCES['databox_ga4']['checked']}" in html
