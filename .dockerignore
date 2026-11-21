@@ -15,3 +15,7 @@ mac
 tests
 scripts
 *.md
+# X API keys (scripts/post_to_x.py) — never bake into the image
+x-key
+x-key.*
+*.x-key
