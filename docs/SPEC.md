@@ -129,7 +129,7 @@ tests/ · scripts/
 2. 행동 → 팩(`flow_pack`), 매핑(`board_mapping`: 속성별 매핑 · 수정본 흐름 · 주전환).
 3. 병렬: 흐름(`live_flow_context` → `ga4.data.fetch_flow`, 실체는 `ga4/flow.py`) ∥ 보드 숫자(`_live_pack` → `fetch_pack_overlay`). 둘 다 `TTLCache` 5분.
 4. 前期: 실 GA4는 같은 요청의 직전 기간, 견본은 `board/prev.sample_prev`.
-5. 詳しい数字: 실 GA4는 `/live/details` 조각으로 나중에(`live_extras`: 7~8개 리포트 batch), 견본·데모는 같은 요청에서 `sample_extras`(결정적).
+5. 詳しい数字: 실 GA4는 `/live/details` 조각으로 나중에(`live_extras`: 7~8개 리포트 batch, 속성·기간·이벤트별 `TTLCache` 5분 — 오류는 캐시하지 않음), 견본·데모는 같은 요청에서 `sample_extras`(결정적).
 6. 편집 모드·업종 드로어: `routes/setup.board_setup(request, flow_users=…, flow_entry=…)` — 편집 모드 인원은 3의 흐름 숫자를 그대로 쓴다.
 7. 目安: `compose_benchmarks(행동, 업종)` → `load_effective`(自社目安 덮어쓰기) → `views/board`에서 판정.
 
@@ -209,4 +209,3 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 
 - 全業種 판별이 출처 문구 "All industries" 문자열에 의존 (`packs/sources.py`).
 - 견본 팩 일부의 `FLOW_STEPS`에 팩 고유 이벤트 이름이 남아 있다 (견본만 영향).
-- `/live/details`는 매 요청 GA4 batch(캐시 5분). 기간을 자주 바꾸면 호출이 는다.

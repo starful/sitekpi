@@ -40,3 +40,11 @@ def _no_story_ga4(monkeypatch):
     from sitekpi.routes import live_board
 
     monkeypatch.setattr(live_board, "live_story_x", lambda *a, **k: None)
+
+
+@pytest.fixture(autouse=True)
+def _fresh_details_cache():
+    """live_extras caches per property; tests fake different GA4 answers for the same id."""
+    from sitekpi.board import extras
+
+    extras._EXTRAS_CACHE._data.clear()

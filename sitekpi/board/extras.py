@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import Any
 
 from sitekpi.board.prev import _jitter, _mmss
+from sitekpi.cache import TTLCache
 
 WEEKS = 8
 DEVICES = ("mobile", "desktop", "tablet")
@@ -96,14 +97,36 @@ def sample_extras(slug: str, data: dict[str, Any], prev: dict[str, Any] | None) 
     return {"weeks": weeks, "cur": cur, "prev": prv, "has_revenue": bool(cur.get("tx")), "devices": devices}
 
 
+# /live/details is fetched after every board view and period switch. Cache the
+# GA4 batch per property · period · events (same 5 min as the other GA4 caches);
+# errors are not cached so a retry can succeed.
+_EXTRAS_CACHE = TTLCache(maxsize=256, ttl=300.0)
+
+
 def live_extras(session: dict[str, Any], *, period: str, events: list[str],
                 primary: str) -> tuple[dict[str, Any] | None, str | None]:
-    """The same shape from GA4 (3 batched round trips). (None, error) when GA4 says no."""
+    """The same shape from GA4 (one batched round trip, cached 5 min). (None, error) when GA4 says no."""
+    import copy
+
     from sitekpi.ga4 import data as g
 
     info = g.connection_info(session)
     if not info or not g.HAS_DATA or not g.HAS_GOOGLE_AUTH:
         return None, None
+    key = f"{info['property_id']}|{period}|{primary}|{','.join(events)}"
+    hit = _EXTRAS_CACHE.get(key)
+    if hit is not None:
+        return copy.deepcopy(hit), None  # callers may mutate nested dicts
+    out, err = _live_extras_fetch(session, info, period=period, events=events, primary=primary)
+    if out is not None:
+        _EXTRAS_CACHE.set(key, copy.deepcopy(out))
+    return out, err
+
+
+def _live_extras_fetch(session: dict[str, Any], info: dict[str, Any], *, period: str, events: list[str],
+                       primary: str) -> tuple[dict[str, Any] | None, str | None]:
+    from sitekpi.ga4 import data as g
+
     cur_start, cur_end, prev_start, prev_end, _label = g.PERIOD_RANGE.get(period) or g.PERIOD_RANGE["28d"]
     try:
         creds = g.creds_from_session(session)

@@ -146,3 +146,40 @@ def test_glossary_stickers_use_opaque_urls(client):
     r = client.get(pv)
     assert r.status_code == 200 and r.headers["content-type"] == "image/gif"
     assert client.get("/stk/0000000000000000.gif").status_code == 404
+
+
+def test_live_extras_cached_per_property_and_period(monkeypatch):
+    """Period switches re-open /live/details: the same property · period must not re-hit GA4."""
+    from types import SimpleNamespace as NS
+
+    from sitekpi.board.extras import live_extras
+    from sitekpi.ga4 import data as g
+
+    calls = []
+    empty = NS(rows=[])
+    monkeypatch.setattr(g, "connection_info", lambda s: {"property_id": "9", "property_name": "P"})
+    monkeypatch.setattr(g, "HAS_DATA", True)
+    monkeypatch.setattr(g, "HAS_GOOGLE_AUTH", True)
+    monkeypatch.setattr(g, "creds_from_session", lambda s: object())
+    monkeypatch.setattr(g, "BetaAnalyticsDataClient", lambda credentials: object())
+    monkeypatch.setattr(g, "_req", lambda *a, **k: None)
+    monkeypatch.setattr(g, "_event_filter", lambda names: None)
+
+    def batch(client, pid, reqs):
+        calls.append(pid)
+        return [empty] * len(reqs)
+
+    monkeypatch.setattr(g, "_batch", batch)
+    a, _ = live_extras({}, period="28d", events=["purchase"], primary="purchase")
+    a["weeks"]["uu"][0] = 999  # a caller mutating the result must not poison the cache
+    b, _ = live_extras({}, period="28d", events=["purchase"], primary="purchase")
+    assert len(calls) == 1 and b["weeks"]["uu"][0] == 0
+    live_extras({}, period="7d", events=["purchase"], primary="purchase")
+    assert len(calls) == 2
+
+    def boom(client, pid, reqs):
+        raise RuntimeError("quota")
+
+    monkeypatch.setattr(g, "_batch", boom)
+    x, err = live_extras({}, period="90d_x", events=["purchase"], primary="purchase")
+    assert x is None and "quota" in err  # errors are not cached
