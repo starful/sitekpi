@@ -68,7 +68,7 @@
 
 **준비된 것 (2026-11-23)**
 - Resend 도메인 `sitekpi.net` 인증 완료 (Tokyo `ap-northeast-1`, DKIM `resend._domainkey` · SPF CNAME `rsend` · `send` · DMARC `_dmarc` `p=none`, DNS는 お名前.com). 받기(receiving)는 끔.
-- API 키: Secret Manager `resend_mail` (프로젝트 `starful-258005`). 구현할 때 `cloudbuild.yaml`의 `--set-secrets`에 `RESEND_API_KEY=resend_mail:latest`를 더하고, Cloud Run 서비스 계정에 이 비밀값의 `roles/secretmanager.secretAccessor`를 준다(`scripts/gcp_setup.sh`). 다른 비밀값은 `SITEKPI_*` 이름이라, 이름을 맞추고 싶으면 그때 `SITEKPI_RESEND_API_KEY`로 새로 만들어도 된다.
+- API 키: Secret Manager `SITEKPI_RESEND_API_KEY` (프로젝트 `starful-258005`), Resend 권한 「Sending access」·도메인 `sitekpi.net` 한정. 구현할 때 `cloudbuild.yaml`의 `--set-secrets`에 `RESEND_API_KEY=SITEKPI_RESEND_API_KEY:latest`를 더하고, Cloud Run 서비스 계정에 이 비밀값의 `roles/secretmanager.secretAccessor`를 준다(`scripts/gcp_setup.sh`).
 
 > 가격·무료 범위는 2026-11 시점 각 서비스 페이지 기준으로 다시 확인할 것.
 
