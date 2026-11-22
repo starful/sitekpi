@@ -66,6 +66,10 @@
 
 권장: **Resend**(또는 SendGrid). 무료 플랜의 하루 100통 상한 때문에, 월요일 아침에 구독자가 100명을 넘으면 유료(Pro, 월 50,000통)로 올려야 한다. 발신 `report@sitekpi.net`, SPF · DKIM · DMARC 설정. 코드에는 `send_mail(to, subject, html, text, headers)` 한 함수만 두고 구현을 바꿔 끼울 수 있게 한다. 키가 없으면 로그만 남긴다(개발·테스트).
 
+**준비된 것 (2026-11-23)**
+- Resend 도메인 `sitekpi.net` 인증 완료 (Tokyo `ap-northeast-1`, DKIM `resend._domainkey` · SPF CNAME `rsend` · `send` · DMARC `_dmarc` `p=none`, DNS는 お名前.com). 받기(receiving)는 끔.
+- API 키: Secret Manager `resend_mail` (프로젝트 `starful-258005`). 구현할 때 `cloudbuild.yaml`의 `--set-secrets`에 `RESEND_API_KEY=resend_mail:latest`를 더하고, Cloud Run 서비스 계정에 이 비밀값의 `roles/secretmanager.secretAccessor`를 준다(`scripts/gcp_setup.sh`). 다른 비밀값은 `SITEKPI_*` 이름이라, 이름을 맞추고 싶으면 그때 `SITEKPI_RESEND_API_KEY`로 새로 만들어도 된다.
+
 > 가격·무료 범위는 2026-11 시점 각 서비스 페이지 기준으로 다시 확인할 것.
 
 ## 6. 법·약관 (일본 기준)
