@@ -1480,21 +1480,34 @@ html.ai-dlg-on { overflow: hidden; }
   @keyframes ai-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 }
 
-/* --- print · PDF (「印刷・PDF」 button → browser print → 「PDF に保存」) ------------------------------- */
+/* --- print · PDF (「印刷・PDF」 → board.js prepares → browser print → 「PDF に保存」) ----------------------
+   Layout rules hang off html.is-printing (set by board.js for the print and for the hidden measuring
+   iframe), so what is measured is what is printed. Page rules stay in @media print. */
 .print-meta { display: none; }
-@media print {
-  @page { margin: 12mm; }
-  html, body { background: #fff !important; }
-  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .shell { display: block !important; }
-  .rail, .mobile-bar, .memo, .story-toc, .ex-wrap, dialog, [data-drawer],
+html.is-printing, html.is-printing body { background: #fff !important; }
+html.is-printing .shell { display: block !important; }
+html.is-printing .main { width: 718px; max-width: 718px; margin: 0; }
+html.is-printing :is(.rail, .mobile-bar, .memo, .story-toc, .ex-wrap, dialog, [data-drawer],
   .top-right, .link-btn, .nudge-btn, .flow-nudge, .flow-add, .ai-top, .notice-btn, .pop-actions,
-  .survey, [data-survey] { display: none !important; }
-  .top { position: static !important; box-shadow: none !important; padding: 0 0 4px !important; }
-  .print-meta { display: block; margin: 0 0 10px; font-size: 0.75rem; color: #475569; }
-  .content { max-width: none !important; padding: 0 !important; gap: 12px !important; }
-  .content > section.card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; break-inside: avoid; page-break-inside: avoid; }
-  .content > section.card.detail { break-inside: auto; page-break-inside: auto; }
-  .flow-scroll { overflow: visible !important; }
+  .survey, [data-survey], .dgroup-chev) { display: none !important; }
+html.is-printing .top { position: static !important; box-shadow: none !important; padding: 0 0 4px !important; }
+html.is-printing .print-meta { display: block; margin: 0 0 10px; font-size: 0.75rem; color: #475569; }
+html.is-printing .content { max-width: none !important; padding: 0 !important; gap: 12px !important; overflow: visible; }
+html.is-printing .content > section.card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+html.is-printing .flow-scroll { overflow: visible !important; }
+html.is-printing .print-unit { transform-origin: top left; }
+@media print {
+  @page { size: A4 portrait; margin: 10mm; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-page { break-before: page; page-break-before: always; }
+  .print-unit { break-inside: avoid; page-break-inside: avoid; }
+  .content > section.card.detail, .print-split { break-inside: auto; page-break-inside: auto; }
+  .print-split { display: block !important; }
+  /* page breaks on items of a flex column leave a blank page in Chrome: lay categories out as blocks */
+  .dgroups { display: block !important; }
+  .dgroups > .dgroup { margin-top: 12px; }
   a[href]::after { content: none !important; }
+  /* no board.js (old browser): at least drop the menu and keep cards whole */
+  .rail, .mobile-bar, .memo, .story-toc { display: none !important; }
+  .shell { display: block !important; }
 }

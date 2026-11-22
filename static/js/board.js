@@ -29,20 +29,207 @@ document.addEventListener("click", (e) => {
   if (table) table.hidden = !open;
 });
 
-/* 印刷 / PDF: the browser's print dialog (「PDF に保存」 there). Print CSS: board.css 「print」.
-   Collapsed 詳しい数字 groups and explanation folds open for paper and close again afterwards. */
+/* 印刷 / PDF: one category per page, never cut in the middle (board.css 「print」).
+   Units = each story card, and each 詳しい数字 category. Every unit starts a new A4 page; a unit taller than
+   a page is scaled down (zoom) until it fits instead of being split. Heights are measured in a hidden
+   iframe exactly as wide as the printable area, so the narrow print layout (≤900px rules) is what we measure.
+   Closed folds and collapsed categories open for paper and close again afterwards. */
 (function () {
-  const opened = [];
-  addEventListener("beforeprint", () => {
+  const PRINT_W = 718;   // A4 210mm − 2 × 10mm margin, in CSS px (96 per inch)
+  const PRINT_H = 1020;  // A4 297mm − 2 × 10mm = 1047px, minus a little air for the browser
+  const MIN_ZOOM = 0.45; // smaller than this would be unreadable; never expected on a board
+  const restore = [];
+  let prepared = false;
+
+  function units(doc) {
+    const content = doc.querySelector(".content");
+    if (!content) return [];
+    const out = [];
+    content.querySelectorAll(":scope > section.card").forEach((card) => {
+      if (card.classList.contains("detail")) {
+        out.push({ el: card, kind: "detail" });
+        card.querySelectorAll(".dgroup").forEach((g, i) => out.push({ el: g, kind: i ? "group" : "group-first", card: card }));
+      } else {
+        out.push({ el: card, kind: "card" });
+      }
+    });
+    return out;
+  }
+
+  function openAll() {
+    document.querySelectorAll(".content details:not([open])").forEach((el) => {
+      el.open = true; restore.push(() => { el.open = false; });
+    });
+    document.querySelectorAll("[data-dgroup-toggle][aria-expanded='false']").forEach((btn) => {
+      const table = document.getElementById(btn.getAttribute("aria-controls"));
+      const group = btn.closest(".dgroup");
+      btn.setAttribute("aria-expanded", "true");
+      if (table) table.hidden = false;
+      if (group) group.classList.add("is-open");
+      restore.push(() => {
+        btn.setAttribute("aria-expanded", "false");
+        if (table) table.hidden = true;
+        if (group) group.classList.remove("is-open");
+      });
+    });
     const d = document.querySelector("[data-print-date]");
     if (d) d.textContent = new Date().toLocaleDateString(document.documentElement.lang || "ja");
-    document.querySelectorAll(".content details:not([open])").forEach((el) => { el.open = true; opened.push(el); });
+  }
+
+  function docTop(el, win) { return el.getBoundingClientRect().top + (win ? win.scrollY : 0); }
+
+  function fit(el, avail) {
+    let z = 1;
+    let h = el.getBoundingClientRect().height;
+    for (let k = 0; k < 4 && h > avail; k++) {
+      z = Math.max(MIN_ZOOM, z * (avail / h) * 0.98);
+      el.style.zoom = String(z);
+      el.style.width = (el.parentElement.clientWidth / z) + "px";
+      h = el.getBoundingClientRect().height;
+      if (z === MIN_ZOOM) break;
+    }
+    return z < 1 ? { zoom: z, width: el.style.width } : null;
+  }
+
+  // Plan per unit (index-aligned with units(document)), measured in `doc` (iframe, or this page).
+  // A card that fits keeps whole (a slight shrink to 85% is allowed). A longer card is split only between
+  // its own blocks (e.g. the sub-questions of 「誰が？」) and packed onto as few pages as fit; a block taller
+  // than a page is shrunk on its own page. A 詳しい数字 category always gets its own page.
+  function measure(doc, win) {
+    const list = units(doc);
+    return list.map((u, i) => {
+      if (u.kind === "detail") return null;  // flows; its categories are the units
+      const el = u.el;
+      const avail = u.kind === "group-first"
+        ? PRINT_H - (docTop(el) - docTop(u.card))
+        : i === 0 ? PRINT_H - docTop(el, win) : PRINT_H;
+      const h = el.getBoundingClientRect().height;
+      if (h <= avail) return null;
+      if (u.kind !== "card" || h * 0.85 <= avail) return fit(el, avail) ? { zoom: el.style.zoom, width: el.style.width } : null;
+      // split between blocks
+      const kids = [...el.children].filter((c) => c.getBoundingClientRect().height > 0 || c.classList.contains("story-mark"));
+      const top0 = docTop(el);
+      const bottom = top0 + h;
+      const segs = kids.map((c, k) => {
+        const t = docTop(c);
+        const next = k + 1 < kids.length ? docTop(kids[k + 1]) : bottom;
+        return { el: c, idx: [...el.children].indexOf(c), h: Math.max(0, next - t), lead: k === 0 ? t - top0 : 0 };
+      });
+      const breaks = [];
+      const zooms = {};
+      let used = 0;
+      let budgetNow = avail;
+      let onPage = 0;
+      segs.forEach((sg, k) => {
+        const need = sg.h + sg.lead;
+        // keep headings (qk · h2 · short notes) with the block after them
+        const small = sg.h < 80 && k + 1 < segs.length;
+        if (onPage && used + need > budgetNow && !(small && used + need + segs[k + 1].h <= budgetNow)) {
+          breaks.push(sg.idx);
+          used = 0; onPage = 0; budgetNow = PRINT_H;
+        }
+        if (need > budgetNow && !small) {
+          const z = fit(sg.el, budgetNow - used);
+          if (z) zooms[sg.idx] = z;
+          used += sg.el.getBoundingClientRect().height;
+        } else {
+          used += need;
+        }
+        onPage++;
+      });
+      return { split: true, breaks: breaks, zooms: zooms };
+    });
+  }
+
+  function apply(plan) {
+    const list = units(document);
+    const marked = [];
+    const mark = (el, page, unit) => {
+      if (page) el.classList.add("print-page");
+      if (unit) el.classList.add("print-unit");
+      marked.push(el);
+    };
+    list.forEach((u, i) => {
+      const p = plan[i];
+      // every unit starts a page except the very first card and the detail card's first category
+      const page = i > 0 && u.kind !== "group-first";
+      if (p && p.split) {
+        mark(u.el, page, false);
+        u.el.classList.add("print-split");
+        [...u.el.children].forEach((c, k) => {
+          mark(c, p.breaks.includes(k), true);
+          const z = p.zooms[k];
+          if (z) { c.style.zoom = String(z.zoom); c.style.width = z.width; }
+        });
+      } else {
+        mark(u.el, page, u.kind !== "detail");
+        if (p) { u.el.style.zoom = String(p.zoom); u.el.style.width = p.width; }
+      }
+    });
+    restore.push(() => marked.forEach((el) => {
+      el.classList.remove("print-page", "print-unit", "print-split");
+      el.style.zoom = ""; el.style.width = "";
+    }));
+  }
+
+  // Measured copy: the page's current DOM (no scripts) in an iframe as wide as the paper
+  function measureInFrame() {
+    return new Promise((resolve) => {
+      const f = document.createElement("iframe");
+      f.setAttribute("aria-hidden", "true");
+      f.tabIndex = -1;
+      f.style.cssText = `position:fixed;left:-10000px;top:0;width:${PRINT_W}px;height:${PRINT_H}px;border:0;visibility:hidden`;
+      const html = document.documentElement.cloneNode(true);
+      html.querySelectorAll("script, iframe").forEach((n) => n.remove());
+      html.classList.add("is-printing");
+      f.srcdoc = "<!DOCTYPE html>" + html.outerHTML;
+      let done = false;
+      const finish = (plan) => { if (done) return; done = true; f.remove(); resolve(plan); };
+      f.addEventListener("load", () => {
+        const doc = f.contentDocument;
+        const ready = doc && doc.fonts ? doc.fonts.ready : Promise.resolve();
+        ready.then(() => setTimeout(() => { try { finish(measure(doc, f.contentWindow)); } catch (e) { finish(null); } }, 60));
+      });
+      setTimeout(() => finish(null), 4000);  // never block printing
+      document.body.appendChild(f);
+    });
+  }
+
+  let busy = false;
+  async function printBoard() {
+    if (busy) return;
+    busy = true;
+    openAll();
+    let plan = await measureInFrame();
+    document.documentElement.classList.add("is-printing");
+    if (!plan) plan = measure(document, window);  // fallback: measure here
+    apply(plan);
+    prepared = true;
+    busy = false;
+    window.print();
+  }
+
+  addEventListener("beforeprint", () => {
+    if (prepared) return;
+    // browser menu print: no time for the iframe — measure on this page (close enough)
+    openAll();
+    document.documentElement.classList.add("is-printing");
+    apply(measure(document, window));
+    prepared = true;
   });
-  addEventListener("afterprint", () => { while (opened.length) opened.pop().open = false; });
+  addEventListener("afterprint", () => {
+    while (restore.length) restore.pop()();
+    document.documentElement.classList.remove("is-printing");
+    prepared = false;
+  });
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-board-print]")) printBoard();
+  });
+  // ⌘P / Ctrl+P on a board → the same prepared print
+  document.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && !e.altKey && (e.key === "p" || e.key === "P")) { e.preventDefault(); printBoard(); }
+  });
 })();
-document.addEventListener("click", (e) => {
-  if (e.target.closest("[data-board-print]")) window.print();
-});
 
 /* 共有: native share sheet where available, else copy the current URL — never any GA4 data */
 document.addEventListener("click", (e) => {
