@@ -135,7 +135,7 @@ LANDING: dict[str, dict] = {
         "faq": [
             ["無料ですか？", "はい、無料で使えます。"],
             ["GA4 のデータは保存されますか？", "レポートの結果は表示のためにサーバーのメモリに最大 5 分置くだけで、データベースには保存しません。保存するのは、ログインのセッションと、直した流れ・自社目安などのボード設定です。"],
-            ["業界目安はどこから来ていますか？", "Databox・First Page Sage などの公開データです。各指標の「説明」に出典を表示します。出典のない指標は判定しません。"],
+            ["業界目安はどこから来ていますか？", "First Page Sage・Baymard Institute などの公開データです。各指標の「説明」に出典を表示します。出典のない指標は判定しません。"],
             ["何が必要ですか？", "GA4 を閲覧できる Google アカウントだけです。タグの追加や設定の変更は要りません。ログインのあと「Google で確認されていないアプリ」と出たら、審査中のためです。「続行」を押して進めます。"],
             ["やめたいときは？", "メニューの「接続・切断」で切断すると、セッションを消し、Google 側の許可も取り消します。"],
             ["どんな業種に対応していますか？", "EC・小売、B2B・リード、SaaS、医療・クリニック、美容・サロン、不動産、メディアなど {n_ind} 業種です。サイトの目的（買う・問い合わせる・予約する など {n_beh} 種類）と組み合わせて、流れと目安を選びます。"],
@@ -270,7 +270,7 @@ LANDING: dict[str, dict] = {
         "faq": [
             ["Is it free?", "Yes, it's free to use."],
             ["Is my GA4 data stored?", "Report results are kept in server memory for up to 5 minutes to show the page, never in a database. What we store is your sign-in session and board settings such as fixed flows and your own targets."],
-            ["Where do the industry benchmarks come from?", "From published data such as Databox and First Page Sage. Each metric's “Help” shows the source. Metrics without a source are not judged."],
+            ["Where do the industry benchmarks come from?", "From published data such as First Page Sage and Baymard Institute. Each metric's “Help” shows the source. Metrics without a source are not judged."],
             ["What do I need?", "Only a Google account that can view GA4. No tags or setting changes. If Google says the app isn't verified after you sign in, that's because the review is under way — press “Continue”."],
             ["How do I stop using it?", "Disconnect from “Connect / disconnect” in the menu: your session is deleted and the permission is revoked at Google."],
             ["Which industries are covered?", "{n_ind} industries including e-commerce, B2B leads, SaaS, clinics, beauty salons, real estate and media. Combined with the site's goal ({n_beh} kinds such as buy, inquire, book), they set the flow and the benchmarks."],
@@ -405,7 +405,7 @@ LANDING: dict[str, dict] = {
         "faq": [
             ["무료인가요?", "네, 무료로 쓸 수 있습니다."],
             ["GA4 데이터가 저장되나요?", "보고서 결과는 화면 표시를 위해 서버 메모리에 최대 5분 둘 뿐, 데이터베이스에는 저장하지 않습니다. 저장하는 것은 로그인 세션과, 고친 흐름·자사 기준 같은 보드 설정입니다."],
-            ["업계 기준은 어디서 오나요?", "Databox·First Page Sage 등의 공개 데이터입니다. 각 지표의 「설명」에 출처를 표시합니다. 출처가 없는 지표는 판정하지 않습니다."],
+            ["업계 기준은 어디서 오나요?", "First Page Sage·Baymard Institute 등의 공개 데이터입니다. 각 지표의 「설명」에 출처를 표시합니다. 출처가 없는 지표는 판정하지 않습니다."],
             ["무엇이 필요한가요?", "GA4를 볼 수 있는 Google 계정만 있으면 됩니다. 태그 추가나 설정 변경은 필요 없습니다. 로그인한 뒤 「Google에서 확인하지 않은 앱」이라고 나오면 심사 중이라서예요. 「계속」을 눌러 진행하세요."],
             ["그만 쓰고 싶을 때는?", "메뉴의 「연결·해제」에서 해제하면 세션을 지우고 Google 쪽 권한도 취소합니다."],
             ["어떤 업종을 지원하나요?", "EC·소매, B2B 리드, SaaS, 의료·클리닉, 미용·살롱, 부동산, 미디어 등 {n_ind}개 업종입니다. 사이트 목적(구매·문의·예약 등 {n_beh}종류)과 조합해 흐름과 기준을 고릅니다."],

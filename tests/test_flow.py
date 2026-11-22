@@ -352,7 +352,7 @@ def test_industry_of_another_kind_uses_site_wide_standards_only(live):
     soup = _soup(html)
     assert "買う" in soup.select_one(".rail .nav-site-sub").get_text()
     assert "士業・法律事務所" in soup.select_one("header.top .top-item b").get_text()
-    assert "Consulting & Professional Services" in _template(html, "pop-bench-engaged_rate").select_one("a.src-btn")["title"]
+    assert not _template(html, "pop-bench-engaged_rate").select_one("a.src-btn")  # no cited engagement source (Databox removed)
     # CVR standards always follow the chosen industry, whatever the flow
     assert _template(html, "pop-bench-signup_rate").select_one("a.src-btn, .pop-why")
     c.post("/setup/industry", data={"industry": "apparel"})

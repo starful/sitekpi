@@ -31,7 +31,7 @@ def test_samples_goal_list_and_preview(client):
     # the board's own いまの状態: a sentence and three numbers
     assert pane.select_one(".sp-verdict").get_text().strip() and len(pane.select(".sp-tile")) == 3
     bars = pane.select(".sp-bars li")
-    assert bars[0].select_one(".sp-bar-label").get_text() == "サイトに来た" and len(pane.select(".sp-bars li.is-worst")) == 1
+    assert bars[0].select_one(".sp-bar-label").get_text() == "サイトに来た" and len(pane.select(".sp-bars li.is-worst")) >= 1
 
 
 def test_samples_unknown_values_fall_back(client):

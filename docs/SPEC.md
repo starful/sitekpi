@@ -85,7 +85,7 @@ tests/ · scripts/
 | GET `/glossary` | 指標辞典 | |
 | GET `/builder` · `/builder/values` | 대시보드 만들기 · GA4 값(JSON) | |
 | GET/POST `/settings` | 언어 · 연결 사이트 | |
-| GET `/sites?period=` | 사이트 목록: 이 Google 계정의 GA4 속성마다 総評 + 타일 3개. 지금 사이트 외에는 행동을 추측(仮). 최대 12개, 속성당 GA4 보고서 2개 병렬, 5분 캐시. Pro 게이트 `billing` `site_compare`: 목록·지금 사이트는 무료, 다른 사이트 総評은 Pro(데모는 전부) | `routes/sites.py` · `portfolio.py` · `sites.html` · `sites.css` |
+| GET `/sites?period=` | 사이트 목록: 이 Google 계정의 GA4 속성마다 総評 + 타일 3개. 지금 사이트 외에는 행동을 추측(仮). 최대 12개, 속성당 GA4 보고서 2개 병렬, 5분 캐시. 지금은 전부 무료(`site_compare`를 `billing.PRO_FEATURES`에서 뺌). 다시 넣으면 목록·지금 사이트만 무료, 다른 사이트 総評은 Pro(데모는 전부) | `routes/sites.py` · `portfolio.py` · `sites.html` · `sites.css` |
 | POST `/sites/open` | 그 속성으로 보드 전환(= 「別のプロパティ」 + 선택, 선택 초기화) → `/live` | |
 | POST `/events` · `/survey` | 이용자 로그(track.js가 GA4와 같은 이벤트 + `pv`) · 30초 설문. 익명 쿠키 `sk_vid` | `sitekpi/visitlog.py` · `static/js/survey.js` |
 | GET `/hq/api/users?days=7\|30\|90` | HQ 「SiteKPI 이용자」 팝업용 JSON (Bearer `visitlog.hq_token()`). `story`(보드 장별 도달, `story_reach`) · `feedback`(メモ・ご意見 화면·카드별 👍/👎·최근 30개) 포함 | `visitlog.summarize` · `story_reach` · `feedback_summary` (순수 함수) · `feedback.read_since` |

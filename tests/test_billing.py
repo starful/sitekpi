@@ -126,9 +126,10 @@ def test_active_pro_allows_gated_features_and_free_does_not():
     uid = "cus_plan_gate"
     assert plan_allows(None, "advanced_report") is False
     assert plan_allows(None, "board_live") is True  # unknown / free feature — never lock the board
-    assert check_feature_access(None, "site_compare")["need"] == PLAN_PRO
+    assert check_feature_access(None, "advanced_report")["need"] == PLAN_PRO
+    assert check_feature_access(None, "site_compare") is None  # /sites is free for now (2026-11-22)
 
     get_store().upsert(uid, plan="pro_monthly", status="active")
     assert effective_plan(uid) == PLAN_PRO
     assert plan_allows(uid, "advanced_report") is True
-    assert check_feature_access(uid, "site_compare") is None
+    assert check_feature_access(uid, "advanced_report") is None

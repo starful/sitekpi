@@ -32,12 +32,13 @@ _TEXT: dict[str, dict[str, Any]] = {
         "dev": "開発者向けのくわしい記録（変更したコードの一覧）は {link} にあります。",
         "entries": [
             ("サイト一覧と、印刷・PDF", [
-                ("new", "「サイト一覧」: この Google アカウントで見られる GA4 プロパティを並べ、それぞれの総評と 3 つの数字を同じ物差しで表示。代理店・コンサルの方向けです（いま開いているサイト以外の総評は Pro）。"),
+                ("new", "「サイト一覧」: この Google アカウントで見られる GA4 プロパティを並べ、それぞれの総評と 3 つの数字を同じ物差しで表示。代理店・コンサルの方向けです。"),
                 ("new", "ボードの上のバーに「印刷・PDF」。印刷画面で「PDF に保存」を選ぶと、メニューやボタンを除いた報告用の PDF になります。"),
                 ("better", "「今見るべきこと」の見るポイントを、訪問者の行動（買う · 問い合わせ · 予約 · 登録 · 読む …）ごとの言葉に。"),
                 ("better", "業界目安の「出典」の横に、数字を出典ページと照らし合わせた日（確認日）を表示。"),
                 ("better", "スクロール · フォーム · 動画などの段が「未計測」のとき、GA4 の拡張計測機能でオンにする場所を案内。"),
                 ("better", "期間を切り替えたときの「詳しい数字」が速くなりました。"),
+                ("better", "エンゲージ率・すぐ離脱に近い率の業界目安を外しました。出典の利用条件が確認できるまで「基準なし」と表示します。"),
             ]),
             ("AI への質問文をすぐ開けるように", [
                 ("better", "ボードの上のバーに「✦ AI に聞く」。押すと、この画面の数字を入れた質問文がポップアップで開きます（スマホは下から）。"),
@@ -84,12 +85,13 @@ _TEXT: dict[str, dict[str, Any]] = {
         "dev": "The detailed record for developers (every code change) is on {link}.",
         "entries": [
             ("All sites, and Print / PDF", [
-                ("new", "“All sites”: every GA4 property this Google account can read, each with its summary and three numbers on the same yardstick. Made for agencies and consultants (summaries of sites other than the open one are Pro)."),
+                ("new", "“All sites”: every GA4 property this Google account can read, each with its summary and three numbers on the same yardstick. Made for agencies and consultants."),
                 ("new", "“Print / PDF” in the board's top bar. Choose “Save as PDF” in the print dialog for a clean report without menus and buttons."),
                 ("better", "“What to look at now” tips now speak to your visitor behavior (buy · contact · book · sign up · read …)."),
                 ("better", "Next to an industry target's “Source”, the date its figures were last checked against the source page."),
                 ("better", "When a scroll, form or video step shows “Not tracked”, the board points to the GA4 enhanced-measurement switch."),
                 ("better", "“Detailed numbers” load faster when you switch the period."),
+                ("better", "Industry targets for engagement and bounce-like rate are removed until we can confirm the source's terms; they show “No benchmark”."),
             ]),
             ("Open the AI question in one click", [
                 ("better", "“✦ Ask AI” in the board's top bar opens the question with this screen's numbers in a popup (a sheet from the bottom on phones)."),
@@ -136,12 +138,13 @@ _TEXT: dict[str, dict[str, Any]] = {
         "dev": "개발자용 자세한 기록(바뀐 코드 목록)은 {link}에 있어요.",
         "entries": [
             ("사이트 목록과 인쇄·PDF", [
-                ("new", "「사이트 목록」: 이 Google 계정으로 볼 수 있는 GA4 속성을 나란히, 각각의 총평과 숫자 3개를 같은 잣대로 보여 줘요. 대행사·컨설턴트용이에요(지금 연 사이트 외의 총평은 Pro)."),
+                ("new", "「사이트 목록」: 이 Google 계정으로 볼 수 있는 GA4 속성을 나란히, 각각의 총평과 숫자 3개를 같은 잣대로 보여 줘요. 대행사·컨설턴트용이에요."),
                 ("new", "보드 위쪽 바에 「인쇄·PDF」. 인쇄 화면에서 「PDF로 저장」을 고르면 메뉴·버튼을 뺀 보고용 PDF가 돼요."),
                 ("better", "「지금 볼 것」의 확인할 점을 방문자 행동(구매 · 문의 · 예약 · 가입 · 읽기 …)에 맞는 말로 바꿨어요."),
                 ("better", "업계 기준 「출처」 옆에, 숫자를 출처 페이지와 대조한 날(확인일)을 표시해요."),
                 ("better", "스크롤·폼·동영상 단계가 「미계측」일 때, GA4 향상된 측정에서 켜는 곳을 안내해요."),
                 ("better", "기간을 바꿀 때 「자세한 숫자」가 빨라졌어요."),
+                ("better", "참여율·이탈에 가까운 율의 업계 기준을 뺐어요. 출처의 이용 조건을 확인할 때까지 「기준 없음」으로 보여요."),
             ]),
             ("AI 질문문을 바로 열 수 있게", [
                 ("better", "보드 위쪽 바에 「✦ AI에게 묻기」. 누르면 이 화면의 숫자를 넣은 질문문이 팝업으로 열려요(스마트폰은 아래에서)."),

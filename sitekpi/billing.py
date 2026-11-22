@@ -50,7 +50,8 @@ _PRO_PLAN_KEYS = frozenset({
 # setup here — free users must keep the current live path (HQ verify regressions).
 PRO_FEATURES = frozenset({
     "advanced_report",  # future: GA4 advanced / export packs
-    "site_compare",     # future: multi-site compare
+    # "site_compare" (/sites: other sites' summaries) is free for now (2026-11-22 decision);
+    # add it back here to put it behind Pro once paid plans can be bought.
 })
 
 

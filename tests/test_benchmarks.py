@@ -184,7 +184,7 @@ def test_live_targets_are_shared_per_property_and_separate_from_samples(connecte
 
 def test_source_is_a_button_not_a_full_url():
     html = _client().get("/ec").text
-    cited = _pop(html, "engaged_rate").select_one("a.src-btn")
+    cited = _pop(html, "signup_rate").select_one("a.src-btn")
     assert cited and cited.get_text(strip=True) == "出典" and cited["href"].startswith("https://")
     assert cited["target"] == "_blank" and "noopener" in cited["rel"]
     assert cited["title"]  # publisher name on hover, not printed
@@ -200,9 +200,9 @@ def test_added_industries_cite_their_own_published_figures():
         src = BENCHMARKS[slug][key].get("source") or {}
         return src.get("label", "")
 
-    assert "Apparel & Footwear: 60.23%" in cited("apparel", "engaged_rate")
-    assert "Automotive: 41.06%" in cited("auto", "bounce_rate")
-    assert "Industrials & Manufacturing" in cited("manufacturing", "engaged_rate")
+    # Databox (engagement · bounce) removed 2026-11-22 (terms): no pack cites it any more
+    assert not any((BENCHMARKS[s][k].get("source") or {}).get("url")
+                   for s in BENCHMARKS for k in ("engaged_rate", "bounce_rate") if k in BENCHMARKS[s])
     assert "Manufacturing: 2.2%" in cited("manufacturing", "signup_rate")
     assert "Legal Services: 7.4%" in cited("legal", "signup_rate")
     assert "HVAC Services: 3.1%" in cited("home_service", "signup_rate")
@@ -224,4 +224,5 @@ def test_cited_source_shows_checked_date():
     for lang, word in (("ja", "確認"), ("en", "checked"), ("ko", "확인")):
         html = _client().get(f"/ec?lang={lang}").text
         assert 'class="src-checked"' in html
-        assert f"{SOURCES['databox_ga4']['checked']} {word}" in html or f"{word} {SOURCES['databox_ga4']['checked']}" in html
+        d = SOURCES["dynamic_yield"]["checked"]
+        assert f"{d} {word}" in html or f"{word} {d}" in html
