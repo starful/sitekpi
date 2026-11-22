@@ -17,7 +17,7 @@ Tip = dict[str, str]
 BY_GROUP: dict[str, dict[str, Tip]] = {
     "buy": {
         "engaged_rate": {
-            "ja": "商品一覧・商品ページを開いてすぐ閉じていないか。入口ページ別に、広告や SNS から来た商品ページの参加率を見比べる。",
+            "ja": "商品一覧・商品ページを開いてすぐ閉じていないか。入口ページ別に、広告や SNS から来た商品ページのエンゲージ率を見比べる。",
             "en": "Are people closing listing and product pages right away? Compare engagement by landing page, especially product pages reached from ads or social.",
             "ko": "상품 목록·상품 페이지를 열자마자 닫는지. 입구 페이지별로, 광고·SNS에서 들어온 상품 페이지의 참여율을 비교한다.",
         },
@@ -39,7 +39,7 @@ BY_GROUP: dict[str, dict[str, Tip]] = {
     },
     "contact": {
         "engaged_rate": {
-            "ja": "サービス紹介・事例ページがしっかり読まれているか。問い合わせの前に読まれるページの参加率を入口別に見る。",
+            "ja": "サービス紹介・事例ページがしっかり読まれているか。問い合わせの前に読まれるページのエンゲージ率を入口別に見る。",
             "en": "Are the service and case-study pages being read? Check engagement by landing page for the pages people read before contacting you.",
             "ko": "서비스 소개·사례 페이지가 제대로 읽히는지. 문의 전에 읽는 페이지의 참여율을 입구별로 본다.",
         },
@@ -105,12 +105,12 @@ BY_GROUP: dict[str, dict[str, Tip]] = {
     },
     "read": {
         "engaged_rate": {
-            "ja": "記事が読まれているか。検索から来た記事の参加率を記事別に比べ、低い記事は冒頭で答えを出しているかを見る。",
+            "ja": "記事が読まれているか。検索から来た記事のエンゲージ率を記事別に比べ、低い記事は冒頭で答えを出しているかを見る。",
             "en": "Are articles being read? Compare engagement per article for search visitors; for low ones, check the answer comes early.",
             "ko": "기사가 읽히는지. 검색으로 들어온 기사의 참여율을 기사별로 비교하고, 낮은 기사는 앞부분에서 답을 주는지 본다.",
         },
         "bounce_rate": {
-            "ja": "読み物のサイトでは 1 記事で帰るのは普通。次の記事へ進む人の割合と、記事がしっかり読まれたか（参加率）と合わせて見る。",
+            "ja": "読み物のサイトでは 1 記事で帰るのは普通。次の記事へ進む人の割合と、記事がしっかり読まれたか（エンゲージ率）と合わせて見る。",
             "en": "On a reading site, leaving after one article is normal. Read it with the share who go on to another article and with engagement.",
             "ko": "읽을거리 사이트에서는 기사 하나만 보고 나가는 게 보통이다. 다음 기사로 가는 비율, 참여율과 함께 본다.",
         },

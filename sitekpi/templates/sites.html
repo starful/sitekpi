@@ -32,7 +32,7 @@
   {% endif %}
   <ul class="ss-list">
     {% for r in rows %}
-    <li class="ss-row tone-{{ r.get('tone') or 'neutral' }}{{ ' is-current' if r.current else '' }}{{ ' is-locked' if r.locked else '' }}">
+    <li class="ss-row ss-tone-{{ r.get('tone') or 'neutral' }}{{ ' is-current' if r.current else '' }}{{ ' is-locked' if r.locked else '' }}">
       <div class="ss-site">
         <span class="ss-name">{{ r.name }}{% if r.current %} <small class="ss-cur">{{ t("sites.current", loc) }}</small>{% endif %}</span>
         <span class="ss-sub">{{ r.account }}{% if r.get("behavior_label") %} · {{ r.behavior_label }}{% if r.get("industry_label") %} × {{ r.industry_label }}{% endif %}{% if r.get("guessed") %} <span class="ss-guess" title="{{ t('sites.guess_help', loc) }}">{{ t("sites.guess", loc) }}</span>{% endif %}{% endif %}</span>
