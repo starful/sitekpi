@@ -884,10 +884,10 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
       <thead><tr><th>항목</th><th>상태</th><th>메모</th></tr></thead>
       <tbody>
         <tr><td>주CVR 정의가 업종 기준과 다를 때 비교할지</td><td><span class="st todo">미정</span></td><td>지금은 선택 업종 값과 비교</td></tr>
-        <tr><td>출처 확인일 표시</td><td><span class="st todo">미구현</span></td><td>「説明」에 출처만 있고 날짜는 없음</td></tr>
-        <tr><td>今見るべきこと의 見るポイント를 행동별로</td><td><span class="st todo">미구현</span></td><td>지금은 지표 공통 문구</td></tr>
-        <tr><td>향상된 측정 안내 (<code>scroll</code> · <code>click</code> 記録なし)</td><td><span class="st todo">미구현</span></td><td>지금은 「この段を直す」만</td></tr>
-        <tr><td>업계 기준 출처(Databox 등)의 상업 이용 조건</td><td><span class="st check">확인 필요</span></td><td>공개 전에 확인</td></tr>
+        <tr><td>출처 확인일 표시</td><td><span class="st done">완료 2026-11-22</span></td><td><code>packs/sources.py</code> <code>SOURCES[*].checked</code> → 目安 팝업 「出典」 옆 · 판정 툴팁. 출처를 다시 확인하면 날짜를 고친다</td></tr>
+        <tr><td>今見るべきこと의 見るポイント를 행동별로</td><td><span class="st done">완료 2026-11-22</span></td><td><code>i18n/watch_tips_l10n.py</code>: 행동 → 행동 묶음(5) → 지표 공통 문구 순. 지표 5개(참여율·이탈률·주CVR·페이지/방문·카트→구매)</td></tr>
+        <tr><td>향상된 측정 안내 (<code>scroll</code> · <code>click</code> 記録なし)</td><td><span class="st done">완료 2026-11-22</span></td><td>未計測 단이 향상된 측정 이벤트(scroll · click · view_search_results · video_* · file_download · form_*)면 Google 도움말 링크 + 흐름 안내에 켤 스위치 이름</td></tr>
+        <tr><td>업계 기준 출처(Databox 등)의 상업 이용 조건</td><td><span class="st check">확인 필요</span></td><td>2026-11-22 조사: Databox 약관은 복사·이용 금지 문구 → 서면 허락 요청 필요. Baymard는 인용 전제. 나머지 미확인. <code>docs/launch/benchmark-sources-terms.md</code></td></tr>
         <tr><td>처리방침·약관의 운영자명 · 소재지 · 관할 법원</td><td><span class="st check">확인 필요</span></td><td>지금은 중립 문구. 정해지면 <code>OPERATOR_NAME=… ./deploy.sh</code>. 문의는 Apps Script 폼</td></tr>
         <tr><td>처리방침의 운영 약속(ご意見 2년 보존 · 삭제 30일 이내 · 2단계 인증 · 종료 30일 전 공지)</td><td><span class="st check">확인 필요</span></td><td>실제로 지킬 수 있는지</td></tr>
         <tr><td>GA4 속성 설정 (GTM 없음)</td><td><span class="st check">확인 필요</span></td><td><a href="#analytics">GA4 이벤트 설계</a>의 「설치」 표대로</td></tr>
@@ -908,13 +908,14 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
         <tr><td>설정을 보드 안으로</td><td>편집 모드 · 업종 드로어 · 目安 조정</td><td><span class="st done">완료</span></td></tr>
         <tr><td>詳しい数字 확장</td><td>8 카테고리 · 8주 추이 · 기기 · 매출</td><td><span class="st done">완료</span></td></tr>
         <tr><td>알아차리게 하기 · 기간</td><td>안내 버튼 · 記録なし/업종 안내 · 기간 전환</td><td><span class="st done">완료</span></td></tr>
-        <tr><td>근거 보강</td><td>출처 확인일 · 행동별 見るポイント · 향상된 측정 안내</td><td><span class="st todo">다음</span></td></tr>
+        <tr><td>근거 보강</td><td>출처 확인일 · 행동별 見るポイント · 향상된 측정 안내</td><td><span class="st done">완료</span></td></tr>
         <tr><td>실데이터 점검</td><td>실제 GA4 계정으로 전 화면 확인</td><td><span class="st done">완료</span></td></tr>
         <tr><td>공개 준비</td><td>sitekpi.net · Cloud Run · Firestore 저장 · 개인정보처리방침/이용약관 · 「ご意見」 버튼 · 연결 해제 시 토큰 무효화</td><td><span class="st done">완료</span></td></tr>
         <tr><td>랜딩·법적 페이지 재설계</td><td>01 ホーム(10섹션) · 08 · 09 캔버스 설계 → 코드(ja/en/ko)</td><td><span class="st done">완료</span></td></tr>
-        <tr><td>측정</td><td>gtag.js · <code>track.js</code>가 GA4로 직접 전송(완료) → GA4 설정(맞춤 측정기준·주요 이벤트) → 퍼널 보고서</td><td><span class="st todo">다음</span></td></tr>
-        <tr><td>공개 · OAuth 심사</td><td>배포 → 도메인 연결 → 동의 화면 「프로덕션」 → 심사 신청(그동안 100명까지 베타)</td><td><span class="st todo">다음</span></td></tr>
-        <tr><td>보드 저장 · 주간 메일</td><td>선택</td><td><span class="st hold">나중</span></td></tr>
+        <tr><td>측정</td><td>gtag.js · <code>track.js</code>가 GA4로 직접 전송(완료) → GA4 설정(맞춤 측정기준·주요 이벤트) → 퍼널 보고서. 설정 순서는 <code>docs/launch/ga4-setup.md</code>. 보드 읽기 깊이 <code>story_reach</code> 추가(2026-11-22)</td><td><span class="st todo">다음</span></td></tr>
+        <tr><td>공개 · OAuth 심사</td><td>배포 → 도메인 연결 → 동의 화면 「프로덕션」 → 심사 신청(그동안 100명까지 베타). 체크리스트·설명문·데모 영상 순서: <code>docs/launch/oauth-review.md</code></td><td><span class="st todo">다음</span></td></tr>
+        <tr><td>사이트 목록 · 인쇄</td><td><code>/sites</code> 여러 속성의 総評 나란히(다른 사이트 総評은 Pro <code>site_compare</code>) · 보드 「印刷・PDF」</td><td><span class="st done">완료 2026-11-22</span></td></tr>
+        <tr><td>보드 저장 · 주간 메일</td><td>주간 메일 · 판정 변화 · 효과 결과 알림. 설계안 <code>docs/design/weekly-mail.md</code> (정할 것 4개)</td><td><span class="st todo">설계</span></td></tr>
         <tr><td>휴대폰 · 사용자 집계</td><td>—</td><td><span class="st hold">보류</span></td></tr>
       </tbody>
     </table>
@@ -925,6 +926,7 @@ td.ev { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: #
     <table class="log">
       <thead><tr><th>날짜</th><th>내용</th></tr></thead>
       <tbody>
+        <tr><td>2026-11-22</td><td><code>v0.8.0</code> 사이트 목록 <code>/sites</code>(에이전시용, 목록·지금 사이트는 무료, 다른 사이트 総評은 Pro) · 보드 「印刷・PDF」 · 今見るべきこと 見るポイント를 행동별로 · 출처 확인일 · 未計測 단의 향상된 측정 안내 · 詳しい数字 GA4 캐시 · <code>story_reach</code> 측정 · HQ API에 보드 읽기 깊이·メモ 집계. 문서: OAuth 심사·자체 GA4 설정·출처 이용 조건·주간 메일 설계.</td></tr>
         <tr><td>2026-11-21</td><td><code>v0.7.6</code> 보드 v7.4: 상단 바 「✦ AI に聞く」 → 질문 팝업(스마트폰은 아래 시트) · ⑤ 카드 색 강조 · <code>?lang=</code>를 모든 페이지에서.</td></tr>
         <tr><td>2026-11-20</td><td>기획서 목차를 왼쪽 사이드바에서 위쪽 고정 바의 「☰ 목차」로 바꿈(펼치면 묶음별 패널, 링크·Esc·바깥 클릭으로 닫힘, 오른쪽에 지금 읽는 곳). 휴대폰에서 표가 화면을 넓히던 문제도 고침(표만 가로 스크롤).</td></tr>
         <tr><td>2026-11-20</td><td><code>v0.7.5</code> 지표 사전 NEW: 30일 안에 추가한 말에 NEW · 「最近追加した言葉」 줄 · 「NEW だけ見る」. 새 20개 스티커(3개는 글자 지움).</td></tr>

@@ -4,7 +4,7 @@
 > 이 파일은 **어떻게 만드는가**만 적는다: 구조 · 라우트 · 데이터 흐름 · 저장 · 기획 규칙이 코드 어디에 있는지 · 테스트.
 > 기획 규칙의 내용(숫자·문구)은 여기에 다시 쓰지 않는다. 바뀌면 기획서와 코드만 고친다.
 
-2026-11-04 갱신
+2026-11-22 갱신
 
 ---
 
@@ -18,7 +18,7 @@
 | GA4 권한 | `analytics.readonly` 하나 (읽기 전용) |
 | 배포 | Cloud Run(`starful-258005`, us-central1, 서비스 `sitekpi-service`) · 도메인 `sitekpi.net`. 최초 1회 `scripts/gcp_setup.sh <client_secret.json>`(API·Artifact Registry·Secret Manager·IAM·Firestore TTL), 이후 `./deploy.sh`(Cloud Build: 테스트 → 빌드 → 배포), 도메인 연결 `scripts/gcp_setup.sh --domain`. OAuth 동의 화면·클라이언트는 별도 프로젝트 `sitekpi` |
 | 운영 환경 변수 | `STORE_BACKEND=firestore` · `FIRESTORE_COLLECTION=sitekpi` · `APP_BASE_URL` · `GOOGLE_REDIRECT_URI` · `GA4_ID`(SiteKPI 자체 GA4 측정 ID `G-…`, gtag.js로 직접 전송. 비어 있으면 태그 없음 → 로컬은 측정 안 함) · `OPERATOR_NAME`(기본 starful) · `OPERATOR_ADDRESS` · `LEGAL_COURT`(선택, /policy·/terms 표기. 비면 중립 문구) · `DEMO_CONNECT`(운영에서는 비워 둔다. `1`이면 데모 연결을 연다 — 개발·테스트용). 비밀값은 Secret Manager `SITEKPI_SESSION_SECRET` · `SITEKPI_GOOGLE_CLIENT_ID` · `SITEKPI_GOOGLE_CLIENT_SECRET` (HQ가 이용자 로그를 읽는 Bearer는 따로 만들지 않는다: `visitlog.hq_token()` = `SESSION_SECRET`의 HMAC. HQ도 `SITEKPI_SESSION_SECRET`에서 같은 값을 만든다. `HQ_API_TOKEN`을 두면 그것을 우선) |
-| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-12 기준 235개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
+| 테스트 | `pip install -r requirements-dev.txt` 후 `python -m pytest` (2026-11-22 기준 316개). 팩 전수 점검: `python3 scripts/smoke_packs.py` (30 팩 × 3 언어) |
 
 ## 2. 디렉터리
 
@@ -85,8 +85,10 @@ tests/ · scripts/
 | GET `/glossary` | 指標辞典 | |
 | GET `/builder` · `/builder/values` | 대시보드 만들기 · GA4 값(JSON) | |
 | GET/POST `/settings` | 언어 · 연결 사이트 | |
+| GET `/sites?period=` | 사이트 목록: 이 Google 계정의 GA4 속성마다 総評 + 타일 3개. 지금 사이트 외에는 행동을 추측(仮). 최대 12개, 속성당 GA4 보고서 2개 병렬, 5분 캐시. Pro 게이트 `billing` `site_compare`: 목록·지금 사이트는 무료, 다른 사이트 総評은 Pro(데모는 전부) | `routes/sites.py` · `portfolio.py` · `sites.html` · `sites.css` |
+| POST `/sites/open` | 그 속성으로 보드 전환(= 「別のプロパティ」 + 선택, 선택 초기화) → `/live` | |
 | POST `/events` · `/survey` | 이용자 로그(track.js가 GA4와 같은 이벤트 + `pv`) · 30초 설문. 익명 쿠키 `sk_vid` | `sitekpi/visitlog.py` · `static/js/survey.js` |
-| GET `/hq/api/users?days=7\|30\|90` | HQ 「SiteKPI 이용자」 팝업용 JSON (Bearer `visitlog.hq_token()`) | `visitlog.summarize` (순수 함수) |
+| GET `/hq/api/users?days=7\|30\|90` | HQ 「SiteKPI 이용자」 팝업용 JSON (Bearer `visitlog.hq_token()`). `story`(보드 장별 도달, `story_reach`) · `feedback`(メモ・ご意見 화면·카드별 👍/👎·최근 30개) 포함 | `visitlog.summarize` · `story_reach` · `feedback_summary` (순수 함수) · `feedback.read_since` |
 | GET `/beginner` | 「はじめての5分」 견본 (메뉴에는 없음) | |
 | GET `/first` · `/sample` · `/b2c_membership` · `/content_media` | 옛 주소 → 리다이렉트 | |
 
@@ -160,6 +162,11 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 보드 v7.3 페이지별 숫자 (② 入口ページ別 · ④ どのページで？ · 詳しい数字 › ページ別) | `views/story_pages.py` (`entry_pages` · `issue_rows`/`issue_head` ← `story_more.where_when` 같은 자 · `table`) · 숫자 `board/story_pages.py` (모양 문서 · `path_key` · `strip_site_tail` · `from_ga4` · 見本 `sample_pages`) · GA4 `ga4/story.fetch_story_x` 보고서 3개 추가 (`landingPage` 사용자·참여율 / `landingPage`×`eventName` / `pagePath`×`pageTitle`×`hostName` 조회수, 큰 순 60개 — 링크는 그 경로에서 가장 많이 본 호스트, localhost·見本은 링크 없음) · 마크업 `story_more.html` (`who` 안 `.x-pg`, `where_when` 안 `.x-pgw`, `pages_table` 매크로 → `board.html` 詳しい数字 끝) · 정렬·더 보기 `static/js/story.js` · 권한 추가 없음 (`analytics.readonly`) |
 | 更新情報 `/updates` | `routes/pages.page_updates` · 문구·항목 `i18n/updates_l10n.py` (버전 = GitHub 릴리스 `docs/releases/vX.Y.Z.md`와 같은 번호·날짜) · `templates/updates.html` · CSS `help.css` 「更新情報」 · 메뉴 `partials/rail_nav.html` · 공개 푸터 `public.html` · sitemap |
 | 指標辞典 NEW | 추가 날짜 `metrics/help_added.py` (화면에 안 보임, 묶음마다 한 줄) · 30일 안이면 카드에 NEW · 맨 위 「最近追加した言葉」 줄 + 「NEW だけ見る」 (`views/glossary.py` · `templates/glossary.html` · `glossary.css`) |
+| 今見るべきこと 見るポイント (행동별) | `i18n/watch_tips_l10n.py` `watch_tip(behavior, group, bench_key)`: 행동 → 묶음 → 지표 공통 `help.tip` · `views/board_verdict.behavior_of(pack slug)` · `_watch_items(..., industry=)` |
+| 출처 확인일 | `packs/sources.py` `SOURCES[*]["checked"]` → `source["checked"]` → `benchmarks.source_of` → `board_bench._source_text` · `bench_pops.html` `.src-checked` |
+| 향상된 측정 안내 | `views/flow.ENHANCED` · `enhanced_switch` → 단의 `em` · `flow.html` `.flow-em`(Google 도움말) · 안내 `flow.insight_em` · 문구 `em.*` |
+| 보드 읽기 깊이 측정 | `track.js` `story_reach` (`step` = q0 · qch · qb · q2 · q3 · q4 · q5 · qsum · details, `mode`): 장 윗부분이 화면 위 60%에 들어올 때 장마다 1번 |
+| 印刷・PDF | `board.html` `[data-board-print]` · `.print-meta` · `board.js`(beforeprint에 날짜·닫힌 `details` 열기, afterprint에 되돌림) · `board.css` 끝 `@media print` |
 | 보드 AI 질문 팝업 (v7.4) | 위쪽 바 `.ai-top[data-ai-open]` (휴대폰은 `story.js`가 `.mobile-bar`에 같은 버튼 복제) · ⑤ 카드 「開いて見る」 → `<dialog id="ai-dialog">` (안에 `#ai-box`, Esc·×·바깥 클릭으로 닫힘, 휴대폰은 아래 시트) · `board.html` · `board.css` 「v7.4」 · 문구 `story_l10n._X5` |
 | `?lang=` | `BrowserLocaleMiddleware`가 모든 페이지에서 `?lang=ja|en|ko`를 세션에 저장 (전에는 일부 라우트만 읽어 `/ec?lang=en`이 일본어로 나옴) |
 | 처음 언어 = 브라우저 언어 | `i18n.BrowserLocaleMiddleware` (`browser_locale`): GET · 세션에 언어 없음 · `?lang=` 없음 · 로봇 아님 → `Accept-Language`의 en/ko를 세션에 저장(ja는 기본). IP 안 씀. `app.py`에서 세션 미들웨어 안쪽 |
@@ -179,6 +186,7 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 측정 쿠키 | `sk_ev`(5분, 1회 이벤트 이름) · `sk_conn`(14일, none·demo·live). JS가 읽음(HttpOnly 아님), ID·GA4 값 없음 | — |
 | 이용자 로그 · 30초 설문 | 로컬 `.data/app.sqlite3` 테이블 `visit_events` · `visit_survey`, 운영 Firestore `sitekpi/visits/rows` · `sitekpi/survey/rows/{vid}` (`expire_at` — 세션과 같은 컬렉션 그룹 `rows`의 기존 TTL 정책으로 90일 뒤 삭제). 쿠키 `sk_vid`(180일, HttpOnly, HTML 응답에서 발급 — `visitlog.vid_middleware`). 설문 표시 상태는 localStorage `sk_sv` · `sk_sv_boards`, sessionStorage `sk_sv_later` | — |
 | 빌더 | 브라우저 localStorage `sitekpi.builder.v4` (v3 자동 이전) | — |
+| 사이트 목록 総評 | 프로세스 내 `portfolio._ROW_CACHE` (속성·기간·언어·선택, 5분). 저장 없음 | — |
 
 ## 7. 기획서 화면 사본
 
@@ -202,6 +210,8 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | `test_story_v7.py` | v7 7장(見本 EC) · 3개 언어 · 1장 내역 합계 · 공개일 저장·14일 대기 · GA4 응답 읽기(가짜 클라이언트) · v7.2b 설명만 접힘(3개 언어) · 기록 표시와 目安 글자 겹침 |
 | `test_mobile.py` | 브라우저 언어(Accept-Language · `?lang` 우선 · 로봇 제외) · 휴대폰 부품(홈 · 메모 버튼 · 지표 사전 접기 · 見本 · 도움말 선택) · 연결 예시에 제휴 숫자 없음 |
 | `test_visitlog.py` | 이용자 로그 파라미터 걸러내기 · 하루 상한 · 설문 저장 · HQ API 토큰 · 집계(흐름·설문·타임라인) |
+| `test_sites.py` | 사이트 목록: 로그인 필요 · 데모 3개 언어 · 보드 전환 · Pro 게이트(지금 사이트만 GA4) · 추측·캐시·오류 |
+| `test_watch_tips.py` | 見るポイント 카탈로그 키·3개 언어 · 행동 → 묶음 → 공통 순 · 전 팩 보드에서 적용 |
 
 실제 GA4 계정으로는 자동 테스트하지 않는다(가짜 클라이언트). 실데이터 확인은 기획서 「정할 것·확인할 것」.
 
