@@ -53,18 +53,18 @@
 | 판정 기억(B) | 구독 행에 지난 判定 스냅숏 `{bench_key: "up"|"mid"|"down"}` + 마지막 알림 시각 |
 | 효과(C) | 지금 대책 공개일은 세션(`story_releases`)에 있다 → 구독자는 구독 행에도 복사. 비구독자는 기존대로 |
 
-**OAuth 심사 영향:** refresh token을 서버에 장기 보관하면 개인정보처리방침의 「Google 사용자 데이터」 · 「보존 기간」 항목을 고쳐야 하고, 심사 설명에 "사용자가 요청한 주간 요약을 보내기 위해 저장"을 적어야 한다. `analytics.readonly`는 restricted scope가 아니므로 보안 평가(CASA) 대상은 아니지만, 심사 신청 **전에** 이 기능을 넣을지 정하는 게 좋다(§8-1).
+**OAuth 심사 영향:** refresh token을 서버에 장기 보관하면 개인정보처리방침의 「Google 사용자 데이터」 · 「보존 기간」 항목을 고쳐야 하고, 심사 설명에 "사용자가 요청한 주간 요약을 보내기 위해 저장"을 적어야 한다. 보안 평가(CASA)는 restricted scope에 붙는 절차라 `analytics.readonly`에는 해당하지 않을 것으로 보이지만(분류는 Cloud Console 동의 화면의 scope 표시로 확인), 심사 신청 **전에** 이 기능을 넣을지 정하는 게 좋다(§8-1).
 
 ## 5. 발송 수단 비교
 
 | | Resend | SendGrid | Amazon SES | Gmail API(사용자 본인) |
 |---|---|---|---|---|
-| 무료 범위 | 월 3,000통 | 일 100통(체험 후 유료) | 사용량 과금(매우 저렴) | — |
+| 무료 범위 | 월 3,000통 · **하루 100통 상한** (2026-11 확인) | 확인 필요 | 사용량 과금 | — |
 | 설정 | 도메인 DNS(SPF·DKIM) | 도메인 DNS | 도메인 DNS + 샌드박스 해제 신청 | 사용자마다 `gmail.send` 권한 |
 | 장점 | API 단순, 개발 빠름 | 실적·기능 많음 | 가장 쌈, AWS 필요 | 발신자가 본인 |
 | 단점 | 비교적 신생 | 무료 축소 경향 | AWS 계정·심사 | **restricted scope → 심사 부담 큼**, 비권장 |
 
-권장: **Resend**(또는 SendGrid). 발신 `report@sitekpi.net`, SPF · DKIM · DMARC 설정. 코드에는 `send_mail(to, subject, html, text, headers)` 한 함수만 두고 구현을 바꿔 끼울 수 있게 한다. 키가 없으면 로그만 남긴다(개발·테스트).
+권장: **Resend**(또는 SendGrid). 무료 플랜의 하루 100통 상한 때문에, 월요일 아침에 구독자가 100명을 넘으면 유료(Pro, 월 50,000통)로 올려야 한다. 발신 `report@sitekpi.net`, SPF · DKIM · DMARC 설정. 코드에는 `send_mail(to, subject, html, text, headers)` 한 함수만 두고 구현을 바꿔 끼울 수 있게 한다. 키가 없으면 로그만 남긴다(개발·테스트).
 
 > 가격·무료 범위는 2026-11 시점 각 서비스 페이지 기준으로 다시 확인할 것.
 
