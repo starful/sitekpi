@@ -1,6 +1,6 @@
 [project]
 name = "sitekpi"
-version = "0.8.0"
+version = "0.8.1"
 description = "Site / business KPI board for marketing & growth (GA4 + industry packs)"
 requires-python = ">=3.12"
 dependencies = [

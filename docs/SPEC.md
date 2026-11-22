@@ -166,7 +166,7 @@ GA4 오류 시 `_live_pack`은 DEMO 숫자로 열고 메모에 `live.note.err`.
 | 출처 확인일 | `packs/sources.py` `SOURCES[*]["checked"]` → `source["checked"]` → `benchmarks.source_of` → `board_bench._source_text` · `bench_pops.html` `.src-checked` |
 | 향상된 측정 안내 | `views/flow.ENHANCED` · `enhanced_switch` → 단의 `em` · `flow.html` `.flow-em`(Google 도움말) · 안내 `flow.insight_em` · 문구 `em.*` |
 | 보드 읽기 깊이 측정 | `track.js` `story_reach` (`step` = q0 · qch · qb · q2 · q3 · q4 · q5 · qsum · details, `mode`): 장 윗부분이 화면 위 60%에 들어올 때 장마다 1번 |
-| 印刷・PDF | `board.html` `[data-board-print]` · `.print-meta` · `board.js`(beforeprint에 날짜·닫힌 `details` 열기, afterprint에 되돌림) · `board.css` 끝 `@media print` |
+| 印刷・PDF | `board.html` `[data-board-print]` · `.print-meta` · `board.js` 「印刷」: 단위 = 장 카드·詳しい数字 카테고리, 각각 새 A4 페이지(`.print-page`)·안 자름(`.print-unit`). 긴 장은 자식 블록 사이에서만 나눔(`.print-split`), 그래도 넘치면 `zoom`(최소 0.45). 높이는 인쇄 폭 718px의 숨은 iframe(스크립트 제거 복제)에서 잼. ⌘P도 같은 경로, 메뉴 인쇄는 현재 페이지에서 근사. 레이아웃 규칙은 `html.is-printing`, 페이지 규칙은 `@media print` |
 | 보드 AI 질문 팝업 (v7.4) | 위쪽 바 `.ai-top[data-ai-open]` (휴대폰은 `story.js`가 `.mobile-bar`에 같은 버튼 복제) · ⑤ 카드 「開いて見る」 → `<dialog id="ai-dialog">` (안에 `#ai-box`, Esc·×·바깥 클릭으로 닫힘, 휴대폰은 아래 시트) · `board.html` · `board.css` 「v7.4」 · 문구 `story_l10n._X5` |
 | `?lang=` | `BrowserLocaleMiddleware`가 모든 페이지에서 `?lang=ja|en|ko`를 세션에 저장 (전에는 일부 라우트만 읽어 `/ec?lang=en`이 일본어로 나옴) |
 | 처음 언어 = 브라우저 언어 | `i18n.BrowserLocaleMiddleware` (`browser_locale`): GET · 세션에 언어 없음 · `?lang=` 없음 · 로봇 아님 → `Accept-Language`의 en/ko를 세션에 저장(ja는 기본). IP 안 씀. `app.py`에서 세션 미들웨어 안쪽 |
