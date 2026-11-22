@@ -1506,4 +1506,8 @@ UI.update({
                        "en": "The open site's summary is free. You can still open the other {n} sites one at a time with “Open board”.",
                        "ko": "지금 연 사이트의 총평은 무료로 보여요. 다른 {n}개 사이트는 「보드 열기」로 하나씩 볼 수 있어요."},
     "sites.more": {"ja": "ほか {n} プロパティは一覧に入りきらないため省略しました。", "en": "{n} more properties are not shown.", "ko": "속성 {n}개는 목록에서 생략했어요."},
+    "bx.print": {"ja": "印刷・PDF", "en": "Print / PDF", "ko": "인쇄·PDF"},
+    "bx.print_help": {"ja": "このボードを印刷します。印刷画面で「PDF に保存」を選ぶと、お客さまや上司に渡せる PDF になります。",
+                      "en": "Print this board. Choose “Save as PDF” in the print dialog to get a PDF for a client or your boss.",
+                      "ko": "이 보드를 인쇄해요. 인쇄 화면에서 「PDF로 저장」을 고르면 고객·상사에게 줄 PDF가 돼요."},
 })

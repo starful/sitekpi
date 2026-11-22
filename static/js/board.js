@@ -29,6 +29,21 @@ document.addEventListener("click", (e) => {
   if (table) table.hidden = !open;
 });
 
+/* 印刷 / PDF: the browser's print dialog (「PDF に保存」 there). Print CSS: board.css 「print」.
+   Collapsed 詳しい数字 groups and explanation folds open for paper and close again afterwards. */
+(function () {
+  const opened = [];
+  addEventListener("beforeprint", () => {
+    const d = document.querySelector("[data-print-date]");
+    if (d) d.textContent = new Date().toLocaleDateString(document.documentElement.lang || "ja");
+    document.querySelectorAll(".content details:not([open])").forEach((el) => { el.open = true; opened.push(el); });
+  });
+  addEventListener("afterprint", () => { while (opened.length) opened.pop().open = false; });
+})();
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-board-print]")) window.print();
+});
+
 /* 共有: native share sheet where available, else copy the current URL — never any GA4 data */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-board-share]");

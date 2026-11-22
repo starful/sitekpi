@@ -1479,3 +1479,22 @@ html.ai-dlg-on { overflow: hidden; }
   .ai-dlg[open] { animation: ai-in 0.16s ease-out; }
   @keyframes ai-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 }
+
+/* --- print · PDF (「印刷・PDF」 button → browser print → 「PDF に保存」) ------------------------------- */
+.print-meta { display: none; }
+@media print {
+  @page { margin: 12mm; }
+  html, body { background: #fff !important; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .shell { display: block !important; }
+  .rail, .mobile-bar, .memo, .story-toc, .ex-wrap, dialog, [data-drawer],
+  .top-right, .link-btn, .nudge-btn, .flow-nudge, .flow-add, .ai-top, .notice-btn, .pop-actions,
+  .survey, [data-survey] { display: none !important; }
+  .top { position: static !important; box-shadow: none !important; padding: 0 0 4px !important; }
+  .print-meta { display: block; margin: 0 0 10px; font-size: 0.75rem; color: #475569; }
+  .content { max-width: none !important; padding: 0 !important; gap: 12px !important; }
+  .content > section.card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; break-inside: avoid; page-break-inside: avoid; }
+  .content > section.card.detail { break-inside: auto; page-break-inside: auto; }
+  .flow-scroll { overflow: visible !important; }
+  a[href]::after { content: none !important; }
+}

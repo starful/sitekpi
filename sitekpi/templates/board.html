@@ -29,6 +29,7 @@
           <a class="link-btn top-help" href="/help#read">? {{ t("bx.how", loc) }}</a>
           {% if story %}<button type="button" class="ai-top" data-ai-open aria-haspopup="dialog" aria-controls="ai-dialog" data-ai-short="{{ story.q.x_ai_top_s }}" data-track="ai_open_top"><span aria-hidden="true">✦</span> {{ story.q.x_ai_top }}</button>{% endif %}
           {%- set share_t = {"ja": {"btn": "共有", "ok": "リンクをコピーしました", "fail": "コピーできませんでした"}, "ko": {"btn": "공유", "ok": "링크를 복사했습니다", "fail": "복사하지 못했습니다"}}.get(loc, {"btn": "Share", "ok": "Link copied", "fail": "Couldn't copy"}) %}
+          <button type="button" class="link-btn print-btn" data-board-print data-track="board_print" title="{{ t('bx.print_help', loc) }}">{{ t("bx.print", loc) }}</button>
           <span class="top-item share-item">
             <button type="button" class="link-btn" data-board-share data-track="board_share">{{ share_t.btn }}</button>
             <span class="share-msg" data-board-share-msg data-ok="{{ share_t.ok }}" data-fail="{{ share_t.fail }}" role="status"></span>
@@ -37,6 +38,8 @@
         {% if industry_drawer %}{% include "board/drawer_industry.html" %}{% endif %}
         {% if editor %}{% include "board/drawer_step.html" %}{% endif %}
       </header>
+      {#- 印刷 / PDF: one line on paper only (date filled by board.js at print time, in the reader's own clock) -#}
+      <p class="print-meta" aria-hidden="true">SiteKPI · {{ industry_label }} · {{ t("period.28d" if period == "28d" else "period.7d", loc) }}{% if is_sample %} · {{ t("sx.example_nums", loc) }}{% endif %} · <span data-print-date></span></p>
       {% if is_sample %}
       <div class="ex-wrap">{% with ex_b=t("sx.banner_b", loc), ex_text=t("sx.banner", loc), ex_others=True %}{% include "partials/ex_banner.html" %}{% endwith %}</div>
       {% endif %}

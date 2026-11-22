@@ -183,3 +183,15 @@ def test_live_extras_cached_per_property_and_period(monkeypatch):
     monkeypatch.setattr(g, "_batch", boom)
     x, err = live_extras({}, period="90d_x", events=["purchase"], primary="purchase")
     assert x is None and "quota" in err  # errors are not cached
+
+
+def test_board_has_print_pdf_button_and_paper_header(client):
+    """印刷・PDF: a button on every board (3 languages) and a one-line header shown on paper only."""
+    for lang, label in (("ja", "印刷・PDF"), ("en", "Print / PDF"), ("ko", "인쇄·PDF")):
+        s = _soup(client.get(f"/ec?lang={lang}").text)
+        btn = s.select_one("[data-board-print]")
+        assert btn and btn.get_text(strip=True) == label and btn.get("data-track") == "board_print"
+        meta = s.select_one(".print-meta")
+        assert meta and meta.select_one("[data-print-date]") is not None and "SiteKPI" in meta.get_text()
+    css = client.get("/static/css/board.css").text
+    assert "@media print" in css and ".print-meta { display: none; }" in css
