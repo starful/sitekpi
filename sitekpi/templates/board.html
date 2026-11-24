@@ -276,6 +276,7 @@
           {% if S %}{{ SX.pages_table(S) }}{% endif %}
         </section>
       </div>
+      <p class="powered-by">Powered by <a href="https://{{ brand_domain }}/" rel="noopener">{{ brand_name }}</a></p>
 {% endblock %}
 {% block after_shell %}
   {% if bench %}{% include "board/bench_pops.html" %}{% endif %}

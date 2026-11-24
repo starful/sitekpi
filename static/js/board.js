@@ -231,11 +231,19 @@ document.addEventListener("click", (e) => {
   });
 })();
 
-/* 共有: native share sheet where available, else copy the current URL — never any GA4 data */
+/* 共有: native share sheet where available, else copy the current URL — never any GA4 data.
+   UTM (BOARD.share_utm) is added so visits coming back from a shared link are attributable. */
+function shareUrl() {
+  const utm = BOARD.share_utm;
+  if (!utm) return location.href;
+  const u = new URL(location.href);
+  for (const k in utm) u.searchParams.set(k, utm[k]);
+  return u.toString();
+}
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-board-share]");
   if (!btn) return;
-  const url = location.href;
+  const url = shareUrl();
   if (navigator.share) { navigator.share({ url: url, title: document.title }).catch(() => {}); return; }
   const msg = btn.parentElement.querySelector("[data-board-share-msg]");
   const done = (ok) => { if (msg) msg.textContent = ok ? msg.dataset.ok : msg.dataset.fail; };
