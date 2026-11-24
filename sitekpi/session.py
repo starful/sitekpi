@@ -98,6 +98,32 @@ class SQLiteSessionStore:
         with self._lock, self._connect() as db:
             db.execute("DELETE FROM sessions WHERE id_hash = ?", (self._key(sid),))
 
+    def all_rows(self) -> list[tuple[str, dict[str, Any], int]]:
+        """(id_hash, decrypted data, expires_at) for every live session — batch jobs (e.g. the
+        GA4 token refresh batch) that have no plaintext id to hash and look one up by."""
+        with self._connect() as db:
+            rows = db.execute(
+                "SELECT id_hash, data, expires_at FROM sessions WHERE expires_at >= ?", (int(time.time()),)
+            ).fetchall()
+        out: list[tuple[str, dict[str, Any], int]] = []
+        for id_hash, blob, expires_at in rows:
+            try:
+                data = json.loads(self._fernet.decrypt(blob))
+            except (InvalidToken, ValueError, KeyError, TypeError):
+                continue
+            if isinstance(data, dict):
+                out.append((id_hash, data, int(expires_at)))
+        return out
+
+    def save_by_hash(self, id_hash: str, data: dict[str, Any], expires_at: int) -> None:
+        """Write a row back by its id_hash directly — the counterpart to ``all_rows``."""
+        blob = self._fernet.encrypt(json.dumps(data, ensure_ascii=False).encode())
+        with self._lock, self._connect() as db:
+            db.execute(
+                "UPDATE sessions SET data = ?, expires_at = ? WHERE id_hash = ?",
+                (blob, expires_at, id_hash),
+            )
+
     def purge_expired(self) -> None:
         with self._lock, self._connect() as db:
             db.execute("DELETE FROM sessions WHERE expires_at < ?", (int(time.time()),))
