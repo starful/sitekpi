@@ -18,6 +18,75 @@ document.addEventListener("click", (e) => {
   if (e.target.matches && e.target.matches("dialog[data-help-dialog]")) e.target.close();
 });
 
+/* 指標名の説明ツールチップ: hover (desktop) / tap (phones). Text = the 説明 dialog's 意味 already on the page. */
+(function () {
+  const tip = document.createElement("div");
+  tip.className = "kpi-tip";
+  tip.setAttribute("role", "tooltip");
+  tip.hidden = true;
+  document.body.appendChild(tip);
+  let anchor = null;
+
+  function textFor(id) {
+    const meaning = document.querySelector("#help-" + id + " .gl-meaning");
+    if (!meaning) return "";
+    const clone = meaning.cloneNode(true);
+    clone.querySelectorAll("br").forEach((br) => br.replaceWith(" "));
+    return (clone.textContent || "").replace(/\s+/g, " ").trim();
+  }
+
+  function place() {
+    if (!anchor) return;
+    const r = anchor.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    const w = tip.offsetWidth;
+    const left = Math.max(8, Math.min(r.left, vw - w - 8));
+    tip.style.left = left + window.scrollX + "px";
+    tip.style.top = r.bottom + 6 + window.scrollY + "px";
+  }
+
+  function show(el) {
+    const text = textFor(el.getAttribute("data-tip"));
+    if (!text) return;
+    tip.textContent = text;
+    tip.hidden = false;
+    anchor = el;
+    place();
+  }
+
+  function hide() {
+    if (tip.hidden) return;
+    tip.hidden = true;
+    anchor = null;
+  }
+
+  document.addEventListener("mouseover", (e) => {
+    const el = e.target.closest("[data-tip]");
+    if (el) { show(el); return; }
+    if (!tip.hidden && !tip.contains(e.target)) hide();
+  });
+  /* phones: no hover, so tap toggles (tap also fires after a touch's synthetic "click") */
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-tip]");
+    if (el) {
+      if (anchor === el && !tip.hidden) { hide(); return; }
+      show(el);
+      return;
+    }
+    if (!tip.contains(e.target)) hide();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { hide(); return; }
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const el = e.target.closest && e.target.closest("[data-tip]");
+    if (!el) return;
+    e.preventDefault();
+    if (anchor === el && !tip.hidden) hide(); else show(el);
+  });
+  window.addEventListener("resize", place);
+  window.addEventListener("scroll", place, { passive: true });
+})();
+
 /* 詳しい数字: each category opens / closes from its name (the chevron turns); the first three start open */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-dgroup-toggle]");
@@ -231,11 +300,19 @@ document.addEventListener("click", (e) => {
   });
 })();
 
-/* 共有: native share sheet where available, else copy the current URL — never any GA4 data */
+/* 共有: native share sheet where available, else copy the current URL — never any GA4 data.
+   UTM (BOARD.share_utm) is added so visits coming back from a shared link are attributable. */
+function shareUrl() {
+  const utm = BOARD.share_utm;
+  if (!utm) return location.href;
+  const u = new URL(location.href);
+  for (const k in utm) u.searchParams.set(k, utm[k]);
+  return u.toString();
+}
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-board-share]");
   if (!btn) return;
-  const url = location.href;
+  const url = shareUrl();
   if (navigator.share) { navigator.share({ url: url, title: document.title }).catch(() => {}); return; }
   const msg = btn.parentElement.querySelector("[data-board-share-msg]");
   const done = (ok) => { if (msg) msg.textContent = ok ? msg.dataset.ok : msg.dataset.fail; };

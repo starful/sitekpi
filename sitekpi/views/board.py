@@ -13,6 +13,7 @@ from typing import Any
 
 from sitekpi.board.data import build_dense_board
 from sitekpi.i18n import normalize_locale, t
+from sitekpi.share import SHARE_UTM
 from sitekpi.templating import render
 from sitekpi.views.board_bench import _bench_info, _bench_view
 from sitekpi.views.board_ctx import _ACTIVE_BENCH, _ACTIVE_LOCALE
@@ -152,6 +153,7 @@ def _render_sample_dense(
             "close_label": t("detail.close", loc),
             "load_error": t("detail.load_error", loc),
             "retry": t("detail.retry", loc),
+            "share_utm": SHARE_UTM,
         },
     )
 

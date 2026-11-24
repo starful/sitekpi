@@ -28,7 +28,7 @@
       {% for r in g.rows %}
       <div class="dt-row{{ ' is-focus' if r.focus else '' }}" role="row">
         <span class="dt-name" role="rowheader">
-          {% if r.code %}<code class="row-name">{{ r.label }}</code>{% else %}<span class="row-name">{{ r.label }}</span>{% endif %}
+          {% if r.code %}<code class="row-name">{{ r.label }}</code>{% else %}<span class="row-name"{% if r.help %} data-tip="{{ r.id }}" tabindex="0"{% endif %}>{{ r.label }}</span>{% endif %}
           {% if r.help %}{{ m.help_btn(r.id, r.label) }}{% endif %}
           {% if r.sub %}<small class="dt-sub{{ ' is-warn' if r.sub_warn else '' }}">{{ r.sub }}</small>{% endif %}
           {#- phones: the three columns on to the right are folded into this one line (board.css ≤640px) -#}

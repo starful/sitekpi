@@ -19,7 +19,7 @@ from markupsafe import Markup, escape
 
 from sitekpi.i18n import html_lang, t
 from sitekpi.i18n.landing_l10n import CONTACT_URL
-from sitekpi.views.branding import BRAND_NAME
+from sitekpi.views.branding import BRAND_DOMAIN, BRAND_NAME
 
 ROOT = Path(__file__).resolve().parents[1]
 STATIC_DIR = ROOT / "static"
@@ -74,8 +74,8 @@ env = Environment(
     lstrip_blocks=True,
     auto_reload=True,
 )
-env.globals.update(t=t, html_lang=html_lang, static_url=static_url, brand_name=BRAND_NAME, ga4_id=ga4_id,
-                   contact_url=lambda: CONTACT_URL)
+env.globals.update(t=t, html_lang=html_lang, static_url=static_url, brand_name=BRAND_NAME,
+                   brand_domain=BRAND_DOMAIN, ga4_id=ga4_id, contact_url=lambda: CONTACT_URL)
 env.filters["nl2br"] = _nl2br
 env.filters["num"] = _num
 
