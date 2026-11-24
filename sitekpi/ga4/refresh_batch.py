@@ -58,12 +58,18 @@ def _save_local_failures(rows: dict[str, Any]) -> None:
 
 
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+(\.[\w-]+)+")
+_URL = re.compile(r"https?://\S+")
+_TOKEN = re.compile(r"\b[A-Za-z0-9_-]{20,}\b")  # OAuth error bodies can echo back tokens/ids
 
 
 def _record_failure(id_hash: str, error: str) -> None:
     """No personal data here: the row is stored unencrypted (Firestore doc / local JSON), so it keeps
-    only a short session reference and the error with any e-mail address masked."""
-    row = {"site": id_hash[:12], "error": _EMAIL.sub("[email]", error)[:300],
+    only a short session reference and the error with e-mail addresses, URLs, and long token-like
+    strings masked."""
+    masked = _EMAIL.sub("[email]", error)
+    masked = _URL.sub("[url]", masked)
+    masked = _TOKEN.sub("[token]", masked)
+    row = {"session_ref": id_hash[:12], "error": masked[:300],
            "at": int(dt.datetime.now(dt.timezone.utc).timestamp())}
     if firestore_store.enabled():
         firestore_store.FirestoreGa4RefreshFailureStore().put(id_hash, row)
