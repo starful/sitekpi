@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import re
 import threading
 from pathlib import Path
 from typing import Any
@@ -56,8 +57,14 @@ def _save_local_failures(rows: dict[str, Any]) -> None:
     _FAILURES_PATH.write_text(json.dumps(rows, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def _record_failure(id_hash: str, email: str, error: str) -> None:
-    row = {"email": email, "error": error[:300], "at": int(dt.datetime.now(dt.timezone.utc).timestamp())}
+_EMAIL = re.compile(r"[\w.+-]+@[\w-]+(\.[\w-]+)+")
+
+
+def _record_failure(id_hash: str, error: str) -> None:
+    """No personal data here: the row is stored unencrypted (Firestore doc / local JSON), so it keeps
+    only a short session reference and the error with any e-mail address masked."""
+    row = {"site": id_hash[:12], "error": _EMAIL.sub("[email]", error)[:300],
+           "at": int(dt.datetime.now(dt.timezone.utc).timestamp())}
     if firestore_store.enabled():
         firestore_store.FirestoreGa4RefreshFailureStore().put(id_hash, row)
         return
@@ -119,12 +126,11 @@ def refresh_all() -> dict[str, int]:
         left = _seconds_until_expiry(creds)
         if left is not None and left > REFRESH_WINDOW:
             continue  # not due yet
-        email = str(data.get("ga4_email") or "")
         try:
             creds.refresh(GoogleAuthRequest())
         except Exception as exc:  # noqa: BLE001 — one bad grant (revoked, network, ...) must not stop the batch
             counts["failed"] += 1
-            _record_failure(id_hash, email, str(exc))
+            _record_failure(id_hash, str(exc))
             continue
         data["ga4_credentials"] = json.loads(creds.to_json())
         store.save_by_hash(id_hash, data, expires_at)

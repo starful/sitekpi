@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -58,13 +60,14 @@ def test_failed_refresh_is_recorded_and_listed_by_the_api(store):
     counts = refresh_batch.refresh_all()
     assert counts == {"checked": 1, "refreshed": 0, "failed": 1}
     failures = refresh_batch.list_failures()
-    assert failures[0]["email"] == "a@example.com" and "error" in failures[0]
+    assert "error" in failures[0] and failures[0]["site"]
+    assert "a@example.com" not in json.dumps(failures)   # no personal data in the unencrypted store
 
     client = TestClient(app)
     r = client.get("/hq/api/ga4-refresh-failures",
                     headers={"Authorization": "Bearer " + visitlog.hq_token()})
     assert r.status_code == 200
-    assert r.json()["failures"][0]["email"] == "a@example.com"
+    assert r.json()["failures"][0]["site"] == failures[0]["site"]
 
 
 def test_a_later_successful_refresh_clears_the_failure(store, monkeypatch):
