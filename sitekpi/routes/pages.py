@@ -239,28 +239,6 @@ def page_updates(request: Request, lang: str = Query(default="")):
     ))
 
 
-@router.get("/pricing", response_class=HTMLResponse)
-def page_pricing(request: Request, lang: str = Query(default="")):
-    """Free / Pro plan comparison (not final yet — see i18n/pricing_l10n.py)."""
-    from sitekpi.i18n import set_locale
-    from sitekpi.i18n.landing_l10n import CONTACT_URL, LANDING
-    from sitekpi.i18n.pricing_l10n import PRICING, grouped_features
-    from sitekpi.templating import render
-    from sitekpi.views.seo import seo_context
-
-    if lang:
-        set_locale(request.session, lang)
-    loc = get_locale(request.session)
-    pr = PRICING[loc]
-    return HTMLResponse(render(
-        "pricing.html",
-        loc=loc, c=LANDING[loc], pr=pr, groups=grouped_features(loc),
-        connected=bool(request.session.get("ga4_credentials") or request.session.get("ga4_demo")),
-        path="/pricing", lq="" if loc == "ja" else f"?lang={loc}", contact_url=CONTACT_URL,
-        seo=seo_context(path="/pricing", loc=loc, title=pr["meta_title"], description=pr["meta_desc"]),
-    ))
-
-
 @router.get("/sample", response_class=HTMLResponse)
 def page_sample_dense():
     # Dense board template — default vertical is 人事

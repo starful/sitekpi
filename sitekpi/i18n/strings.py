@@ -97,7 +97,6 @@ UI: dict[str, dict[str, str]] = {
     "nav.about": {"ja": "SiteKPI について（ホーム）", "en": "About SiteKPI (home)", "ko": "SiteKPI 소개 (홈)"},
     "nav.contact": {"ja": "お問い合わせ", "en": "Contact", "ko": "문의"},
     "nav.samples_all": {"ja": "見本ボード一覧", "en": "All sample boards", "ko": "샘플 보드 목록"},
-    "nav.pricing": {"ja": "料金", "en": "Pricing", "ko": "요금제"},
     "nav.beginner": {
         "ja": "はじめての5分",
         "en": "First 5 minutes",
