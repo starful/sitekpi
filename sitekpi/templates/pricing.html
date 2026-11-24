@@ -1,0 +1,57 @@
+{% extends "public.html" %}
+{% block page_css %}<link rel="stylesheet" href="{{ static_url('css/pricing.css') }}" />{% endblock %}
+{% block content %}
+  <main class="pricing">
+    <header class="pr-head">
+      <p class="pr-kicker">{{ pr.kicker }}</p>
+      <h1>{{ pr.title }}</h1>
+      <p class="pr-lead">{{ pr.lead }}</p>
+    </header>
+
+    <div class="pr-toggle" role="group" aria-label="{{ pr.toggle_monthly }} / {{ pr.toggle_yearly }}">
+      <button type="button" class="pr-toggle-btn is-on" data-cycle="monthly" aria-pressed="true">{{ pr.toggle_monthly }}</button>
+      <button type="button" class="pr-toggle-btn" data-cycle="yearly" aria-pressed="false">{{ pr.toggle_yearly }}<span class="pr-badge">{{ pr.toggle_yearly_badge }}</span></button>
+    </div>
+
+    <div class="pr-plans">
+      <article class="pr-plan">
+        <h2>{{ pr.plan_free }}</h2>
+        <p class="pr-tagline">{{ pr.plan_free_tagline }}</p>
+        <p class="pr-price"><span class="pr-amount">{{ pr.price_free }}</span></p>
+        <p class="pr-price-note">{{ pr.price_note_free }}</p>
+        <a class="pr-cta pr-cta-free" href="/connect" data-track="cta_click" data-track-cta="pricing_free" data-track-location="pricing">{{ pr.cta_free }}</a>
+      </article>
+      <article class="pr-plan pr-plan-pro">
+        <h2>{{ pr.plan_pro }}</h2>
+        <p class="pr-tagline">{{ pr.plan_pro_tagline }}</p>
+        <p class="pr-price"><span class="pr-amount">{{ pr.price_tbd }}</span></p>
+        <p class="pr-price-note" data-cycle-note="monthly">{{ pr.price_note_pro_monthly }}</p>
+        <p class="pr-price-note" data-cycle-note="yearly" hidden>{{ pr.price_note_pro_yearly }}</p>
+        <a class="pr-cta pr-cta-pro" href="{{ contact_url }}" target="_blank" rel="noopener" data-track="cta_click" data-track-cta="pricing_pro" data-track-location="pricing">{{ pr.cta_pro }}</a>
+      </article>
+    </div>
+    <p class="pr-disclaimer">{{ pr.disclaimer }}</p>
+
+    <section class="pr-table-wrap" aria-labelledby="pr-table-h">
+      <h2 id="pr-table-h">{{ pr.table_title }}</h2>
+      <table class="pr-table">
+        <thead>
+          <tr><th scope="col">{{ pr.th_feature }}</th><th scope="col">{{ pr.th_free }}</th><th scope="col">{{ pr.th_pro }}</th></tr>
+        </thead>
+        {% for g in groups %}
+        <tbody>
+          <tr class="pr-group-row"><th colspan="3" scope="colgroup">{{ g.label }}</th></tr>
+          {% for row in g.rows %}
+          <tr>
+            <th scope="row">{{ row.label[loc] }}</th>
+            <td>{% if row.free is mapping %}{{ row.free[loc] }}{% elif row.free %}<span class="pr-yes" aria-hidden="true">✓</span><span class="sr-only">{{ pr.th_free }}</span>{% else %}<span class="pr-no" aria-hidden="true">–</span>{% endif %}</td>
+            <td>{% if row.pro is mapping %}{{ row.pro[loc] }}{% elif row.pro %}<span class="pr-yes" aria-hidden="true">✓</span><span class="sr-only">{{ pr.th_pro }}</span>{% else %}<span class="pr-no" aria-hidden="true">–</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        {% endfor %}
+      </table>
+    </section>
+  </main>
+{% endblock %}
+{% block scripts %}<script src="{{ static_url('js/pricing.js') }}" defer></script>{% endblock %}

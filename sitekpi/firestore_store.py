@@ -307,7 +307,7 @@ class FirestoreGa4RefreshFailureStore:
         self._rows.delete(id_hash)
 
     def all(self) -> list[dict[str, Any]]:
-        return [snap.to_dict() or {} for snap in self._rows._col().stream()]
+        return [{"id_hash": snap.id, **(snap.to_dict() or {})} for snap in self._rows._col().stream()]
 
 
 # --- オンボーディング成功指標 (same interface as onboarding.OnboardingStore) -----------------

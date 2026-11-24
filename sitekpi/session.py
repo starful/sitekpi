@@ -109,7 +109,7 @@ class SQLiteSessionStore:
         for id_hash, blob, expires_at in rows:
             try:
                 data = json.loads(self._fernet.decrypt(blob))
-            except (InvalidToken, ValueError):
+            except (InvalidToken, ValueError, KeyError, TypeError):
                 continue
             if isinstance(data, dict):
                 out.append((id_hash, data, int(expires_at)))

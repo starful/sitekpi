@@ -102,6 +102,9 @@ def refresh_all() -> dict[str, int]:
     if not HAS_GOOGLE_AUTH:
         return counts
     store = _session_store()
+    # store.all_rows() decrypts every live session regardless of GA4 status; this loop is the
+    # only place that narrows that down to "sessions with a GA4 grant" — keep it that way as
+    # more batches read all_rows() so decrypting the whole session table stays scoped to need.
     for id_hash, data, expires_at in store.all_rows():
         info = data.get("ga4_credentials")
         if not info:
