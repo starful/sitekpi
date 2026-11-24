@@ -128,6 +128,31 @@ class FirestoreSessionStore:
     def delete(self, sid: str) -> None:
         self._rows.delete(self._key(sid))
 
+    def all_rows(self) -> list[tuple[str, dict[str, Any], int]]:
+        """(id_hash, decrypted data, expires_at) for every live session — same contract as
+        SQLiteSessionStore.all_rows (batch jobs, e.g. the GA4 token refresh batch)."""
+        now = int(time.time())
+        out: list[tuple[str, dict[str, Any], int]] = []
+        for snap in self._rows._col().stream():
+            row = snap.to_dict() or {}
+            if int(row.get("expires_at") or 0) < now:
+                continue
+            try:
+                data = json.loads(self._fernet.decrypt(bytes(row["data"])))
+            except (InvalidToken, ValueError, KeyError, TypeError):
+                continue
+            if isinstance(data, dict):
+                out.append((snap.id, data, int(row["expires_at"])))
+        return out
+
+    def save_by_hash(self, id_hash: str, data: dict[str, Any], expires_at: int) -> None:
+        """Write a row back by its id_hash directly — the counterpart to ``all_rows``."""
+        self._rows.put(id_hash, {
+            "data": self._fernet.encrypt(json.dumps(data, ensure_ascii=False).encode()),
+            "expires_at": expires_at,
+            "expire_at": dt.datetime.fromtimestamp(expires_at, tz=dt.timezone.utc),
+        })
+
     def purge_expired(self) -> None:
         """Firestore: a TTL policy on ``expire_at`` does this."""
 
@@ -260,6 +285,29 @@ class FirestoreFeedbackStore:
     def since(self, since: int) -> list[dict[str, Any]]:
         out = [snap.to_dict() or {} for snap in _since(self._rows._col(), since).stream()]
         return sorted(out, key=lambda d: d.get("at", 0))
+
+
+# --- GA4 token refresh failures (sitekpi.ga4.refresh_batch) -------------------------------
+
+
+class FirestoreGa4RefreshFailureStore:
+    """{root}/ga4_refresh_failures/rows/{session id_hash} — one row per site currently failing
+    to refresh; cleared when a later refresh succeeds."""
+
+    def __init__(self, client: Any | None = None) -> None:
+        self._rows = _Rows("ga4_refresh_failures", client)
+
+    def get(self, id_hash: str) -> dict[str, Any] | None:
+        return self._rows.get(id_hash)
+
+    def put(self, id_hash: str, row: dict[str, Any]) -> None:
+        self._rows.put(id_hash, row)
+
+    def delete(self, id_hash: str) -> None:
+        self._rows.delete(id_hash)
+
+    def all(self) -> list[dict[str, Any]]:
+        return [snap.to_dict() or {} for snap in self._rows._col().stream()]
 
 
 # --- オンボーディング成功指標 (same interface as onboarding.OnboardingStore) -----------------

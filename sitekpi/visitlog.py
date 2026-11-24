@@ -295,6 +295,20 @@ def hq_users(request: Request, days: int = 7) -> Response:
                                   feedback=read_since(since)))
 
 
+@router.get("/hq/api/ga4-refresh-failures")
+def hq_ga4_refresh_failures(request: Request) -> Response:
+    """Sites whose daily GA4 token refresh batch is failing (sitekpi/ga4/refresh_batch.py) —
+    for a future notification banner. Same bearer token as /hq/api/users."""
+    ok = _token_ok(request)
+    if ok is None:
+        return Response(status_code=404)
+    if not ok:
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    from sitekpi.ga4.refresh_batch import list_failures
+
+    return JSONResponse({"failures": list_failures()})
+
+
 def _short(vid: str) -> str:
     return vid[:4]
 
