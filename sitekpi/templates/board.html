@@ -78,7 +78,7 @@
           <div class="stats">
             {% for k in verdict.tiles %}
             <article class="stat{{ ' is-issue' if k.issue else '' }}"{% if k.bench.key %} data-metric="{{ k.bench.key }}"{% endif %}>
-              <p class="stat-label"><span class="stat-name">{{ k.label }}</span>{{ m.pop_btn("tile-" ~ loop.index, k.label) }}</p>
+              <p class="stat-label"><span class="stat-name"{% if k.help_id %} data-tip="{{ k.help_id }}" tabindex="0"{% endif %}>{{ k.label }}</span>{{ m.pop_btn("tile-" ~ loop.index, k.label) }}</p>
               <p class="stat-line"><b class="stat-value">{{ k.value }}</b><span class="stat-prev tone-{{ k.prev.tone }}">{{ t("bx.prev", loc, d=k.prev.text) if k.prev.text else t("bx.prev_none", loc) }}</span></p>
               <p class="stat-note">
                 {%- if k.bench.kind == "judge" and k.bench.rg %}{{ t("rg.ind", loc) }} {{ k.bench.band }} · {{ t("rg.left", loc) }} {{ m.rg_gap(k.bench.rg) }} {{ m.judge_text(k.bench) }}

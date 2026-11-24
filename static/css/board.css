@@ -655,6 +655,16 @@ button.bench-open.is-none { color: #94a3b8; font-weight: 700; border-bottom-styl
 .pop-link { font: inherit; font-size: 0.75rem; font-weight: 700; color: var(--accent-ink); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: none; }
 .pop-link:hover { text-decoration: underline; }
 
+/* 指標名の説明ツールチップ: hover (desktop) / tap (phones) — text comes from the 説明 dialog already on the page */
+.kpi-tip {
+  position: absolute; z-index: 70; max-width: min(280px, calc(100vw - 24px));
+  background: #1e293b; color: #fff; border-radius: 8px;
+  padding: 7px 10px; font-size: 0.75rem; line-height: 1.55; font-weight: 500;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.22); animation: pop-in 0.1s ease-out;
+}
+.kpi-tip[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .kpi-tip { animation: none; } }
+
 /* L2 — stacked categories */
 .detail-head .sub { margin-top: 4px; }
 .dgroups { display: flex; flex-direction: column; gap: 22px; padding: 14px 0 6px; }
@@ -902,6 +912,9 @@ button.jt-none { font: inherit; font-size: inherit; color: var(--muted); font-we
 .stat:first-child { padding-left: 0; border-left: 0; }
 .stat p { margin: 0; }
 .stat-label { font-size: 0.8125rem; font-weight: 700; color: var(--muted); }
+.stat-name[data-tip], .row-name[data-tip] { border-bottom: 1px dashed #c3cedb; cursor: help; }
+.stat-name[data-tip]:hover, .row-name[data-tip]:hover,
+.stat-name[data-tip]:focus-visible, .row-name[data-tip]:focus-visible { border-bottom-color: var(--accent); color: var(--accent-ink); }
 .stat-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-top: 2px !important; }
 .stat-value { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 1.625rem; font-weight: 800; line-height: 1.25; }
 .stat.is-issue .stat-value { color: #b45309; }
