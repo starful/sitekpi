@@ -20,6 +20,10 @@ _BATCHES: dict[str, list[str]] = {
         "search_impressions", "search_ctr", "avg_position", "email_open_rate", "email_ctr", "unsubscribe_rate",
         "cpl", "view_through_conv", "gross_margin", "csat", "time_to_value", "cohort", "ab_test",
     ],
+    "2026-11-27": [
+        "brand_search", "ttfb", "impression_share", "conversion_lag", "f2_rate", "reactivation_rate", "mql",
+        "gmv", "attribution", "backlinks",
+    ],
 }
 
 ADDED: dict[str, date] = {k: date.fromisoformat(d) for d, keys in _BATCHES.items() for k in keys}

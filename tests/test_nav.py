@@ -170,7 +170,7 @@ def test_glossary_new_badge_for_30_days():
     from sitekpi.views.glossary import render_glossary
 
     assert set(ADDED) <= set(HELP)
-    for day, n, when in ((date(2026, 11, 20), 40, "11/20 に 20 語 · 11/4 に 20 語"), (date(2026, 12, 10), 20, "11/20 に 20 語")):
+    for day, n, when in ((date(2026, 11, 20), 40, "11/20 に 20 語 · 11/4 に 20 語"), (date(2026, 12, 10), 30, "11/27 に 10 語 · 11/20 に 20 語"), (date(2026, 12, 21), 10, "11/27 に 10 語")):
         s = BeautifulSoup(render_glossary(locale="ja", rail={}, today=day), "html.parser")
         assert len(s.select(".gl-card[data-new]")) == n == len(s.select(".gl-card .gl-new"))
         box = s.select_one(".gl-news")
@@ -180,3 +180,17 @@ def test_glossary_new_badge_for_30_days():
     assert not s.select(".gl-news") and not s.select(".gl-card[data-new]")
     en = BeautifulSoup(render_glossary(locale="en", rail={}, today=date(2026, 11, 21)), "html.parser")
     assert "40 words added recently" in en.select_one(".gl-news").get_text()
+
+
+def test_glossary_has_the_2026_11_27_words_in_three_languages():
+    from sitekpi.metrics.help import HELP, get_help, ordered_keys
+    from sitekpi.metrics.help_added import ADDED
+
+    new = ["brand_search", "ttfb", "impression_share", "conversion_lag", "f2_rate", "reactivation_rate", "mql",
+           "gmv", "attribution", "backlinks"]
+    keys = ordered_keys()
+    for k in new:
+        assert k in HELP and k in keys and HELP[k]["palette"] is False and str(ADDED[k]) == "2026-11-27"
+        for loc in ("en", "ko"):
+            h = get_help(k, loc)
+            assert h["meaning"] != HELP[k]["meaning"] and h["tip"] != HELP[k]["tip"] and h["hint"], (k, loc)

@@ -12,6 +12,7 @@ RELEASES_URL = "https://github.com/starful/sitekpi/releases"
 
 # (anchor, date, version, link to try it or "")
 _ENTRIES = [
+    ("v0-8-2", "2026-11-27", "v0.8.2", "/glossary"),
     ("v0-8-1", "2026-11-22", "v0.8.1", "/ec"),
     ("v0-8-0", "2026-11-22", "v0.8.0", "/ec"),
     ("v0-7-6", "2026-11-21", "v0.7.6", "/ec"),
@@ -32,6 +33,10 @@ _TEXT: dict[str, dict[str, Any]] = {
         "legend": "新しくできること · 使いやすくなったこと · 直した不具合",
         "dev": "開発者向けのくわしい記録（変更したコードの一覧）は {link} にあります。",
         "entries": [
+            ("指標辞典に 10 語を追加", [
+                ("new", "指名検索数 · TTFB（サーバー応答時間）· インプレッションシェア · 成果までの日数。"),
+                ("new", "F2転換率 · 休眠復帰率 · MQL · 流通総額（GMV）· アトリビューション · 被リンク。"),
+            ]),
             ("印刷・PDF が 1 ページ 1 カテゴリに", [
                 ("better", "「印刷・PDF」で、ボードの各章と詳しい数字の各カテゴリが、それぞれ新しいページから始まります。途中で切れません。1 ページに入らない章は小見出しの区切りで分け、それでも入らないものはそのページに収まるよう縮小します。"),
             ]),
@@ -88,6 +93,10 @@ _TEXT: dict[str, dict[str, Any]] = {
         "legend": "Something new you can do · easier to use · a bug fixed",
         "dev": "The detailed record for developers (every code change) is on {link}.",
         "entries": [
+            ("10 more words in the glossary", [
+                ("new", "Branded searches · TTFB (server response time) · impression share · days to conversion."),
+                ("new", "F2 conversion rate · reactivation rate · MQL · GMV · attribution · backlinks."),
+            ]),
             ("Print / PDF: one category per page", [
                 ("better", "“Print / PDF” now starts each board chapter and each detailed-numbers category on a new page, and never cuts one in half. A chapter longer than a page breaks between its sub-questions; anything still too long is scaled to fit its page."),
             ]),
@@ -144,6 +153,10 @@ _TEXT: dict[str, dict[str, Any]] = {
         "legend": "새로 할 수 있는 것 · 쓰기 편해진 것 · 고친 문제",
         "dev": "개발자용 자세한 기록(바뀐 코드 목록)은 {link}에 있어요.",
         "entries": [
+            ("지표 사전에 10개 추가", [
+                ("new", "지명 검색 수 · TTFB(서버 응답 시간) · 노출 점유율 · 성과까지 걸린 일수."),
+                ("new", "F2 전환율 · 휴면 복귀율 · MQL · 거래액(GMV) · 기여(어트리뷰션) · 백링크."),
+            ]),
             ("인쇄·PDF가 한 페이지에 한 카테고리로", [
                 ("better", "「인쇄·PDF」에서 보드의 각 장과 자세한 숫자의 각 카테고리가 새 페이지에서 시작해요. 중간에서 잘리지 않아요. 한 페이지에 안 들어가는 장은 소제목 단위로 나누고, 그래도 넘치면 그 페이지에 맞게 줄여요."),
             ]),

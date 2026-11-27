@@ -1304,6 +1304,7 @@ _ORDER_DIGITAL = [
     "micro_conversion", "roas", "cpc", "cpm", "ctr", "cpa", "reach", "frequency",
     "activation", "retention",
     "checkout_abandonment", "site_search_rate", "zero_result_rate", "lcp", "inp", "cls", "return_interval", "search_impressions", "search_ctr", "avg_position", "email_open_rate", "email_ctr", "unsubscribe_rate", "cpl", "view_through_conv",
+    "brand_search", "ttfb", "impression_share", "conversion_lag",
 ]
 _ORDER_TRAFFIC = [
     "channels", "ch_organic_search", "ch_direct", "ch_paid_search", "ch_paid_social",
@@ -1327,11 +1328,13 @@ _ORDER_BUSINESS = [
     "nrr", "orders_db", "aov_db", "leads_db", "sql_rate", "win_rate",
     "ltv_cac", "payback", "nps",
     "gross_margin", "csat", "time_to_value",
+    "f2_rate", "reactivation_rate", "mql", "gmv",
 ]
 _ORDER_META = [
     "data_kinds", "benchmark", "prev_period", "watch_now", "behavior_flow",
     "events_section", "assisted_conv", "utm",
     "cohort", "ab_test",
+    "attribution", "backlinks",
 ]
 
 # 詳しい数字 v3: rows that came with the 8週の推移 / デバイス additions
@@ -1752,6 +1755,100 @@ HELP.update({
         "A の転換率 と B の転換率 を、十分な人数がそろってから比べる",
         "数日で差が出ても偶然のことがあります。それぞれの案で成果がある程度たまるまで待ってから決めます。",
         hint="2つの案を半分ずつ見せて比べる",
+        palette=False,
+    ),
+})
+
+# 2026-11-27: 10 more glossary words (glossary only, no invented numbers)
+HELP.update({
+    "brand_search": _h(
+        "digital",
+        "指名検索数",
+        "会社名やサービス名そのもので Google 検索された回数です。",
+        "Search Console の表示回数（またはクリック数）のうち、ブランド名を含む検索語の合計",
+        "広告や口コミで名前が知られるほど増えます。広告を止めたあとも減らなければ、名前が覚えられています。",
+        hint="名前で探された回数",
+        palette=False,
+    ),
+    "ttfb": _h(
+        "digital",
+        "TTFB（サーバー応答時間）",
+        "ページを開いてから、サーバーが最初の1バイトを返すまでの時間です。",
+        "リクエスト開始 → 最初の応答を受け取るまでの時間（目安: 0.8 秒以内）",
+        "ここが遅いと LCP も遅くなります。画像を軽くする前に、サーバーやキャッシュの設定を疑います。",
+        hint="サーバーが返事をするまで",
+        palette=False,
+    ),
+    "impression_share": _h(
+        "digital",
+        "インプレッションシェア",
+        "広告が表示される可能性があった回数のうち、実際に表示された割合です（Google 広告の指標）。",
+        "表示回数 ÷ 表示される可能性があった回数 × 100",
+        "低い理由が「予算」か「広告ランク」かで打ち手が変わります。Google 広告の損失率で内訳を見ます。",
+        hint="出られたはずの枠のうち出た割合",
+        palette=False,
+    ),
+    "conversion_lag": _h(
+        "digital",
+        "成果までの日数",
+        "初めてサイトに来てから、購入や問い合わせなどの成果になるまでにかかった日数です。",
+        "成果の日 − 初回訪問の日（中央値で見る）",
+        "長い商材ほど、成果の直前の流入だけで広告を評価すると見誤ります。比べる期間も長めにとります。",
+        hint="初回訪問から成果まで",
+        palette=False,
+    ),
+    "f2_rate": _h(
+        "business",
+        "F2転換率",
+        "初めて買った人のうち、2回目も買った人の割合です。通販でよく使われます。",
+        "2回目を買った人 ÷ 初回購入した人 × 100（例: 初回から 90 日以内）",
+        "リピートの多くはここで決まります。初回購入後の同梱物やメールの中身を見直すと動きやすい数字です。",
+        hint="初回 → 2回目に進んだ割合",
+        palette=False,
+    ),
+    "reactivation_rate": _h(
+        "business",
+        "休眠復帰率",
+        "しばらく来ていなかった（買っていなかった）人のうち、戻ってきた人の割合です。",
+        "期間中に戻った休眠客 ÷ 期間初めの休眠客 × 100（休眠の例: 90 日以上来ていない）",
+        "何日空いたら休眠かを先に決めて固定します。定義が変わると前と比べられません。",
+        hint="離れた人が戻った割合",
+        palette=False,
+    ),
+    "mql": _h(
+        "business",
+        "MQL",
+        "資料請求やセミナー参加などから、マーケティングの基準で「見込みが高い」と判断したリードです。",
+        "基準（行動や属性の点数）を満たしたリードの数",
+        "営業が商談にした割合（SQL 率）と一緒に見ます。MQL だけ増えて SQL が増えないなら、基準が甘すぎます。",
+        hint="マーケが「有望」と判断した見込み客",
+        palette=False,
+    ),
+    "gmv": _h(
+        "business",
+        "流通総額（GMV）",
+        "マーケットプレイスなどで、サイト上で取引された金額の合計です。手数料収入ではなく取引全体の額です。",
+        "期間中の取引金額の合計（キャンセル・返品をどう扱うかは先に決めておく）",
+        "自社の売上は GMV × 手数料率です。GMV が伸びても手数料率が下がっていれば、売上は伸びません。",
+        hint="取引された金額の合計",
+        palette=False,
+    ),
+    "attribution": _h(
+        "meta",
+        "アトリビューション",
+        "成果が出たとき、その前に通った広告や流入のどれに、どれだけ手柄を割り振るかの決め方です。",
+        "例: 最後のクリックにすべて（ラストクリック）、データにもとづいて配分（GA4 の標準）",
+        "決め方を変えると、同じ成果でもチャネルごとの数字が変わります。比べるときは決め方をそろえます。",
+        hint="成果の手柄の分け方",
+        palette=False,
+    ),
+    "backlinks": _h(
+        "meta",
+        "被リンク",
+        "ほかのサイトから自分のサイトに張られたリンクです。検索順位に影響する要素の一つとされています。",
+        "自分のサイトにリンクしているサイトの数（Search Console の「リンク」で確認できる）",
+        "数より質です。関係のあるサイトからの自然なリンクが役に立ち、お金で買ったリンクは逆効果になることがあります。",
+        hint="他サイトから張られたリンク",
         palette=False,
     ),
 })
